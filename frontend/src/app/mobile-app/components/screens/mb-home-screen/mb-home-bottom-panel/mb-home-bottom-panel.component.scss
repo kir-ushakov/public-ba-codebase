@@ -1,0 +1,15 @@
+@use "sass:map";
+@import "src/scss/colors";
+
+:host {
+  background-color: map.get($colors-gray-palette, 600);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.panel-button {
+  height: 2.2rem;
+  width: 2.2rem;
+}

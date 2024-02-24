@@ -1,0 +1,33 @@
+@use "sass:map";
+@import "src/scss/colors";
+@import "src/scss/button";
+
+:host {
+  background: $color-main-bg;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  color: white;
+}
+
+.slack-installing-text {
+  margin: auto;
+  font-size: 2rem;
+}
+
+.slack-error {
+  margin: 1rem auto;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.slack-error-text {
+  color: $dark-warn;
+}
+
+.slack-error-back {
+  display: block;
+  margin-top: 2rem;
+  font-size: 1.7rem;
+}

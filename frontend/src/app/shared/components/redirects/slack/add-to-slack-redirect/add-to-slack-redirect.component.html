@@ -1,0 +1,16 @@
+<div class="slack-icon-holder">
+  <img src="/assets/ui/icons/slack-mark.svg" class="slack-icon" />
+</div>
+<div class="slack-installing-text" *ngIf="(isInstalling$ | async)">
+  Installing...
+</div>
+<div class="slack-error" *ngIf="(errorOccurred$ | async)">
+  <span class="slack-error-text">
+    Something went wrong :( <br />
+    Try again later
+  </span>
+  <br />
+  <span class="slack-error-back" (click)="goToProfileScreen()">
+    ← go to profile
+  </span>
+</div>

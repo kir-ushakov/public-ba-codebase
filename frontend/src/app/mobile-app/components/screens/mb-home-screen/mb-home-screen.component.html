@@ -1,0 +1,26 @@
+<div class="top-panel-holder">
+  <div class="top-panel-holder-left"></div>
+  <div class="top-panel-holder-right">
+    <div *ngIf="!(online$ | async)">
+      <img src="assets/ui/icons/no-connection.png" />
+    </div>
+    <div
+      *ngIf="(localAuthenticated$ | async) && (online$ | async)"
+      [routerLink]="['/sync']"
+    >
+      <img src="assets/ui/icons/no-synchronize.png" />
+    </div>
+    <div *ngIf="loggedIn$ | async" class="avatar-holder">
+      <ba-user-avatar
+        [data]="avatarInputData"
+        [routerLink]="['/profile']"
+      ></ba-user-avatar>
+    </div>
+  </div>
+</div>
+<div class="main-panel-holder">
+  <ba-task-tiles-panel [tasks]="tasks$ | async"></ba-task-tiles-panel>
+</div>
+<div class="bottom-panel-holder">
+  <ba-mb-home-bottom-panel></ba-mb-home-bottom-panel>
+</div>

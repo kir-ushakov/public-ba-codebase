@@ -1,0 +1,9 @@
+:host {
+  display: grid;
+  grid-template-columns: 33.33% 33.33% 33.33%;
+  grid-gap: 0.2rem;
+}
+
+.tile-holder {
+  flex: 1 0;
+}
