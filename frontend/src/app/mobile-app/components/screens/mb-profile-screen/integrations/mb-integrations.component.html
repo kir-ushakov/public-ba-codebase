@@ -1,0 +1,32 @@
+<div class="integration-title-holder">
+  <span class="integrations-title">integrations</span>
+</div>
+<div class="integration">
+  <div>
+    <img src="/assets/ui/icons/slack-mark.svg" class="slack-icon" />
+    <div *ngIf="(addedToSlack$ | async) === true" class="integration-desc">
+      installed into slack workspace
+    </div>
+    <div *ngIf="(addedToSlack$ | async) === false" class="integration-desc">
+      add to slack
+    </div>
+  </div>
+
+  <div>
+    <app-add-to-slack-btn
+      *ngIf="(addedToSlack$ | async) === false"
+    ></app-add-to-slack-btn>
+
+    <div
+      class="remove-btn"
+      *ngIf="(addedToSlack$ | async) === true"
+      (click)="removeFromSlack()"
+    >
+      <span class="remove-btn-text">remove from slack</span>
+      <img
+        class="remove-btn-icon"
+        src="assets/ui/icons/disconnect-svgrepo-com.svg"
+      />
+    </div>
+  </div>
+</div>

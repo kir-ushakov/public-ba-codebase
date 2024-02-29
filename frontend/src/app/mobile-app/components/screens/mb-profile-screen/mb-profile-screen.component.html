@@ -1,0 +1,46 @@
+<div class="top-panel">
+  <div class="icon-holder">
+    <mat-icon
+      [routerLink]="['/home']"
+      aria-hidden="false"
+      aria-label="Arrow Back Icon"
+    >
+      arrow_back
+    </mat-icon>
+  </div>
+</div>
+<div class="main-panel">
+  <div class="user-info-container">
+    <div class="avatar-holder">
+      <ba-user-avatar [data]="avatarInputData"></ba-user-avatar>
+      <img
+        class="edit-avatar-icon"
+        src="assets/ui/icons/edit.png"
+        (click)="editAvatar()"
+      />
+    </div>
+    <div class="user-info">
+      <div class="user-name-holder">
+        <span>{{ userName$ | async }}</span>
+        <img
+          class="edit-avatar-icon"
+          src="assets/ui/icons/edit.png"
+          (click)="editAvatar()"
+        />
+      </div>
+      <div class="user-email-holder">{{ userEmail$ | async }}</div>
+      <div class="logout-btn-holder" *ngIf="loggedIn$ | async ">
+        <button
+          mat-button
+          color="primary"
+          class="light-gray-btn logout-btn"
+          (click)="logout()"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ba-mb-integrations></ba-mb-integrations>
+</div>

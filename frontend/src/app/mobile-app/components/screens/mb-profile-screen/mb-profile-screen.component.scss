@@ -1,0 +1,124 @@
+@use "sass:map";
+@import "src/scss/colors";
+@import "src/scss/button";
+@import "src/scss/breakpoints";
+
+:host {
+  background: $color-main-bg;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  color: white;
+}
+
+.top-panel {
+  background-color: map.get($colors-gray-palette, 600);
+  display: flex;
+  height: 7vh;
+  padding: 0 5px;
+  align-items: center;
+
+  > .icon-holder {
+    display: flex;
+    padding: 0.5rem 1rem;
+  }
+
+  & > .icon-holder > mat-icon {
+    transform: scale(2);
+  }
+}
+
+.main-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.user-info-container {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 4rem;
+
+  .avatar-holder {
+    display: inline-flex;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    position: relative;
+    margin-bottom: 2rem;
+
+    ba-user-avatar {
+      width: 12rem;
+      height: 12rem;
+    }
+
+    .edit-avatar-icon {
+      height: 35%;
+      right: -12%;
+      position: absolute;
+      bottom: 15%;
+    }
+  }
+
+  .user-name-holder {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    > .edit-avatar-icon {
+      height: 1.6rem;
+      margin-left: 0.5rem;
+    }
+  }
+
+  .user-email-holder {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .logout-btn-holder {
+    text-align: center;
+  }
+
+  .logout-btn {
+    font-size: 1.5rem;
+  }
+
+  @media screen and (min-width: $breakpoint-sm) {
+    flex-direction: row;
+    justify-content: left;
+    align-items: flex-start;
+    border-bottom: 1px solid map.get($colors-green-palette, 100);
+    box-shadow: 0px 9px 15px -1px #000;
+    padding-bottom: 1rem;
+    margin-bottom: 3rem;
+
+    .user-info-container {
+      padding-bottom: 2rem;
+    }
+
+    .avatar-holder {
+      margin: 0 4rem 2rem 2rem;
+      ba-user-avatar {
+        width: 8rem;
+        height: 8rem;
+      }
+    }
+
+    .user-name-holder,
+    .user-email-holder {
+      text-align: left;
+      margin-bottom: 1rem;
+      justify-content: start;
+    }
+
+    .logout-btn-holder {
+      text-align: left;
+    }
+  }
+}
