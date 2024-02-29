@@ -1,0 +1,94 @@
+@use "sass:map";
+@import "src/scss/breakpoints";
+@import "src/scss/colors";
+
+:host {
+  text-align: center;
+}
+
+.integration {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.integration-desc {
+  display: none;
+  text-transform: capitalize;
+}
+
+.integrations-title {
+  display: inline;
+  position: relative;
+  font-size: 2rem;
+  text-align: center;
+  background-color: map.get($colors-gray-palette, 500);
+  z-index: 1;
+  padding: 0 0.5rem;
+  text-transform: capitalize;
+}
+
+.integration-title-holder::after {
+  content: " ";
+  width: 100%;
+  border-bottom: 1px solid #fff;
+  display: block;
+  top: -1rem;
+  position: relative;
+}
+
+.integration > div,
+.integration > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.remove-btn {
+  display: flex;
+  align-items: center;
+}
+
+.slack-icon {
+  height: 2.5rem;
+}
+
+.remove-btn-text {
+  text-decoration: underline;
+  margin-right: 1rem;
+  text-transform: capitalize;
+}
+
+.remove-btn-icon {
+  height: 1.25rem;
+}
+
+@media screen and (min-width: $breakpoint-sm) {
+  :host {
+    border: 1px solid #fff;
+    border-radius: 4px;
+    padding: 1rem;
+    position: relative;
+    text-align: left;
+  }
+
+  .integration-title-holder::after {
+    content: unset;
+  }
+
+  .integrations-title {
+    display: inline;
+    position: absolute;
+    top: -1rem;
+    background: map.get($colors-gray-palette, 500);
+    padding: 0 1rem;
+  }
+
+  .integration {
+    justify-content: space-between;
+
+    .integration-desc {
+      display: block;
+    }
+  }
+}
