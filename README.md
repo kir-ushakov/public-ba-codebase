@@ -1,2 +1,2 @@
 # # Angular Clean Architecture Part
-# Video on Youtube: https://youtu.be/vphDEGVop_4
+# Youtube Channel: https://www.youtube.com/playlist?list=PLeS42wGodzA7I5JRpSWlVQHPIP5BMTVWI
