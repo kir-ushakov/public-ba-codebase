@@ -28,4 +28,10 @@ export interface IChangeableObject {
   modifiedAt: Date;
 }
 
+/**
+ * #NOTE
+ * The ‘Changeable Object’ is not a model,
+ * it is a union of types which should implement the ‘I Changeable Object’ interface
+ * and could be set as property of the Change object.
+ * */
 export type ChangeableObject = (Task | Tag) & IChangeableObject;
