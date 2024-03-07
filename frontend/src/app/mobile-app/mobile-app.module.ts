@@ -21,6 +21,7 @@ import { AddToSlackRedirectComponent } from '../shared/components/redirects/slac
 import { AddToSlackRedirectScreenState } from '../shared/components/redirects/slack/add-to-slack-redirect/add-to-slack-redirect.state';
 import { TaskTileComponent } from './components/common/task-tiles-panel/task-tile/task-tile.component';
 import { TaskTilesPanelComponent } from './components/common/task-tiles-panel/task-tiles-panel.component';
+import { MbIntegrationsComponent } from './components/screens/mb-profile-screen/integrations/mb-integrations.component';
 
 @NgModule({
   imports: [
@@ -47,6 +48,7 @@ import { TaskTilesPanelComponent } from './components/common/task-tiles-panel/ta
     AddToSlackRedirectComponent,
     TaskTileComponent,
     TaskTilesPanelComponent,
+    MbIntegrationsComponent,
   ],
 })
 export class MobileAppModule {}
