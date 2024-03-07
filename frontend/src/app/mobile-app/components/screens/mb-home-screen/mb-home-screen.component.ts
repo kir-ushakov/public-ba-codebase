@@ -1,8 +1,8 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Store, Select } from '@ngxs/store';
 import { AppAction } from 'src/app/shared/state/app.actions';
 import { Observable } from 'rxjs';
-import { ITask } from 'src/app/shared/models/task.interface';
+import { Task } from 'src/app/shared/models/task.model';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
 import { AppState } from 'src/app/shared/state/app.state';
@@ -12,10 +12,9 @@ import { IUserAvatarInputData } from 'src/app/shared/components/common/user-avat
   selector: 'ba-home-screen',
   templateUrl: './mb-home-screen.component.html',
   styleUrls: ['./mb-home-screen.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class MbHomeScreenComponent implements OnInit {
-  @Select(TasksState.actualTasks) tasks$: Observable<ITask[]>;
+  @Select(TasksState.actualTasks) tasks$: Observable<Task[]>;
   @Select(UserState.loggedIn) loggedIn$: Observable<boolean>;
   @Select(UserState.localAuthenticated)
   localAuthenticated$: Observable<boolean>;
