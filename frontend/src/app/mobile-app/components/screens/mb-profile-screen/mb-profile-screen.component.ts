@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { UserState } from 'src/app/shared/state/user.state';
 import { ProfileScreenAction } from './mb-profile-screen.action';
 import { ActivatedRoute } from '@angular/router';
-import { EOkFailedStatus } from 'src/app/shared/enums/ok-failed-status.enum';
 
 @Component({
   selector: 'app-profile-screen',
