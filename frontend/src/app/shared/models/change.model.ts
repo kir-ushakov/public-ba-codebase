@@ -1,37 +1,28 @@
 import { Task } from './task.model';
 import { Tag } from './tag.model';
 
-/**  
-  TODO: Need to refactor Change
-  TICKET:  https://brainas.atlassian.net/browse/BA-111
-  export interface Change {
-    entity: EntityTypes (Task, Tag,...);
-    action: CREATED, UPDATED, DELETED - POST, PUT, DELETE...
-    id: string
-    modifiedAt: Date
-    data?: ChangeableObject; // no need for DELETED action
+export enum EChangedEntity {
+  Task = 'CHANGED_ENTITY_TASK',
+  Tag = 'CHANGED_ENTITY_TAG',
+  // more types will be here
 }
-*/
-export type Change = {
-  type: EChangeType;
-  object: ChangeableObject;
-};
 
-export enum EChangeType {
-  TaskCreated = 'CHANGE_TYPE_TASK_CREATED',
-  TaskModified = 'CHANGE_TYPE_TASK_MODIFIED',
-  TaskDeleted = 'CHANGE_TYPE_TASK_DELETED',
+export enum EChangeAction {
+  Created = 'CHANGE_ACTION_CREATED',
+  Updated = 'CHANGE_ACTION_UPDATED',
+  Deleted = 'CHANGE_ACTION_DELETED',
 }
+
+export type Change = {
+  entity: EChangedEntity;
+  action: EChangeAction;
+  modifiedAt?: string;
+  object?: IChangeableObject;
+};
 
 export interface IChangeableObject {
   id: string;
-  modifiedAt: Date;
+  modifiedAt: string;
 }
 
-/**
- * #NOTE
- * The ‘Changeable Object’ is not a model,
- * it is a union of types which should implement the ‘I Changeable Object’ interface
- * and could be set as property of the Change object.
- * */
 export type ChangeableObject = (Task | Tag) & IChangeableObject;

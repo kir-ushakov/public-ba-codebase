@@ -7,12 +7,6 @@ import { IUserAvatarInputData } from './user-avatar.interface';
   styleUrls: ['./user-avatar.component.scss'],
 })
 export class UserAvatarComponent {
-  /**
-   * #NOTE
-   * We can combine several Input parameters into one object
-   * and set an interface for it to avoid errors
-   * and make component more transparency for use
-   */
   @Input() data: IUserAvatarInputData;
   @ViewChild('avatarHolder') avatarHolderRef: ElementRef;
 

@@ -3,8 +3,8 @@ export type Tag = {
   type: ETagType;
   name: string;
   color: string;
-  createdAt: Date;
-  modifiedAt: Date;
+  createdAt: string;
+  modifiedAt: string;
 };
 
 export enum ETagType {
