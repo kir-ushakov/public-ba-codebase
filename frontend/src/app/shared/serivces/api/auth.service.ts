@@ -6,11 +6,22 @@ import { HttpClient } from '@angular/common/http';
 import { convertObjectToUrlParams } from '../../helpers/convert-object-to-url-params.function';
 import { environment as env } from 'src/environments/environment';
 
+/**
+ * #NOTE
+ * Types Login RequestDTO & Login ResponseDTO explicitly describe
+ * what payload we have to pass in request to login API endpoint
+ * and what we get back in response
+ */
 export type LoginRequestDTO = {
   username: string;
   password: string;
 };
 
+/**
+ * #NOTE
+ * LoginResponseDto type represent Data Transfer Object returned by Login Request
+ * and contains UserDto that reflectes User Model
+ */
 export type LoginResponseDTO = {
   user: UserDto;
   expireAt: string;
@@ -23,6 +34,11 @@ export type SignUpRequestDTO = {
   password: string;
 };
 
+/**
+ * #NOTE
+ * While Request/Response DTOs are tightly coupled to one specific API endpoint
+ * Model DTOs such as UserDto can be used as part of various Req/Res DTOs.
+ */
 export type SignUpResponseDTO = UserDto;
 
 export type VerifyEmailResponseDTO = {
