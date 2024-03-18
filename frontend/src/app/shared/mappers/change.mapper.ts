@@ -9,12 +9,6 @@ import { Task } from '../models/task.model';
 import { TagMapper } from './tag.mapper';
 import { TasksMapper } from './task.mapper';
 
-/**
- * #NOTE
- * The ChangeMapper class is an example of a more complex Mapper
- * that uses other Mappers to convert ChangeableObjectDTOs to models
- * depending on their types.
- */
 export class ChangeMapper {
   static ERROR_MESSAGES = {
     INVALID_TYPE: 'Type of change not valid',

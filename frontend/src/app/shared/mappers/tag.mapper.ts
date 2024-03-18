@@ -5,11 +5,6 @@ export class TagMapper {
   public static toModel(tagDto: TagDTO): Tag {
     return {
       id: tagDto.id,
-      /**
-       * #NOTE
-       * Here we see that the DTO is not always identical to the model.
-       * and we need to convert  boolean to ETagType
-       */
       type: tagDto.isCategory ? ETagType.CATEGORY : ETagType.REGULAR,
       name: tagDto.name,
       color: tagDto.color,
