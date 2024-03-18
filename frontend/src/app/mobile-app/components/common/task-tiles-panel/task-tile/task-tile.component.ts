@@ -1,7 +1,7 @@
 import { Component, Input, HostListener } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { MbTaskTileAction } from './task-tile.actions';
-import { ITask } from 'src/app/shared/models/task.interface';
+import { Task } from 'src/app/shared/models/task.model';
 
 @Component({
   selector: 'ba-task-tile',
@@ -9,7 +9,7 @@ import { ITask } from 'src/app/shared/models/task.interface';
   styleUrls: ['./task-tile.component.scss'],
 })
 export class TaskTileComponent {
-  @Input() task: ITask;
+  @Input() task: Task;
   @HostListener('click') onClick() {
     this.store.dispatch(new MbTaskTileAction.Clicked(this.task.id));
   }

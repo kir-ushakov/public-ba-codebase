@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { ITask } from 'src/app/shared/models/task.interface';
+import { Task } from 'src/app/shared/models/task.model';
 
 @Component({
   selector: 'ba-task-tiles-panel',
@@ -7,5 +7,5 @@ import { ITask } from 'src/app/shared/models/task.interface';
   styleUrls: ['./task-tiles-panel.component.scss'],
 })
 export class TaskTilesPanelComponent {
-  @Input() tasks: Array<ITask>;
+  @Input() tasks: Array<Task>;
 }
