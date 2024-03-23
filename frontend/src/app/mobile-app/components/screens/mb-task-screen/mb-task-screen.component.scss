@@ -1,0 +1,99 @@
+@import "src/scss/constants";
+@import "src/scss/colors";
+
+:host {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.task-view-container,
+.task-view-sidemenu,
+.task-view-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* right side menu */
+.task-view-sidemenu {
+  background-color: #27272b;
+  border-left: 1px solid white;
+  width: 75%;
+
+  .sidemenu-holder {
+    padding: 45px 30px;
+  }
+
+  .sidemenu-item {
+    color: white;
+    display: flex;
+    align-items: center;
+    font-size: 25px;
+    line-height: 38px;
+  }
+
+  .sidemenu-item-icon {
+    width: 30px;
+    margin-right: 25px;
+  }
+}
+
+.top-panel-holder {
+  height: 42px;
+  background: bisque;
+}
+
+.main-panel-holder {
+  background: $color-main-bg;
+  flex: 1 0 auto;
+  padding: $main-padding;
+}
+
+.title-input-holder {
+  width: 100%;
+}
+
+.title-holder {
+  text-align: center;
+  color: $color-main-text;
+  font-size: 20px;
+  font-style: italic;
+}
+
+.bottom-panel-holder {
+  flex-shrink: 0;
+  height: 42px;
+}
+
+/* Task View Top Panel */
+.task-top-panel {
+  align-items: center;
+  background-color: $color-panel-bg;
+  display: flex;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 0 $main-padding;
+}
+
+.top-panel-btn {
+  display: flex;
+  height: 30px;
+  width: 30px;
+
+  &.done {
+    background: url("/assets/ui/icons/checkmark-green.png") center / auto 85%
+      no-repeat;
+    display: flex;
+  }
+
+  &.options {
+    background: url("/assets/ui/icons/options.png") center / auto 85% no-repeat;
+    display: flex;
+  }
+
+  &:not(:last-child) {
+    margin-right: 10px;
+  }
+}

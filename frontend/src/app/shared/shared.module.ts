@@ -15,7 +15,7 @@ import { UserAvatarComponent } from './components/common/user-avatar/user-avatar
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    NgxsStoragePluginModule.forRoot(),
+    //NgxsStoragePluginModule.forRoot(),
 
     // Material
     MatFormFieldModule,

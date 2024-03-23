@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { WindowRefService } from 'src/app/shared/serivces/win-ref/window-ref.service';
+import { WindowRefService } from 'src/app/shared/serivces/utility/window-ref.service';
 
 @Injectable({
   providedIn: 'root',

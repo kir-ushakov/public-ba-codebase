@@ -1,0 +1,17 @@
+<div
+  *ngIf="mode === ETaskViewMode.Create || mode === ETaskViewMode.Edit"
+  class="mb-task-ok-panel"
+>
+  <div class="cancel-task-btn" (click)="cancelChanges()">Cancel</div>
+  <div
+    class="create-task-btn"
+    [ngClass]="{ enabled: enabled }"
+    (click)="applyChanges()"
+    id="createTaskBtn"
+  >
+    Ok
+  </div>
+</div>
+<div *ngIf="mode === ETaskViewMode.View" class="go-home-btn" (click)="goHome()">
+  <img src="assets/ui/icons/home-icon.png" />
+</div>

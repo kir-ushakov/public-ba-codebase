@@ -1,0 +1,91 @@
+<mat-drawer-container class="task-view-container" hasBackdrop="fasle">
+  <mat-drawer-content class="task-view-content">
+    <div class="top-panel-holder">
+      <div class="task-top-panel">
+        <div
+          *ngIf="showCompleteTaskBtn$ | async"
+          id="completeTask"
+          class="top-panel-btn done"
+          (click)="completeTask()"
+        ></div>
+        <div
+          *ngIf="showToggleOptionsBtn$ | async"
+          class="top-panel-btn options"
+          (click)="toggleMenu()"
+          id="toggelOptionsMenuBtn"
+        ></div>
+      </div>
+    </div>
+    <div class="main-panel-holder">
+      <div
+        *ngIf="
+          (mode$ | async) === ETaskViewMode.Create ||
+          (mode$ | async) === ETaskViewMode.Edit
+        "
+        class="title-input-holder"
+      >
+        <form
+          [formGroup]="form"
+          class="task-form"
+          ngxsForm="mbTaskViewState.taskViewForm"
+        >
+          <mat-form-field class="title-input-holder" floatLabel="never">
+            <input
+              #titleInput
+              matInput
+              id="titleInput"
+              formControlName="title"
+              placeholder="Task title here"
+              autocomplete="off"
+              autofocus
+            />
+            <mat-error *ngIf="false">
+              Task title is <strong>required</strong>
+            </mat-error>
+          </mat-form-field>
+        </form>
+      </div>
+      <div *ngIf="(mode$ | async) === ETaskViewMode.View" class="title-holder">
+        <span>{{ (taks$ | async).title }}</span>
+      </div>
+    </div>
+    <div class="bottom-panel-holder">
+      <app-mb-task-view-bottom
+        [enabled]="form.valid"
+        [mode]="mode$ | async"
+      ></app-mb-task-view-bottom>
+    </div>
+  </mat-drawer-content>
+  <mat-drawer #menuDrawer class="task-view-sidemenu" mode="over" position="end">
+    <div class="sidemenu-holder">
+      <div
+        class="sidemenu-item sidemenu-cancel-btn"
+        (click)="editTaskOptionSelected()"
+      >
+        <img class="sidemenu-item-icon" src="assets/ui/icons/edit.png" />
+        Edit
+      </div>
+      <div class="sidemenu-item sidemenu-done-btn" (click)="completeTask()">
+        <img
+          class="sidemenu-item-icon"
+          src="assets/ui/icons/checkmark-green.png"
+        />
+        Done
+      </div>
+      <div class="sidemenu-item sidemenu-edit-btn" (click)="canceledTask()">
+        <img
+          class="sidemenu-item-icon"
+          src="assets/ui/icons/cancel-cross-icon-gray.png"
+        />
+        Cancel
+      </div>
+      <div
+        class="sidemenu-item sidemenu-cancel-btn"
+        (click)="deleteTaskOptionSelected()"
+      >
+        <img class="sidemenu-item-icon" src="assets/ui/icons/rubbish.png" />
+        Delete
+      </div>
+    </div>
+  </mat-drawer>
+</mat-drawer-container>
