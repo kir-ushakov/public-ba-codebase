@@ -22,6 +22,12 @@ export enum EUserAuthState {
   LocalAuthenticated = 'USER_AUTH_STATE_LOCAL_AUTHENTICATED',
 }
 
+/**
+ * #NOTE
+ * The User State is not tied to a specific component.
+ * It contains the date associated with the user.
+ * Thus, it can be considered as an application level state.
+ */
 @State<IUserStateModel>({
   name: 'user',
   defaults: {
@@ -83,6 +89,11 @@ export class UserState {
     ctx: StateContext<IUserStateModel>,
     { email, password }: UserAction.LogIn
   ): Promise<void> {
+    /**
+     * #NOTE
+     * I'm using State not only to store data,
+     * but also to centralize frontend logic, so using Service from Action is fine.
+     */
     try {
       const user: User = await this._authService.login({
         username: email,

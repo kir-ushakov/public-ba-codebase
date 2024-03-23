@@ -13,7 +13,12 @@ export enum ETaskViewMode {
   Edit = 'EditTaskMode',
   View = 'ViewTaskMode',
 }
-
+/**
+ * #NOTE
+ * A State Model is a State data structure.
+ * In the context of a component's state, this data is all that determines
+ * what the component's view looks like at the current moment in time.
+ */
 export interface IMbTaskScreenStateModel {
   mode: ETaskViewMode;
   taskId: string | undefined;
@@ -22,6 +27,10 @@ export interface IMbTaskScreenStateModel {
   };
 }
 
+/**
+ * #NOTE
+ * Default values for state
+ */
 const defaults = {
   mode: ETaskViewMode.Create,
   taskViewForm: {
@@ -34,6 +43,10 @@ const defaults = {
   taskId: null,
 };
 
+/**
+ * #NOTE
+ * This Class represents the State of the MbTaskScreenComponent.
+ */
 @State<IMbTaskScreenStateModel>({
   name: 'mbTaskViewState',
   defaults: defaults,
@@ -42,6 +55,12 @@ const defaults = {
 export class MbTaskScreenState {
   constructor(private store: Store) {}
 
+  /**
+   *
+   * #NOTE
+   * Selectors used to get State Data where we need it in Components.
+   * It could be considered (with a some simplification) as State Output Interface
+   */
   @Selector()
   static mode(state: IMbTaskScreenStateModel): ETaskViewMode {
     return state.mode;
@@ -68,6 +87,12 @@ export class MbTaskScreenState {
     return state.mode == ETaskViewMode.View ? true : false;
   }
 
+  /**
+   *
+   * #NOTE
+   * Actions use for change State Date
+   * It could be considered (with a some simplification) as State Input Interface
+   */
   @Action(MbTaskScreenAction.Opened)
   opened(ctx: StateContext<IMbTaskScreenStateModel>, { mode, taskId }) {
     ctx.patchState({ mode: mode });
