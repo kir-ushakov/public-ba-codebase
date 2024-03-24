@@ -8,10 +8,10 @@ import { AppAction } from './app.actions';
 import { UserAction } from './user.actions';
 import { SlackService } from '../serivces/integrations/slack.service';
 
-interface IUserIntegrations {
+export interface IUserIntegrations {
   addedToSlack: boolean | undefined;
 }
-export interface IUserStateModel {
+export interface UserStateModel {
   userData: User;
   authState: EUserAuthState;
   integrations: IUserIntegrations;
@@ -22,13 +22,7 @@ export enum EUserAuthState {
   LocalAuthenticated = 'USER_AUTH_STATE_LOCAL_AUTHENTICATED',
 }
 
-/**
- * #NOTE
- * The User State is not tied to a specific component.
- * It contains the date associated with the user.
- * Thus, it can be considered as an application level state.
- */
-@State<IUserStateModel>({
+@State<UserStateModel>({
   name: 'user',
   defaults: {
     userData: null,
@@ -46,17 +40,17 @@ export class UserState {
   ) {}
 
   @Selector()
-  static loggedIn(state: IUserStateModel): boolean {
+  static loggedIn(state: UserStateModel): boolean {
     return !!state.userData;
   }
 
   @Selector()
-  static localAuthenticated(state: IUserStateModel): boolean {
+  static localAuthenticated(state: UserStateModel): boolean {
     return state.authState === EUserAuthState.LocalAuthenticated;
   }
 
   @Selector()
-  static userNameFirstLetter(state: IUserStateModel): string {
+  static userNameFirstLetter(state: UserStateModel): string {
     if (state.userData) {
       const firstName = state.userData.firstName;
       return firstName ? firstName.charAt(0) : null;
@@ -65,35 +59,30 @@ export class UserState {
   }
 
   @Selector()
-  static userId(state: IUserStateModel): string {
+  static userId(state: UserStateModel): string {
     return state.userData.userId;
   }
 
   @Selector()
-  static userName(state: IUserStateModel): string {
+  static userName(state: UserStateModel): string {
     return `${state.userData.firstName} ${state.userData.lastName}`;
   }
 
   @Selector()
-  static userEmail(state: IUserStateModel): string {
+  static userEmail(state: UserStateModel): string {
     return state.userData.email;
   }
 
   @Selector()
-  static addedToSlack(state: IUserStateModel): boolean {
+  static addedToSlack(state: UserStateModel): boolean {
     return state.integrations.addedToSlack;
   }
 
   @Action(UserAction.LogIn)
   async login(
-    ctx: StateContext<IUserStateModel>,
+    ctx: StateContext<UserStateModel>,
     { email, password }: UserAction.LogIn
   ): Promise<void> {
-    /**
-     * #NOTE
-     * I'm using State not only to store data,
-     * but also to centralize frontend logic, so using Service from Action is fine.
-     */
     try {
       const user: User = await this._authService.login({
         username: email,
@@ -112,7 +101,7 @@ export class UserState {
 
   @Action(UserAction.LoggedIn)
   loggedIn(
-    ctx: StateContext<IUserStateModel>,
+    ctx: StateContext<UserStateModel>,
     { userData }: UserAction.LoggedIn
   ): void {
     ctx.patchState({
@@ -123,7 +112,7 @@ export class UserState {
   }
 
   @Action(ProfileScreenAction.Logout)
-  async logout(ctx: StateContext<IUserStateModel>): Promise<void> {
+  async logout(ctx: StateContext<UserStateModel>): Promise<void> {
     try {
       await this._authService.logout();
       ctx.patchState({ userData: null });
@@ -135,7 +124,7 @@ export class UserState {
   }
 
   @Action(UserAction.NotAuthenticated)
-  notAuthenticated(ctx: StateContext<IUserStateModel>): void {
+  notAuthenticated(ctx: StateContext<UserStateModel>): void {
     if (UserState.loggedIn(ctx.getState())) {
       ctx.patchState({ authState: EUserAuthState.LocalAuthenticated });
     }
@@ -143,7 +132,7 @@ export class UserState {
 
   @Action(UserAction.Relogin)
   async relogin(
-    ctx: StateContext<IUserStateModel>,
+    ctx: StateContext<UserStateModel>,
     { password }: UserAction.Relogin
   ): Promise<void> {
     try {
@@ -165,7 +154,7 @@ export class UserState {
 
   @Action(UserAction.AddedToSlackStatusChanged)
   addedToSlackStatusChanged(
-    ctx: StateContext<IUserStateModel>,
+    ctx: StateContext<UserStateModel>,
     { status }: { status: boolean }
   ): void {
     const integrationsState = ctx.getState().integrations;
@@ -175,7 +164,7 @@ export class UserState {
   }
 
   @Action(ProfileScreenAction.RemoveFromSlack)
-  async removeFromSlack(ctx: StateContext<IUserStateModel>): Promise<void> {
+  async removeFromSlack(ctx: StateContext<UserStateModel>): Promise<void> {
     try {
       await this._slackService.removeFromSlack();
     } catch (err) {
