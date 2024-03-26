@@ -8,14 +8,18 @@ import {
   insertItem,
   removeItem,
 } from '@ngxs/store/operators';
+import { v4 as uuidv4 } from 'uuid';
 import { TasksAction } from './tasks.actions';
-import { TaskSerivce } from 'src/app/shared/serivces/task.service';
-import { Task, ETaskStatus } from 'src/app/shared/models/task.model';
-import { Change, EChangeAction, EChangedEntity } from '../models/change.model';
+import {
+  Task,
+  ETaskStatus,
+  ETaskType,
+  Change,
+  EChangeAction,
+  EChangedEntity,
+} from 'src/app/shared/models/';
 import { SyncStateAction } from './sync.actions';
 import { UserState } from './user.state';
-
-const actualStatuses: Array<ETaskStatus> = [ETaskStatus.Todo];
 
 interface ITasksStateModel {
   entities: Array<Task>;
@@ -29,7 +33,9 @@ interface ITasksStateModel {
 })
 @Injectable()
 export class TasksState {
-  constructor(private taskSerivce: TaskSerivce) {}
+  static readonly actualStatuses: Array<ETaskStatus> = [ETaskStatus.Todo];
+
+  constructor() {}
 
   @Selector([UserState.userId])
   static allTasks(state: ITasksStateModel, userId: string): Array<Task> {
@@ -49,7 +55,7 @@ export class TasksState {
     state: ITasksStateModel,
     allTasks: Array<Task>
   ): Array<Task> {
-    return allTasks.filter((t) => actualStatuses.includes(t.status));
+    return allTasks.filter((t) => TasksState.actualStatuses.includes(t.status));
   }
 
   @Action(TasksAction.Create)
@@ -57,7 +63,15 @@ export class TasksState {
     ctx: StateContext<ITasksStateModel>,
     { taskInitData, userId }: { taskInitData: Task; userId: string }
   ): void {
-    const createdTask: Task = this.taskSerivce.createTask(taskInitData, userId);
+    const createdTask: Task = {
+      type: ETaskType.Basic,
+      userId: userId,
+      id: uuidv4(),
+      title: taskInitData.title,
+      status: ETaskStatus.Todo,
+      createdAt: new Date().toISOString(),
+      modifiedAt: new Date().toISOString(),
+    };
 
     ctx.setState(
       patch({
@@ -80,18 +94,18 @@ export class TasksState {
     ctx: StateContext<ITasksStateModel>,
     { taskEditedData, taskId }: { taskEditedData: Task; taskId: string }
   ) {
-    const updatedTask: Task = ctx
-      .getState()
-      .entities.find((t) => t.id === taskId);
-    const editedTask = this.taskSerivce.editTask(taskEditedData, updatedTask);
     ctx.setState(
       patch({
         entities: updateItem(
-          (task) => task.id === editedTask.id,
-          patch(editedTask)
+          (task) => task.id === taskId,
+          patch({ ...taskEditedData })
         ),
       })
     );
+
+    const updatedTask: Task = ctx
+      .getState()
+      .entities.find((t) => t.id === taskId);
 
     ctx.dispatch(
       new SyncStateAction.ChangeOccurred({
@@ -121,27 +135,17 @@ export class TasksState {
   @Action(TasksAction.ChangeStatus)
   changeStatus(
     ctx: StateContext<ITasksStateModel>,
-    { taskId, status }: TasksAction.ChangeStatus
+    { taskId, status }: { taskId: string | number; status: ETaskStatus }
   ): void {
-    ctx.setState(
-      patch({
-        entities: updateItem<Task>(
-          (t) => t.id === taskId,
-          patch({
-            status,
-            modifiedAt: new Date().toISOString(),
-          })
-        ),
-      })
-    );
     const task: Task = ctx.getState().entities.find((t) => t.id == taskId);
+    task.status = status;
     ctx.dispatch(new TasksAction.Update(task, taskId as string));
   }
 
   @Action(TasksAction.Synchronize)
   synchronize(
     ctx: StateContext<ITasksStateModel>,
-    { task }: TasksAction.Synchronize
+    { task }: { task: Task }
   ): void {
     ctx.setState(
       patch({
