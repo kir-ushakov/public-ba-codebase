@@ -20,12 +20,7 @@ const actualStatuses: Array<ETaskStatus> = [ETaskStatus.Todo];
 interface ITasksStateModel {
   entities: Array<Task>;
 }
-/**
- * #NOTE
- * The task state is not tied to a specific component.
- * It contains task objects that are used in different places in the project.
- * Thus, it can be considered as an application level state.
- */
+
 @State<ITasksStateModel>({
   name: 'tasks',
   defaults: {
