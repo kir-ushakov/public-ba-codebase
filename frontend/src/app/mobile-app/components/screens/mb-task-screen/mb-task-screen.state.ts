@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
 import { Task, ETaskStatus, ETaskType } from 'src/app/shared/models/task.model';
 import { MbTaskScreenAction } from './mb-task-screen.actions';
-import { TasksAction } from 'src/app/shared/state/tasks.actions';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
 import { AppAction } from 'src/app/shared/state/app.actions';
@@ -78,15 +77,20 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.ApplyButtonPressed)
   applyButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>) {
+    const taskData: Task = ctx.getState().taskViewForm.model;
     if (ctx.getState().mode === ETaskViewMode.Create) {
-      ctx.dispatch(MbTaskScreenAction.CreateTask);
+      const userId: string = this.store.selectSnapshot(UserState.userId);
+      ctx.dispatch(new MbTaskScreenAction.CreateTask(taskData, userId));
+      ctx.dispatch(MbTaskScreenAction.Close);
     } else {
-      ctx.dispatch(MbTaskScreenAction.EditTask);
+      const taskId: string | number = ctx.getState().taskId;
+      ctx.dispatch(new MbTaskScreenAction.UpdateTask(taskData, taskId));
+      ctx.patchState({ mode: ETaskViewMode.View });
     }
   }
 
   @Action(MbTaskScreenAction.EditTaskOptionSelected)
-  editTaskOptionSelected(ctx: StateContext<IMbTaskScreenStateModel>) {
+  editTask(ctx: StateContext<IMbTaskScreenStateModel>) {
     ctx.patchState({ mode: ETaskViewMode.Edit });
     const task = this.store.selectSnapshot(MbTaskScreenState.task);
     ctx.dispatch(
@@ -99,13 +103,28 @@ export class MbTaskScreenState {
     );
   }
 
-  @Action(MbTaskScreenAction.CreateTask)
-  createNewTask(ctx: StateContext<IMbTaskScreenStateModel>) {
-    const userId: string = this.store.selectSnapshot(UserState.userId);
-    ctx.dispatch(
-      new TasksAction.Create(ctx.getState().taskViewForm.model, userId)
-    );
+  @Action(MbTaskScreenAction.CompleteTaskOptionSelected)
+  completeTask(ctx: StateContext<IMbTaskScreenStateModel>) {
+    const taskId: string | number = ctx.getState().taskId;
+    const taskUpdateData: Task = ctx.getState().taskViewForm.model;
+    taskUpdateData.status = ETaskStatus.Done;
+    ctx.dispatch(new MbTaskScreenAction.UpdateTask(taskUpdateData, taskId));
     ctx.dispatch(MbTaskScreenAction.Close);
+  }
+
+  @Action(MbTaskScreenAction.CancelTaskOptionSelected)
+  cancelTask(ctx: StateContext<IMbTaskScreenStateModel>) {
+    const taskId: string | number = ctx.getState().taskId;
+    const taskUpdateData: Task = ctx.getState().taskViewForm.model;
+    taskUpdateData.status = ETaskStatus.Cancel;
+    ctx.dispatch(new MbTaskScreenAction.UpdateTask(taskUpdateData, taskId));
+    ctx.dispatch(MbTaskScreenAction.Close);
+  }
+
+  @Action(MbTaskScreenAction.DeleteTaskOptionSelected)
+  deleteTask(ctx: StateContext<IMbTaskScreenStateModel>) {
+    ctx.dispatch(new MbTaskScreenAction.DeleteTask(ctx.getState().taskId));
+    ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
 
   @Action(MbTaskScreenAction.CancelButtonPressed)
@@ -116,34 +135,6 @@ export class MbTaskScreenState {
   @Action(MbTaskScreenAction.Close)
   close(ctx: StateContext<IMbTaskScreenStateModel>) {
     ctx.setState(defaults);
-  }
-
-  @Action(MbTaskScreenAction.EditTask)
-  editTask(ctx: StateContext<IMbTaskScreenStateModel>) {
-    const taskId: string | number = ctx.getState().taskId;
-    const taskData: Task = ctx.getState().taskViewForm.model;
-    ctx.dispatch(new TasksAction.Update(taskData, taskId));
-    ctx.patchState({ mode: ETaskViewMode.View });
-  }
-
-  @Action(MbTaskScreenAction.CompleteTaskOptionSelected)
-  completeTask(ctx: StateContext<IMbTaskScreenStateModel>) {
-    const taskId: string | number = ctx.getState().taskId;
-    ctx.dispatch(new TasksAction.ChangeStatus(taskId, ETaskStatus.Done));
-    ctx.dispatch(MbTaskScreenAction.Close);
-  }
-
-  @Action(MbTaskScreenAction.CancelTaskOptionSelected)
-  cancelTask(ctx: StateContext<IMbTaskScreenStateModel>) {
-    const taskId: string | number = ctx.getState().taskId;
-    ctx.dispatch(new TasksAction.ChangeStatus(taskId, ETaskStatus.Cancel));
-    ctx.dispatch(MbTaskScreenAction.Close);
-  }
-
-  @Action(MbTaskScreenAction.DeleteTaskOptionSelected)
-  deleteTask(ctx: StateContext<IMbTaskScreenStateModel>) {
-    ctx.dispatch(new TasksAction.Delete(ctx.getState().taskId));
-    ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
 
   @Action(MbTaskScreenAction.HomeButtonPressed)

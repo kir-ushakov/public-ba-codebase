@@ -9,7 +9,6 @@ import {
   removeItem,
 } from '@ngxs/store/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { TasksAction } from './tasks.actions';
 import {
   Task,
   ETaskStatus,
@@ -20,6 +19,8 @@ import {
 } from 'src/app/shared/models/';
 import { SyncStateAction } from './sync.actions';
 import { UserState } from './user.state';
+import { MbTaskScreenAction } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.actions';
+import { IChangeableObject } from '../models/change.model';
 
 interface ITasksStateModel {
   entities: Array<Task>;
@@ -58,7 +59,7 @@ export class TasksState {
     return allTasks.filter((t) => TasksState.actualStatuses.includes(t.status));
   }
 
-  @Action(TasksAction.Create)
+  @Action(MbTaskScreenAction.CreateTask)
   createTask(
     ctx: StateContext<ITasksStateModel>,
     { taskInitData, userId }: { taskInitData: Task; userId: string }
@@ -89,16 +90,16 @@ export class TasksState {
     );
   }
 
-  @Action(TasksAction.Update)
+  @Action(MbTaskScreenAction.UpdateTask)
   updateTask(
     ctx: StateContext<ITasksStateModel>,
-    { taskEditedData, taskId }: { taskEditedData: Task; taskId: string }
+    { taskUpdateData, taskId }: { taskUpdateData: Task; taskId: string }
   ) {
     ctx.setState(
       patch({
         entities: updateItem(
           (task) => task.id === taskId,
-          patch({ ...taskEditedData })
+          patch({ ...taskUpdateData })
         ),
       })
     );
@@ -117,7 +118,7 @@ export class TasksState {
     );
   }
 
-  @Action(TasksAction.Delete)
+  @Action(MbTaskScreenAction.DeleteTask)
   delete(ctx: StateContext<ITasksStateModel>, { taskId }: { taskId: string }) {
     ctx.setState(
       patch({
@@ -132,21 +133,13 @@ export class TasksState {
     ctx.dispatch(new SyncStateAction.ChangeOccurred(change));
   }
 
-  @Action(TasksAction.ChangeStatus)
-  changeStatus(
-    ctx: StateContext<ITasksStateModel>,
-    { taskId, status }: { taskId: string | number; status: ETaskStatus }
-  ): void {
-    const task: Task = ctx.getState().entities.find((t) => t.id == taskId);
-    task.status = status;
-    ctx.dispatch(new TasksAction.Update(task, taskId as string));
-  }
-
-  @Action(TasksAction.Synchronize)
+  @Action(SyncStateAction.SynchronizeEntity)
   synchronize(
     ctx: StateContext<ITasksStateModel>,
-    { task }: { task: Task }
+    { type, entity }: { type: EChangedEntity; entity: IChangeableObject }
   ): void {
+    if (type !== EChangedEntity.Task) return;
+    const task = entity as Task;
     ctx.setState(
       patch({
         entities: iif<Array<Task>>(
