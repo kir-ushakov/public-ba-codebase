@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Observable, map } from 'rxjs';
 import { UserDto } from '../../dto/user.dto';
 import { UserMapper } from '../../mappers/user.mapper';
 import { User } from '../../models/user.model';
@@ -43,60 +44,35 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  public async login(data: LoginRequestDTO): Promise<User> {
-    try {
-      const res: LoginResponseDTO = await this.http
-        .post<LoginResponseDTO>(AuthService.API_ENDPOINTS.LOGIN, data)
-        .toPromise();
-
-      const user: User = UserMapper.toModel(res.user);
-      return user;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+  public login(data: LoginRequestDTO): Observable<User> {
+    return this.http
+      .post<LoginResponseDTO>(AuthService.API_ENDPOINTS.LOGIN, data)
+      .pipe(
+        map((date) => {
+          return UserMapper.toModel(date.user);
+        })
+      );
   }
 
-  public async logout(): Promise<void> {
-    try {
-      await this.http.delete(AuthService.API_ENDPOINTS.LOGOUT).toPromise();
-    } catch (error) {
-      console.log('Logout request to server failed');
-      console.log(error);
-      throw error;
-    }
+  public logout(): Observable<void> {
+    return this.http.delete<void>(AuthService.API_ENDPOINTS.LOGOUT);
   }
 
-  public async signUp(data: SignUpRequestDTO): Promise<SignUpResponseDTO> {
-    try {
-      const response: SignUpResponseDTO = await this.http
-        .post<SignUpResponseDTO>(AuthService.API_ENDPOINTS.SIGNUP, { ...data })
-        .toPromise();
-      return response;
-    } catch (error) {
-      console.log('SignUp request to server failed');
-      console.log(error);
-      throw error;
-    }
+  public signUp(data: SignUpRequestDTO): Observable<SignUpResponseDTO> {
+    return this.http.post<SignUpResponseDTO>(AuthService.API_ENDPOINTS.SIGNUP, {
+      ...data,
+    });
   }
 
-  public async verifyUserEmailWithToken(
+  public verifyUserEmailWithToken(
     token: string
-  ): Promise<VerifyEmailResponseDTO> {
-    try {
-      const queryString: string = convertObjectToUrlParams({
-        token: token,
-      });
-      const response: VerifyEmailResponseDTO = await this.http
-        .get<VerifyEmailResponseDTO>(
-          `${AuthService.API_ENDPOINTS.VERIFY_EMAIL}?${queryString}`
-        )
-        .toPromise();
-      return response;
-    } catch (error) {
-      console.log('Verify User Email With Token request to server failed');
-      console.log(error);
-      throw error;
-    }
+  ): Observable<VerifyEmailResponseDTO> {
+    const queryString: string = convertObjectToUrlParams({
+      token: token,
+    });
+
+    return this.http.get<VerifyEmailResponseDTO>(
+      `${AuthService.API_ENDPOINTS.VERIFY_EMAIL}?${queryString}`
+    );
   }
 }
