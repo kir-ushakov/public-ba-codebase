@@ -1,0 +1,51 @@
+@import "src/scss/colors";
+
+:host {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: $color-panel-bg;
+  justify-content: center;
+}
+
+.logo-holder {
+  display: flex;
+  height: 30%;
+
+  .logo-image {
+    height: 50%;
+    margin: auto;
+  }
+}
+
+.login-form-holder {
+  height: 70%;
+  padding: 15px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.signup-link-holder {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.signup-link {
+  color: blue;
+  cursor: pointer;
+  display: flex;
+  font-size: 14px;
+  text-decoration: underline;
+}
+
+.auth-failed-msg {
+  color: $dark-warn;
+  text-align: center;
+  margin-top: 8px;
+}

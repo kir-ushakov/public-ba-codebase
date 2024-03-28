@@ -1,0 +1,50 @@
+<div class="logo-holder">
+  <img class="logo-image" src="assets/ui/main/ba_logo.png" />
+</div>
+<div class="login-form-holder">
+  <form [formGroup]="form" class="login-form" (ngSubmit)="onSubmit()">
+    <mat-form-field class="login-form__email" floatLabel="never">
+      <input
+        id="emailInput"
+        autofocus
+        matInput
+        placeholder="Email"
+        formControlName="email"
+        autocomplete="email"
+      />
+      <mat-error *ngIf="form.get('email').invalid">
+        Please input correct email
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="login-form__password" floatLabel="never">
+      <input
+        id="passwordInput"
+        type="password"
+        matInput
+        placeholder="Password"
+        formControlName="password"
+        autocomplete="off"
+      />
+      <mat-error *ngIf="form.get('password').invalid">
+        Please input password, not less than 8 symbols
+      </mat-error>
+    </mat-form-field>
+    <button
+      id="submitBtn"
+      class="login-form__btn green-btn"
+      type="submit"
+      [disabled]="form.invalid"
+    >
+      Login
+    </button>
+  </form>
+  <div *ngIf="authError$ | async" class="auth-failed-msg">
+    {{authError$ | async }}
+  </div>
+</div>
+<div class="signup-link-holder">
+  <div id="signup-link" class="signup-link" (click)="onSingUpClick()">
+    Sing Up
+  </div>
+</div>
