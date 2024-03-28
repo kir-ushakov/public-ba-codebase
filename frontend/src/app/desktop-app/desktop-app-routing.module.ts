@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { AuthGuardService } from '../shared/serivces/auth/auth-guard.service';
+import { AuthGuardService } from '../shared/services/auth/auth-guard.service';
 import { DtHomeScreenComponent } from './components/screens/dt-home-screen/dt-home-screencomponent';
 
 const routes: Routes = [

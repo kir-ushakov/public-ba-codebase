@@ -12,8 +12,8 @@ import { AppState } from './shared/state/app.state';
 import { UserState } from './shared/state/user.state';
 import { SyncState } from './shared/state/sync.state';
 import { TasksState } from './shared/state/tasks.state';
-import { AuthGuardService } from './shared/serivces/auth/auth-guard.service';
-import { HttpInterceptorService } from './shared/serivces/infrastructure/http-interceptor.service';
+import { AuthGuardService } from './shared/services/auth/auth-guard.service';
+import { HttpInterceptorService } from './shared/services/infrastructure/http-interceptor.service';
 import { NgxsFormPluginModule } from '@ngxs/form-plugin';
 
 @NgModule({

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { AuthGuardService } from '../shared/serivces/auth/auth-guard.service';
+import { AuthGuardService } from '../shared/services/auth/auth-guard.service';
 
 import { MbHomeScreenComponent } from './components/screens/mb-home-screen/mb-home-screen.component';
 import { MbTaskScreenComponent } from './components/screens/mb-task-screen/mb-task-screen.component';

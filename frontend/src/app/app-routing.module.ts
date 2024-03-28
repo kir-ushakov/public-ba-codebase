@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Router } from '@angular/router';
-import { DeviceDetectorService } from 'src/app/shared/serivces/device-detector/device-detector.service';
+import { DeviceDetectorService } from 'src/app/shared/services/device-detector/device-detector.service';
 
 const desktopRoutes: Routes = [
   {

@@ -3,10 +3,10 @@ import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { ProfileScreenAction } from 'src/app/mobile-app/components/screens/mb-profile-screen/mb-profile-screen.action';
 import { User } from '../models/user.model';
-import { AuthService } from '../serivces/rest/auth.service';
+import { AuthService } from '../services/rest/auth.service';
 import { AppAction } from './app.actions';
 import { UserAction } from './user.actions';
-import { SlackService } from '../serivces/integrations/slack.service';
+import { SlackService } from '../services/integrations/slack.service';
 
 export interface IUserIntegrations {
   addedToSlack: boolean | undefined;
