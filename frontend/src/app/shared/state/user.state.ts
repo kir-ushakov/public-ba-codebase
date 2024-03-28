@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector } from '@ngxs/store';
-import { ProfileScreenAction } from 'src/app/mobile-app/components/screens/mb-profile-screen/mb-profile-screen.action';
+import { ProfileScreenAction } from 'src/app/mobile-app/components/screens/mb-profile-screen/mb-profile-screen.actions';
 import { User } from '../models/user.model';
 import { AuthService } from '../services/api/auth.service';
 import { AppAction } from './app.actions';
@@ -10,6 +10,7 @@ import { MbLoginScreenAction } from 'src/app/mobile-app/components/screens/mb-lo
 import { MbSyncScreenAction } from 'src/app/mobile-app/components/screens/mb-sync-screen/mb-sync-screen.actions';
 import { SlackAPIAction } from '../services/integrations/slack.api.actions';
 import { AuthAPIAction } from '../services/api/auth.actions';
+import { EMPTY, catchError, map, tap } from 'rxjs';
 
 interface IUserIntegrations {
   isAddedToSlack: boolean | undefined;
@@ -86,20 +87,7 @@ export class UserState {
     ctx: StateContext<IUserStateModel>,
     { email, password }: { email: string; password: string }
   ): Promise<void> {
-    try {
-      const user: User = await this._authService.login({
-        username: email,
-        password,
-      });
-      ctx.dispatch(new AuthAPIAction.LoggedIn(user));
-    } catch (err) {
-      if (err instanceof HttpErrorResponse) {
-        if (err.status === 401) {
-          ctx.dispatch(new AuthAPIAction.AuthFailed(err.error.message));
-        }
-      }
-      console.log(err);
-    }
+    this.loginUser(ctx, email, password);
   }
 
   @Action(AuthAPIAction.LoggedIn)
@@ -116,14 +104,21 @@ export class UserState {
 
   @Action(ProfileScreenAction.Logout)
   async logout(ctx: StateContext<IUserStateModel>): Promise<void> {
-    try {
-      await this._authService.logout();
-      ctx.patchState({ userData: null });
-      ctx.dispatch(AuthAPIAction.LoggedOut);
-      ctx.dispatch(AppAction.NavigateToLoginScreen);
-    } catch (err) {
-      console.log(err);
-    }
+    this._authService
+      .logout()
+      .pipe(
+        tap(() => {
+          ctx.patchState({ userData: null });
+          ctx.dispatch(AuthAPIAction.LoggedOut);
+          ctx.dispatch(AppAction.NavigateToLoginScreen);
+        }),
+        catchError((err) => {
+          // TODO: Need to handle error here
+          console.log(err);
+          return EMPTY;
+        })
+      )
+      .subscribe();
   }
 
   @Action(AppAction.UserNotAuthenticated)
@@ -138,21 +133,8 @@ export class UserState {
     ctx: StateContext<IUserStateModel>,
     { password }: { password: string }
   ): Promise<void> {
-    try {
-      const email = ctx.getState().userData.email;
-      const user: User = await this._authService.login({
-        username: email,
-        password,
-      });
-      ctx.dispatch(new AuthAPIAction.LoggedIn(user));
-    } catch (err) {
-      if (err instanceof HttpErrorResponse) {
-        if (err.status === 401) {
-          ctx.dispatch(new AuthAPIAction.AuthFailed(err.error.message));
-        }
-      }
-      console.log(err);
-    }
+    const email = ctx.getState().userData.email;
+    this.loginUser(ctx, email, password);
   }
 
   @Action(SlackAPIAction.AddedToSlack)
@@ -186,5 +168,34 @@ export class UserState {
       console.log(err.error.message);
     }
     ctx.dispatch(SlackAPIAction.RemovedFromSlack);
+  }
+
+  private loginUser(
+    ctx: StateContext<IUserStateModel>,
+    email: string,
+    password: string
+  ) {
+    this._authService
+      .login({
+        username: email,
+        password,
+      })
+      .pipe(
+        tap((user: User) => {
+          ctx.dispatch(new AuthAPIAction.LoggedIn(user));
+        }),
+        catchError((err) => {
+          if (err instanceof HttpErrorResponse) {
+            if (err.status === 401) {
+              ctx.dispatch(new AuthAPIAction.AuthFailed(err.error.message));
+            }
+          } else {
+            // TODO: Need to handle error here
+            console.log(err);
+          }
+          return EMPTY;
+        })
+      )
+      .subscribe();
   }
 }
