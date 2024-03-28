@@ -3,15 +3,18 @@ import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { ProfileScreenAction } from 'src/app/mobile-app/components/screens/mb-profile-screen/mb-profile-screen.action';
 import { User } from '../models/user.model';
-import { AuthService } from '../services/rest/auth.service';
+import { AuthService } from '../services/api/auth.service';
 import { AppAction } from './app.actions';
-import { UserAction } from './user.actions';
 import { SlackService } from '../services/integrations/slack.service';
+import { MbLoginScreenAction } from 'src/app/mobile-app/components/screens/mb-login-screen/mb-login-screen.actions';
+import { MbSyncScreenAction } from 'src/app/mobile-app/components/screens/mb-sync-screen/mb-sync-screen.actions';
+import { SlackAPIAction } from '../services/integrations/slack.api.actions';
+import { AuthAPIAction } from '../services/api/auth.actions';
 
-export interface IUserIntegrations {
-  addedToSlack: boolean | undefined;
+interface IUserIntegrations {
+  isAddedToSlack: boolean | undefined;
 }
-export interface UserStateModel {
+export interface IUserStateModel {
   userData: User;
   authState: EUserAuthState;
   integrations: IUserIntegrations;
@@ -22,13 +25,13 @@ export enum EUserAuthState {
   LocalAuthenticated = 'USER_AUTH_STATE_LOCAL_AUTHENTICATED',
 }
 
-@State<UserStateModel>({
+@State<IUserStateModel>({
   name: 'user',
   defaults: {
     userData: null,
     authState: null,
     integrations: {
-      addedToSlack: undefined,
+      isAddedToSlack: undefined,
     },
   },
 })
@@ -40,17 +43,17 @@ export class UserState {
   ) {}
 
   @Selector()
-  static loggedIn(state: UserStateModel): boolean {
+  static isLoggedIn(state: IUserStateModel): boolean {
     return !!state.userData;
   }
 
   @Selector()
-  static localAuthenticated(state: UserStateModel): boolean {
+  static isLocalAuthenticated(state: IUserStateModel): boolean {
     return state.authState === EUserAuthState.LocalAuthenticated;
   }
 
   @Selector()
-  static userNameFirstLetter(state: UserStateModel): string {
+  static userNameFirstLetter(state: IUserStateModel): string {
     if (state.userData) {
       const firstName = state.userData.firstName;
       return firstName ? firstName.charAt(0) : null;
@@ -59,50 +62,50 @@ export class UserState {
   }
 
   @Selector()
-  static userId(state: UserStateModel): string {
+  static userId(state: IUserStateModel): string {
     return state.userData.userId;
   }
 
   @Selector()
-  static userName(state: UserStateModel): string {
+  static userFullName(state: IUserStateModel): string {
     return `${state.userData.firstName} ${state.userData.lastName}`;
   }
 
   @Selector()
-  static userEmail(state: UserStateModel): string {
+  static userEmail(state: IUserStateModel): string {
     return state.userData.email;
   }
 
   @Selector()
-  static addedToSlack(state: UserStateModel): boolean {
-    return state.integrations.addedToSlack;
+  static isAddedToSlack(state: IUserStateModel): boolean {
+    return state.integrations.isAddedToSlack;
   }
 
-  @Action(UserAction.LogIn)
+  @Action(MbLoginScreenAction.LoginUser)
   async login(
-    ctx: StateContext<UserStateModel>,
-    { email, password }: UserAction.LogIn
+    ctx: StateContext<IUserStateModel>,
+    { email, password }: { email: string; password: string }
   ): Promise<void> {
     try {
       const user: User = await this._authService.login({
         username: email,
         password,
       });
-      ctx.dispatch(new UserAction.LoggedIn(user));
+      ctx.dispatch(new AuthAPIAction.LoggedIn(user));
     } catch (err) {
       if (err instanceof HttpErrorResponse) {
         if (err.status === 401) {
-          ctx.dispatch(new UserAction.AuthFailed(err.error.message));
+          ctx.dispatch(new AuthAPIAction.AuthFailed(err.error.message));
         }
       }
       console.log(err);
     }
   }
 
-  @Action(UserAction.LoggedIn)
+  @Action(AuthAPIAction.LoggedIn)
   loggedIn(
-    ctx: StateContext<UserStateModel>,
-    { userData }: UserAction.LoggedIn
+    ctx: StateContext<IUserStateModel>,
+    { userData }: { userData: User }
   ): void {
     ctx.patchState({
       userData: userData,
@@ -112,28 +115,28 @@ export class UserState {
   }
 
   @Action(ProfileScreenAction.Logout)
-  async logout(ctx: StateContext<UserStateModel>): Promise<void> {
+  async logout(ctx: StateContext<IUserStateModel>): Promise<void> {
     try {
       await this._authService.logout();
       ctx.patchState({ userData: null });
-      ctx.dispatch(UserAction.LoggedOut);
+      ctx.dispatch(AuthAPIAction.LoggedOut);
       ctx.dispatch(AppAction.NavigateToLoginScreen);
     } catch (err) {
       console.log(err);
     }
   }
 
-  @Action(UserAction.NotAuthenticated)
-  notAuthenticated(ctx: StateContext<UserStateModel>): void {
-    if (UserState.loggedIn(ctx.getState())) {
+  @Action(AppAction.UserNotAuthenticated)
+  notAuthenticated(ctx: StateContext<IUserStateModel>): void {
+    if (UserState.isLoggedIn(ctx.getState())) {
       ctx.patchState({ authState: EUserAuthState.LocalAuthenticated });
     }
   }
 
-  @Action(UserAction.Relogin)
+  @Action(MbSyncScreenAction.Relogin)
   async relogin(
-    ctx: StateContext<UserStateModel>,
-    { password }: UserAction.Relogin
+    ctx: StateContext<IUserStateModel>,
+    { password }: { password: string }
   ): Promise<void> {
     try {
       const email = ctx.getState().userData.email;
@@ -141,40 +144,47 @@ export class UserState {
         username: email,
         password,
       });
-      ctx.dispatch(new UserAction.LoggedIn(user));
+      ctx.dispatch(new AuthAPIAction.LoggedIn(user));
     } catch (err) {
       if (err instanceof HttpErrorResponse) {
         if (err.status === 401) {
-          ctx.dispatch(new UserAction.AuthFailed(err.error.message));
+          ctx.dispatch(new AuthAPIAction.AuthFailed(err.error.message));
         }
       }
       console.log(err);
     }
   }
 
-  @Action(UserAction.AddedToSlackStatusChanged)
-  addedToSlackStatusChanged(
-    ctx: StateContext<UserStateModel>,
-    { status }: { status: boolean }
-  ): void {
+  @Action(SlackAPIAction.AddedToSlack)
+  addedToSlack(ctx: StateContext<IUserStateModel>): void {
     const integrationsState = ctx.getState().integrations;
     ctx.patchState({
-      integrations: { ...integrationsState, addedToSlack: status },
+      integrations: { ...integrationsState, isAddedToSlack: true },
+    });
+  }
+
+  @Action(SlackAPIAction.RemovedFromSlack)
+  removedFromSlack(ctx: StateContext<IUserStateModel>): void {
+    const integrationsState = ctx.getState().integrations;
+    ctx.patchState({
+      integrations: { ...integrationsState, isAddedToSlack: false },
     });
   }
 
   @Action(ProfileScreenAction.RemoveFromSlack)
-  async removeFromSlack(ctx: StateContext<UserStateModel>): Promise<void> {
+  async removeFromSlack(ctx: StateContext<IUserStateModel>): Promise<void> {
     try {
       await this._slackService.removeFromSlack();
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 404) {
-        ctx.dispatch(new UserAction.AddedToSlackStatusChanged(false));
+        // For some reason already removed (not found) on BE
+        // so just set same in state on FE
+        ctx.dispatch(SlackAPIAction.RemovedFromSlack);
       } else {
         return;
       }
       console.log(err.error.message);
     }
-    ctx.dispatch(new UserAction.AddedToSlackStatusChanged(false));
+    ctx.dispatch(SlackAPIAction.RemovedFromSlack);
   }
 }
