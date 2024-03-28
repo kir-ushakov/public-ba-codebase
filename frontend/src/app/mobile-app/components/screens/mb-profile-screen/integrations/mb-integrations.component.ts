@@ -2,7 +2,7 @@ import { Component, HostBinding, Input } from '@angular/core';
 import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { UserState } from 'src/app/shared/state/user.state';
-import { ProfileScreenAction } from '../mb-profile-screen.action';
+import { ProfileScreenAction } from '../mb-profile-screen.actions';
 import { IMbIntegrationsComponentConfig } from './mb-integration.interface';
 
 @Component({
@@ -15,7 +15,7 @@ export class MbIntegrationsComponent {
     return this.config.styleClass;
   }
   @Input() config: IMbIntegrationsComponentConfig = { styleClass: 'default' };
-  @Select(UserState.addedToSlack) addedToSlack$: Observable<boolean>;
+  @Select(UserState.isAddedToSlack) isAddedToSlack$: Observable<boolean>;
 
   constructor(private _store: Store) {}
   removeFromSlack() {

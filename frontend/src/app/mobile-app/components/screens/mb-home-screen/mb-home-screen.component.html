@@ -5,12 +5,12 @@
       <img src="assets/ui/icons/no-connection.png" />
     </div>
     <div
-      *ngIf="(localAuthenticated$ | async) && (online$ | async)"
+      *ngIf="(isLocalAuthenticated$ | async) && (online$ | async)"
       [routerLink]="['/sync']"
     >
       <img src="assets/ui/icons/no-synchronize.png" />
     </div>
-    <div *ngIf="loggedIn$ | async" class="avatar-holder">
+    <div *ngIf="isLoggedIn$ | async" class="avatar-holder">
       <ba-user-avatar
         [data]="avatarInputData"
         [routerLink]="['/profile']"

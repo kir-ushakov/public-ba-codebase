@@ -50,10 +50,7 @@
       </div>
     </div>
     <div class="bottom-panel-holder">
-      <app-mb-task-view-bottom
-        [enabled]="form.valid"
-        [mode]="mode$ | async"
-      ></app-mb-task-view-bottom>
+      <app-mb-task-view-bottom [enabled]="form.valid"></app-mb-task-view-bottom>
     </div>
   </mat-drawer-content>
   <mat-drawer #menuDrawer class="task-view-sidemenu" mode="over" position="end">

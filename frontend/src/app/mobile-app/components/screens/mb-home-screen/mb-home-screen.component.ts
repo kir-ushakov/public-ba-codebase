@@ -15,9 +15,9 @@ import { IUserAvatarInputData } from 'src/app/shared/components/common/user-avat
 })
 export class MbHomeScreenComponent implements OnInit {
   @Select(TasksState.actualTasks) tasks$: Observable<Task[]>;
-  @Select(UserState.loggedIn) loggedIn$: Observable<boolean>;
-  @Select(UserState.localAuthenticated)
-  localAuthenticated$: Observable<boolean>;
+  @Select(UserState.isLoggedIn) isLoggedIn$: Observable<boolean>;
+  @Select(UserState.isLocalAuthenticated)
+  isLocalAuthenticated$: Observable<boolean>;
   @Select(AppState.online) online$: Observable<boolean>;
 
   avatarInputData: IUserAvatarInputData;

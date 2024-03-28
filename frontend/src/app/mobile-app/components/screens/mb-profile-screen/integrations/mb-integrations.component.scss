@@ -1,6 +1,6 @@
-@use "sass:map";
-@import "src/scss/breakpoints";
-@import "src/scss/colors";
+@use 'sass:map';
+@import 'src/scss/breakpoints';
+@import 'src/scss/colors';
 
 :host {
   text-align: center;
@@ -29,7 +29,7 @@
 }
 
 .integration-title-holder::after {
-  content: " ";
+  content: ' ';
   width: 100%;
   border-bottom: 1px solid #fff;
   display: block;
@@ -49,8 +49,9 @@
   align-items: center;
 }
 
-.slack-icon {
+.integration-icon {
   height: 2.5rem;
+  display: none;
 }
 
 .remove-btn-text {
@@ -87,7 +88,8 @@
   .integration {
     justify-content: space-between;
 
-    .integration-desc {
+    .integration-desc,
+    .integration-icon {
       display: block;
     }
   }

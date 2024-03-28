@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { UserState } from 'src/app/shared/state/user.state';
-import { ProfileScreenAction } from './mb-profile-screen.action';
+import { ProfileScreenAction } from './mb-profile-screen.actions';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -11,9 +11,9 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./mb-profile-screen.component.scss'],
 })
 export class MbProfileScreenComponent {
-  @Select(UserState.userName) userName$: Observable<string>;
+  @Select(UserState.userFullName) userFullName$: Observable<string>;
   @Select(UserState.userEmail) userEmail$: Observable<string>;
-  @Select(UserState.loggedIn) loggedIn$: Observable<boolean>;
+  @Select(UserState.isLoggedIn) isLoggedIn$: Observable<boolean>;
 
   avatarInputData = {};
 

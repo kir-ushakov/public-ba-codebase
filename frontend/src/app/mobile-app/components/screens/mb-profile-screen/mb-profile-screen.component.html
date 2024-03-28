@@ -21,7 +21,7 @@
     </div>
     <div class="user-info">
       <div class="user-name-holder">
-        <span>{{ userName$ | async }}</span>
+        <span>{{ userFullName$ | async }}</span>
         <img
           class="edit-avatar-icon"
           src="assets/ui/icons/edit.png"
@@ -29,7 +29,7 @@
         />
       </div>
       <div class="user-email-holder">{{ userEmail$ | async }}</div>
-      <div class="logout-btn-holder" *ngIf="loggedIn$ | async ">
+      <div class="logout-btn-holder" *ngIf="isLoggedIn$ | async">
         <button
           mat-button
           color="primary"

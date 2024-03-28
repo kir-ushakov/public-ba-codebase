@@ -1,5 +1,8 @@
 <div
-  *ngIf="mode === ETaskViewMode.Create || mode === ETaskViewMode.Edit"
+  *ngIf="
+    (mode$ | async) === ETaskViewMode.Create ||
+    (mode$ | async) === ETaskViewMode.Edit
+  "
   class="mb-task-ok-panel"
 >
   <div class="cancel-task-btn" (click)="cancelChanges()">Cancel</div>
@@ -12,6 +15,10 @@
     Ok
   </div>
 </div>
-<div *ngIf="mode === ETaskViewMode.View" class="go-home-btn" (click)="goHome()">
+<div
+  *ngIf="(mode$ | async) === ETaskViewMode.View"
+  class="go-home-btn"
+  (click)="goHome()"
+>
   <img src="assets/ui/icons/home-icon.png" />
 </div>
