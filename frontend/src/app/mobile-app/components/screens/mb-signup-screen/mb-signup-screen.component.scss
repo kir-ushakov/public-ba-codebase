@@ -1,0 +1,62 @@
+@import "src/scss/colors";
+
+:host {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: $color-panel-bg;
+  justify-content: center;
+}
+
+.logo-holder {
+  display: flex;
+  height: 30%;
+
+  .logo-image {
+    height: 50%;
+    margin: auto;
+  }
+}
+
+.login-form-holder {
+  height: 70%;
+  padding: 15px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-link-holder {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.login-link {
+  color: blue;
+  cursor: pointer;
+  display: flex;
+  font-size: 18px;
+  text-decoration: underline;
+}
+
+.name-row {
+  display: flex;
+}
+
+.first-name {
+  margin-right: 10px;
+}
+
+.mb-signup__success-block {
+  text-align: center;
+  color: white;
+  height: 70%;
+  font-size: 18px;
+  padding: 15px;
+  line-height: 30px;
+}
