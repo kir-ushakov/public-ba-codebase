@@ -104,6 +104,12 @@ export class UserState {
 
   @Action(MbProfileScreenAction.Logout)
   async logout(ctx: StateContext<IUserStateModel>): Promise<void> {
+    /**
+     * #NOTE
+     * I am calling Service methods from Actions but
+     * do not dispatch new Actions From Service to avoid complexity
+     *
+     */
     this._authService
       .logout()
       .pipe(

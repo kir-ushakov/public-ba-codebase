@@ -41,6 +41,12 @@ const defaults = {
 export class MbTaskScreenState {
   constructor(private store: Store) {}
 
+  /**
+   *
+   * #NOTE
+   * The Selectors expose the state as observable streams of values
+   * and defines what the Task Screen component looks like in current moment of time.
+   */
   @Selector()
   static mode(state: IMbTaskScreenStateModel): ETaskViewMode {
     return state.mode;
@@ -75,6 +81,12 @@ export class MbTaskScreenState {
     }
   }
 
+  /**
+   * #NOTE
+   * I centralize the state related logic into action handlers.
+   * Prefer to not keep it in component.
+   *
+   */
   @Action(MbTaskScreenAction.ApplyButtonPressed)
   applyButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>) {
     const taskData: Task = ctx.getState().taskViewForm.model;

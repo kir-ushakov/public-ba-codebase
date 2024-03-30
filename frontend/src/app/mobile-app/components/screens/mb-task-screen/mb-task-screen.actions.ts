@@ -1,6 +1,15 @@
 import { Task } from 'src/app/shared/models';
 import { ETaskViewMode } from './mb-task-screen.state';
 
+/**
+ * #NOTE
+ * In this file I define what actions the MbTaskScreenComponent can trigger.
+ * Actions can be two types:
+ * Event - when something already happened,
+ * for example: Screen was Opened (Opened) or button was pressd (ApplyButtonPressed)
+ * Command - when something needs to be done
+ * for example: need to Create Task (CreateTask)
+ */
 export namespace MbTaskScreenAction {
   export class Opened {
     static readonly type = '[MbTaskScreen] Opened';
