@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector } from '@ngxs/store';
-import { ProfileScreenAction } from 'src/app/mobile-app/components/screens/mb-profile-screen/mb-profile-screen.actions';
+import { MbProfileScreenAction } from 'src/app/mobile-app/components/screens/mb-profile-screen/mb-profile-screen.actions';
 import { User } from '../models/user.model';
 import { AuthService } from '../services/api/auth.service';
 import { AppAction } from './app.actions';
@@ -90,7 +90,7 @@ export class UserState {
     this.loginUser(ctx, email, password);
   }
 
-  @Action(AuthAPIAction.LoggedIn)
+  @Action(AuthAPIAction.UserLoggedIn)
   loggedIn(
     ctx: StateContext<IUserStateModel>,
     { userData }: { userData: User }
@@ -102,19 +102,18 @@ export class UserState {
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
 
-  @Action(ProfileScreenAction.Logout)
+  @Action(MbProfileScreenAction.Logout)
   async logout(ctx: StateContext<IUserStateModel>): Promise<void> {
     this._authService
       .logout()
       .pipe(
         tap(() => {
           ctx.patchState({ userData: null });
-          ctx.dispatch(AuthAPIAction.LoggedOut);
+          ctx.dispatch(AuthAPIAction.UserLoggedOut);
           ctx.dispatch(AppAction.NavigateToLoginScreen);
         }),
         catchError((err) => {
-          // TODO: Need to handle error here
-          console.log(err);
+          ctx.dispatch(AuthAPIAction.UserLogoutFailed);
           return EMPTY;
         })
       )
@@ -153,7 +152,7 @@ export class UserState {
     });
   }
 
-  @Action(ProfileScreenAction.RemoveFromSlack)
+  @Action(MbProfileScreenAction.RemoveFromSlack)
   async removeFromSlack(ctx: StateContext<IUserStateModel>): Promise<void> {
     try {
       await this._slackService.removeFromSlack();
@@ -182,12 +181,12 @@ export class UserState {
       })
       .pipe(
         tap((user: User) => {
-          ctx.dispatch(new AuthAPIAction.LoggedIn(user));
+          ctx.dispatch(new AuthAPIAction.UserLoggedIn(user));
         }),
         catchError((err) => {
           if (err instanceof HttpErrorResponse) {
             if (err.status === 401) {
-              ctx.dispatch(new AuthAPIAction.AuthFailed(err.error.message));
+              ctx.dispatch(new AuthAPIAction.UserAuthFailed(err.error.message));
             }
           } else {
             // TODO: Need to handle error here

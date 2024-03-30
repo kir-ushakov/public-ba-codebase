@@ -13,15 +13,12 @@ export class MbTaskViewBottomComponent {
   @Input() enabled: boolean;
   @Select(MbTaskScreenState.mode)
   mode$: Observable<ETaskViewMode>;
-  mode: ETaskViewMode;
 
   ETaskViewMode = ETaskViewMode;
 
   constructor(private store: Store) {}
 
-  ngOnInit() {
-    this.setProperties();
-  }
+  ngOnInit() {}
 
   cancelChanges(): void {
     this.store.dispatch(MbTaskScreenAction.CancelButtonPressed);
@@ -33,11 +30,5 @@ export class MbTaskViewBottomComponent {
 
   goHome() {
     this.store.dispatch(MbTaskScreenAction.HomeButtonPressed);
-  }
-
-  private setProperties() {
-    this.mode$.subscribe((mode) => {
-      this.mode = mode;
-    });
   }
 }
