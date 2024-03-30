@@ -14,6 +14,19 @@ export class MbTaskViewBottomComponent {
   @Select(MbTaskScreenState.mode)
   mode$: Observable<ETaskViewMode>;
 
+  /**
+   * #NOTE
+   * Avoid mapping Select Streams into Component Properties
+   * like this:
+   * mode: boolean
+   * this.mode$.subscribe((mode) => {
+   *   this.mode = mode;
+   * });
+   *
+   * Keep state related logic in action handlers
+   *
+   */
+
   ETaskViewMode = ETaskViewMode;
 
   constructor(private store: Store) {}

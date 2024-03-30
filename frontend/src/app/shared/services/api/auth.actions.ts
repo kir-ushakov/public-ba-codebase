@@ -1,5 +1,12 @@
 import { User } from '../../models';
 
+/**
+ * #NOTE
+ * API calls are sours of Actions
+ * Essentially, every API service method must have two associated actions:
+ * one for success and one for failure.
+ * I store the API-related actions in the same folder next to the corresponding API service.
+ */
 export namespace AuthAPIAction {
   export class UserLoggedIn {
     static readonly type = '[Auth API] Uer Logged In';

@@ -35,6 +35,11 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * #NOTE
+   * Initialize Select Properties to provide State Selectors
+   * in the context of the Component.
+   */
   @Select(MbTaskScreenState.mode) mode$: Observable<ETaskViewMode>;
   @Select(MbTaskScreenState.task) taks$: Observable<Task>;
   @Select(MbTaskScreenState.showCompleteTaskBtn)
