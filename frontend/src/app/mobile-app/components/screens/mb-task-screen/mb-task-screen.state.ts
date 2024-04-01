@@ -13,11 +13,21 @@ export enum ETaskViewMode {
   View = 'ViewTaskMode',
 }
 
+export interface IEditTaskFormData {
+  title: string;
+}
+
+export interface IEditTaskData extends IEditTaskFormData {
+  type: ETaskType;
+  status: ETaskStatus;
+}
+
 export interface IMbTaskScreenStateModel {
   mode: ETaskViewMode;
   taskId: string | undefined;
+  editTaskData: IEditTaskData;
   taskViewForm: {
-    model: Task;
+    model: IEditTaskFormData;
   };
 }
 
@@ -25,12 +35,15 @@ const defaults = {
   mode: ETaskViewMode.Create,
   taskViewForm: {
     model: {
-      type: ETaskType.Basic,
       title: '',
-      status: ETaskStatus.Todo,
-    } as Task,
+    } as IEditTaskFormData,
   },
-  taskId: null,
+  taskId: undefined,
+  editTaskData: {
+    type: ETaskType.Basic,
+    title: '',
+    status: ETaskStatus.Todo,
+  },
 };
 
 @State<IMbTaskScreenStateModel>({
@@ -41,19 +54,16 @@ const defaults = {
 export class MbTaskScreenState {
   constructor(private store: Store) {}
 
-  /**
-   *
-   * #NOTE
-   * The Selectors expose the state as observable streams of values
-   * and defines what the Task Screen component looks like in current moment of time.
-   */
   @Selector()
   static mode(state: IMbTaskScreenStateModel): ETaskViewMode {
     return state.mode;
   }
 
   @Selector([TasksState.allTasks])
-  static task(state: IMbTaskScreenStateModel, allTasks: Array<Task>): Task {
+  static task(
+    state: IMbTaskScreenStateModel,
+    allTasks: Array<Task>
+  ): IEditTaskFormData {
     if (state.mode !== ETaskViewMode.Create) {
       return allTasks.find((t) => t.id === state.taskId);
     }
@@ -81,15 +91,13 @@ export class MbTaskScreenState {
     }
   }
 
-  /**
-   * #NOTE
-   * I centralize the state related logic into action handlers.
-   * Prefer to not keep it in component.
-   *
-   */
   @Action(MbTaskScreenAction.ApplyButtonPressed)
   applyButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>) {
-    const taskData: Task = ctx.getState().taskViewForm.model;
+    const state: IMbTaskScreenStateModel = ctx.getState();
+    const taskData: IEditTaskData = {
+      ...state.editTaskData,
+      ...state.taskViewForm.model,
+    };
     if (ctx.getState().mode === ETaskViewMode.Create) {
       const userId: string = this.store.selectSnapshot(UserState.userId);
       ctx.dispatch(new MbTaskScreenAction.CreateTask(taskData, userId));
@@ -103,14 +111,13 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.EditTaskOptionSelected)
   editTask(ctx: StateContext<IMbTaskScreenStateModel>) {
-    ctx.patchState({ mode: ETaskViewMode.Edit });
     const task = this.store.selectSnapshot(MbTaskScreenState.task);
+    ctx.patchState({ mode: ETaskViewMode.Edit });
+
     ctx.dispatch(
       new UpdateFormValue({
         path: 'mbTaskViewState.taskViewForm',
-        value: {
-          title: task.title,
-        },
+        value: task,
       })
     );
   }
@@ -118,7 +125,7 @@ export class MbTaskScreenState {
   @Action(MbTaskScreenAction.CompleteTaskOptionSelected)
   completeTask(ctx: StateContext<IMbTaskScreenStateModel>) {
     const taskId: string | number = ctx.getState().taskId;
-    const taskUpdateData: Task = ctx.getState().taskViewForm.model;
+    const taskUpdateData: IEditTaskData = ctx.getState().editTaskData;
     taskUpdateData.status = ETaskStatus.Done;
     ctx.dispatch(new MbTaskScreenAction.UpdateTask(taskUpdateData, taskId));
     ctx.dispatch(MbTaskScreenAction.Close);
@@ -127,7 +134,7 @@ export class MbTaskScreenState {
   @Action(MbTaskScreenAction.CancelTaskOptionSelected)
   cancelTask(ctx: StateContext<IMbTaskScreenStateModel>) {
     const taskId: string | number = ctx.getState().taskId;
-    const taskUpdateData: Task = ctx.getState().taskViewForm.model;
+    const taskUpdateData: IEditTaskData = ctx.getState().editTaskData;
     taskUpdateData.status = ETaskStatus.Cancel;
     ctx.dispatch(new MbTaskScreenAction.UpdateTask(taskUpdateData, taskId));
     ctx.dispatch(MbTaskScreenAction.Close);
@@ -135,6 +142,7 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.DeleteTaskOptionSelected)
   deleteTask(ctx: StateContext<IMbTaskScreenStateModel>) {
+    debugger;
     ctx.dispatch(new MbTaskScreenAction.DeleteTask(ctx.getState().taskId));
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }

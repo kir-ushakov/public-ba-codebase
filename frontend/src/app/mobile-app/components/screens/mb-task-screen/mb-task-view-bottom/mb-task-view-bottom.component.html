@@ -6,6 +6,7 @@
   class="mb-task-ok-panel"
 >
   <div class="cancel-task-btn" (click)="cancelChanges()">Cancel</div>
+  <!-- We handle user click and call applyChanges() component method-->
   <div
     class="create-task-btn"
     [ngClass]="{ enabled: enabled }"

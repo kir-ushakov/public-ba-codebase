@@ -13,7 +13,6 @@ export class MbTaskViewBottomComponent {
   @Input() enabled: boolean;
   @Select(MbTaskScreenState.mode)
   mode$: Observable<ETaskViewMode>;
-
   /**
    * #NOTE
    * Avoid mapping Select Streams into Component Properties

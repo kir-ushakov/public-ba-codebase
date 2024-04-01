@@ -2,20 +2,12 @@
   <mat-drawer-content class="task-view-content">
     <div class="top-panel-holder">
       <div class="task-top-panel">
-        <!-- #NOTE 
-          Using the value from showCompleteTaskBtn$ select stream 
-          to define - do we need to show 'Complete Task' button
-        -->
         <div
           *ngIf="showCompleteTaskBtn$ | async"
           id="completeTask"
           class="top-panel-btn done"
           (click)="completeTask()"
         ></div>
-        <!-- #NOTE 
-          Using the value from showToggleOptionsBtn$ select stream 
-          to define - do we need to show 'Toggel Options Menu Button' button
-        -->
         <div
           *ngIf="showToggleOptionsBtn$ | async"
           class="top-panel-btn options"
@@ -24,10 +16,6 @@
         ></div>
       </div>
     </div>
-    <!-- #NOTE 
-        Using the value from mode$ select stream 
-        to define - do we need to show form
-    -->
     <div class="main-panel-holder">
       <div
         *ngIf="
