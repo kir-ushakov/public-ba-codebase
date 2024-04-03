@@ -1,0 +1,54 @@
+@use "sass:map";
+@import "src/scss/colors";
+@import "src/scss/button";
+
+:host {
+  background: $color-main-bg;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  color: white;
+}
+
+.top-panel-holder {
+  background-color: map.get($colors-gray-palette, 600);
+  display: flex;
+  height: 7vh;
+  padding: 0 5px;
+  align-items: center;
+
+  > .icon-holder {
+    display: flex;
+    padding: 0.5rem 1rem;
+  }
+
+  & > .icon-holder > mat-icon {
+    transform: scale(2);
+  }
+}
+
+.main-panel-holder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 1rem;
+
+  .message {
+    text-align: center;
+    margin-bottom: 36px;
+    font-size: 24px;
+  }
+
+  .login-form {
+    text-align: center;
+  }
+
+  .password-field {
+    margin-bottom: 24px;
+  }
+
+  .sync-button-holder {
+    font-size: 1.5rem;
+  }
+}
