@@ -17,10 +17,10 @@ import {
   EChangeAction,
   EChangedEntity,
 } from 'src/app/shared/models/';
-import { SyncStateAction } from './sync.actions';
 import { UserState } from './user.state';
 import { MbTaskScreenAction } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.actions';
-import { IChangeableObject } from '../models/change.model';
+import { AppAction } from './app.actions';
+import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
 
 interface ITasksStateModel {
   entities: Array<Task>;
@@ -81,7 +81,7 @@ export class TasksState {
     );
 
     ctx.dispatch(
-      new SyncStateAction.ChangeOccurred({
+      new AppAction.ChangeForSyncOccurred({
         entity: EChangedEntity.Task,
         action: EChangeAction.Created,
         object: createdTask as Task,
@@ -107,9 +107,8 @@ export class TasksState {
     const updatedTask: Task = ctx
       .getState()
       .entities.find((t) => t.id === taskId);
-
     ctx.dispatch(
-      new SyncStateAction.ChangeOccurred({
+      new AppAction.ChangeForSyncOccurred({
         entity: EChangedEntity.Task,
         action: EChangeAction.Updated,
         object: updatedTask,
@@ -125,29 +124,33 @@ export class TasksState {
         entities: removeItem<Task>((task) => task.id === taskId),
       })
     );
-    const change: Change = {
-      entity: EChangedEntity.Task,
-      action: EChangeAction.Deleted,
-      modifiedAt: new Date().toISOString(),
-    };
-    ctx.dispatch(new SyncStateAction.ChangeOccurred(change));
-  }
-
-  @Action(SyncStateAction.SynchronizeEntity)
-  synchronize(
-    ctx: StateContext<ITasksStateModel>,
-    { type, entity }: { type: EChangedEntity; entity: IChangeableObject }
-  ): void {
-    if (type !== EChangedEntity.Task) return;
-    const task = entity as Task;
-    ctx.setState(
-      patch({
-        entities: iif<Array<Task>>(
-          (tasks) => tasks.some((t) => t.id === task.id),
-          updateItem((t) => t.id === task.id, patch(task)),
-          insertItem(task)
-        ),
+    ctx.dispatch(
+      new AppAction.ChangeForSyncOccurred({
+        entity: EChangedEntity.Task,
+        action: EChangeAction.Deleted,
+        object: { id: taskId, modifiedAt: new Date().toISOString() },
+        modifiedAt: new Date().toISOString(),
       })
     );
+  }
+
+  @Action(SyncServiceAPIAction.ServerChangesLoaded)
+  synchronize(
+    ctx: StateContext<ITasksStateModel>,
+    { changes }: { changes: Change[] }
+  ): void {
+    const taskChanges = changes.filter((c) => c.entity === EChangedEntity.Task);
+    for (const taskChange of taskChanges) {
+      const task = taskChange.object as Task;
+      ctx.setState(
+        patch({
+          entities: iif<Array<Task>>(
+            (tasks) => tasks.some((t) => t.id === task.id),
+            updateItem((t) => t.id === task.id, patch(task)),
+            insertItem(task)
+          ),
+        })
+      );
+    }
   }
 }

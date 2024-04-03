@@ -10,7 +10,7 @@ import { MbLoginScreenAction } from 'src/app/mobile-app/components/screens/mb-lo
 import { MbSyncScreenAction } from 'src/app/mobile-app/components/screens/mb-sync-screen/mb-sync-screen.actions';
 import { SlackAPIAction } from '../services/integrations/slack.api.actions';
 import { AuthAPIAction } from '../services/api/auth.actions';
-import { EMPTY, catchError, map, tap } from 'rxjs';
+import { EMPTY, catchError, tap } from 'rxjs';
 
 interface IUserIntegrations {
   isAddedToSlack: boolean | undefined;
@@ -104,12 +104,6 @@ export class UserState {
 
   @Action(MbProfileScreenAction.Logout)
   async logout(ctx: StateContext<IUserStateModel>): Promise<void> {
-    /**
-     * #NOTE
-     * I am calling Service methods from Actions but
-     * do not dispatch new Actions From Service to avoid complexity
-     *
-     */
     this._authService
       .logout()
       .pipe(
