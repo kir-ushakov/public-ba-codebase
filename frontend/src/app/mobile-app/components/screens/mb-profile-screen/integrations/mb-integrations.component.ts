@@ -2,7 +2,7 @@ import { Component, HostBinding, Input } from '@angular/core';
 import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { UserState } from 'src/app/shared/state/user.state';
-import { ProfileScreenAction } from '../mb-profile-screen.actions';
+import { MbProfileScreenAction } from '../mb-profile-screen.actions';
 import { IMbIntegrationsComponentConfig } from './mb-integration.interface';
 
 @Component({
@@ -19,6 +19,6 @@ export class MbIntegrationsComponent {
 
   constructor(private _store: Store) {}
   removeFromSlack() {
-    this._store.dispatch(ProfileScreenAction.RemoveFromSlack);
+    this._store.dispatch(MbProfileScreenAction.RemoveFromSlack);
   }
 }

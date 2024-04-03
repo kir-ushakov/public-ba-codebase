@@ -2,8 +2,7 @@ import { Component } from '@angular/core';
 import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { UserState } from 'src/app/shared/state/user.state';
-import { ProfileScreenAction } from './mb-profile-screen.actions';
-import { ActivatedRoute } from '@angular/router';
+import { MbProfileScreenAction } from './mb-profile-screen.actions';
 
 @Component({
   selector: 'app-profile-screen',
@@ -17,14 +16,14 @@ export class MbProfileScreenComponent {
 
   avatarInputData = {};
 
-  constructor(private _store: Store, private _route: ActivatedRoute) {}
+  constructor(private store: Store) {}
 
   ngOnInit() {
     this.setAvatarInputData();
   }
 
   logout() {
-    this._store.dispatch(ProfileScreenAction.Logout);
+    this.store.dispatch(MbProfileScreenAction.Logout);
   }
 
   editAvatar() {
@@ -32,7 +31,7 @@ export class MbProfileScreenComponent {
   }
 
   private setAvatarInputData() {
-    const userNameFirstLetter = this._store.selectSnapshot(
+    const userNameFirstLetter = this.store.selectSnapshot(
       UserState.userNameFirstLetter
     );
 
