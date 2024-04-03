@@ -18,7 +18,7 @@ export class MbLoginScreenState {
     return state.authErrMessage;
   }
 
-  @Action(AuthAPIAction.AuthFailed)
+  @Action(AuthAPIAction.UserAuthFailed)
   authFailed(ctx: StateContext<IMbLoginScreenStateModel>, { message }) {
     ctx.patchState({
       authErrMessage: message,
