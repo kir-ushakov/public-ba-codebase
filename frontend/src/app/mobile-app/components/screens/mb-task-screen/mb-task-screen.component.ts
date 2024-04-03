@@ -9,7 +9,7 @@ import {
 import { Select, Store } from '@ngxs/store';
 
 import { MbTaskScreenAction } from './mb-task-screen.actions';
-import { Observable, Subject, lastValueFrom } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { MbTaskScreenState, ETaskViewMode } from './mb-task-screen.state';
 import { ActivatedRoute } from '@angular/router';
 import { Task } from 'src/app/shared/models/task.model';
@@ -35,11 +35,6 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * #NOTE
-   * Initialize Select Properties to provide State Selectors
-   * in the context of the Component.
-   */
   @Select(MbTaskScreenState.mode) mode$: Observable<ETaskViewMode>;
   @Select(MbTaskScreenState.task) taks$: Observable<Task>;
   @Select(MbTaskScreenState.showCompleteTaskBtn)

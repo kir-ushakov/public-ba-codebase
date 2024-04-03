@@ -142,7 +142,6 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.DeleteTaskOptionSelected)
   deleteTask(ctx: StateContext<IMbTaskScreenStateModel>) {
-    debugger;
     ctx.dispatch(new MbTaskScreenAction.DeleteTask(ctx.getState().taskId));
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
