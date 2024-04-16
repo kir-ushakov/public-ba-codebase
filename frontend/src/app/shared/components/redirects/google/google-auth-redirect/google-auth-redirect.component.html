@@ -1,0 +1,20 @@
+<div class="icon-holder">
+  <img src="/assets/ui/icons/google-logo.png" class="slack-icon" />
+</div>
+<div class="in-progress-text" *ngIf="isLogging$ | async">Logging...</div>
+<div class="error-holder" *ngIf="errorOccurred$ | async">
+  <span
+    class="error-text"
+    *ngIf="errorMessage$ | async; else somethingWentWrong"
+  >
+    {{ errorMessage$ | async }}
+  </span>
+  <ng-template #somethingWentWrong>
+    <span class="error-text" *ngIf="!(errorMessage$ | async)">
+      Something went wrong :( <br />
+      Try again later
+    </span>
+  </ng-template>
+  <br />
+  <span class="error-back" (click)="goToLoginScreen()"> ← go to login </span>
+</div>
