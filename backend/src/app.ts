@@ -30,7 +30,9 @@ app.use(cookieParser());
 if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
   app.use(passport.initialize());
   app.use(passport.session());
+  // serialize User to session
   passport.serializeUser(UserModel.serializeUser());
+  // deserialize User from session
   passport.deserializeUser(UserModel.deserializeUser());
 }
 

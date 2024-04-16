@@ -23,7 +23,7 @@ const UserSchema = new Schema({
   googleId: { type: String, required: false },
 });
 
-// attach passportLocalMongoose functionality to UserScheme
+// attach passportLocalMongoose plugin functionality to UserScheme
 UserSchema.plugin(passportLocalMongoose);
 
 UserSchema.methods.generateVerificationToken = function () {
