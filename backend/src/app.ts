@@ -26,16 +26,9 @@ app.use(expressSession);
 app.use(cookieParser());
 
 passport.use(UserModel.createStrategy());
-/**
- * #NOTE
- * Attached the Google strategy.
- * This middleware provides an abstraction layer for interacting with the Google OAuth API.
- */
+
 passport.use(googleStrategy);
-/**
- * #NOTE
- * Support Session-based authentication
- */
+
 if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
   app.use(passport.initialize());
   app.use(passport.session());
@@ -43,10 +36,6 @@ if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
   passport.deserializeUser(UserModel.deserializeUser());
 }
 
-/**
- * #NOTE
- * Support JWT authentication
- */
 if (process.env.AUTHENTICATION_STRATEGY === 'JWT') {
   passport.use(jwtStrategy);
 }

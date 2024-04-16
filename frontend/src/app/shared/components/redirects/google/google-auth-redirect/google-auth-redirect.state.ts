@@ -47,17 +47,8 @@ export class GoogleAuthRedirectScreenState {
     ctx.patchState({
       ...defaults,
     });
-
-    /**
-     * #NOTE
-     * Take the code from the redirect path.
-     */
     const code: string = this.activatedRoute.snapshot.queryParamMap.get('code');
 
-    /**
-     * #NOTE
-     * Send the code to the backend for authentication.
-     */
     this.googleAPIService
       .authenticateUser(code)
       .pipe(
@@ -66,11 +57,6 @@ export class GoogleAuthRedirectScreenState {
             isLogging: false,
             errorOccurred: true,
           });
-
-          /**
-           * #NOTE
-           * Handle potential errors.
-           */
           if (err?.error?.name === 'GOOGLE_OAUTH_EMAIL_ALREADY_IN_USE') {
             ctx.patchState({ errorMessage: err.error.message });
           }
@@ -78,10 +64,6 @@ export class GoogleAuthRedirectScreenState {
         })
       )
       .subscribe((userData: User) => {
-        /**
-         * #NOTE
-         * Set the authenticated user from the response locally.
-         */
         ctx.patchState({
           isLogging: false,
         });

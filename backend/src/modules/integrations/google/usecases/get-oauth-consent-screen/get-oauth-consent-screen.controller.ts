@@ -16,11 +16,6 @@ export class GetOAuthConsentScreenController extends BaseController {
     next?: NextFunction
   ): Promise<void | any> {
     try {
-      /**
-       * #NOTE
-       * The Google Passport strategy with scope parameters generates a link
-       * to the Consent Screen and send a redirect to it as response.
-       */
       this._passport.authenticate('google', {
         scope: ['profile', 'email'],
       })(req, res, next);

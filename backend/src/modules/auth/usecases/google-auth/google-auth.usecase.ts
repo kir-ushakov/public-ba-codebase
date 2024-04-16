@@ -39,21 +39,11 @@ export class GoogleAuthUsecase
   public execute(request: GoogleAuthRequest): Promise<GoogleAuthResult> {
     return new Promise<GoogleAuthResult>(async (resolve, reject) => {
       try {
-        /**
-         * #NOTE
-         * The Passport Google Strategy under the hood exchanges an authorization code
-         * for an access token and uses that token to obtain user profile information.
-         */
         this.passport.authenticate('google', async (err, profile: Profile) => {
           if (err) {
             return reject(err);
           }
 
-          /**
-           * #NOTE
-           * Using Google profile information,
-           * I can find existing users by Google ID or create a new one.
-           */
           const userOrError = await this.findOrCreateUser(profile);
           if (userOrError.isFailure) {
             const error: Result<UseCaseError> =
@@ -62,11 +52,7 @@ export class GoogleAuthUsecase
           }
           let user: UserDocument = userOrError.getValue() as UserDocument;
 
-          const loginResponseDto: LoginResponseDTO =
-            /**
-             * #NOTE
-             * When I have a user object I use Login Service to save it in session or JWT.
-             */
+
             await this.loginService.login(
               user,
               request.context.req,
