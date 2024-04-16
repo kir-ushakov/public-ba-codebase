@@ -6,10 +6,12 @@ import * as loaders from './loaders';
 import UserModel from './shared/infra/database/mongodb/user.model';
 import { googleStrategy, jwtStrategy } from './shared/infra/auth/';
 
-const cors = require('cors');
-
 export const app = express();
+
+const cors = require('cors');
 app.use(cors());
+
+// parse incoming request bodies as JSON
 app.use(express.json());
 
 const secret = process.env.SESSION_SECRET;
@@ -25,10 +27,6 @@ app.use(expressSession);
 
 app.use(cookieParser());
 
-passport.use(UserModel.createStrategy());
-
-passport.use(googleStrategy);
-
 if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
   app.use(passport.initialize());
   app.use(passport.session());
@@ -37,7 +35,14 @@ if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
 }
 
 if (process.env.AUTHENTICATION_STRATEGY === 'JWT') {
+  // set 'jwt' strategy to parse cookies and obtain User from JWT
   passport.use(jwtStrategy);
 }
+
+// set 'local' strategy for username/password authentication
+passport.use(UserModel.createStrategy());
+
+// set 'google' strategy for Google OAuth2.0 Provider API
+passport.use(googleStrategy);
 
 app.use('/', apiRouters);
