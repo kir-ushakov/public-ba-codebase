@@ -12,6 +12,7 @@ interface IJwtTokenPayload {
   exp: number;
 }
 
+// custom extractor for ccokies
 const cookieExtractor = function (req) {
   var token = null;
   if (req && req.cookies) {
