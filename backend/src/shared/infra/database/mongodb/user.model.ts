@@ -6,13 +6,13 @@ import mongoose, {
 import passportLocalMongoose from 'passport-local-mongoose';
 import { UserPersistent } from '../../../domain/models/user';
 import VerificationTokenModel, {
-  VerificationTokenDocumnet,
+  VerificationTokenDocument,
 } from './verification-token.model';
 
 const crypto = require('crypto');
 
 export interface UserDocument extends UserPersistent, PassportLocalDocument {
-  generateVerificationToken: () => VerificationTokenDocumnet;
+  generateVerificationToken: () => VerificationTokenDocument;
 }
 
 const UserSchema = new Schema({
@@ -33,6 +33,7 @@ UserSchema.plugin(passportLocalMongoose);
 UserSchema.methods.generateVerificationToken = function () {
   let payload = {
     userId: this._id,
+    // 👇 token just a random hex string
     token: crypto.randomBytes(20).toString('hex'),
   };
 
