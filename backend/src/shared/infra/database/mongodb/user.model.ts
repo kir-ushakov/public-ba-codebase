@@ -9,7 +9,7 @@ import VerificationTokenModel, {
   VerificationTokenDocument,
 } from './verification-token.model';
 
-const crypto = require('crypto');
+const { randomBytes } = require('node:crypto');
 
 export interface UserDocument extends UserPersistent, PassportLocalDocument {
   generateVerificationToken: () => VerificationTokenDocument;
@@ -34,7 +34,7 @@ UserSchema.methods.generateVerificationToken = function () {
   let payload = {
     userId: this._id,
     // 👇 token just a random hex string
-    token: crypto.randomBytes(20).toString('hex'),
+    token: randomBytes(20).toString('hex'),
   };
 
   return new VerificationTokenModel(payload);
