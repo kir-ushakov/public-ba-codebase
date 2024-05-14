@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface VerificationTokenDocumnet extends Document {
+export interface VerificationTokenDocument extends Document {
   userId: mongoose.Types.ObjectId;
   token: string;
   createdAt: Date;
@@ -27,7 +27,7 @@ const verificationTokenSchema = new Schema(
   { timestamps: true }
 );
 
-const VerificationTokenModel = mongoose.model<VerificationTokenDocumnet>(
+const VerificationTokenModel = mongoose.model<VerificationTokenDocument>(
   'VerificationToken',
   verificationTokenSchema
 );

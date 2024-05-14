@@ -1,5 +1,5 @@
 import { UserDocument } from '../../../../shared/infra/database/mongodb/user.model';
-import { VerificationTokenDocumnet } from '../../../../shared/infra/database/mongodb/verification-token.model';
+import { VerificationTokenDocument } from '../../../../shared/infra/database/mongodb/verification-token.model';
 import { IMailAdapter } from './mail-adapter.interface';
 import { IAbstractMailFactory } from './abstract-mail-factory.interface';
 
@@ -21,7 +21,7 @@ export class EmailVerificationService {
   public async sendVerificationEmail(user: UserDocument) {
     try {
       // 👇 generate and save in DB unique verification token
-      const token: VerificationTokenDocumnet = user.generateVerificationToken();
+      const token: VerificationTokenDocument = user.generateVerificationToken();
       await token.save();
 
       // 👇  prepare sending email parameters
