@@ -4,7 +4,7 @@ import { UserEmail } from '../domain/values/user/user-email';
 import { UserDocument } from '../infra/database/mongodb/user.model';
 import { User, UserPersistent } from '../domain/models/user';
 import { UserMapper } from '../mappers/user.mapper';
-import { VerificationTokenDocumnet } from '../infra/database/mongodb/verification-token.model';
+import { VerificationTokenDocument } from '../infra/database/mongodb/verification-token.model';
 import {
   IVerificationTokenProps,
   VerificationToken,
@@ -59,7 +59,7 @@ export class UserRepo {
 
   public async getTokenByTokenId(tokenId: string): Promise<VerificationToken> {
     const VerificationTokenModel = this._models.VerificationTokenModel;
-    const tokenDocument: VerificationTokenDocumnet =
+    const tokenDocument: VerificationTokenDocument =
       await VerificationTokenModel.findOne({ token: tokenId });
 
     if (!tokenDocument) return null;
