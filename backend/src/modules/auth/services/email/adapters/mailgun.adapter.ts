@@ -2,10 +2,10 @@ import { IMailgunClient } from 'mailgun.js/Interfaces';
 import { IMailAdapter } from '../mail-adapter.interface';
 
 export class MailgunAdapter implements IMailAdapter {
-  private _provider: IMailgunClient;
+  private provider: IMailgunClient;
 
   constructor(mailgunProvider: IMailgunClient) {
-    this._provider = mailgunProvider;
+    this.provider = mailgunProvider;
   }
 
   public async sendEmail(
@@ -15,7 +15,8 @@ export class MailgunAdapter implements IMailAdapter {
     html: string
   ): Promise<void> {
     try {
-      const result = await this._provider.messages.create(
+      // 👇 Create email with MailGun API (provider is  MailgunClient)
+      const result = await this.provider.messages.create(
         process.env.EMAIL_DOMAIN,
         {
           from: from,
