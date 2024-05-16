@@ -16,10 +16,10 @@ export class VerifyEmailUseCase
       Promise<Result<UseCaseError | IVerifyEmailResponceDTO>>
     >
 {
-  private _userRepo: UserRepo;
+  private userRepo: UserRepo;
 
   constructor(userRepo: UserRepo) {
-    this._userRepo = userRepo;
+    this.userRepo = userRepo;
   }
 
   public async execute(
@@ -27,7 +27,7 @@ export class VerifyEmailUseCase
   ): Promise<Result<UseCaseError | IVerifyEmailResponceDTO>> {
     const tokenId: string = dto.token;
 
-    const token: VerificationToken = await this._userRepo.getTokenByTokenId(
+    const token: VerificationToken = await this.userRepo.getTokenByTokenId(
       tokenId
     );
     if (!token) {
@@ -35,7 +35,7 @@ export class VerifyEmailUseCase
     }
     // TODO: verify that token not expired (throw usecase error)
 
-    const user: User = await this._userRepo.findUserById(token.userId);
+    const user: User = await this.userRepo.findUserById(token.userId);
     // TODO: verify that token not expired (throw usecase error)
 
     const verified: Result<void> = user.verify();
@@ -45,7 +45,7 @@ export class VerifyEmailUseCase
       // UseCaseError.VerificationFailed(verified.error)
     }
 
-    await this._userRepo.save(user);
+    await this.userRepo.save(user);
 
     const response: IVerifyEmailResponceDTO = {
       email: user.username.value,
