@@ -1,0 +1,28 @@
+<div class="sidemenu-holder">
+  <div
+    class="sidemenu-item sidemenu-cancel-btn"
+    (click)="this.editTask.emit()">
+    <img class="sidemenu-item-icon" src="assets/ui/icons/edit.png" />
+    <span>Edit</span>
+  </div>
+  <div class="sidemenu-item sidemenu-done-btn" 
+    (click)="this.completeTask.emit()">
+    <img
+      class="sidemenu-item-icon"
+      src="assets/ui/icons/checkmark-green.png" />
+    <span>Done</span>
+  </div>
+  <div class="sidemenu-item sidemenu-edit-btn" 
+    (click)="this.cancelTask.emit()">
+    <img
+      class="sidemenu-item-icon"
+      src="assets/ui/icons/cancel-cross-icon-gray.png" />
+    <span>Cancel</span>
+  </div>
+  <div
+    class="sidemenu-item sidemenu-cancel-btn"
+    (click)="this.deleteTask.emit()">
+    <img class="sidemenu-item-icon" src="assets/ui/icons/rubbish.png" />
+    <span>Delete</span>
+  </div>
+</div>

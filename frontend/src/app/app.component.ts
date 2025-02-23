@@ -3,8 +3,8 @@ import { Store } from '@ngxs/store';
 import { Observable, fromEvent, of, merge } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DeviceDetectorService } from 'src/app/shared/services/device-detector/device-detector.service';
-import { AppAction } from './app.actions';
-import { preloadImages } from './shared/helpers/preload-images.function';
+import { AppAction } from './shared/state/app.actions';
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
 @Component({
   selector: 'app-root',
@@ -19,11 +19,18 @@ export class AppComponent {
   constructor(
     public deviceDetector: DeviceDetectorService,
     private store: Store
-  ) {}
+  ) {
+    /**
+     * #NOTE:
+     * We need to initialize PWA elements for the application.  
+     * DefineCustomElements() is a function that registers web components (custom HTML elements) 
+     * provided by @ionic/pwa-elements.
+     */
+    defineCustomElements(window);
+  }
 
   ngOnInit(): void {
     this.setOnOffLineHandlers();
-    preloadImages();
   }
 
   private setOnOffLineHandlers() {
