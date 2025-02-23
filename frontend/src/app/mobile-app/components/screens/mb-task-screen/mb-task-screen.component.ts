@@ -100,9 +100,6 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
   }
 
   addPictureBtnPressed() {
-    /**
-     * NOTE: dispatch actions, which are then handled in the state
-     */
     this.store.dispatch(MbTaskScreenAction.AddPictureBtnPressed);
   }
 

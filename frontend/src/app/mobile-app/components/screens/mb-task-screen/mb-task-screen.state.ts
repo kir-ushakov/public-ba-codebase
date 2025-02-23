@@ -167,18 +167,8 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.AddPictureBtnPressed)
   async selectPictureFromDevice(ctx: StateContext<IMbTaskScreenStateModel>) {
-    /**
-     * #NOTE:
-     * In this method, the Device Camera Service uses 
-     * Capacitor Camera Plugin under the hood to access the camera. 
-     */
     const imageUri: string = await this._deviceCameraService.takePicture();
 
-    /**
-     * #NOTE:
-     * When a picture is successfully taken, we get a link to it, which can be used immediately in the app. 
-     * I achieve this by patching my task state.
-     */
     const state: IMbTaskScreenStateModel = ctx.getState();
     const taskData: Task = {
       ...state.taskData,

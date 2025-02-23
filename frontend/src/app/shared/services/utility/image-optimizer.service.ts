@@ -8,15 +8,7 @@ export class ImageOptimizerService {
   public optimizeImage(blob: Blob, quality = 0.6): Promise<Blob> {
     return new Promise((resolve, reject) => {
       new Compressor(blob, {
-        /**
-         * #NOTE:
-         * Adjust the quality parameter
-         */
         quality: quality,
-        /**
-         * #NOTE:
-         * Specifying the image type is just in case
-         */
         mimeType: "image/jpeg",
         success(result) {
           resolve(result);

@@ -77,10 +77,6 @@ export class TasksState {
 
     if (createdTask.imageUri) {
       try {
-        /**
-         * #NOTE:
-         * At this point, we move it to the server's persistent storage by calling an API.
-         */
         const res: UploadImageResponseDTO =
           await this.uploaderService.uploadImageFromBlobUri(createdTask.imageUri, .6);
         const imageUri = `${UploaderService.IMAGE_API_ENDPOINT}/${res.fileId}.${res.extension}`;

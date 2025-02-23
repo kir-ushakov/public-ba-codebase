@@ -20,12 +20,6 @@ export class AppComponent {
     public deviceDetector: DeviceDetectorService,
     private store: Store
   ) {
-    /**
-     * #NOTE:
-     * We need to initialize PWA elements for the application.  
-     * DefineCustomElements() is a function that registers web components (custom HTML elements) 
-     * provided by @ionic/pwa-elements.
-     */
     defineCustomElements(window);
   }
 
