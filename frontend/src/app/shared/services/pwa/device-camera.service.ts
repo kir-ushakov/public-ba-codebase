@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Camera, CameraResultType } from '@capacitor/camera';
 
 /**
- * NOTE:
+ * #NOTE:
  * This is my service, which encapsulates the essential logic 
  * for capturing photos using device cameras. 
  * It is primarily built on the Capacitor API.
