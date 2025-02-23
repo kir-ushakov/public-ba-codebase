@@ -1,4 +1,5 @@
-import { ETaskViewMode, IEditTaskData } from './mb-task-screen.state';
+import { ETaskViewMode } from './mb-task-screen.state';
+import { Task } from 'src/app/shared/models/task.model';
 
 export namespace MbTaskScreenAction {
   export class Opened {
@@ -21,13 +22,13 @@ export namespace MbTaskScreenAction {
   export class CreateTask {
     static readonly type = '[MbTaskScreen] Create Task';
 
-    constructor(public taskInitData: IEditTaskData, public userId: string) {}
+    constructor(public taskInitData: Task, public userId: string) {}
   }
 
   export class UpdateTask {
     static readonly type = '[MbTaskScreen] Update Task ';
 
-    constructor(public taskUpdateData: IEditTaskData, public taskId: string) {}
+    constructor(public taskUpdateData: Task) {}
   }
 
   export class DeleteTask {
@@ -58,5 +59,9 @@ export namespace MbTaskScreenAction {
 
   export class DeleteTaskOptionSelected {
     static readonly type = '[MbTaskScreen] Delete Task Option Selected';
+  }
+
+  export class AddPictureBtnPressed {
+    static readonly type = '[MbTaskScreen] Add Picture Btn Pressed';
   }
 }

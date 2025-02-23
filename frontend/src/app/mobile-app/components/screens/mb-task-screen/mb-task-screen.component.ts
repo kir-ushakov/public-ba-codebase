@@ -36,11 +36,13 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
   }
 
   @Select(MbTaskScreenState.mode) mode$: Observable<ETaskViewMode>;
-  @Select(MbTaskScreenState.task) taks$: Observable<Task>;
+  @Select(MbTaskScreenState.task) task$: Observable<Task>;
   @Select(MbTaskScreenState.showCompleteTaskBtn)
   showCompleteTaskBtn$: Observable<boolean>;
   @Select(MbTaskScreenState.showToggleOptionsBtn)
   showToggleOptionsBtn$: Observable<boolean>;
+  @Select(MbTaskScreenState.imageUri)
+  imageUri$: Observable<string>;
 
   ETaskViewMode = ETaskViewMode;
 
@@ -51,6 +53,8 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
       Validators.maxLength(50),
     ]),
   });
+
+  MbTaskScreenState = MbTaskScreenState;
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -93,6 +97,13 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
   deleteTaskOptionSelected() {
     this.menuDrawer.toggle();
     this.store.dispatch(MbTaskScreenAction.DeleteTaskOptionSelected);
+  }
+
+  addPictureBtnPressed() {
+    /**
+     * NOTE: dispatch actions, which are then handled in the state
+     */
+    this.store.dispatch(MbTaskScreenAction.AddPictureBtnPressed);
   }
 
   private subscribeToRouteParams() {

@@ -1,31 +1,30 @@
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
-import { Task, ETaskStatus, ETaskType } from 'src/app/shared/models/task.model';
+import {
+  Task,
+  ETaskStatus,
+  defaultTask,
+} from 'src/app/shared/models/task.model';
 import { MbTaskScreenAction } from './mb-task-screen.actions';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
 import { AppAction } from 'src/app/shared/state/app.actions';
 import { UpdateFormValue } from '@ngxs/form-plugin';
+import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 
 export enum ETaskViewMode {
-  Create = 'CreateTaskMode',
-  Edit = 'EditTaskMode',
-  View = 'ViewTaskMode',
+  Create = 'TASK_VIEW_MODE_CREATE',
+  Edit = 'TASK_VIEW_MODE_EDIT',
+  View = 'TASK_VIEW_MODE_VIEW',
 }
 
 export interface IEditTaskFormData {
   title: string;
 }
 
-export interface IEditTaskData extends IEditTaskFormData {
-  type: ETaskType;
-  status: ETaskStatus;
-}
-
 export interface IMbTaskScreenStateModel {
   mode: ETaskViewMode;
-  taskId: string | undefined;
-  editTaskData: IEditTaskData;
+  taskData: Task;
   taskViewForm: {
     model: IEditTaskFormData;
   };
@@ -38,12 +37,7 @@ const defaults = {
       title: '',
     } as IEditTaskFormData,
   },
-  taskId: undefined,
-  editTaskData: {
-    type: ETaskType.Basic,
-    title: '',
-    status: ETaskStatus.Todo,
-  },
+  taskData: defaultTask,
 };
 
 @State<IMbTaskScreenStateModel>({
@@ -52,7 +46,12 @@ const defaults = {
 })
 @Injectable()
 export class MbTaskScreenState {
-  constructor(private store: Store) {}
+  static readonly FORM_PATH = 'mbTaskViewState.taskViewForm';
+
+  constructor(
+    private _store: Store,
+    private _deviceCameraService: DeviceCameraService
+  ) {}
 
   @Selector()
   static mode(state: IMbTaskScreenStateModel): ETaskViewMode {
@@ -60,14 +59,8 @@ export class MbTaskScreenState {
   }
 
   @Selector([TasksState.allTasks])
-  static task(
-    state: IMbTaskScreenStateModel,
-    allTasks: Array<Task>
-  ): IEditTaskFormData {
-    if (state.mode !== ETaskViewMode.Create) {
-      return allTasks.find((t) => t.id === state.taskId);
-    }
-    return state.taskViewForm.model;
+  static task(state: IMbTaskScreenStateModel): Task {
+    return state.taskData;
   }
 
   @Selector([MbTaskScreenState.task])
@@ -80,69 +73,80 @@ export class MbTaskScreenState {
 
   @Selector()
   static showToggleOptionsBtn(state: IMbTaskScreenStateModel): boolean {
-    return state.mode == ETaskViewMode.View ? true : false;
+    return state.mode === ETaskViewMode.View ? true : false;
+  }
+
+  @Selector()
+  static imageUri(state: IMbTaskScreenStateModel): string {
+    return state.taskData.imageUri;
   }
 
   @Action(MbTaskScreenAction.Opened)
   opened(ctx: StateContext<IMbTaskScreenStateModel>, { mode, taskId }) {
     ctx.patchState({ mode: mode });
-    if (mode === ETaskViewMode.View && taskId) {
-      ctx.patchState({ taskId: taskId });
+    if (taskId) {
+      const actualTasks: Task[] = this._store.selectSnapshot(
+        TasksState.actualTasks
+      );
+      const selectedTask = actualTasks.find((t) => t.id === taskId) ?? defaultTask;
+      ctx.patchState({ taskData: selectedTask });
     }
   }
 
   @Action(MbTaskScreenAction.ApplyButtonPressed)
   applyButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>) {
-    const state: IMbTaskScreenStateModel = ctx.getState();
-    const taskData: IEditTaskData = {
-      ...state.editTaskData,
-      ...state.taskViewForm.model,
-    };
+    ctx.patchState({
+      taskData: {
+        ...ctx.getState().taskData,
+        ...ctx.getState().taskViewForm.model,
+      },
+    });
+
     if (ctx.getState().mode === ETaskViewMode.Create) {
-      const userId: string = this.store.selectSnapshot(UserState.userId);
-      ctx.dispatch(new MbTaskScreenAction.CreateTask(taskData, userId));
+      const userId: string = this._store.selectSnapshot(UserState.userId);
+      ctx.dispatch(
+        new MbTaskScreenAction.CreateTask(ctx.getState().taskData, userId)
+      );
       ctx.dispatch(MbTaskScreenAction.Close);
     } else {
-      const taskId: string | number = ctx.getState().taskId;
-      ctx.dispatch(new MbTaskScreenAction.UpdateTask(taskData, taskId));
+      ctx.dispatch(new MbTaskScreenAction.UpdateTask(ctx.getState().taskData));
       ctx.patchState({ mode: ETaskViewMode.View });
     }
   }
 
   @Action(MbTaskScreenAction.EditTaskOptionSelected)
   editTask(ctx: StateContext<IMbTaskScreenStateModel>) {
-    const task = this.store.selectSnapshot(MbTaskScreenState.task);
-    ctx.patchState({ mode: ETaskViewMode.Edit });
-
+    const task = this._store.selectSnapshot(MbTaskScreenState.task);
+    ctx.patchState({ 
+      mode: ETaskViewMode.Edit, 
+      taskData: { ...task } 
+    });
     ctx.dispatch(
       new UpdateFormValue({
-        path: 'mbTaskViewState.taskViewForm',
-        value: task,
+        path: MbTaskScreenState.FORM_PATH,
+        value: { title: task.title },
       })
     );
   }
 
   @Action(MbTaskScreenAction.CompleteTaskOptionSelected)
   completeTask(ctx: StateContext<IMbTaskScreenStateModel>) {
-    const taskId: string | number = ctx.getState().taskId;
-    const taskUpdateData: IEditTaskData = ctx.getState().editTaskData;
-    taskUpdateData.status = ETaskStatus.Done;
-    ctx.dispatch(new MbTaskScreenAction.UpdateTask(taskUpdateData, taskId));
+    const taskUpdateData: Task = { ...ctx.getState().taskData, status: ETaskStatus.Done };
+    ctx.dispatch(new MbTaskScreenAction.UpdateTask(taskUpdateData));
     ctx.dispatch(MbTaskScreenAction.Close);
   }
 
   @Action(MbTaskScreenAction.CancelTaskOptionSelected)
   cancelTask(ctx: StateContext<IMbTaskScreenStateModel>) {
-    const taskId: string | number = ctx.getState().taskId;
-    const taskUpdateData: IEditTaskData = ctx.getState().editTaskData;
+    const taskUpdateData: Task = ctx.getState().taskData;
     taskUpdateData.status = ETaskStatus.Cancel;
-    ctx.dispatch(new MbTaskScreenAction.UpdateTask(taskUpdateData, taskId));
+    ctx.dispatch(new MbTaskScreenAction.UpdateTask(taskUpdateData));
     ctx.dispatch(MbTaskScreenAction.Close);
   }
 
   @Action(MbTaskScreenAction.DeleteTaskOptionSelected)
   deleteTask(ctx: StateContext<IMbTaskScreenStateModel>) {
-    ctx.dispatch(new MbTaskScreenAction.DeleteTask(ctx.getState().taskId));
+    ctx.dispatch(new MbTaskScreenAction.DeleteTask(ctx.getState().taskData.id));
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
 
@@ -159,5 +163,28 @@ export class MbTaskScreenState {
   @Action(MbTaskScreenAction.HomeButtonPressed)
   homeButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>) {
     ctx.dispatch(AppAction.NavigateToHomeScreen);
+  }
+
+  @Action(MbTaskScreenAction.AddPictureBtnPressed)
+  async selectPictureFromDevice(ctx: StateContext<IMbTaskScreenStateModel>) {
+    /**
+     * #NOTE:
+     * In this method, the Device Camera Service uses 
+     * Capacitor Camera Plugin under the hood to access the camera. 
+     */
+    const imageUri: string = await this._deviceCameraService.takePicture();
+
+    /**
+     * #NOTE:
+     * When a picture is successfully taken, we get a link to it, which can be used immediately in the app. 
+     * I achieve this by patching my task state.
+     */
+    const state: IMbTaskScreenStateModel = ctx.getState();
+    const taskData: Task = {
+      ...state.taskData,
+      imageUri: imageUri,
+    };
+
+    ctx.patchState({ taskData: taskData });
   }
 }

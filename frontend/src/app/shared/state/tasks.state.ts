@@ -21,6 +21,10 @@ import { UserState } from './user.state';
 import { MbTaskScreenAction } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.actions';
 import { AppAction } from './app.actions';
 import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
+import {
+  UploadImageResponseDTO,
+  UploaderService,
+} from '../services/api/uploader.service';
 
 interface ITasksStateModel {
   entities: Array<Task>;
@@ -36,39 +40,30 @@ interface ITasksStateModel {
 export class TasksState {
   static readonly actualStatuses: Array<ETaskStatus> = [ETaskStatus.Todo];
 
-  constructor() {}
+  constructor(private uploaderService: UploaderService) {}
 
   @Selector([UserState.userId])
   static allTasks(state: ITasksStateModel, userId: string): Array<Task> {
-    return state.entities
-      .filter((e) => e.userId === userId)
-      .sort((a, b) => {
-        if (a.createdAt > b.createdAt) {
-          return -1;
-        } else {
-          return 1;
-        }
-      });
+    return this.getSortedUserTasks(state, userId);
   }
 
-  @Selector([TasksState.allTasks])
-  static actualTasks(
-    state: ITasksStateModel,
-    allTasks: Array<Task>
-  ): Array<Task> {
+  @Selector([UserState.userId])
+  static actualTasks(state: ITasksStateModel, userId: string): Array<Task> {
+    const allTasks = this.getSortedUserTasks(state, userId);
     return allTasks.filter((t) => TasksState.actualStatuses.includes(t.status));
   }
 
   @Action(MbTaskScreenAction.CreateTask)
-  createTask(
+  async createTask(
     ctx: StateContext<ITasksStateModel>,
     { taskInitData, userId }: { taskInitData: Task; userId: string }
-  ): void {
+  ): Promise<void> {
     const createdTask: Task = {
       type: ETaskType.Basic,
       userId: userId,
       id: uuidv4(),
       title: taskInitData.title,
+      imageUri: taskInitData.imageUri,
       status: ETaskStatus.Todo,
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
@@ -79,6 +74,31 @@ export class TasksState {
         entities: append([createdTask]),
       })
     );
+
+    if (createdTask.imageUri) {
+      try {
+        /**
+         * #NOTE:
+         * At this point, we move it to the server's persistent storage by calling an API.
+         */
+        const res: UploadImageResponseDTO =
+          await this.uploaderService.uploadImageFromBlobUri(createdTask.imageUri, .6);
+        const imageUri = `${UploaderService.IMAGE_API_ENDPOINT}/${res.fileId}.${res.extension}`;
+        createdTask.imageUri = imageUri;
+
+        ctx.setState(
+          patch({
+            entities: updateItem(
+              (task) => task.id === createdTask.id,
+              patch({ imageUri })
+            ),
+          })
+        );
+      } catch(err) {
+        // TODO: handle this case
+        console.log("Image upload failed");
+      }
+    }
 
     ctx.dispatch(
       new AppAction.ChangeForSyncOccurred({
@@ -93,20 +113,26 @@ export class TasksState {
   @Action(MbTaskScreenAction.UpdateTask)
   updateTask(
     ctx: StateContext<ITasksStateModel>,
-    { taskUpdateData, taskId }: { taskUpdateData: Task; taskId: string }
+    { taskUpdateData }: { taskUpdateData: Task }
   ) {
     ctx.setState(
       patch({
         entities: updateItem(
-          (task) => task.id === taskId,
+          (task) => task.id === taskUpdateData.id,
           patch({ ...taskUpdateData })
         ),
       })
     );
 
-    const updatedTask: Task = ctx
-      .getState()
-      .entities.find((t) => t.id === taskId);
+    const updatedTask: Task = ctx.getState().entities.find(
+      (t) => t.id === taskUpdateData.id
+    );
+
+    if (!updatedTask) {
+      console.error(`Task with id ${taskUpdateData.id} was not found after update.`);
+      return;
+    }
+
     ctx.dispatch(
       new AppAction.ChangeForSyncOccurred({
         entity: EChangedEntity.Task,
@@ -141,16 +167,39 @@ export class TasksState {
   ): void {
     const taskChanges = changes.filter((c) => c.entity === EChangedEntity.Task);
     for (const taskChange of taskChanges) {
-      const task = taskChange.object as Task;
-      ctx.setState(
-        patch({
-          entities: iif<Array<Task>>(
-            (tasks) => tasks.some((t) => t.id === task.id),
-            updateItem((t) => t.id === task.id, patch(task)),
-            insertItem(task)
-          ),
-        })
-      );
+      if (taskChange.action === EChangeAction.Deleted) {
+        ctx.setState(
+          patch({
+            entities: removeItem<Task>(
+              (task) => task.id === taskChange.object.id
+            ),
+          })
+        );
+      } else {
+        const task = taskChange.object as Task;
+        ctx.setState(
+          patch({
+            entities: iif<Array<Task>>(
+              (tasks) => tasks.some((t) => t.id === task.id),
+              updateItem((t) => t.id === task.id, patch(task)),
+              insertItem(task)
+            ),
+          })
+        );
+      }
     }
+  }
+
+  private static getSortedUserTasks(
+    state: ITasksStateModel,
+    userId: string
+  ): Task[] {
+    return state.entities
+      .filter((e) => e.userId === userId)
+      .sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA; // descending order
+      });
   }
 }
