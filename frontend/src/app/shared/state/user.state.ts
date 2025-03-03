@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector } from '@ngxs/store';
+import { patch } from '@ngxs/store/operators';
 import { MbProfileScreenAction } from 'src/app/mobile-app/components/screens/mb-profile-screen/mb-profile-screen.actions';
 import { User } from '../models/user.model';
 import { AuthService } from '../services/api/auth.service';
@@ -11,12 +12,14 @@ import { MbSyncScreenAction } from 'src/app/mobile-app/components/screens/mb-syn
 import { SlackAPIAction } from '../services/integrations/slack.api.actions';
 import { AuthAPIAction } from '../services/api/auth.actions';
 import { EMPTY, catchError, tap } from 'rxjs';
+import { GoogleAPIAction } from '../services/integrations/google-api.actions';
+
 
 interface IUserIntegrations {
   isAddedToSlack: boolean | undefined;
 }
 export interface IUserStateModel {
-  userData: User;
+  userData: User | null;
   authState: EUserAuthState;
   integrations: IUserIntegrations;
 }
@@ -68,13 +71,13 @@ export class UserState {
   }
 
   @Selector()
-  static userFullName(state: IUserStateModel): string {
-    return `${state.userData.firstName} ${state.userData.lastName}`;
+  static userFullName(state: IUserStateModel): string | null{
+    return `${state.userData?.firstName} ${state.userData?.lastName}`;
   }
 
   @Selector()
-  static userEmail(state: IUserStateModel): string {
-    return state.userData.email;
+  static userEmail(state: IUserStateModel): string | null {
+    return state.userData?.email;
   }
 
   @Selector()
@@ -91,6 +94,7 @@ export class UserState {
   }
 
   @Action(AuthAPIAction.UserLoggedIn)
+  @Action(GoogleAPIAction.UserAuthenticated)
   loggedIn(
     ctx: StateContext<IUserStateModel>,
     { userData }: { userData: User }
@@ -103,21 +107,20 @@ export class UserState {
   }
 
   @Action(MbProfileScreenAction.Logout)
-  async logout(ctx: StateContext<IUserStateModel>): Promise<void> {
+  logout(ctx: StateContext<IUserStateModel>): void {
     this._authService
       .logout()
       .pipe(
-        tap(() => {
-          ctx.patchState({ userData: null });
-          ctx.dispatch(AuthAPIAction.UserLoggedOut);
-          ctx.dispatch(AppAction.NavigateToLoginScreen);
-        }),
         catchError((err) => {
           ctx.dispatch(AuthAPIAction.UserLogoutFailed);
           return EMPTY;
         })
       )
-      .subscribe();
+      .subscribe(() => { 
+        ctx.setState(patch({ userData: null }));
+        ctx.dispatch(AuthAPIAction.UserLoggedOut);
+        ctx.dispatch(AppAction.NavigateToLoginScreen);
+      });
   }
 
   @Action(AppAction.UserNotAuthenticated)

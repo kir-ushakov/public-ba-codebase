@@ -40,7 +40,10 @@
     </button>
   </form>
   <div *ngIf="authError$ | async" class="auth-failed-msg">
-    {{authError$ | async }}
+    {{ authError$ | async }}
+  </div>
+  <div class="google-btn-holder">
+    <ba-sign-in-with-google-btn></ba-sign-in-with-google-btn>
   </div>
 </div>
 <div class="signup-link-holder">

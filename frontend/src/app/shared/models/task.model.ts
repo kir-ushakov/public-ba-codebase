@@ -1,13 +1,3 @@
-export type Task = {
-  id: string;
-  userId: string;
-  type: ETaskType;
-  title: string;
-  status: ETaskStatus;
-  createdAt: string;
-  modifiedAt: string;
-};
-
 export enum ETaskStatus {
   Todo = 'TASK_STATUS_TODO',
   Done = 'TASK_STATUS_DONE',
@@ -18,3 +8,24 @@ export enum ETaskType {
   Basic = 'TASK_TYPE_BASIC',
   // TODO: More statuses will be here
 }
+
+export type Task = {
+  id: string;
+  userId: string;
+  type: ETaskType;
+  title: string;
+  imageUri?: string;
+  status: ETaskStatus;
+  createdAt: string;
+  modifiedAt: string;
+};
+
+export const defaultTask = {
+  id: null,
+  userId: null,
+  type: ETaskType.Basic,
+  status: ETaskStatus.Todo,
+  title: '',
+  createdAt: null,
+  modifiedAt: null,
+};

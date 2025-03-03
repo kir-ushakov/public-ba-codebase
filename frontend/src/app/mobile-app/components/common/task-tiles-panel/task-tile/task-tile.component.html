@@ -1,3 +1,6 @@
 <div class="task-tile-inner">
   <div class="task-tile-title">{{ task.title }}</div>
+  <div class="task-tile-picture" *ngIf="task.imageUri">
+    <img src="{{ task.imageUri }}" />
+  </div>
 </div>

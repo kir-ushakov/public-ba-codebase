@@ -42,12 +42,12 @@ export class TasksState {
 
   constructor(private uploaderService: UploaderService) {}
 
-  @Selector([UserState.userId])
+  @Selector([TasksState, UserState.userId])
   static allTasks(state: ITasksStateModel, userId: string): Array<Task> {
     return this.getSortedUserTasks(state, userId);
   }
 
-  @Selector([UserState.userId])
+  @Selector([TasksState, UserState.userId])
   static actualTasks(state: ITasksStateModel, userId: string): Array<Task> {
     const allTasks = this.getSortedUserTasks(state, userId);
     return allTasks.filter((t) => TasksState.actualStatuses.includes(t.status));

@@ -6,4 +6,8 @@ export namespace MbSignupScreenAction {
 
     constructor(public dto: SignUpRequestDTO) {}
   }
+
+  export class Closed {
+    static readonly type = '[MbSignupScreenAction] Closed';
+  }
 }

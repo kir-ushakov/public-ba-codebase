@@ -1,4 +1,4 @@
-import { Change } from './shared/models';
+import { Change } from '../models';
 
 export namespace AppAction {
   export class Opened {

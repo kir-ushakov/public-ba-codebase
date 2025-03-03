@@ -3,11 +3,13 @@ import { Select, Store } from '@ngxs/store';
 import { MbTaskScreenState, ETaskViewMode } from '../mb-task-screen.state';
 import { Observable } from 'rxjs';
 import { MbTaskScreenAction } from '../mb-task-screen.actions';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-mb-task-view-bottom',
-  templateUrl: './mb-task-view-bottom.component.html',
-  styleUrls: ['./mb-task-view-bottom.component.scss'],
+    selector: 'app-mb-task-view-bottom',
+    templateUrl: './mb-task-view-bottom.component.html',
+    styleUrls: ['./mb-task-view-bottom.component.scss'],
+    imports: [ CommonModule ]
 })
 export class MbTaskViewBottomComponent {
   @Input() enabled: boolean;

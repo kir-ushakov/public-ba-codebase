@@ -1,13 +1,23 @@
 import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { UserState } from 'src/app/shared/state/user.state';
 import { MbProfileScreenAction } from './mb-profile-screen.actions';
+import { UserAvatarComponent } from 'src/app/shared/components/common/user-avatar/user-avatar.component';
+import { MbIntegrationsComponent } from './integrations/mb-integrations.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-profile-screen',
-  templateUrl: './mb-profile-screen.component.html',
-  styleUrls: ['./mb-profile-screen.component.scss'],
+    selector: 'app-profile-screen',
+    templateUrl: './mb-profile-screen.component.html',
+    styleUrls: ['./mb-profile-screen.component.scss'],
+    imports: [ 
+      CommonModule,
+      RouterModule, 
+      UserAvatarComponent,
+      MbIntegrationsComponent
+    ]
 })
 export class MbProfileScreenComponent {
   @Select(UserState.userFullName) userFullName$: Observable<string>;

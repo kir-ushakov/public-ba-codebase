@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
-import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
+import { MatDrawer } from '@angular/material/sidenav';
 
 @Component({
-  selector: 'ba-mb-task-side-menu',
-  templateUrl: './mb-task-side-menu.component.html',
-  styleUrl: './mb-task-side-menu.component.scss'
+    selector: 'ba-mb-task-side-menu',
+    templateUrl: './mb-task-side-menu.component.html',
+    styleUrl: './mb-task-side-menu.component.scss'
 })
 export class MbTaskSideMenuComponent {
   @ViewChild('menuDrawer', { static: true }) menuDrawer!: MatDrawer;

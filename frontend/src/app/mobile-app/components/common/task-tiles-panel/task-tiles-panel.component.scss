@@ -1,9 +1,12 @@
 :host {
   display: grid;
-  grid-template-columns: 33.33% 33.33% 33.33%;
-  grid-gap: 0.2rem;
+  flex-wrap: nowrap;
+  column-gap: 5px;
+  grid-template-columns: repeat(3, 1fr);
 }
 
-.tile-holder {
-  flex: 1 0;
+.tiles-column {
+  display: flex;
+  flex-direction: column;
+  row-gap: 5px;
 }

@@ -1,17 +1,15 @@
-@use "sass:map";
-@import "src/scss/colors";
+@use 'sass:map';
+@import 'src/scss/colors';
 
 :host {
   background-color: map.get($colors-green, default);
   display: flex;
   justify-content: center;
-  height: 0;
-  width: 100%;
-  padding-bottom: 100%;
+  height: auto;
 }
 
 .task-tile-inner {
-  padding: 8px 4px;
+  padding: .75rem;
 }
 
 .task-tile-title {

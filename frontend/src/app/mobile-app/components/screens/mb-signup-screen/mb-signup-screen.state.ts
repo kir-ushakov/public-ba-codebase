@@ -7,6 +7,7 @@ import {
 } from 'src/app/shared/services/api/auth.service';
 import { MbSignupScreenAction } from './mb-signup-screen.actions';
 import { EMPTY, catchError, tap } from 'rxjs';
+import { AppAction } from 'src/app/shared/state/app.actions';
 
 export interface IMbSignupScreenStateModel {
   signUpResult: SignUpResponseDTO;
@@ -47,5 +48,13 @@ export class MbSignupScreenState {
         })
       )
       .subscribe();
+  }
+
+  @Action(MbSignupScreenAction.Closed)
+  closed(ctx: StateContext<IMbSignupScreenStateModel>) {
+    ctx.patchState({
+      signUpResult: null,
+    });
+    ctx.dispatch(AppAction.NavigateToLoginScreen);
   }
 }

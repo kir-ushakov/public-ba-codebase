@@ -1,36 +1,37 @@
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector } from '@ngxs/store';
-import { AppAction } from '../../app.actions';
+import { AppAction } from './app.actions';
 
 export interface AppStateModel {
-  isOnline: boolean;
+  online: boolean;
 }
 
 @State<AppStateModel>({
   name: 'app',
   defaults: {
-    isOnline: false,
+    online: false,
   },
 })
 @Injectable()
 export class AppState {
   @Selector()
-  static isOnline(state: AppStateModel): boolean {
-    return state.isOnline;
+  static online(state: AppStateModel): boolean {
+    return state.online;
   }
 
   @Action(AppAction.Opened)
   appOpened(ctx: StateContext<AppStateModel>) {
-    // TODO: here need to perform operations on App Opened Event
+    // @TODO#FUNCTIONALITY - here need to perform operations on App opening
   }
 
   @Action(AppAction.Online)
   online(ctx: StateContext<AppStateModel>) {
-    ctx.patchState({ isOnline: true });
+    console.log('{ online: true }');
+    ctx.patchState({ online: true });
   }
 
   @Action(AppAction.Offline)
   offline(ctx: StateContext<AppStateModel>) {
-    ctx.patchState({ isOnline: false });
+    ctx.patchState({ online: false });
   }
 }

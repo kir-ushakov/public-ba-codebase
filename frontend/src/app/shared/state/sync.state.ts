@@ -3,13 +3,14 @@ import { Action, Selector, State, StateContext } from '@ngxs/store';
 import { ClientIdService } from 'src/app/shared/services/api/client-id.service';
 import { AppAction } from './app.actions';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Change, EChangedEntity } from '../models/change.model';
+import { Change, EChangeAction } from '../models/change.model';
 import { append, patch, removeItem } from '@ngxs/store/operators';
 import { ServerChangesService } from '../services/api/server-changes.service';
 import { ClientChangesService } from '../services/api/client-changes.service';
 import { AuthAPIAction } from '../services/api/auth.actions';
-import { EMPTY, Observable, concat, tap } from 'rxjs';
+import { EMPTY, Observable, concat, lastValueFrom, tap } from 'rxjs';
 import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
+import { AppError } from '../core/app.error';
 
 export interface SyncStateModel {
   clientId: string;
@@ -85,10 +86,15 @@ export class SyncState {
     clearInterval(this._intervalId);
   }
 
-  private synchronizeApp(ctx: StateContext<SyncStateModel>): void {
+  private async synchronizeApp(
+    ctx: StateContext<SyncStateModel>
+  ): Promise<void> {
     const syncApiCalls: Observable<void | Change[] | string>[] = [];
     if (!ctx.getState().clientId) {
-      syncApiCalls.push(this.getClientIdAPICall(ctx));
+      const clientId: string = await lastValueFrom(
+        this.getClientIdAPICall(ctx)
+      );
+      ctx.patchState({ clientId });
     }
     syncApiCalls.push(this.getChangesAPICall(ctx));
     syncApiCalls.push(this.sendChangesAPICalls(ctx));
@@ -138,7 +144,18 @@ export class SyncState {
                 )
               );
             },
-            error: () => {
+            error: (error) => {
+              if (error.status === 404) {
+                this.handleEntity404(ctx, i);
+                return EMPTY;
+              }
+              if (error instanceof AppError) {
+                ctx.dispatch(
+                  new SyncServiceAPIAction.LocalChangeWasSynchronized(
+                    state.changes[i]
+                  )
+                );
+              }
               ctx.dispatch(
                 SyncServiceAPIAction.LocalChangeSynchronizationFailed
               );
@@ -172,7 +189,35 @@ export class SyncState {
         this.getClientIdAPICall(ctx).subscribe();
       }
     }
+
     console.log(err);
     return EMPTY;
+  }
+
+  private handleEntity404(
+    ctx: StateContext<SyncStateModel>,
+    chnageIndex: number
+  ) {
+    const state = ctx.getState();
+    // The entity did not found on server
+    // so we need to dispatch Delete Change action locally
+    // to be synchronized with server
+    const deleteChange: Change = {
+      entity: state.changes[chnageIndex].entity,
+      action: EChangeAction.Deleted,
+      object: {
+        id: state.changes[chnageIndex].object.id,
+        modifiedAt: new Date().toISOString(),
+      },
+    };
+    ctx.dispatch(new SyncServiceAPIAction.ServerChangesLoaded([deleteChange]));
+    ctx.dispatch(
+      new SyncServiceAPIAction.LocalChangeWasSynchronized(
+        state.changes[chnageIndex]
+      )
+    );
+
+    // TICKET: https://brainas.atlassian.net/browse/BA-136
+    // TODO: Notify user about error happened and task was deleted
   }
 }

@@ -1,5 +1,5 @@
-@use "sass:map";
-@import "src/scss/colors";
+@use 'sass:map';
+@import 'src/scss/colors';
 
 :host {
   display: flex;
@@ -39,6 +39,7 @@
   background: $color-main-bg;
   flex: 1;
   overflow: hidden;
+  overflow-y: scroll;
 }
 
 .bottom-panel-holder {

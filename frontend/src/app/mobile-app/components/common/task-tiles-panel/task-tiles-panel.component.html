@@ -1,3 +1,9 @@
-<div class="tile-holder" *ngFor="let task of tasks">
-  <ba-task-tile [task]="task"></ba-task-tile>
-</div>
+@for (column of columns; track column.index) {
+  <div class="tiles-column">
+    @for (task of column.tasks; track task.id) {
+      <div class="tile-holder">
+        <ba-task-tile [task]="task"></ba-task-tile>
+      </div>
+    }
+  </div>
+}

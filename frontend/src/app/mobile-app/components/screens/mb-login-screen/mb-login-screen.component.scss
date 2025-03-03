@@ -1,4 +1,4 @@
-@import "src/scss/colors";
+@import 'src/scss/colors';
 
 :host {
   display: flex;
@@ -48,4 +48,10 @@
   color: $dark-warn;
   text-align: center;
   margin-top: 8px;
+}
+
+.google-btn-holder {
+  display: flex;
+  margin-top: 1.5rem;
+  justify-content: center;
 }

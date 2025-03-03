@@ -3,4 +3,7 @@ export type User = {
   lastName: string;
   email: string;
   userId: string;
+  googleId: string;
+  googleRefreshToken?: string;
+  googleAccessToken?: string;
 };

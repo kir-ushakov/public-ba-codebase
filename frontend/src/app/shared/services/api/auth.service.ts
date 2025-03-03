@@ -4,7 +4,6 @@ import { UserDto } from '../../dto/user.dto';
 import { UserMapper } from '../../mappers/user.mapper';
 import { User } from '../../models/user.model';
 import { HttpClient } from '@angular/common/http';
-import { convertObjectToUrlParams } from '../../helpers/convert-object-to-url-params.function';
 import { environment as env } from 'src/environments/environment';
 
 export type LoginRequestDTO = {
@@ -62,17 +61,5 @@ export class AuthService {
     return this.http.post<SignUpResponseDTO>(AuthService.API_ENDPOINTS.SIGNUP, {
       ...data,
     });
-  }
-
-  public verifyUserEmailWithToken(
-    token: string
-  ): Observable<VerifyEmailResponseDTO> {
-    const queryString: string = convertObjectToUrlParams({
-      token: token,
-    });
-
-    return this.http.get<VerifyEmailResponseDTO>(
-      `${AuthService.API_ENDPOINTS.VERIFY_EMAIL}?${queryString}`
-    );
   }
 }

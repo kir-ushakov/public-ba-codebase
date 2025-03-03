@@ -13,17 +13,36 @@ import { Observable, Subject } from 'rxjs';
 import { MbTaskScreenState, ETaskViewMode } from './mb-task-screen.state';
 import { ActivatedRoute } from '@angular/router';
 import { Task } from 'src/app/shared/models/task.model';
-import { MatDrawer } from '@angular/material/sidenav';
+import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import {
   UntypedFormControl,
   UntypedFormGroup,
   Validators,
+  ReactiveFormsModule
 } from '@angular/forms';
+import { NgxsFormPluginModule } from '@ngxs/form-plugin';
+import { CommonModule } from '@angular/common';
+import { MbTaskViewBottomComponent } from './mb-task-view-bottom/mb-task-view-bottom.component';
+import { MbTaskSideMenuComponent } from './mb-task-side-menu/mb-task-side-menu.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-  selector: 'ba-mb-task-screen',
-  templateUrl: './mb-task-screen.component.html',
-  styleUrls: ['./mb-task-screen.component.scss'],
+    selector: 'ba-mb-task-screen',
+    templateUrl: './mb-task-screen.component.html',
+    styleUrls: ['./mb-task-screen.component.scss'],
+    imports: [ 
+      CommonModule, 
+      MatSidenavModule,
+      MbTaskViewBottomComponent,
+      MbTaskSideMenuComponent,
+      MatFormFieldModule, 
+      MatInputModule,
+      MatIconModule,
+      NgxsFormPluginModule,
+      ReactiveFormsModule
+    ]
 })
 export class MbTaskScreenComponent implements OnInit, OnDestroy {
   @ViewChild('menuDrawer') menuDrawer: MatDrawer;

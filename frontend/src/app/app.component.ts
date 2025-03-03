@@ -5,11 +5,16 @@ import { map } from 'rxjs/operators';
 import { DeviceDetectorService } from 'src/app/shared/services/device-detector/device-detector.service';
 import { AppAction } from './shared/state/app.actions';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
+import { Router, RouterOutlet } from '@angular/router';
+import { mobileRoutes } from './mobile-app/mobile-app.routing';
+import { desktopRoutes } from './desktop-app/desktop-app.routing';
+
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    imports: [ RouterOutlet ]
 })
 export class AppComponent {
   onlineEvent: Observable<Event>;
@@ -17,13 +22,15 @@ export class AppComponent {
   online$: Observable<boolean>;
 
   constructor(
-    public deviceDetector: DeviceDetectorService,
-    private store: Store
+    private readonly _router: Router,
+    private readonly _store: Store,
+    private readonly _deviceDetectorService: DeviceDetectorService
   ) {
     defineCustomElements(window);
   }
 
   ngOnInit(): void {
+    this.attachModuleDependOnDevice()
     this.setOnOffLineHandlers();
   }
 
@@ -36,10 +43,15 @@ export class AppComponent {
 
     this.online$.subscribe((isOnline) => {
       if (isOnline) {
-        this.store.dispatch(new AppAction.Online());
+        this._store.dispatch(new AppAction.Online());
       } else {
-        this.store.dispatch(new AppAction.Offline());
+        this._store.dispatch(new AppAction.Offline());
       }
     });
+  }
+
+  private attachModuleDependOnDevice() {
+    const isMobile = this._deviceDetectorService.isMobile();
+    this._router.resetConfig(isMobile ? mobileRoutes : desktopRoutes);
   }
 }

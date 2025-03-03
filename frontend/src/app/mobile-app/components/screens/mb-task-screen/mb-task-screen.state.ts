@@ -58,7 +58,7 @@ export class MbTaskScreenState {
     return state.mode;
   }
 
-  @Selector([TasksState.allTasks])
+  @Selector()
   static task(state: IMbTaskScreenStateModel): Task {
     return state.taskData;
   }

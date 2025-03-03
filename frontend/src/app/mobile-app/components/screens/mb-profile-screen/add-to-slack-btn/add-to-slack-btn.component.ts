@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { environment as env } from '../../../../../../environments/environment';
 
 @Component({
-  selector: 'app-add-to-slack-btn',
-  templateUrl: './add-to-slack-btn.component.html',
-  styleUrls: ['./add-to-slack-btn.component.scss'],
+    selector: 'app-add-to-slack-btn',
+    templateUrl: './add-to-slack-btn.component.html',
+    styleUrls: ['./add-to-slack-btn.component.scss'],
 })
 export class AddToSlackBtnComponent {
   readonly INSTALL_PATH = 'https://slack.com/oauth/v2/authorize';
