@@ -42,7 +42,7 @@ export class UploaderService {
     const blob = await response.blob();
 
     const reducedBlob = await this.imageOptimizerService.optimizeImage(blob, quality);
-    
+
     const extension = mime.getExtension(reducedBlob.type) || 'jpg';
 
     const filename = `${uuidv4()}.${extension}`;

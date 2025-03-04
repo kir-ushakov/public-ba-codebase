@@ -4,11 +4,14 @@ import { GoogleAuthRedirectScreenAction } from './google-auth-redirect.actions';
 import { AppAction } from 'src/app/shared/state/app.actions';
 import { Observable } from 'rxjs';
 import { GoogleAuthRedirectScreenState } from './google-auth-redirect.state';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
-  selector: 'ba-google-auth-redirect',
-  templateUrl: './google-auth-redirect.component.html',
-  styleUrls: ['./google-auth-redirect.component.scss'],
+    selector: 'ba-google-auth-redirect',
+    templateUrl: './google-auth-redirect.component.html',
+    styleUrls: ['./google-auth-redirect.component.scss'],
+    imports: [ CommonModule ]
 })
 export class GoogleAuthRedirectScreenComponent {
   @Select(GoogleAuthRedirectScreenState.isLogging)
@@ -18,13 +21,16 @@ export class GoogleAuthRedirectScreenComponent {
   @Select(GoogleAuthRedirectScreenState.errorMessage)
   errorMessage$: Observable<boolean>;
 
-  constructor(private store: Store) {}
+  constructor(
+    private readonly _activatedRoute: ActivatedRoute,
+    private readonly _store: Store) {}
 
   ngOnInit() {
-    this.store.dispatch(GoogleAuthRedirectScreenAction.Opened);
+    const code: string = this._activatedRoute.snapshot.queryParamMap.get('code');
+    this._store.dispatch(new GoogleAuthRedirectScreenAction.Opened(code));
   }
 
   goToLoginScreen() {
-    this.store.dispatch(AppAction.NavigateToLoginScreen);
+    this._store.dispatch(AppAction.NavigateToLoginScreen);
   }
 }

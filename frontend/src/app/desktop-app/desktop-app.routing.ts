@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { DtHomeScreenComponent } from './components/screens/dt-home-screen/dt-home-screencomponent';
-import { DesktopAppComponent } from './desktop-app.components';
+import { DesktopAppComponent } from './desktop-app.component';
 
 export const desktopRoutes: Routes = [
   {

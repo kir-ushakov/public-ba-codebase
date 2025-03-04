@@ -8,7 +8,7 @@ import { MbProfileScreenComponent } from './components/screens/mb-profile-screen
 import { MbSyncScreenComponent } from './components/screens/mb-sync-screen/mb-sync-screen.component';
 import { AddToSlackRedirectComponent } from '../shared/components/redirects/slack/add-to-slack-redirect/add-to-slack-redirect.component';
 import { GoogleAuthRedirectScreenComponent } from '../shared/components/redirects/google/google-auth-redirect/google-auth-redirect.component';
-import { MobileAppComponent } from './mobile-app.components';
+import { MobileAppComponent } from './mobile-app.component';
 import { provideStates } from '@ngxs/store';
 import { MobileAppState } from './mobile-app.state';
 import { MbLoginScreenState } from './components/screens/mb-login-screen/mb-login-screen.state';

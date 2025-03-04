@@ -2,9 +2,9 @@ import { Component, ViewChild, ElementRef, Input } from '@angular/core';
 import { IUserAvatarInputData } from './user-avatar.interface';
 
 @Component({
-  selector: 'ba-user-avatar',
-  templateUrl: './user-avatar.component.html',
-  styleUrls: ['./user-avatar.component.scss'],
+    selector: 'ba-user-avatar',
+    templateUrl: './user-avatar.component.html',
+    styleUrls: ['./user-avatar.component.scss'],
 })
 export class UserAvatarComponent {
   @Input() data: IUserAvatarInputData;

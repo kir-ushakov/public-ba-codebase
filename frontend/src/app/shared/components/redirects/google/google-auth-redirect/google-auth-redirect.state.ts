@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext } from '@ngxs/store';
 import { AppAction } from 'src/app/shared/state/app.actions';
-import { ActivatedRoute } from '@angular/router';
 import { GoogleAuthRedirectScreenAction } from './google-auth-redirect.actions';
 import { GoogleAPIService } from 'src/app/shared/services/integrations/google-api.service';
 import { GoogleAPIAction } from 'src/app/shared/services/integrations/google-api.actions';
@@ -23,10 +22,7 @@ const defaults = { isLogging: true, errorOccurred: false, errorMessage: null };
 })
 @Injectable()
 export class GoogleAuthRedirectScreenState {
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private googleAPIService: GoogleAPIService
-  ) {}
+  constructor(private googleAPIService: GoogleAPIService) {}
   @Selector()
   static isLogging(state: IGoogleAuthRedirectScreenStateModel): boolean {
     return state.isLogging;
@@ -43,11 +39,12 @@ export class GoogleAuthRedirectScreenState {
   }
 
   @Action(GoogleAuthRedirectScreenAction.Opened)
-  async opened(ctx: StateContext<IGoogleAuthRedirectScreenStateModel>) {
+  async opened(ctx: StateContext<IGoogleAuthRedirectScreenStateModel>, payload : GoogleAuthRedirectScreenAction.Opened) {
     ctx.patchState({
       ...defaults,
     });
-    const code: string = this.activatedRoute.snapshot.queryParamMap.get('code');
+
+    const { code } = { ...payload };
 
     this.googleAPIService
       .authenticateUser(code)
@@ -57,6 +54,7 @@ export class GoogleAuthRedirectScreenState {
             isLogging: false,
             errorOccurred: true,
           });
+
           if (err?.error?.name === 'GOOGLE_OAUTH_EMAIL_ALREADY_IN_USE') {
             ctx.patchState({ errorMessage: err.error.message });
           }

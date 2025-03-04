@@ -16,7 +16,6 @@ export class DeviceCameraService {
         resultType: CameraResultType.Uri,
       });
 
-
       if (!image.webPath) {
         throw new Error('No image URL available');
       }
