@@ -96,3 +96,20 @@
     width: $picture-icon-size;
   }
 }
+
+.sidemenu-holder {
+  padding: 45px 30px;
+}
+
+.sidemenu-item {
+  color: white;
+  display: flex;
+  align-items: center;
+  font-size: 25px;
+  line-height: 38px;
+}
+
+.sidemenu-item-icon {
+  width: 30px;
+  margin-right: 25px;
+}

@@ -23,7 +23,6 @@ import {
 import { NgxsFormPluginModule } from '@ngxs/form-plugin';
 import { CommonModule } from '@angular/common';
 import { MbTaskViewBottomComponent } from './mb-task-view-bottom/mb-task-view-bottom.component';
-import { MbTaskSideMenuComponent } from './mb-task-side-menu/mb-task-side-menu.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,7 +35,6 @@ import { MatIconModule } from '@angular/material/icon';
       CommonModule, 
       MatSidenavModule,
       MbTaskViewBottomComponent,
-      MbTaskSideMenuComponent,
       MatFormFieldModule, 
       MatInputModule,
       MatIconModule,

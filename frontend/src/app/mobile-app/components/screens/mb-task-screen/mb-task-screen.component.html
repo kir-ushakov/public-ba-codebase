@@ -18,8 +18,6 @@
       </div>
     </div>
     <div class="main-panel-holder">
-      <!-- user @let here after upgrade to Angular v 19 -->
-      <!-- TICKET: https://brainas.atlassian.net/browse/BA-173 -->
       @if(
         (mode$ | async) === ETaskViewMode.Create || 
         (mode$ | async) === ETaskViewMode.Edit) {
@@ -57,8 +55,6 @@
           </form>
         </div>
       }
-      <!-- user @let here after upgrade to Angular v 19 -->
-      <!-- TICKET:  https://brainas.atlassian.net/browse/BA-173 -->
       @if((mode$ | async) === ETaskViewMode.View) {
         <div class="title-holder">
           <span>{{ (task$ | async).title }}</span>
@@ -75,12 +71,33 @@
     </div>
   </mat-drawer-content>
   <mat-drawer #menuDrawer class="task-view-sidemenu" mode="over" position="end">
-    <ba-mb-task-side-menu 
-      #sideMenu
-      (editTask)="editTaskOptionSelected()"
-      (completeTask)="completeTask()"
-      (cancelTask)="canceledTask()"
-      (deleteTask)="deleteTaskOptionSelected()">
-    </ba-mb-task-side-menu>
+    <div class="sidemenu-holder">
+      <div
+        class="sidemenu-item sidemenu-cancel-btn"
+        (click)="editTaskOptionSelected()">
+        <img class="sidemenu-item-icon" src="assets/ui/icons/edit.png" />
+        <span>Edit</span>
+      </div>
+      <div class="sidemenu-item sidemenu-done-btn" 
+        (click)="completeTask()">
+        <img
+          class="sidemenu-item-icon"
+          src="assets/ui/icons/checkmark-green.png" />
+        <span>Done</span>
+      </div>
+      <div class="sidemenu-item sidemenu-edit-btn" 
+        (click)="canceledTask()">
+        <img
+          class="sidemenu-item-icon"
+          src="assets/ui/icons/cancel-cross-icon-gray.png" />
+        <span>Cancel</span>
+      </div>
+      <div
+        class="sidemenu-item sidemenu-cancel-btn"
+        (click)="deleteTaskOptionSelected()">
+        <img class="sidemenu-item-icon" src="assets/ui/icons/rubbish.png" />
+        <span>Delete</span>
+      </div>
+    </div>
   </mat-drawer>
 </mat-drawer-container>
