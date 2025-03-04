@@ -14,6 +14,7 @@ import { UserState } from './app/shared/state/user.state';
 import { SyncState } from './app/shared/state/sync.state';
 import { TasksState } from './app/shared/state/tasks.state';
 import { HttpInterceptorService } from './app/shared/services/infrastructure/http-interceptor.service';
+import { NgxsFormPluginModule } from '@ngxs/form-plugin';
 
 
 
@@ -36,6 +37,9 @@ bootstrapApplication(AppComponent, {
       SyncState, 
       TasksState,
     ]),
+    importProvidersFrom(
+      NgxsFormPluginModule.forRoot()
+    ),
     provideHttpClient(),
     provideNoopAnimations(),
     provideRouter(mobileRoutes),
