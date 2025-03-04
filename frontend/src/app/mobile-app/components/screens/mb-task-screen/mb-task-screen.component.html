@@ -24,10 +24,9 @@
         (mode$ | async) === ETaskViewMode.Create || 
         (mode$ | async) === ETaskViewMode.Edit) {
         <div class="title-input-holder">
-          <form
+          <form class="task-form"
             [formGroup]="form"
-            class="task-form"
-            ngxsForm="{{ MbTaskScreenState.FORM_PATH }}">
+            [ngxsForm]="MbTaskScreenState.FORM_PATH">
             <mat-form-field class="title-input-holder" floatLabel="never">
               <input
                 #titleInput
