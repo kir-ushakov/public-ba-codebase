@@ -63,7 +63,7 @@ export class MbTaskScreenState {
     return state.taskData;
   }
 
-  @Selector([MbTaskScreenState.task])
+  @Selector([MbTaskScreenState, MbTaskScreenState.task])
   static showCompleteTaskBtn(state: IMbTaskScreenStateModel, task: Task) {
     if (state.mode === ETaskViewMode.View && task.status === ETaskStatus.Todo) {
       return true;
