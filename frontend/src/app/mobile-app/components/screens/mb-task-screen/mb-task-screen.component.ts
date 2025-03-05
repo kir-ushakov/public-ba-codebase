@@ -52,14 +52,11 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
     }
   }
 
-  @Select(MbTaskScreenState.mode) mode$: Observable<ETaskViewMode>;
-  @Select(MbTaskScreenState.task) task$: Observable<Task>;
-  @Select(MbTaskScreenState.showCompleteTaskBtn)
-  showCompleteTaskBtn$: Observable<boolean>;
-  @Select(MbTaskScreenState.showToggleOptionsBtn)
-  showToggleOptionsBtn$: Observable<boolean>;
-  @Select(MbTaskScreenState.imageUri)
-  imageUri$: Observable<string>;
+  mode$: Observable<ETaskViewMode> = inject(Store).select(MbTaskScreenState.mode);
+  task$: Observable<Task> = inject(Store).select(MbTaskScreenState.task);
+  showCompleteTaskBtn$: Observable<boolean> = inject(Store).select(MbTaskScreenState.showCompleteTaskBtn);
+  showToggleOptionsBtn$: Observable<boolean> = inject(Store).select(MbTaskScreenState.showToggleOptionsBtn);
+  imageUri$: Observable<string> = inject(Store).select(MbTaskScreenState.imageUri);
 
   ETaskViewMode = ETaskViewMode;
 
