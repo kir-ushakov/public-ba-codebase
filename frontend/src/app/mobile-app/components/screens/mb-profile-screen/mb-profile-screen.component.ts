@@ -4,7 +4,7 @@ import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { UserState } from 'src/app/shared/state/user.state';
 import { MbProfileScreenAction } from './mb-profile-screen.actions';
-import { UserAvatarComponent } from 'src/app/shared/components/ui-elements/user-avatar/user-avatar.component';
+import { UserAvatarComponent } from 'src/app/shared/components/common/user-avatar/user-avatar.component';
 import { MbIntegrationsComponent } from './integrations/mb-integrations.component';
 import { CommonModule } from '@angular/common';
 
