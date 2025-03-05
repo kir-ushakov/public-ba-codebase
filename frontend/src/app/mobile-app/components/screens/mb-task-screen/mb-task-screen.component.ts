@@ -6,7 +6,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { Select, Store } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 
 import { MbTaskScreenAction } from './mb-task-screen.actions';
 import { Observable, Subject } from 'rxjs';
