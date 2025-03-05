@@ -18,9 +18,10 @@
       </div>
     </div>
     <div class="main-panel-holder">
+      @let mode = mode$ | async;
       @if(
-        (mode$ | async) === ETaskViewMode.Create || 
-        (mode$ | async) === ETaskViewMode.Edit) {
+        mode === ETaskViewMode.Create || 
+        mode === ETaskViewMode.Edit) {
         <div class="title-input-holder">
           <form class="task-form"
             [formGroup]="form"
@@ -55,11 +56,12 @@
           </form>
         </div>
       }
-      @if((mode$ | async) === ETaskViewMode.View) {
+      @if(mode === ETaskViewMode.View) {
+        @let task = task$ | async;
         <div class="title-holder">
-          <span>{{ (task$ | async).title }}</span>
+          <span>{{ task.title }}</span>
         </div>
-        @if((task$ | async)?.imageUri) {
+        @if(task?.imageUri) {
           <div class="task-picture-holder ">
             <img class="task-picture" src="{{ (task$ | async)?.imageUri }}" />
           </div>
