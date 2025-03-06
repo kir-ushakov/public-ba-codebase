@@ -1,0 +1,33 @@
+<div class="title-input-holder">
+  <form class="task-form"
+    [formGroup]="form"
+    [ngxsForm]="MbTaskScreenState.FORM_PATH">
+    <mat-form-field class="title-input-holder" floatLabel="never">
+      <input
+        #titleInput
+        matInput
+        id="titleInput"
+        formControlName="title"
+        placeholder="Task title here"
+        autocomplete="off"
+        autofocus />
+      <mat-error *ngIf="false">
+        Task title is <strong>required</strong>
+      </mat-error>
+    </mat-form-field>
+    @if ((imageUri$ | async)) {
+      <div class="task-picture-holder">
+        <img class="task-picture" src="{{ imageUri$ | async }}" />
+      </div>
+    } @else {
+      <div class="take-a-picture-icon-holder">
+        <mat-icon
+          aria-hidden="false"
+          aria-label="Picture Icon"
+          (click)="addPictureBtnPressed()">
+          image
+        </mat-icon>
+      </div>
+    }
+  </form>
+</div>

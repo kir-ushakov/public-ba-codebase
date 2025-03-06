@@ -10,39 +10,9 @@
       @if(
         mode === ETaskViewMode.Create || 
         mode === ETaskViewMode.Edit) {
-        <div class="title-input-holder">
-          <form class="task-form"
-            [formGroup]="form"
-            [ngxsForm]="MbTaskScreenState.FORM_PATH">
-            <mat-form-field class="title-input-holder" floatLabel="never">
-              <input
-                #titleInput
-                matInput
-                id="titleInput"
-                formControlName="title"
-                placeholder="Task title here"
-                autocomplete="off"
-                autofocus />
-              <mat-error *ngIf="false">
-                Task title is <strong>required</strong>
-              </mat-error>
-            </mat-form-field>
-            @if ((imageUri$ | async)) {
-              <div class="task-picture-holder">
-                <img class="task-picture" src="{{ imageUri$ | async }}" />
-              </div>
-            } @else {
-              <div class="take-a-picture-icon-holder">
-                <mat-icon
-                  aria-hidden="false"
-                  aria-label="Picture Icon"
-                  (click)="addPictureBtnPressed()">
-                  image
-                </mat-icon>
-              </div>
-            }
-          </form>
-        </div>
+        <ba-mb-task-edit 
+          (formValidStatus)="formValidStatus = $event">
+        </ba-mb-task-edit>
       }
       @if(mode === ETaskViewMode.View) {
         @let task = task$ | async;
@@ -57,7 +27,7 @@
       }
     </div>
     <div class="bottom-panel-holder">
-      <app-mb-task-view-bottom [enabled]="form.valid"></app-mb-task-view-bottom>
+      <app-mb-task-view-bottom [enabled]="formValidStatus"></app-mb-task-view-bottom>
     </div>
   </mat-drawer-content>
   <mat-drawer #menuDrawer class="task-view-sidemenu" mode="over" position="end">

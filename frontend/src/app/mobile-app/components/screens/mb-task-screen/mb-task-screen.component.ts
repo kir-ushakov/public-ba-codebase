@@ -15,19 +15,10 @@ import { MbTaskScreenState, ETaskViewMode } from './mb-task-screen.state';
 import { ActivatedRoute } from '@angular/router';
 import { Task } from 'src/app/shared/models/task.model';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
-import {
-  UntypedFormControl,
-  UntypedFormGroup,
-  Validators,
-  ReactiveFormsModule
-} from '@angular/forms';
-import { NgxsFormPluginModule } from '@ngxs/form-plugin';
 import { CommonModule } from '@angular/common';
 import { MbTaskViewBottomComponent } from './mb-task-view-bottom/mb-task-view-bottom.component';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
 import { MbTaskTopPanelComponent } from './mb-task-top-panel/mb-task-top-panel.component';
+import { MbTaskEditComponent } from './mb-task-edit/mb-task-edit.component';
 
 @Component({
     selector: 'ba-mb-task-screen',
@@ -37,12 +28,8 @@ import { MbTaskTopPanelComponent } from './mb-task-top-panel/mb-task-top-panel.c
       CommonModule, 
       MatSidenavModule,
       MbTaskViewBottomComponent,
-      MatFormFieldModule, 
-      MatInputModule,
-      MatIconModule,
-      NgxsFormPluginModule,
-      ReactiveFormsModule,
-      MbTaskTopPanelComponent
+      MbTaskTopPanelComponent,
+      MbTaskEditComponent
     ]
 })
 export class MbTaskScreenComponent implements OnInit, OnDestroy {
@@ -57,19 +44,10 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
 
   mode$: Observable<ETaskViewMode> = inject(Store).select(MbTaskScreenState.mode);
   task$: Observable<Task> = inject(Store).select(MbTaskScreenState.task);
-  imageUri$: Observable<string> = inject(Store).select(MbTaskScreenState.imageUri);
 
   ETaskViewMode = ETaskViewMode;
 
-  form: UntypedFormGroup = new UntypedFormGroup({
-    title: new UntypedFormControl('', [
-      Validators.required,
-      Validators.minLength(5),
-      Validators.maxLength(50),
-    ]),
-  });
-
-  MbTaskScreenState = MbTaskScreenState;
+  formValidStatus: boolean;
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -112,10 +90,6 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
   deleteTaskOptionSelected() {
     this.menuDrawer.toggle();
     this.store.dispatch(MbTaskScreenAction.DeleteTaskOptionSelected);
-  }
-
-  addPictureBtnPressed() {
-    this.store.dispatch(MbTaskScreenAction.AddPictureBtnPressed);
   }
 
   private subscribeToRouteParams() {
