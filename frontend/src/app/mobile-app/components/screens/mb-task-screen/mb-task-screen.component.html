@@ -1,21 +1,9 @@
 <mat-drawer-container class="task-view-container" hasBackdrop="fasle">
   <mat-drawer-content class="task-view-content">
     <div class="top-panel-holder">
-      <div class="task-top-panel">
-        @if(showCompleteTaskBtn$ | async) {
-          <div class="top-panel-btn done"
-            id="completeTask"
-            (click)="completeTask()">
-          </div>
-        }
-        @if(showToggleOptionsBtn$ | async) {
-          <div
-            class="top-panel-btn options"
-            (click)="toggleMenu()"
-            id="toggelOptionsMenuBtn">
-          </div>
-        }
-      </div>
+      <ba-mb-task-top-panel 
+        (toggleMenu)="toggleMenu()">
+      </ba-mb-task-top-panel>
     </div>
     <div class="main-panel-holder">
       @let mode = mode$ | async;

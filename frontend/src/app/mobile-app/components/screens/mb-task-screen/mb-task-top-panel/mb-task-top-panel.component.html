@@ -1,0 +1,14 @@
+@if(showCompleteTaskBtn$ | async) {
+  <div class="top-panel-btn done"
+    id="completeTask"
+    (click)="completeTask()">
+  </div>
+}
+
+@if(showToggleOptionsBtn$ | async) {
+  <div
+    class="top-panel-btn options"
+    (click)="this.toggleMenu.emit()"
+    id="toggelOptionsMenuBtn">
+  </div>
+}

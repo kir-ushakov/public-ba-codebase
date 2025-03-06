@@ -49,37 +49,6 @@
   height: 42px;
 }
 
-/* Task View Top Panel */
-.task-top-panel {
-  align-items: center;
-  background-color: $color-panel-bg;
-  display: flex;
-  justify-content: flex-end;
-  height: 100%;
-  padding: 0 $main-padding;
-}
-
-.top-panel-btn {
-  display: flex;
-  height: 30px;
-  width: 30px;
-
-  &.done {
-    background: url('/assets/ui/icons/checkmark-green.png') center / auto 85%
-      no-repeat;
-    display: flex;
-  }
-
-  &.options {
-    background: url('/assets/ui/icons/options.png') center / auto 85% no-repeat;
-    display: flex;
-  }
-
-  &:not(:last-child) {
-    margin-right: 10px;
-  }
-}
-
 .task-picture-holder {
   display: flex;
   justify-content: center;

@@ -27,6 +27,7 @@ import { MbTaskViewBottomComponent } from './mb-task-view-bottom/mb-task-view-bo
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { MbTaskTopPanelComponent } from './mb-task-top-panel/mb-task-top-panel.component';
 
 @Component({
     selector: 'ba-mb-task-screen',
@@ -40,7 +41,8 @@ import { MatIconModule } from '@angular/material/icon';
       MatInputModule,
       MatIconModule,
       NgxsFormPluginModule,
-      ReactiveFormsModule
+      ReactiveFormsModule,
+      MbTaskTopPanelComponent
     ]
 })
 export class MbTaskScreenComponent implements OnInit, OnDestroy {
@@ -55,8 +57,6 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
 
   mode$: Observable<ETaskViewMode> = inject(Store).select(MbTaskScreenState.mode);
   task$: Observable<Task> = inject(Store).select(MbTaskScreenState.task);
-  showCompleteTaskBtn$: Observable<boolean> = inject(Store).select(MbTaskScreenState.showCompleteTaskBtn);
-  showToggleOptionsBtn$: Observable<boolean> = inject(Store).select(MbTaskScreenState.showToggleOptionsBtn);
   imageUri$: Observable<string> = inject(Store).select(MbTaskScreenState.imageUri);
 
   ETaskViewMode = ETaskViewMode;
