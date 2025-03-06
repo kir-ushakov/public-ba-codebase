@@ -19,6 +19,7 @@ import { CommonModule } from '@angular/common';
 import { MbTaskViewBottomComponent } from './mb-task-view-bottom/mb-task-view-bottom.component';
 import { MbTaskTopPanelComponent } from './mb-task-top-panel/mb-task-top-panel.component';
 import { MbTaskEditComponent } from './mb-task-edit/mb-task-edit.component';
+import { MbTaskViewComponent } from './mb-task-view/mb-task-view.component';
 
 @Component({
     selector: 'ba-mb-task-screen',
@@ -29,7 +30,8 @@ import { MbTaskEditComponent } from './mb-task-edit/mb-task-edit.component';
       MatSidenavModule,
       MbTaskViewBottomComponent,
       MbTaskTopPanelComponent,
-      MbTaskEditComponent
+      MbTaskEditComponent,
+      MbTaskViewComponent
     ]
 })
 export class MbTaskScreenComponent implements OnInit, OnDestroy {
@@ -43,7 +45,6 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
   }
 
   mode$: Observable<ETaskViewMode> = inject(Store).select(MbTaskScreenState.mode);
-  task$: Observable<Task> = inject(Store).select(MbTaskScreenState.task);
 
   ETaskViewMode = ETaskViewMode;
 

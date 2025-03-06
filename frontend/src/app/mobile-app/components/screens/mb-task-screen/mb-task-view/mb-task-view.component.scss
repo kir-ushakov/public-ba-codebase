@@ -1,0 +1,13 @@
+@import 'src/scss/colors';
+
+.title-holder {
+  text-align: center;
+  color: $color-main-text;
+  font-size: 20px;
+  font-style: italic;
+}
+
+.task-picture-holder {
+  display: flex;
+  justify-content: center;
+}

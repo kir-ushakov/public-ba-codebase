@@ -33,21 +33,9 @@
   padding: $main-padding;
 }
 
-.title-holder {
-  text-align: center;
-  color: $color-main-text;
-  font-size: 20px;
-  font-style: italic;
-}
-
 .bottom-panel-holder {
   flex-shrink: 0;
   height: 42px;
-}
-
-.task-picture-holder {
-  display: flex;
-  justify-content: center;
 }
 
 .sidemenu-holder {

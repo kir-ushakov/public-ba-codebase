@@ -15,15 +15,7 @@
         </ba-mb-task-edit>
       }
       @if(mode === ETaskViewMode.View) {
-        @let task = task$ | async;
-        <div class="title-holder">
-          <span>{{ task.title }}</span>
-        </div>
-        @if(task?.imageUri) {
-          <div class="task-picture-holder ">
-            <img class="task-picture" src="{{ (task$ | async)?.imageUri }}" />
-          </div>
-        }
+        <ba-mb-task-view></ba-mb-task-view>
       }
     </div>
     <div class="bottom-panel-holder">
