@@ -13,13 +13,13 @@ import { MbTaskScreenAction } from './mb-task-screen.actions';
 import { Observable, Subject } from 'rxjs';
 import { MbTaskScreenState, ETaskViewMode } from './mb-task-screen.state';
 import { ActivatedRoute } from '@angular/router';
-import { Task } from 'src/app/shared/models/task.model';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { CommonModule } from '@angular/common';
 import { MbTaskViewBottomComponent } from './mb-task-view-bottom/mb-task-view-bottom.component';
 import { MbTaskTopPanelComponent } from './mb-task-top-panel/mb-task-top-panel.component';
 import { MbTaskEditComponent } from './mb-task-edit/mb-task-edit.component';
 import { MbTaskViewComponent } from './mb-task-view/mb-task-view.component';
+import { MbTaskSideMenuComponent } from './mb-task-side-menu/mb-task-side-menu.component';
 
 @Component({
     selector: 'ba-mb-task-screen',
@@ -31,7 +31,8 @@ import { MbTaskViewComponent } from './mb-task-view/mb-task-view.component';
       MbTaskViewBottomComponent,
       MbTaskTopPanelComponent,
       MbTaskEditComponent,
-      MbTaskViewComponent
+      MbTaskViewComponent,
+      MbTaskSideMenuComponent
     ]
 })
 export class MbTaskScreenComponent implements OnInit, OnDestroy {
@@ -67,30 +68,12 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  completeTask() {
-    this.store.dispatch(MbTaskScreenAction.CompleteTaskOptionSelected);
-  }
-
-  canceledTask() {
-    this.store.dispatch(MbTaskScreenAction.CancelTaskOptionSelected);
-  }
-
   openTaksOptions() {
     this.store.dispatch(MbTaskScreenAction.OpenTaskOptions);
   }
 
   toggleMenu() {
     this.menuDrawer.toggle();
-  }
-
-  editTaskOptionSelected() {
-    this.store.dispatch(MbTaskScreenAction.EditTaskOptionSelected);
-    this.menuDrawer.toggle();
-  }
-
-  deleteTaskOptionSelected() {
-    this.menuDrawer.toggle();
-    this.store.dispatch(MbTaskScreenAction.DeleteTaskOptionSelected);
   }
 
   private subscribeToRouteParams() {
