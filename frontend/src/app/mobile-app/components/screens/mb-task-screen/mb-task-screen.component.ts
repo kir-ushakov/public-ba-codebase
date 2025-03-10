@@ -8,18 +8,17 @@ import {
   ViewChild,
 } from '@angular/core';
 import { Store } from '@ngxs/store';
-
 import { MbTaskScreenAction } from './mb-task-screen.actions';
 import { Observable, Subject } from 'rxjs';
 import { MbTaskScreenState, ETaskViewMode } from './mb-task-screen.state';
 import { ActivatedRoute } from '@angular/router';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { CommonModule } from '@angular/common';
-import { MbTaskViewBottomComponent } from './mb-task-view-bottom/mb-task-view-bottom.component';
 import { MbTaskTopPanelComponent } from './mb-task-top-panel/mb-task-top-panel.component';
 import { MbTaskEditComponent } from './mb-task-edit/mb-task-edit.component';
 import { MbTaskViewComponent } from './mb-task-view/mb-task-view.component';
 import { MbTaskSideMenuComponent } from './mb-task-side-menu/mb-task-side-menu.component';
+import { BottomPanelComponent } from 'src/app/shared/components/ui-elements/bottom-panel/bottom-panel.component';
 
 @Component({
     selector: 'ba-mb-task-screen',
@@ -28,7 +27,7 @@ import { MbTaskSideMenuComponent } from './mb-task-side-menu/mb-task-side-menu.c
     imports: [ 
       CommonModule, 
       MatSidenavModule,
-      MbTaskViewBottomComponent,
+      BottomPanelComponent,
       MbTaskTopPanelComponent,
       MbTaskEditComponent,
       MbTaskViewComponent,
