@@ -45,6 +45,7 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
   }
 
   mode$: Observable<ETaskViewMode> = inject(Store).select(MbTaskScreenState.mode);
+  isSideMenuOpened$: Observable<boolean> = inject(Store).select(MbTaskScreenState.isSideMenuOpened);
 
   ETaskViewMode = ETaskViewMode;
 
@@ -60,6 +61,7 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscribeToRouteParams();
+    this.subscribeToSelectors();
   }
 
   ngOnDestroy() {
@@ -71,10 +73,6 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
     this.store.dispatch(MbTaskScreenAction.OpenTaskOptions);
   }
 
-  toggleMenu() {
-    this.menuDrawer.toggle();
-  }
-
   private subscribeToRouteParams() {
     this.route.paramMap.subscribe((params) => {
       this.store.dispatch(
@@ -84,5 +82,10 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
         )
       );
     });
+  }
+
+  private subscribeToSelectors() {
+    this.isSideMenuOpened$.subscribe(
+      isSideMenuOpened => this.menuDrawer.toggle(isSideMenuOpened));
   }
 }

@@ -11,6 +11,7 @@ import { UserState } from 'src/app/shared/state/user.state';
 import { AppAction } from 'src/app/shared/state/app.actions';
 import { UpdateFormValue } from '@ngxs/form-plugin';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
+import { patch } from '@ngxs/store/operators';
 
 export enum ETaskViewMode {
   Create = 'TASK_VIEW_MODE_CREATE',
@@ -28,6 +29,7 @@ export interface IMbTaskScreenStateModel {
   taskViewForm: {
     model: IEditTaskFormData;
   };
+  isSideMenuOpened: boolean
 }
 
 const defaults = {
@@ -38,6 +40,7 @@ const defaults = {
     } as IEditTaskFormData,
   },
   taskData: defaultTask,
+  isSideMenuOpened: false
 };
 
 @State<IMbTaskScreenStateModel>({
@@ -79,6 +82,11 @@ export class MbTaskScreenState {
   @Selector()
   static imageUri(state: IMbTaskScreenStateModel): string {
     return state.taskData.imageUri;
+  }
+
+  @Selector()
+  static isSideMenuOpened(state: IMbTaskScreenStateModel): boolean {
+    return state.isSideMenuOpened;
   }
 
   @Action(MbTaskScreenAction.Opened)
@@ -176,5 +184,13 @@ export class MbTaskScreenState {
     };
 
     ctx.patchState({ taskData: taskData });
+  }
+
+  @Action(MbTaskScreenAction.SideMenuToggle)
+  sideMenuToggled(ctx: StateContext<IMbTaskScreenStateModel>) {
+    const isSideMenuOpened = ctx.getState().isSideMenuOpened;
+    ctx.setState(patch({
+      isSideMenuOpened: !isSideMenuOpened
+    }));
   }
 }

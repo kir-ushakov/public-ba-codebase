@@ -41,7 +41,7 @@ export class MbTaskSideMenuComponent {
 
   editTaskOptionSelected() {
     this.store.dispatch(MbTaskScreenAction.EditTaskOptionSelected);
-    this.toggleMenu.emit();
+    this.store.dispatch(MbTaskScreenAction.SideMenuToggle);
   }
 
   completeTask() {
@@ -53,7 +53,7 @@ export class MbTaskSideMenuComponent {
   }
 
   deleteTaskOptionSelected() {
-    this.toggleMenu.emit();
+    this.store.dispatch(MbTaskScreenAction.SideMenuToggle);
     this.store.dispatch(MbTaskScreenAction.DeleteTaskOptionSelected);
   }
 }

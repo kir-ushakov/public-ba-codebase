@@ -64,4 +64,8 @@ export namespace MbTaskScreenAction {
   export class AddPictureBtnPressed {
     static readonly type = '[MbTaskScreen] Add Picture Btn Pressed';
   }
+
+  export class SideMenuToggle {
+    static readonly type = '[MbTaskScreen] Side Menu Toggle';
+  }
 }

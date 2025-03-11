@@ -1,4 +1,4 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { MbTaskScreenAction } from '../mb-task-screen.actions';
 import { Observable } from 'rxjs';
@@ -14,7 +14,6 @@ import { CommonModule } from '@angular/common';
 export class MbTaskTopPanelComponent {
   showCompleteTaskBtn$: Observable<boolean> = inject(Store).select(MbTaskScreenState.showCompleteTaskBtn);
   showToggleOptionsBtn$: Observable<boolean> = inject(Store).select(MbTaskScreenState.showToggleOptionsBtn);
-  toggleMenu = output<void>();
 
   constructor(private readonly store: Store) { }
 
@@ -22,4 +21,7 @@ export class MbTaskTopPanelComponent {
     this.store.dispatch(MbTaskScreenAction.CompleteTaskOptionSelected);
   }
 
+  toggleMenu() {
+    this.store.dispatch(MbTaskScreenAction.SideMenuToggle);
+  }
 }

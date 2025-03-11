@@ -1,9 +1,7 @@
 <mat-drawer-container class="task-view-container" hasBackdrop="fasle">
   <mat-drawer-content class="task-view-content">
     <div class="top-panel-holder">
-      <ba-mb-task-top-panel 
-        (toggleMenu)="toggleMenu()">
-      </ba-mb-task-top-panel>
+      <ba-mb-task-top-panel></ba-mb-task-top-panel>
     </div>
     <div class="main-panel-holder">
       @let mode = mode$ | async;
@@ -23,8 +21,6 @@
     </div>
   </mat-drawer-content>
   <mat-drawer #menuDrawer class="task-view-sidemenu" mode="over" position="end">
-    <ba-mb-task-side-menu 
-      (toggleMenu)="toggleMenu()">
-    </ba-mb-task-side-menu>
+    <ba-mb-task-side-menu></ba-mb-task-side-menu>
   </mat-drawer>
 </mat-drawer-container>
