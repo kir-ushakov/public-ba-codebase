@@ -28,6 +28,7 @@ export interface IMbTaskScreenStateModel {
   taskData: Task;
   taskViewForm: {
     model: IEditTaskFormData;
+    status: boolean;
   };
   isSideMenuOpened: boolean
 }
@@ -38,6 +39,7 @@ const defaults = {
     model: {
       title: '',
     } as IEditTaskFormData,
+    status: false
   },
   taskData: defaultTask,
   isSideMenuOpened: false
@@ -87,6 +89,11 @@ export class MbTaskScreenState {
   @Selector()
   static isSideMenuOpened(state: IMbTaskScreenStateModel): boolean {
     return state.isSideMenuOpened;
+  }
+
+  @Selector()
+  static isEditFormValid(state: IMbTaskScreenStateModel): boolean {
+    return state.taskViewForm.status;
   }
 
   @Action(MbTaskScreenAction.Opened)
@@ -191,6 +198,17 @@ export class MbTaskScreenState {
     const isSideMenuOpened = ctx.getState().isSideMenuOpened;
     ctx.setState(patch({
       isSideMenuOpened: !isSideMenuOpened
+    }));
+  }
+
+  @Action(MbTaskScreenAction.UpdateFormValidStatus)
+  updateFormValidStatus(ctx: StateContext<IMbTaskScreenStateModel>, { valid }) {
+    const state = ctx.getState();
+    ctx.setState(patch({
+      taskViewForm: {
+        ...state.taskViewForm,
+        status: valid,
+      }
     }));
   }
 }

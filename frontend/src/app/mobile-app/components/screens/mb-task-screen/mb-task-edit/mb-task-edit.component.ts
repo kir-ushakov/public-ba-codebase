@@ -51,7 +51,7 @@ export class MbTaskEditComponent {
 
   private initSubscriptions() {
     this.form.valueChanges.subscribe(() => {
-      this.formValidStatus.emit(this.form.valid);
+      this.store.dispatch(new MbTaskScreenAction.UpdateFormValidStatus(this.form.valid))
     });
   }
 }

@@ -16,6 +16,8 @@ export class BottomPanelComponent {
   @Select(MbTaskScreenState.mode)
   mode$: Observable<ETaskViewMode>;
 
+  isEditFormValid$: Observable<boolean> = inject(Store).select(MbTaskScreenState.isEditFormValid);
+
   ETaskViewMode = ETaskViewMode;
 
   constructor(private store: Store) {}

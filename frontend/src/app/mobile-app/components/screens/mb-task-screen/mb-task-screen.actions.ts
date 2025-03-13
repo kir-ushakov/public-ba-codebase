@@ -68,4 +68,10 @@ export namespace MbTaskScreenAction {
   export class SideMenuToggle {
     static readonly type = '[MbTaskScreen] Side Menu Toggle';
   }
+
+  export class UpdateFormValidStatus {
+    static readonly type = '[MbTaskScreen] Update Form Valid Status';
+    
+    constructor(public valid: boolean) {}
+  }
 }
