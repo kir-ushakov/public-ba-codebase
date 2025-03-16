@@ -8,25 +8,17 @@ import {
   ViewChild,
 } from '@angular/core';
 import { Store } from '@ngxs/store';
-
 import { MbTaskScreenAction } from './mb-task-screen.actions';
 import { Observable, Subject } from 'rxjs';
 import { MbTaskScreenState, ETaskViewMode } from './mb-task-screen.state';
 import { ActivatedRoute } from '@angular/router';
-import { Task } from 'src/app/shared/models/task.model';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
-import {
-  UntypedFormControl,
-  UntypedFormGroup,
-  Validators,
-  ReactiveFormsModule
-} from '@angular/forms';
-import { NgxsFormPluginModule } from '@ngxs/form-plugin';
 import { CommonModule } from '@angular/common';
-import { MbTaskViewBottomComponent } from './mb-task-view-bottom/mb-task-view-bottom.component';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
+import { MbTaskTopPanelComponent } from './mb-task-top-panel/mb-task-top-panel.component';
+import { MbTaskEditComponent } from './mb-task-edit/mb-task-edit.component';
+import { MbTaskViewComponent } from './mb-task-view/mb-task-view.component';
+import { MbTaskSideMenuComponent } from './mb-task-side-menu/mb-task-side-menu.component';
+import { BottomPanelComponent } from 'src/app/shared/components/ui-elements/bottom-panel/bottom-panel.component';
 
 @Component({
     selector: 'ba-mb-task-screen',
@@ -35,12 +27,11 @@ import { MatIconModule } from '@angular/material/icon';
     imports: [ 
       CommonModule, 
       MatSidenavModule,
-      MbTaskViewBottomComponent,
-      MatFormFieldModule, 
-      MatInputModule,
-      MatIconModule,
-      NgxsFormPluginModule,
-      ReactiveFormsModule
+      BottomPanelComponent,
+      MbTaskTopPanelComponent,
+      MbTaskEditComponent,
+      MbTaskViewComponent,
+      MbTaskSideMenuComponent
     ]
 })
 export class MbTaskScreenComponent implements OnInit, OnDestroy {
@@ -54,22 +45,11 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
   }
 
   mode$: Observable<ETaskViewMode> = inject(Store).select(MbTaskScreenState.mode);
-  task$: Observable<Task> = inject(Store).select(MbTaskScreenState.task);
-  showCompleteTaskBtn$: Observable<boolean> = inject(Store).select(MbTaskScreenState.showCompleteTaskBtn);
-  showToggleOptionsBtn$: Observable<boolean> = inject(Store).select(MbTaskScreenState.showToggleOptionsBtn);
-  imageUri$: Observable<string> = inject(Store).select(MbTaskScreenState.imageUri);
+  isSideMenuOpened$: Observable<boolean> = inject(Store).select(MbTaskScreenState.isSideMenuOpened);
 
   ETaskViewMode = ETaskViewMode;
 
-  form: UntypedFormGroup = new UntypedFormGroup({
-    title: new UntypedFormControl('', [
-      Validators.required,
-      Validators.minLength(5),
-      Validators.maxLength(50),
-    ]),
-  });
-
-  MbTaskScreenState = MbTaskScreenState;
+  formValidStatus: boolean;
 
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -81,6 +61,7 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscribeToRouteParams();
+    this.subscribeToSelectors();
   }
 
   ngOnDestroy() {
@@ -88,34 +69,8 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  completeTask() {
-    this.store.dispatch(MbTaskScreenAction.CompleteTaskOptionSelected);
-  }
-
-  canceledTask() {
-    this.store.dispatch(MbTaskScreenAction.CancelTaskOptionSelected);
-  }
-
   openTaksOptions() {
     this.store.dispatch(MbTaskScreenAction.OpenTaskOptions);
-  }
-
-  toggleMenu() {
-    this.menuDrawer.toggle();
-  }
-
-  editTaskOptionSelected() {
-    this.store.dispatch(MbTaskScreenAction.EditTaskOptionSelected);
-    this.menuDrawer.toggle();
-  }
-
-  deleteTaskOptionSelected() {
-    this.menuDrawer.toggle();
-    this.store.dispatch(MbTaskScreenAction.DeleteTaskOptionSelected);
-  }
-
-  addPictureBtnPressed() {
-    this.store.dispatch(MbTaskScreenAction.AddPictureBtnPressed);
   }
 
   private subscribeToRouteParams() {
@@ -127,5 +82,10 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
         )
       );
     });
+  }
+
+  private subscribeToSelectors() {
+    this.isSideMenuOpened$.subscribe(
+      isSideMenuOpened => this.menuDrawer.toggle(isSideMenuOpened));
   }
 }
