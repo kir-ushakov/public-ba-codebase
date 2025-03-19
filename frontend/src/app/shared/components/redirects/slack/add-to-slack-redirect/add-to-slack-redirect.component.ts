@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Signal } from '@angular/core';
 import { Select, Store } from '@ngxs/store';
 import { Observable, from } from 'rxjs';
 import { AppAction } from 'src/app/shared/state/app.actions';
@@ -13,10 +13,8 @@ import { ActivatedRoute } from '@angular/router';
     standalone: false
 })
 export class AddToSlackRedirectComponent {
-  @Select(AddToSlackRedirectScreenState.isInstalling)
-  isInstalling$: Observable<boolean>;
-  @Select(AddToSlackRedirectScreenState.errorOccurred)
-  errorOccurred$: Observable<boolean>;
+  isInstalling: Signal<boolean> = this._store.selectSignal(AddToSlackRedirectScreenState.isInstalling);
+  errorOccurred: Signal<boolean> = this._store.selectSignal(AddToSlackRedirectScreenState.errorOccurred);
 
   constructor(
     private readonly _activatedRoute: ActivatedRoute,

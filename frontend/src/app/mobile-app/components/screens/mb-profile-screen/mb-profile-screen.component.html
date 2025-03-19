@@ -1,10 +1,9 @@
 <div class="top-panel">
   <div class="icon-holder">
     <mat-icon
-      [routerLink]="['/home']"
       aria-hidden="false"
       aria-label="Arrow Back Icon"
-    >
+      [routerLink]="['/home']">
       arrow_back
     </mat-icon>
   </div>
@@ -13,29 +12,26 @@
   <div class="user-info-container">
     <div class="avatar-holder">
       <ba-user-avatar [data]="avatarInputData"></ba-user-avatar>
-      <img
-        class="edit-avatar-icon"
+      <img class="edit-avatar-icon"
         src="assets/ui/icons/edit.png"
         (click)="editAvatar()"
       />
     </div>
     <div class="user-info">
       <div class="user-name-holder">
-        <span>{{ userFullName$ | async }}</span>
+        <span>{{ selectors.userFullName() }}</span>
         <img
           class="edit-avatar-icon"
           src="assets/ui/icons/edit.png"
           (click)="editAvatar()"
         />
       </div>
-      <div class="user-email-holder">{{ userEmail$ | async }}</div>
-      <div class="logout-btn-holder" *ngIf="isLoggedIn$ | async">
-        <button
+      <div class="user-email-holder">{{ selectors.userEmail() }}</div>
+      <div class="logout-btn-holder" *ngIf="selectors.isLoggedIn()">
+        <button class="light-gray-btn logout-btn"
           mat-button
           color="primary"
-          class="light-gray-btn logout-btn"
-          (click)="logout()"
-        >
+          (click)="logout()">
           Logout
         </button>
       </div>

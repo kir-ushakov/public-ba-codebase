@@ -1,15 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Signal } from '@angular/core';
 import {
   UntypedFormControl,
   UntypedFormGroup,
   Validators,
 } from '@angular/forms';
-import { Observable } from 'rxjs';
-import { Select, Store } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 import { AppAction } from 'src/app/shared/state/app.actions';
 import { MbLoginScreenState } from './mb-login-screen.state';
 import { MbLoginScreenAction } from './mb-login-screen.actions';
-import { SignInWithGoogleBtnComponent } from 'src/app/shared/components/common/sign-in-with-google-btn/sign-in-with-google-btn.component';
+import { SignInWithGoogleBtnComponent } from 'src/app/shared/components/ui-elements/sign-in-with-google-btn/sign-in-with-google-btn.component';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -27,7 +26,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     ]
 })
 export class MbLoginScreenComponent implements OnInit {
-  @Select(MbLoginScreenState.authError) authError$: Observable<boolean>;
+  authError: Signal<string> = this.store.selectSignal(MbLoginScreenState.authError);
 
   public form: UntypedFormGroup = new UntypedFormGroup({
     email: new UntypedFormControl('', [Validators.required, Validators.email]),

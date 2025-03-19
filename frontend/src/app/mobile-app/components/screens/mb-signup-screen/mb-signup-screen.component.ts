@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Signal } from '@angular/core';
 import {
   UntypedFormControl,
   UntypedFormGroup,
@@ -28,8 +28,7 @@ import { MatInputModule } from '@angular/material/input';
     ]
 })
 export class MbSignupScreenComponent {
-  @Select(MbSignupScreenState.signUpResult)
-  signUpResult$: Observable<SignUpResponseDTO>;
+  signUpResult: Signal<SignUpResponseDTO> = this.store.selectSignal(MbSignupScreenState.signUpResult);
 
   public form: UntypedFormGroup = new UntypedFormGroup({
     firstName: new UntypedFormControl('', Validators.required),

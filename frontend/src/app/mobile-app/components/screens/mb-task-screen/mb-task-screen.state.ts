@@ -30,7 +30,7 @@ export interface IMbTaskScreenStateModel {
     model: IEditTaskFormData;
     status: boolean;
   };
-  isSideMenuOpened: boolean
+  isSideMenuOpened: boolean,
 }
 
 const defaults = {

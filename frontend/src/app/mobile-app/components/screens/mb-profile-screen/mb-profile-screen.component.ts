@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { Select, Store } from '@ngxs/store';
-import { Observable } from 'rxjs';
+import { createSelectMap, Store } from '@ngxs/store';
 import { UserState } from 'src/app/shared/state/user.state';
 import { MbProfileScreenAction } from './mb-profile-screen.actions';
-import { UserAvatarComponent } from 'src/app/shared/components/common/user-avatar/user-avatar.component';
+import { UserAvatarComponent } from 'src/app/shared/components/ui-elements/user-avatar/user-avatar.component';
 import { MbIntegrationsComponent } from './integrations/mb-integrations.component';
 import { CommonModule } from '@angular/common';
 
@@ -20,9 +19,11 @@ import { CommonModule } from '@angular/common';
     ]
 })
 export class MbProfileScreenComponent {
-  @Select(UserState.userFullName) userFullName$: Observable<string>;
-  @Select(UserState.userEmail) userEmail$: Observable<string>;
-  @Select(UserState.isLoggedIn) isLoggedIn$: Observable<boolean>;
+  selectors = createSelectMap({
+    userFullName: UserState.userFullName,
+    userEmail: UserState.userEmail,
+    isLoggedIn: UserState.isLoggedIn
+  })
 
   avatarInputData = {};
 

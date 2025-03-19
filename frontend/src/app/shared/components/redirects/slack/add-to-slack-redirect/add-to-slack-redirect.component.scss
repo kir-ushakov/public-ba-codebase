@@ -1,3 +1,5 @@
-@import './../../redirects-mixins.scss';
+@import './../../styles.scss';
 
-@include redirectPage;
+:host {
+  @extend .redirectPage;
+}

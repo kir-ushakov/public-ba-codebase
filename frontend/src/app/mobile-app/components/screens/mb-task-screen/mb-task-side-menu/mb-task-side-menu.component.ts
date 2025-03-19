@@ -1,7 +1,8 @@
-import { Component, output } from '@angular/core';
+import { Component } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { MbTaskScreenAction } from '../mb-task-screen.actions';
-import { ITaskSideMenuOptionItem, MbTaskSideMenuItemComponent } from './mb-task-side-menu-item/mb-task-side-menu-item.component';
+import { MbTaskSideMenuItemComponent } from './mb-task-side-menu-item/mb-task-side-menu-item.component';
+import { ITaskSideMenuOptionItem } from './mb-task-side-menu-item/mb-task-side-menu-item.interface';
 
 @Component({
   selector: 'ba-mb-task-side-menu',
@@ -10,7 +11,6 @@ import { ITaskSideMenuOptionItem, MbTaskSideMenuItemComponent } from './mb-task-
   styleUrl: './mb-task-side-menu.component.scss'
 })
 export class MbTaskSideMenuComponent {
-  toggleMenu = output<void>();
 
   optionItems: ITaskSideMenuOptionItem[] = [
     {

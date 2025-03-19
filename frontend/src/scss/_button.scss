@@ -1,0 +1,42 @@
+@use "sass:map";
+
+@mixin button {
+  border: 0;
+  border-radius: 0.25rem;
+  padding: 0.5rem 1.5rem;
+
+  &:active {
+    border: none;
+  }
+}
+
+@mixin green-btn {
+  @include button;
+
+  background-color: map.get($colors-green, default);
+
+  &:active {
+    background-color: map.get($colors-green, light);
+  }
+}
+
+@mixin light-gray-btn {
+  @include button;
+
+  background-color: map.get($colors-gray-palette, 200);
+  color: map.get(map.get($colors-gray-palette, contrast), 200);
+
+  &:active {
+    background-color: map.get($colors-gray, light);
+  }
+}
+
+button {
+  &.green-btn {
+    @include green-btn;
+  }
+
+  &.light-gray-btn {
+    @include light-gray-btn;
+  }
+}

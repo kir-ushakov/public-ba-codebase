@@ -49,8 +49,6 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
 
   ETaskViewMode = ETaskViewMode;
 
-  formValidStatus: boolean;
-
   private destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(

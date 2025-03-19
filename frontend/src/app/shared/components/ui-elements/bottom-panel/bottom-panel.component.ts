@@ -1,7 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
-import { Select, Store } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 import { MbTaskScreenAction } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.actions';
 import { ETaskViewMode, MbTaskScreenState } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.state';
 
@@ -13,8 +13,8 @@ import { ETaskViewMode, MbTaskScreenState } from 'src/app/mobile-app/components/
 })
 export class BottomPanelComponent {
   @Input() enabled: boolean;
-  @Select(MbTaskScreenState.mode)
-  mode$: Observable<ETaskViewMode>;
+
+  mode: Signal<ETaskViewMode> = this.store.selectSignal(MbTaskScreenState.mode);
 
   isEditFormValid$: Observable<boolean> = inject(Store).select(MbTaskScreenState.isEditFormValid);
 

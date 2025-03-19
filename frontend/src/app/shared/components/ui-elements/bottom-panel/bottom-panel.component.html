@@ -1,26 +1,24 @@
-<div
-  *ngIf="
-    (mode$ | async) === ETaskViewMode.Create ||
-    (mode$ | async) === ETaskViewMode.Edit
-  "
-  class="mb-task-ok-panel"
->
-  <div class="cancel-task-btn" (click)="cancelChanges()">Cancel</div>
-   @let isEditFormValid = isEditFormValid$ | async
+@if(
+  mode() === ETaskViewMode.Create ||
+  mode() === ETaskViewMode.Edit) {
   <div
-    class="create-task-btn"
-    [ngClass]="{ enabled: isEditFormValid$ | async }"
-    [disabled]="!(isEditFormValid$ | async)"
-    (click)="applyChanges()"
-    id="createTaskBtn"
-  >
-    Ok
+    class="mb-task-ok-panel">
+    <div class="cancel-task-btn" (click)="cancelChanges()">Cancel</div>
+    @let isEditFormValid = isEditFormValid$ | async;
+    <div
+      class="create-task-btn"
+      [ngClass]="{ enabled: isEditFormValid }"
+      (click)="applyChanges()"
+      id="createTaskBtn">
+      Ok
+    </div>
   </div>
-</div>
-<div
-  *ngIf="(mode$ | async) === ETaskViewMode.View"
-  class="go-home-btn"
-  (click)="goHome()"
->
-  <img src="assets/ui/icons/home-icon.png" />
-</div>
+}
+
+@if(mode() === ETaskViewMode.View) {
+  <div
+    class="go-home-btn"
+    (click)="goHome()">
+    <img src="assets/ui/icons/home-icon.png" />
+  </div>
+}

@@ -1,0 +1,53 @@
+@use "sass:map";
+
+$padding-text-h: 10px;
+$color-main: map.get(map.get($colors-gray-palette, contrast), 500);
+$color-active: map.get(map.get($colors-gray-palette, contrast), 100);
+
+mat-form-field {
+  .mat-form-field-infix {
+    width: 100%;
+  }
+}
+
+mat-form-field.mat-primary {
+  .mat-form-field-infix {
+    border: solid 1px $color-main;
+    border-radius: 5px;
+    padding: 7px $padding-text-h;
+  }
+
+  .mat-input-element {
+    color: $color-active;
+    font-size: 18px;
+  }
+
+  .mat-form-field-label {
+    color: $color-main;
+    left: $padding-text-h;
+    opacity: 0.25;
+  }
+
+  mat-error {
+    color: $dark-warn;
+  }
+
+  &.mat-focused .mat-form-field-infix {
+    border: solid 1px $color-active;
+  }
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  border: none;
+  -webkit-text-fill-color: white;
+  box-shadow: 0 0 0 1000px #000 inset;
+  transition: background-color 5000s ease-in-out 0s;
+}

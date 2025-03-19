@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
-import { Select, Store } from '@ngxs/store';
+import { createSelectMap, Store } from '@ngxs/store';
 import { GoogleAuthRedirectScreenAction } from './google-auth-redirect.actions';
 import { AppAction } from 'src/app/shared/state/app.actions';
-import { Observable } from 'rxjs';
 import { GoogleAuthRedirectScreenState } from './google-auth-redirect.state';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -14,12 +13,13 @@ import { ActivatedRoute } from '@angular/router';
     imports: [ CommonModule ]
 })
 export class GoogleAuthRedirectScreenComponent {
-  @Select(GoogleAuthRedirectScreenState.isLogging)
-  isLogging$: Observable<boolean>;
-  @Select(GoogleAuthRedirectScreenState.errorOccurred)
-  errorOccurred$: Observable<boolean>;
-  @Select(GoogleAuthRedirectScreenState.errorMessage)
-  errorMessage$: Observable<boolean>;
+
+  selectors = createSelectMap({
+    isLogging: GoogleAuthRedirectScreenState.isLogging,
+    errorOccurred: GoogleAuthRedirectScreenState.errorOccurred,
+    errorMessage: GoogleAuthRedirectScreenState.errorMessage
+
+  })
 
   constructor(
     private readonly _activatedRoute: ActivatedRoute,

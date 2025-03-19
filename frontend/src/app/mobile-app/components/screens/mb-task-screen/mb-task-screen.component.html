@@ -8,16 +8,14 @@
       @if(
         mode === ETaskViewMode.Create || 
         mode === ETaskViewMode.Edit) {
-        <ba-mb-task-edit 
-          (formValidStatus)="formValidStatus = $event">
-        </ba-mb-task-edit>
+        <ba-mb-task-edit></ba-mb-task-edit>
       }
       @if(mode === ETaskViewMode.View) {
         <ba-mb-task-view></ba-mb-task-view>
       }
     </div>
     <div class="bottom-panel-holder">
-      <ba-bottom-panel [enabled]="formValidStatus"></ba-bottom-panel>
+      <ba-bottom-panel></ba-bottom-panel>
     </div>
   </mat-drawer-content>
   <mat-drawer #menuDrawer class="task-view-sidemenu" mode="over" position="end">

@@ -1,0 +1,35 @@
+@use 'sass:map';
+@import 'src/scss/colors';
+@import 'src/scss/button';
+
+.redirectPage {
+
+  background: $color-main-bg;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  color: white;
+  
+
+  .in-progress-text {
+    margin: auto;
+    font-size: 2rem;
+  }
+
+  .error-holder {
+    margin: 1rem auto;
+    font-size: 1.2rem;
+    text-align: center;
+  }
+
+  .error-text {
+    color: $dark-warn;
+  }
+
+  .error-back {
+    display: block;
+    margin-top: 2rem;
+    font-size: 1.7rem;
+  }
+}

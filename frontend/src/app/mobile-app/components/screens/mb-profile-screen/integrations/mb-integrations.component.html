@@ -4,29 +4,30 @@
 <div class="integration">
   <div>
     <img src="/assets/ui/icons/slack-mark.svg" class="integration-icon" />
-    <div *ngIf="(isAddedToSlack$ | async) === true" class="integration-desc">
-      installed into slack workspace
-    </div>
-    <div *ngIf="(isAddedToSlack$ | async) !== true" class="integration-desc">
-      add to slack
-    </div>
+    @if(isAddedToSlack()) {
+      <div class="integration-desc">
+        installed into slack workspace
+      </div>
+    }
+    @if(!isAddedToSlack()) {
+      <div class="integration-desc">
+        add to slack
+      </div>
+    }
   </div>
 
   <div>
-    <app-add-to-slack-btn
-      *ngIf="(isAddedToSlack$ | async) !== true"
-    ></app-add-to-slack-btn>
-
-    <div
-      class="remove-btn"
-      *ngIf="(isAddedToSlack$ | async) === true"
-      (click)="removeFromSlack()"
-    >
-      <span class="remove-btn-text">remove from slack</span>
-      <img
-        class="remove-btn-icon"
-        src="assets/ui/icons/disconnect-svgrepo-com.svg"
-      />
-    </div>
+    @if(!isAddedToSlack()) {
+      <app-add-to-slack-btn></app-add-to-slack-btn>
+    }
+    @if(isAddedToSlack()) {
+      <div class="remove-btn"
+        (click)="removeFromSlack()">
+        <span class="remove-btn-text">remove from slack</span>
+        <img
+          class="remove-btn-icon"
+          src="assets/ui/icons/disconnect-svgrepo-com.svg"/>
+      </div>
+    }
   </div>
 </div>

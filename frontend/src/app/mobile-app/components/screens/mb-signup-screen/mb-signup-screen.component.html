@@ -1,85 +1,80 @@
 <div class="logo-holder">
   <img class="logo-image" src="assets/ui/main/ba_logo.png" />
 </div>
-<div
-  *ngIf="!(signUpResult$ | async); else signedUpSuccessBlock"
-  class="login-form-holder"
->
-  <form [formGroup]="form" class="login-form" (ngSubmit)="onSubmit()">
-    <div class="name-row">
-      <mat-form-field class="first-name" floatLabel="never">
-        <input
-          id="firstNameInput"
-          autofocus
-          matInput
-          placeholder="First Name"
-          formControlName="firstName"
-        />
-        <mat-error *ngIf="form.get('email').invalid">
-          First Name required
-        </mat-error>
-      </mat-form-field>
+@if(!signUpResult()) {
+  <div class="login-form-holder">
+    <form class="login-form" 
+      [formGroup]="form" 
+      (ngSubmit)="onSubmit()">
+      <div class="name-row">
+        <mat-form-field class="first-name" floatLabel="never">
+          <input
+            id="firstNameInput"
+            autofocus
+            matInput
+            placeholder="First Name"
+            formControlName="firstName"/>
+          <mat-error *ngIf="form.get('email').invalid">
+            First Name required
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="login-form__email" floatLabel="never">
+          <input
+            id="lastNameInput"
+            matInput
+            placeholder="Last Name"
+            formControlName="lastName"/>
+          <mat-error *ngIf="form.get('email').invalid">
+            Last Name required
+          </mat-error>
+        </mat-form-field>
+      </div>
+
       <mat-form-field class="login-form__email" floatLabel="never">
         <input
-          id="lastNameInput"
+          id="emailInput"
           matInput
-          placeholder="Last Name"
-          formControlName="lastName"
-        />
+          placeholder="Email"
+          formControlName="email"
+          autocomplete="email"/>
         <mat-error *ngIf="form.get('email').invalid">
-          Last Name required
+          Please input correct email
         </mat-error>
       </mat-form-field>
-    </div>
 
-    <mat-form-field class="login-form__email" floatLabel="never">
-      <input
-        id="emailInput"
-        matInput
-        placeholder="Email"
-        formControlName="email"
-        autocomplete="email"
-      />
-      <mat-error *ngIf="form.get('email').invalid">
-        Please input correct email
-      </mat-error>
-    </mat-form-field>
-
-    <mat-form-field class="login-form__password" floatLabel="never">
-      <input
-        id="passwordInput"
-        type="password"
-        matInput
-        placeholder="Password"
-        formControlName="password"
-        autocomplete="off"
-      />
-      <mat-error *ngIf="form.get('password').invalid">
-        Please input password, not less than 8 symbols
-      </mat-error>
-    </mat-form-field>
-    <button
-      id="submitBtn"
-      class="login-form__btn green-btn"
-      type="submit"
-      [disabled]="form.invalid"
-    >
-      Signup
-    </button>
-  </form>
-</div>
-<div class="login-link-holder">
-  <div id="login-link" class="login-link" (click)="onLoginLinkClick()">
-    Login
+      <mat-form-field class="login-form__password" floatLabel="never">
+        <input
+          id="passwordInput"
+          type="password"
+          matInput
+          placeholder="Password"
+          formControlName="password"
+          autocomplete="off"/>
+        <mat-error *ngIf="form.get('password').invalid">
+          Please input password, not less than 8 symbols
+        </mat-error>
+      </mat-form-field>
+      <button  class="login-form__btn green-btn"
+        id="submitBtn"
+        type="submit"
+        [disabled]="form.invalid">
+        Signup
+      </button>
+    </form>
   </div>
-</div>
-
-<ng-template #signedUpSuccessBlock>
+  <div class="login-link-holder">
+    <div class="login-link" 
+      id="login-link"  
+      (click)="onLoginLinkClick()">
+      Login
+    </div>
+  </div>
+} @else {
   <div class="mb-signup__success-block">
-    Hi, {{ (signUpResult$ | async).firstName }}
-    {{ (signUpResult$ | async).lastName }}!
+    Hi, {{ signUpResult().firstName }}
+    {{ signUpResult().lastName }}!
     <br />
     The verification link was sent on <br />
-    {{ (signUpResult$ | async).email }}
+    {{ signUpResult().email }}
   </div>
-</ng-template>
+}

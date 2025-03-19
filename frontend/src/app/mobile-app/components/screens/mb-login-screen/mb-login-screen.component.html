@@ -39,9 +39,11 @@
       Login
     </button>
   </form>
-  <div *ngIf="authError$ | async" class="auth-failed-msg">
-    {{ authError$ | async }}
-  </div>
+  @if(authError()) {
+    <div class="auth-failed-msg">
+      {{ authError() }}
+    </div>
+  }
   <div class="google-btn-holder">
     <ba-sign-in-with-google-btn></ba-sign-in-with-google-btn>
   </div>

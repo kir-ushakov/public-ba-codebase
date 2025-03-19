@@ -1,0 +1,53 @@
+@use "sass:map";
+
+$colors-gray-palette: (
+  100: #495259,
+  200: #484356,
+  300: #433e51,
+  400: #2c2839,
+  500: #212a30,
+  600: #050515,
+  700: #000007,
+  800: #000007,
+  900: #000007,
+
+  contrast: (
+    100: #fff,
+    200: #f2f2f2,
+    300: #e6e6e6,
+    400: #d9d9d9,
+    500: #ccc,
+    600: #bfbfbf,
+    700: #b3b3b3,
+    800: #b3b3b3,
+    900: #b3b3b3,
+  ),
+);
+$colors-gray: (
+  light: map.get($colors-gray-palette, 100),
+  default: map.get($colors-gray-palette, 500),
+  dark: map.get($colors-gray-palette, 700),
+);
+$colors-green-palette: (
+  100: #439889,
+  500: #00695c,
+  700: #003d33,
+  contrast: (
+    100: black,
+    500: white,
+    700: white,
+  ),
+);
+$colors-green: (
+  light: map.get($colors-green-palette, 100),
+  default: map.get($colors-green-palette, 500),
+  dark: map.get($colors-green-palette, 700),
+);
+$dark-warn: #9e0000;
+$color-main-bg: map.get($colors-gray-palette, 500);
+$color-panel-bg: map.get($colors-gray-palette, 600);
+$color-input-text: map.get(map.get($colors-gray-palette, contrast), 900);
+$color-main-text: map.get(map.get($colors-gray-palette, contrast), 400);
+
+/* special colors */
+$color-avarat: #cfe9e5;
