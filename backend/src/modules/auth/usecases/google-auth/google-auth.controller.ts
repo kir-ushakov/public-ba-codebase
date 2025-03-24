@@ -2,9 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import {
   BaseController,
   EHttpStatus,
-} from '../../../../shared/infra/http/models/base-controller';
-import { GoogleAuthResult, GoogleAuthUsecase } from './google-auth.usecase';
-import { UseCaseError } from '../../../../shared/core/use-case-error';
+} from '../../../../shared/infra/http/models/base-controller.js';
+import { GoogleAuthResult, GoogleAuthUsecase } from './google-auth.usecase.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 
 export class GoogleAuthController extends BaseController {
   private usecase: GoogleAuthUsecase;

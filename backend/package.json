@@ -6,21 +6,22 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "tsc && node dist/server.js",
-    "start": "nodemon -L -e ts  --exec \"npm run compile\"",
-    "test:pact": "ts-node ./pact/tests.ts",
+    "dev": "nodemon -L -e ts  --exec \"npm run compile\"",
+    "start": "npm run compile",
     "test:mocha": "mocha --require ts-node/register -t 10000 './src/**/*.spec.ts'",
     "lint": "npx eslint ./**/**.ts --fix"
   },
   "author": "Kirill Ushakov",
   "dependencies": {
+    "@google-cloud/local-auth": "^2.1.0",
     "@ngrok/ngrok": "^0.9.1",
     "@sendgrid/mail": "^7.4.6",
     "@slack/web-api": "^6.10.0",
     "@types/chai-as-promised": "^7.1.5",
+    "@types/multer": "^1.4.11",
     "@types/passport": "^1.0.11",
     "@types/passport-google-oauth20": "^2.0.14",
     "@types/passport-local": "^1.0.34",
-    "@types/sinon": "^10.0.2",
     "chai-as-promised": "^7.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -31,19 +32,21 @@
     "express-session": "^1.17.1",
     "form-data": "^4.0.0",
     "form-urlencoded": "^6.1.4",
+    "googleapis": "^137.1.0",
     "jsonwebtoken": "^9.0.2",
     "mailgun.js": "^9.3.0",
+    "mime": "^4.0.3",
     "mongoose": "^8.1.1",
+    "multer": "^1.4.5-lts.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "passport-local-mongoose": "^8.0.0",
     "prettier": "^2.7.1",
-    "sinon-chai": "^3.5.0",
+    "sharp": "^0.33.5",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@pact-foundation/pact": "^10.1.3",
     "@types/chai": "^4.2.21",
     "@types/mocha": "^8.2.3",
     "@typescript-eslint/eslint-plugin": "^4.14.2",
@@ -52,9 +55,9 @@
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^9.0.0",
     "mocha": "^10.1.0",
-    "sinon": "^9.2.3",
     "ts-node": "^9.1.1",
-    "typescript": "^4.8.4"
+    "typescript": "^5.4.5"
   },
+  "type": "module",
   "license": "ISC"
 }

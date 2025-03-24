@@ -1,5 +1,5 @@
 import { IMailgunClient } from 'mailgun.js/Interfaces';
-import { IMailAdapter } from '../mail-adapter.interface';
+import { IMailAdapter } from '../mail-adapter.interface.js';
 
 export class MailgunAdapter implements IMailAdapter {
   private provider: IMailgunClient;

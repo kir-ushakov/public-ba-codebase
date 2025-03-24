@@ -1,5 +1,5 @@
 import { MailDataRequired, MailService } from '@sendgrid/mail';
-import { IMailAdapter } from '../mail-adapter.interface';
+import { IMailAdapter } from '../mail-adapter.interface.js';
 
 export class SendgridMailAdapter implements IMailAdapter {
   private _provider: MailService;

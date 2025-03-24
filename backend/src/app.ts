@@ -1,21 +1,22 @@
 import express from 'express';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
-import { apiRouters } from './shared/infra/http/api';
-import * as loaders from './loaders';
-import UserModel from './shared/infra/database/mongodb/user.model';
-import { googleStrategy, jwtStrategy } from './shared/infra/auth/';
+import { apiRouters } from './shared/infra/http/api/index.js';
+import * as loaders from './loaders/index.js';
+import UserModel from './shared/infra/database/mongodb/user.model.js';
+import { googleStrategy, jwtStrategy } from './shared/infra/auth/index.js';
+import cors from 'cors';
+import session from 'express-session';
 
 export const app = express();
 
-const cors = require('cors');
 app.use(cors());
 
 // parse incoming request bodies as JSON
 app.use(express.json());
 
 const secret = process.env.SESSION_SECRET;
-const expressSession = require('express-session')({
+const expressSession = session({
   secret,
   resave: false,
   saveUninitialized: false,
@@ -48,3 +49,17 @@ passport.use(UserModel.createStrategy());
 passport.use(googleStrategy);
 
 app.use('/', apiRouters);
+
+process.on('uncaughtException', function (error) {
+  // TODO: use special log here
+  console.log(' ===== Uncaught Exception Occurred ===== ');
+  console.log(error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', function (reason, p) {
+  // TODO: use special log here
+  console.log(' ===== Unhandled Rejection Occurred ===== ');
+  console.log(reason);
+  process.exit(1);
+});

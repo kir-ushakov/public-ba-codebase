@@ -1,5 +1,5 @@
-import { UserDocument } from '../../../../../shared/infra/database/mongodb/user.model';
-import { IAbstractMailFactory } from '../abstract-mail-factory.interface';
+import { UserDocument } from '../../../../../shared/infra/database/mongodb/user.model.js';
+import { IAbstractMailFactory } from '../abstract-mail-factory.interface.js';
 
 export class SimpleMailFactory implements IAbstractMailFactory {
   constructor() {}

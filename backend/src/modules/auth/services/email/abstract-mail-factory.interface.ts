@@ -1,4 +1,4 @@
-import { UserDocument } from '../../../../shared/infra/database/mongodb/user.model';
+import { UserDocument } from '../../../../shared/infra/database/mongodb/user.model.js';
 
 export interface IAbstractMailFactory {
   verificationEmail(user: UserDocument, link: string): string;

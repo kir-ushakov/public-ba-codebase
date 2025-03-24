@@ -1,7 +1,7 @@
-import { UserDocument } from '../../../../shared/infra/database/mongodb/user.model';
-import { VerificationTokenDocument } from '../../../../shared/infra/database/mongodb/verification-token.model';
-import { IMailAdapter } from './mail-adapter.interface';
-import { IAbstractMailFactory } from './abstract-mail-factory.interface';
+import { UserDocument } from '../../../../shared/infra/database/mongodb/user.model.js';
+import { VerificationTokenDocument } from '../../../../shared/infra/database/mongodb/verification-token.model.js';
+import { IMailAdapter } from './mail-adapter.interface.js';
+import { IAbstractMailFactory } from './abstract-mail-factory.interface.js';
 
 export class EmailVerificationService {
   public static MESSAGES = {

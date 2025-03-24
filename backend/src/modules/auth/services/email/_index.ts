@@ -1,11 +1,11 @@
-import { sendgridMailAdapter, mailgunAdapter } from './adapters/_index';
+import { sendgridMailAdapter, mailgunAdapter } from './adapters/_index.js';
 import {
   simpleMailFactory,
   christmasMailFactory,
   halloweenMailFactory,
-} from './factories/_index';
-import { EmailVerificationService } from './email-verification.service';
-import { IAbstractMailFactory } from './abstract-mail-factory.interface';
+} from './factories/_index.js';
+import { EmailVerificationService } from './email-verification.service.js';
+import { IAbstractMailFactory } from './abstract-mail-factory.interface.js';
 
 let mailAdapter;
 switch (process.env.MAIL_API) {

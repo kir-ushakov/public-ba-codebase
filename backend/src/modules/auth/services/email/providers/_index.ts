@@ -1,4 +1,4 @@
-import { sendgridMailProvider } from './sendgrid.provider';
-import { mailgunProvider } from './mailgun.provider';
+import { sendgridMailProvider } from './sendgrid.provider.js';
+import { mailgunProvider } from './mailgun.provider.js';
 
 export { sendgridMailProvider, mailgunProvider };

@@ -1,27 +1,30 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { UserPersistent } from '../../../shared/domain/models/user';
-import { UserDto } from '../dto/user.dto';
-import { LoginResponseDTO } from '../useCases/login/login.dto';
+import { UserDto } from '../dto/user.dto.js';
+import { LoginResponseDTO } from '../usecases/login/login.dto.js';
+import { User } from '../../../shared/domain/models/user.js';
+import { UserMapper } from '../../../shared/mappers/user.mapper.js';
 
 export class LoginService {
   public login(
-    user: UserPersistent,
+    user: User,
     req: Request,
     res: Response
   ): Promise<LoginResponseDTO> {
     return new Promise((resolve, reject) => {
+
       const userDto: UserDto = {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.username,
-        userId: user._id,
+        firstName: user.firstname,
+        lastName: user.lastname,
+        email: user.username.value,
+        userId: user.id.toString(),
       };
 
       const loginResponseDto: LoginResponseDTO = { user: userDto };
 
-      if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
-        req.logIn(user, (err) => {
+      if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') { 
+        const userDBEnity = UserMapper.toDatabaseEntity(user);
+        req.logIn(userDBEnity, (err) => {
           if (err) {
             return reject(err);
           }
