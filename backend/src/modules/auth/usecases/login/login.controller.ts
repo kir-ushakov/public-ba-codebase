@@ -2,20 +2,16 @@ import { Request, Response, NextFunction } from 'express';
 import {
   BaseController,
   EHttpStatus,
-} from '../../../../shared/infra/http/models/base-controller';
-import { PassportStatic } from 'passport';
-import { UserPersistent } from '../../../../shared/domain/models/user';
-import { EApiErrorType } from '../../../../shared/infra/http/models/api-error-types.enum';
-import { LoginService } from '../../services/login.service';
+} from '../../../../shared/infra/http/models/base-controller.js';
+import { LoginResult, LoginUsecase } from './login.usecase.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 
 export class LoginController extends BaseController {
-  private _passport: PassportStatic;
-  private loginService: LoginService;
+  private loginUsecase: LoginUsecase;
 
-  constructor(passport: PassportStatic, loginService: LoginService) {
+  constructor(loginUsecase: LoginUsecase) {
     super();
-    this._passport = passport;
-    this.loginService = loginService;
+    this.loginUsecase = loginUsecase;
   }
 
   protected async executeImpl(
@@ -24,39 +20,23 @@ export class LoginController extends BaseController {
     next?: NextFunction
   ): Promise<void | any> {
     try {
-      this._passport.authenticate(
-        'local',
-        async (err, user: UserPersistent) => {
-          if (err) {
-            return this.fail(res, err);
-          }
-
-          if (!user) {
-            return BaseController.jsonResponse(res, EHttpStatus.Unauthorized, {
-              name: EApiErrorType.AUTHENTICATION_FAILED,
-              message: 'Authorization failed!',
-            });
-          }
-
-          if (!user.verified) {
-            return BaseController.jsonResponse(res, EHttpStatus.Unauthorized, {
-              name: EApiErrorType.USER_ACCOUNT_NOT_VERIFIED,
-              message: 'User account not verified!',
-            });
-          }
-
-          try {
-            const loginResponseDto = await this.loginService.login(
-              user,
-              req,
-              res
-            );
-            return this.ok(res, loginResponseDto);
-          } catch (err) {
-            return this.fail(res, err);
-          }
-        }
-      )(req, res, next);
+      const result: LoginResult | UseCaseError =
+        await this.loginUsecase.execute({
+          context: { req, res, next },
+        });
+      if (result.isSuccess) {
+        return BaseController.jsonResponse(
+          res,
+          EHttpStatus.Ok,
+          result.getValue()
+        );
+      } else {
+        const error: UseCaseError = result.error as UseCaseError;
+        return BaseController.jsonResponse(res, error.code, {
+          name: error.name,
+          message: error.message,
+        });
+      }
     } catch (err) {
       return this.fail(res, err.toString());
     }

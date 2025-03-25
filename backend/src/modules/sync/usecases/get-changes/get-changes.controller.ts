@@ -1,17 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import { UseCaseError } from '../../../../shared/core/use-case-error';
-import { UserPersistent } from '../../../../shared/domain/models/user';
-import { BaseController } from '../../../../shared/infra/http/models/base-controller';
-import { EClientError } from '../../../../shared/domain/models/client.errors';
-import { ChangeMapper } from '../../../../shared/mappers/change.mapper';
-import { Change } from '../../domain/values/change';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { UserPersistent } from '../../../../shared/domain/models/user.js';
+import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
 import {
   IGetChangesRequestDTO,
   IGetChangesResponseDTO,
-} from './get-changes.dto';
-import { GetChangesErrors } from './get-changes.errors';
-import { GetChangesResponse, GetChangesUC } from './get-changes.usecase';
-import { IApiErrorDto } from '../../../../shared/infra/http/dtos/api-errors.dto';
+} from './get-changes.dto.js';
+import { GetChangesResponse, GetChangesUC } from './get-changes.usecase.js';
+import { ChangeMapper } from '../../../../shared/mappers/change.mapper.js';
+import { Change } from '../../domain/values/change.js';
 
 export class GetChnagesController extends BaseController {
   private _useCase: GetChangesUC;
@@ -38,17 +35,11 @@ export class GetChnagesController extends BaseController {
 
       if (result.isFailure) {
         const error: UseCaseError = result.error as UseCaseError;
-        switch (result.constructor) {
-          case GetChangesErrors.ClientNotFoundError:
-            const errorDto: IApiErrorDto = {
-              name: EClientError.InvalidClientId,
-              message: error.message,
-            };
-            return this.clientError(res, errorDto);
 
-          default:
-            return this.fail(res, error.message);
-        }
+        return BaseController.jsonResponse(res, error.code, {
+          name: error.name,
+          message: error.message,
+        });
       } else {
         const changes: Change[] = result.getValue() as Change[];
         const changesDTO: IGetChangesResponseDTO = {

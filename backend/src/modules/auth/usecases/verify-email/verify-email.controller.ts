@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { Result } from '../../../../shared/core/Result';
-import { UseCaseError } from '../../../../shared/core/use-case-error';
-import { BaseController } from '../../../../shared/infra/http/models/base-controller';
+import { Result } from '../../../../shared/core/Result.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
 import {
   VerifyEmailRequestDTO,
   IVerifyEmailResponceDTO,
-} from './verify-email.dto';
-import { VerifyEmailUseCase } from './verify-email.usecase';
+} from './verify-email.dto.js';
+import { VerifyEmailUseCase } from './verify-email.usecase.js';
 
 export class VerifyEmailController extends BaseController {
   private _useCase: VerifyEmailUseCase;
@@ -34,8 +34,7 @@ export class VerifyEmailController extends BaseController {
 
         switch (result.constructor) {
           // TODO: case when token do not exists in DB
-          //case VerifyEmailErrors.GivenTokenDoNotExist :
-          //return this.clientError(res, error.message);
+          // case VerifyEmailErrors.GivenTokenDoNotExist :
 
           default:
             return this.fail(res, error.message);

@@ -1,13 +1,13 @@
-import { Result } from '../../../../shared/core/Result';
-import { UseCase } from '../../../../shared/core/UseCase';
-import { UseCaseError } from '../../../../shared/core/use-case-error';
-import { User } from '../../../../shared/domain/models/user';
-import { VerificationToken } from '../../../../shared/domain/values/user/verification-token';
-import { UserRepo } from '../../../../shared/repo/user.repo';
+import { Result } from '../../../../shared/core/Result.js';
+import { UseCase } from '../../../../shared/core/UseCase.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { User } from '../../../../shared/domain/models/user.js';
+import { VerificationToken } from '../../../../shared/domain/values/user/verification-token.js';
+import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import {
   VerifyEmailRequestDTO,
   IVerifyEmailResponceDTO,
-} from './verify-email.dto';
+} from './verify-email.dto.js';
 
 export class VerifyEmailUseCase
   implements

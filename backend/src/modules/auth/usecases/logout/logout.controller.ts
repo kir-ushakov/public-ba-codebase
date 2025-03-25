@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { BaseController } from '../../../../shared/infra/http/models/base-controller';
+import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
 
 export class LogoutController extends BaseController {
   protected async executeImpl(
