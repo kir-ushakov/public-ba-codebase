@@ -1,11 +1,11 @@
-@import 'src/scss/colors';
+@use 'src/scss/colors';
 
 :host {
   display: flex;
   height: 100%;
   flex-direction: column;
   overflow: hidden;
-  background-color: $color-panel-bg;
+  background-color: colors.$color-panel-bg;
   justify-content: center;
 }
 
@@ -45,7 +45,7 @@
 }
 
 .auth-failed-msg {
-  color: $dark-warn;
+  color: colors.$dark-warn;
   text-align: center;
   margin-top: 8px;
 }

@@ -1,8 +1,9 @@
 @use "sass:map";
+@use "colors";
 
 $padding-text-h: 10px;
-$color-main: map.get(map.get($colors-gray-palette, contrast), 500);
-$color-active: map.get(map.get($colors-gray-palette, contrast), 100);
+$color-main: map.get(map.get(colors.$colors-gray-palette, contrast), 500);
+$color-active: map.get(map.get(colors.$colors-gray-palette, contrast), 100);
 
 mat-form-field {
   .mat-form-field-infix {
@@ -29,7 +30,7 @@ mat-form-field.mat-primary {
   }
 
   mat-error {
-    color: $dark-warn;
+    color: colors.$dark-warn;
   }
 
   &.mat-focused .mat-form-field-infix {

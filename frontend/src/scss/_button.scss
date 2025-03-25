@@ -1,4 +1,5 @@
 @use "sass:map";
+@use 'src/scss/colors';
 
 @mixin button {
   border: 0;
@@ -13,21 +14,21 @@
 @mixin green-btn {
   @include button;
 
-  background-color: map.get($colors-green, default);
+  background-color: map.get(colors.$colors-green, default);
 
   &:active {
-    background-color: map.get($colors-green, light);
+    background-color: map.get(colors.$colors-green, light);
   }
 }
 
 @mixin light-gray-btn {
   @include button;
 
-  background-color: map.get($colors-gray-palette, 200);
-  color: map.get(map.get($colors-gray-palette, contrast), 200);
+  background-color: map.get(colors.$colors-gray-palette, 200);
+  color: map.get(map.get(colors.$colors-gray-palette, contrast), 200);
 
   &:active {
-    background-color: map.get($colors-gray, light);
+    background-color: map.get(colors.$colors-gray, light);
   }
 }
 

@@ -1,13 +1,13 @@
-@import 'src/scss/constants';
-@import 'src/scss/colors';
+@use 'src/scss/constants';
+@use 'src/scss/colors';
 
 :host {
   align-items: center;
-  background-color: $color-panel-bg;
+  background-color: colors.$color-panel-bg;
   display: flex;
   justify-content: flex-end;
   height: 100%;
-  padding: 0 $main-padding;
+  padding: 0 constants.$main-padding;
 }
 
 .top-panel-btn {
