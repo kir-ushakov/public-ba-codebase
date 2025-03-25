@@ -20,10 +20,9 @@
       "installMode": "prefetch",
       "resources": {
         "files": [
-          "/assets/**",
+          "/assets/ui/**",
           "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
-        ],
-        "urls": ["/api/files/image/*"]
+        ]
       }
     },
     {
@@ -31,7 +30,7 @@
       "installMode": "lazy",
       "updateMode": "prefetch",
       "resources": {
-        "urls": ["/api/files/image/*.(svg|jpg|jpeg|png|gif)"]
+        "urls": ["/api/files/image/*"]
       }
     }
   ]

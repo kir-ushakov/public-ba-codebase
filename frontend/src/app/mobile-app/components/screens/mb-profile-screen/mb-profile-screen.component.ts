@@ -6,6 +6,7 @@ import { MbProfileScreenAction } from './mb-profile-screen.actions';
 import { UserAvatarComponent } from 'src/app/shared/components/ui-elements/user-avatar/user-avatar.component';
 import { MbIntegrationsComponent } from './integrations/mb-integrations.component';
 import { CommonModule } from '@angular/common';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
 
 @Component({
     selector: 'app-profile-screen',
@@ -14,8 +15,9 @@ import { CommonModule } from '@angular/common';
     imports: [ 
       CommonModule,
       RouterModule, 
+      MatIconModule,
       UserAvatarComponent,
-      MbIntegrationsComponent
+      MbIntegrationsComponent,
     ]
 })
 export class MbProfileScreenComponent {
