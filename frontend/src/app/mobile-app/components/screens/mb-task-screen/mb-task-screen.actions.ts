@@ -1,4 +1,4 @@
-import { ETaskViewMode } from './mb-task-screen.state';
+import { ETaskViewMode, IEditTaskFormData } from './mb-task-screen.state';
 import { Task } from 'src/app/shared/models/task.model';
 
 export namespace MbTaskScreenAction {
@@ -68,10 +68,10 @@ export namespace MbTaskScreenAction {
   export class SideMenuToggle {
     static readonly type = '[MbTaskScreen] Side Menu Toggle';
   }
-
-  export class UpdateFormValidStatus {
-    static readonly type = '[MbTaskScreen] Update Form Valid Status';
+  
+  export class UpdateForm {
+    static readonly type = '[MbTaskScreen] Update Form';
     
-    constructor(public valid: boolean) {}
+    constructor(public valid: boolean, public formData: IEditTaskFormData) { }
   }
 }
