@@ -26,6 +26,9 @@ export class MbTaskEditComponent {
   imageUri$: Observable<string> = inject(Store).select(MbTaskScreenState.imageUri);
 
   MbTaskScreenState = MbTaskScreenState;
+
+  private readonly baseTitleValidators = [Validators.minLength(5), Validators.maxLength(50)];
+  private readonly requiredTitleValidators = [Validators.required, ...this.baseTitleValidators];
   
   constructor(
     private store: Store
@@ -36,11 +39,7 @@ export class MbTaskEditComponent {
   }
 
   form: UntypedFormGroup = new UntypedFormGroup({
-    title: new UntypedFormControl('', [
-      Validators.required,
-      Validators.minLength(5),
-      Validators.maxLength(50),
-    ]),
+    title: new UntypedFormControl('', this.requiredTitleValidators),
   });
 
   addPictureBtnPressed() {
@@ -49,7 +48,25 @@ export class MbTaskEditComponent {
 
   private initSubscriptions() {
     this.form.valueChanges.subscribe(() => {
-      this.store.dispatch(new MbTaskScreenAction.UpdateFormValidStatus(this.form.valid))
+      this.store.dispatch(new MbTaskScreenAction.UpdateForm(this.form.valid, this.form.value));
     });
+
+    this.imageUri$.subscribe((imageUri) => {
+      const isPictureAdded = !!imageUri;
+      this.updateTitleValidation(!isPictureAdded);
+    })
+  }
+
+  private updateTitleValidation(isRequired: boolean) {
+    const titleControl = this.form.get('title');
+
+    if (titleControl) {
+      if (isRequired) {
+        titleControl.setValidators(this.requiredTitleValidators);
+      } else {
+        titleControl.setValidators(this.baseTitleValidators);
+      }
+      titleControl.updateValueAndValidity();
+    }
   }
 }
