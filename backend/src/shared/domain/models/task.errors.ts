@@ -1,5 +1,5 @@
-import { Result } from '../../core/Result';
-import { DomainError } from '../../core/domain-error';
+import { Result } from '../../core/Result.js';
+import { DomainError } from '../../core/domain-error.js';
 export enum ETaskError {
   TitleMissed = 'TASK_ERROR_TITLE_MISSED',
   TitleTooShort = 'TASK_ERROR_TITLE_TOO_SHORT',

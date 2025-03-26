@@ -1,7 +1,7 @@
-import { Result } from '../../core/Result';
-import { AggregateRoot } from '../AggregateRoot';
-import { UniqueEntityID } from '../UniqueEntityID';
-import { UserEmail } from '../values/user/user-email';
+import { Result } from '../../core/Result.js';
+import { AggregateRoot } from '../AggregateRoot.js';
+import { UniqueEntityID } from '../UniqueEntityID.js';
+import { UserEmail } from '../values/user/user-email.js';
 
 export interface UserProps {
   // TODO: use separate username (string) and email (UserEmail)
@@ -10,6 +10,8 @@ export interface UserProps {
   lastName: string;
   verified?: boolean;
   googleId?: string;
+  googleRefreshToken?: string;
+  googleAccessToken?: string;
 }
 
 export interface UserPersistent {
@@ -19,6 +21,8 @@ export interface UserPersistent {
   lastName: string;
   verified?: boolean;
   googleId?: string;
+  googleRefreshToken?: string;
+  googleAccessToken?: string;
 }
 
 export class User extends AggregateRoot<UserProps> {
@@ -46,6 +50,14 @@ export class User extends AggregateRoot<UserProps> {
     return this.props.googleId;
   }
 
+  get googleRefreshToken(): string {
+    return this.props.googleRefreshToken;
+  }
+
+  get googleAccessToken(): string {
+    return this.props.googleAccessToken;
+  }
+
   public static create(props: UserProps, id?: UniqueEntityID): Result<User> {
     // TODO: check null or undefined here
 
@@ -57,6 +69,8 @@ export class User extends AggregateRoot<UserProps> {
       lastName: null,
       verified: false,
       googleId: null,
+      googleAccessToken: null,
+      googleRefreshToken: null,
     };
 
     props = { ...defaultProps, ...props };

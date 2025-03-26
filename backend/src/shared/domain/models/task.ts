@@ -1,9 +1,9 @@
-import { AggregateRoot } from '../AggregateRoot';
-import { UniqueEntityID } from '../UniqueEntityID';
-import { Result } from '../../core/Result';
-import { Guard } from '../../core/guard';
-import { TaskError } from './task.errors';
-import { DomainError } from '../../core/domain-error';
+import { AggregateRoot } from '../AggregateRoot.js';
+import { UniqueEntityID } from '../UniqueEntityID.js';
+import { Result } from '../../core/Result.js';
+import { Guard } from '../../core/guard.js';
+import { TaskError } from './task.errors.js';
+import { DomainError } from '../../core/domain-error.js';
 
 export interface ITaskProps {
   userId: string;

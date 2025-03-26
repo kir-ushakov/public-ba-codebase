@@ -18,7 +18,8 @@ export const googleStrategy = new GoogleStrategy(
   ) {
     try {
       if (profile) {
-        return done(null, profile);
+        const tokens = { accessToken, refreshToken };
+        return done(null, { profile, tokens });
       } else {
         return done(null, false);
       }
@@ -27,3 +28,13 @@ export const googleStrategy = new GoogleStrategy(
     }
   }
 );
+
+export type GoogleAuthTokens = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+export type GoogleProfileWithTokens = {
+  profile: Profile;
+  tokens: GoogleAuthTokens;
+};

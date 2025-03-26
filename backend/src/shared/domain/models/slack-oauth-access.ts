@@ -1,6 +1,6 @@
-import { AggregateRoot } from '../AggregateRoot';
-import { Result } from '../../core/Result';
-import { UniqueEntityID } from '../UniqueEntityID';
+import { AggregateRoot } from '../AggregateRoot.js';
+import { Result } from '../../core/Result.js';
+import { UniqueEntityID } from '../UniqueEntityID.js';
 
 export interface ISlackOAuthAccessProps {
   userId: string;

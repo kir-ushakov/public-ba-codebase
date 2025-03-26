@@ -1,6 +1,6 @@
-import { AggregateRoot } from '../AggregateRoot';
-import { UniqueEntityID } from '../UniqueEntityID';
-import { Result } from '../../core/Result';
+import { AggregateRoot } from '../AggregateRoot.js';
+import { UniqueEntityID } from '../UniqueEntityID.js';
+import { Result } from '../../core/Result.js';
 
 export interface IClientProps {
   userId: string;

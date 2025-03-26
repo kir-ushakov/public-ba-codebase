@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
-import { Result } from "../../../core/Result";
-import { ValueObject } from "../../ValueObject";
+import mongoose from 'mongoose';
+import { Result } from '../../../core/Result.js';
+import { ValueObject } from '../../ValueObject.js';
 
 export interface IVerificationTokenProps {
-  userId: mongoose.Types.ObjectId,
-  token: string,
-  createdAt: Date
+  userId: mongoose.Types.ObjectId;
+  token: string;
+  createdAt: Date;
 }
 
 export class VerificationToken extends ValueObject<IVerificationTokenProps> {
@@ -15,7 +15,7 @@ export class VerificationToken extends ValueObject<IVerificationTokenProps> {
   }
 
   get userId(): mongoose.Types.ObjectId {
-    return this.props.userId; 
+    return this.props.userId;
   }
 
   get token(): string {
@@ -30,7 +30,9 @@ export class VerificationToken extends ValueObject<IVerificationTokenProps> {
     super(props);
   }
 
-  public static create(props?: IVerificationTokenProps): Result<VerificationToken> {
+  public static create(
+    props?: IVerificationTokenProps
+  ): Result<VerificationToken> {
     return Result.ok<VerificationToken>(new VerificationToken(props));
   }
 }
