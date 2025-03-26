@@ -1,7 +1,6 @@
 <div class="title-input-holder">
   <form class="task-form"
-    [formGroup]="form"
-    [ngxsForm]="MbTaskScreenState.FORM_PATH">
+    [formGroup]="form">
     <mat-form-field class="title-input-holder" floatLabel="never">
       <input
         #titleInput
@@ -24,6 +23,7 @@
         <mat-icon
           aria-hidden="false"
           aria-label="Picture Icon"
+          inline
           (click)="addPictureBtnPressed()">
           image
         </mat-icon>

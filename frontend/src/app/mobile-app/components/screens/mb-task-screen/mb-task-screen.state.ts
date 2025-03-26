@@ -27,7 +27,7 @@ export interface IMbTaskScreenStateModel {
   mode: ETaskViewMode;
   taskData: Task;
   taskViewForm: {
-    model: IEditTaskFormData;
+    formData: IEditTaskFormData;
     status: boolean;
   };
   isSideMenuOpened: boolean,
@@ -36,7 +36,7 @@ export interface IMbTaskScreenStateModel {
 const defaults = {
   mode: ETaskViewMode.Create,
   taskViewForm: {
-    model: {
+    formData: {
       title: '',
     } as IEditTaskFormData,
     status: false
@@ -51,7 +51,6 @@ const defaults = {
 })
 @Injectable()
 export class MbTaskScreenState {
-  static readonly FORM_PATH = 'mbTaskViewState.taskViewForm';
 
   constructor(
     private _store: Store,
@@ -113,7 +112,7 @@ export class MbTaskScreenState {
     ctx.patchState({
       taskData: {
         ...ctx.getState().taskData,
-        ...ctx.getState().taskViewForm.model,
+        ...ctx.getState().taskViewForm.formData,
       },
     });
 
@@ -132,16 +131,16 @@ export class MbTaskScreenState {
   @Action(MbTaskScreenAction.EditTaskOptionSelected)
   editTask(ctx: StateContext<IMbTaskScreenStateModel>) {
     const task = this._store.selectSnapshot(MbTaskScreenState.task);
+    
+    const taskViewForm = ctx.getState().taskViewForm;
     ctx.patchState({ 
       mode: ETaskViewMode.Edit, 
-      taskData: { ...task } 
+      taskData: { ...task },
+      taskViewForm : {
+        ...taskViewForm,
+        formData: { title: task.title }
+      }
     });
-    ctx.dispatch(
-      new UpdateFormValue({
-        path: MbTaskScreenState.FORM_PATH,
-        value: { title: task.title },
-      })
-    );
   }
 
   @Action(MbTaskScreenAction.CompleteTaskOptionSelected)
@@ -201,14 +200,17 @@ export class MbTaskScreenState {
     }));
   }
 
-  @Action(MbTaskScreenAction.UpdateFormValidStatus)
-  updateFormValidStatus(ctx: StateContext<IMbTaskScreenStateModel>, { valid }) {
+  @Action(MbTaskScreenAction.UpdateForm)
+  updateFormDate(
+      ctx: StateContext<IMbTaskScreenStateModel>, 
+      { valid, formData } : { valid: boolean, formData: IEditTaskFormData }) {
     const state = ctx.getState();
-    ctx.setState(patch({
+    ctx.patchState({
       taskViewForm: {
         ...state.taskViewForm,
-        status: valid,
+        formData: formData,
+        status: valid
       }
-    }));
+    });
   }
 }

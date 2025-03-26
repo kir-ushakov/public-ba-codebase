@@ -29,7 +29,6 @@
     "@capacitor/cli": "^6.0.0",
     "@capacitor/core": "^6.0.0",
     "@ionic/pwa-elements": "^3.3.0",
-    "@ngxs/form-plugin": "^19.0.0",
     "@ngxs/storage-plugin": "^19.0.0",
     "@ngxs/store": "^19.0.0",
     "compressorjs": "^1.2.1",

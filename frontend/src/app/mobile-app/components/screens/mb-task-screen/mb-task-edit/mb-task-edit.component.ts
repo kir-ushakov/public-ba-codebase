@@ -8,7 +8,6 @@ import { Observable } from 'rxjs';
 import { MbTaskScreenState } from '../mb-task-screen.state';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { NgxsFormPluginModule } from '@ngxs/form-plugin';
 
 @Component({
   selector: 'ba-mb-task-edit',
@@ -17,7 +16,6 @@ import { NgxsFormPluginModule } from '@ngxs/form-plugin';
     MatFormFieldModule, 
     MatInputModule,
     MatIconModule,
-    NgxsFormPluginModule,
     ReactiveFormsModule
   ],
   templateUrl: './mb-task-edit.component.html',
