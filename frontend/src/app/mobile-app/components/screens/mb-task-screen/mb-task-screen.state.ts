@@ -9,7 +9,6 @@ import { MbTaskScreenAction } from './mb-task-screen.actions';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
 import { AppAction } from 'src/app/shared/state/app.actions';
-import { UpdateFormValue } from '@ngxs/form-plugin';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 import { patch } from '@ngxs/store/operators';
 
