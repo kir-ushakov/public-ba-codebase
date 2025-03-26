@@ -5,13 +5,14 @@
     class="mb-task-ok-panel">
     <div class="cancel-task-btn" (click)="cancelChanges()">Cancel</div>
     @let isEditFormValid = isEditFormValid$ | async;
-    <div
-      class="create-task-btn"
+    <button class="create-task-btn"
+      id="createTaskBtn"
       [ngClass]="{ enabled: isEditFormValid }"
+      [disabled]="!isEditFormValid"
       (click)="applyChanges()"
-      id="createTaskBtn">
+>
       Ok
-    </div>
+    </button>
   </div>
 }
 
