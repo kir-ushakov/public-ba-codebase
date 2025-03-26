@@ -26,8 +26,26 @@ export class TaskTileComponent {
   constructor(private store: Store) { }
 
   ngAfterViewInit() {
+    let imageUri = this.task.imageUri;
+
+    if(!this.isBlobUrl(imageUri)) {
+      const width = this.calculateImageWidth();
+      imageUri =  imageUri + `?width=${width}`;
+    }
+
+    this.resizedImageUri.set(imageUri);
+  }
+
+  
+  private calculateImageWidth(): number {
     const width = this.spinnerComponent?.getNativeElement()?.offsetWidth || this.DEFAULT_IMAGE_WIDTH;
     const dpr = window.devicePixelRatio || 1;
-    this.resizedImageUri.set(this.task.imageUri + `?width=${dpr * width}`);
+    return dpr * width;
+  }
+
+  private isBlobUrl(url: string): boolean {
+    if(!url)  return false;
+
+    return url.startsWith('blob:');
   }
 }
