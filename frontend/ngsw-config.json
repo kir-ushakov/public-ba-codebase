@@ -32,6 +32,15 @@
       "resources": {
         "urls": ["/api/files/image/*"]
       }
+    },
+    {
+      "name": "material-icons",
+      "installMode": "prefetch",
+      "resources": {
+        "urls": [
+          "https://fonts.googleapis.com/icon?family=Material+Icons"
+        ]
+      }
     }
   ]
 }
