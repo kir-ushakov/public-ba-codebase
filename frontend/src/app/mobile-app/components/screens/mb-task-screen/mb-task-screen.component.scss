@@ -1,5 +1,5 @@
-@import 'src/scss/constants';
-@import 'src/scss/colors';
+@use 'src/scss/constants';
+@use 'src/scss/colors';
 
 :host {
   display: flex;
@@ -28,9 +28,9 @@
 }
 
 .main-panel-holder {
-  background: $color-main-bg;
+  background: colors.$color-main-bg;
   flex: 1 0 auto;
-  padding: $main-padding;
+  padding: constants.$main-padding;
 }
 
 .bottom-panel-holder {
