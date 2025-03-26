@@ -84,6 +84,6 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
 
   private subscribeToSelectors() {
     this.isSideMenuOpened$.subscribe(
-      isSideMenuOpened => this.menuDrawer.toggle(isSideMenuOpened));
+      isSideMenuOpened => this.menuDrawer?.toggle(isSideMenuOpened));
   }
 }
