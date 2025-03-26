@@ -175,8 +175,10 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.HomeButtonPressed)
   homeButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>) {
-    ctx.dispatch(MbTaskScreenAction.Close);
-    ctx.dispatch(AppAction.NavigateToHomeScreen);
+    ctx.dispatch([
+      MbTaskScreenAction.Close, 
+      AppAction.NavigateToHomeScreen
+    ]);
   }
 
   @Action(MbTaskScreenAction.AddPictureBtnPressed)
