@@ -4,6 +4,7 @@ export interface TaskDTO {
   type: string;
   title: string;
   status: string;
+  imageUri?: string;
   createdAt: string;
   modifiedAt: string;
 }
