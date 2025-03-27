@@ -1,9 +1,8 @@
-import mongoose from 'mongoose';
-import { Client } from '../domain/models/client';
-import { IClientPersistent } from '../infra/database/mongodb/client.model';
-import { IDbModels } from '../infra/database/mongodb';
-import { ClientDocument } from '../infra/database/mongodb/client.model';
-import { ClientMapper } from '../mappers/client.mapper';
+import { Client } from '../domain/models/client.js';
+import { IClientPersistent } from '../infra/database/mongodb/client.model.js';
+import { IDbModels } from '../infra/database/mongodb/index.js';
+import { ClientDocument } from '../infra/database/mongodb/client.model.js';
+import { ClientMapper } from '../mappers/client.mapper.js';
 
 export class ClientRepo {
   private _models: IDbModels;

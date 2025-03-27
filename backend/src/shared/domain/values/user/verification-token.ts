@@ -9,7 +9,6 @@ export interface IVerificationTokenProps {
 }
 
 export class VerificationToken extends ValueObject<IVerificationTokenProps> {
-
   get value(): IVerificationTokenProps {
     return this.props;
   }

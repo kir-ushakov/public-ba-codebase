@@ -4,6 +4,7 @@ export interface IUpdateTaskRequestDTO {
   type: string,
   title: string,
   status: string,
+  imageUri?: string,
   createdAt: string,
   modifiedAt: string,
 }

@@ -28,6 +28,7 @@ export class CreateTaskUC
       type: dto.type,
       title: dto.title,
       status: dto.status,
+      imageUri: dto.imageUri,
       createdAt: new Date(),
       modifiedAt: new Date(),
     };

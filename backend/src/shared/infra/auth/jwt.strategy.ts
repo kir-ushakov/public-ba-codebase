@@ -1,5 +1,5 @@
 import { Strategy as JwtStrategy } from 'passport-jwt';
-import UserModel from '../database/mongodb/user.model';
+import UserModel from '../database/mongodb/user.model.js';
 
 interface IJwtTokenPayload {
   user: {

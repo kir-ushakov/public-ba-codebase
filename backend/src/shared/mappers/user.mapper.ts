@@ -1,27 +1,32 @@
-import { User, UserPersistent } from '../domain/models/user';
-import { UniqueEntityID } from '../domain/UniqueEntityID';
-import { UserEmail } from '../domain/values/user/user-email';
+import { User, UserPersistent } from '../domain/models/user.js';
+import { UniqueEntityID } from '../domain/UniqueEntityID.js';
+import { UserEmail } from '../domain/values/user/user-email.js';
+import UserModel from '../infra/database/mongodb/user.model.js';
 
 export class UserMapper {
   public static toDomain(raw: UserPersistent): User {
     const userEmailOrError = UserEmail.create(raw.username);
     const userFirstName = raw.firstName; // TODO - need to use ValueObject for firstName
     const userLastName = raw.lastName; // TODO - need to use ValueObject for lastName
-    const userGoogleId = raw.googleId;
 
     const userOrError = User.create(
       {
         username: userEmailOrError.getValue(),
         firstName: userFirstName,
         lastName: userLastName,
-        googleId: userGoogleId,
+        googleId: raw.googleId,
+        googleRefreshToken: raw.googleRefreshToken,
+        googleAccessToken: raw.googleAccessToken,
       },
       new UniqueEntityID(raw._id)
     );
 
-    // TODO - I think this error should float upper
-    userOrError.isFailure ? console.log(userOrError.error) : '';
-    return userOrError.isSuccess ? userOrError.getValue() : null;
+    if (userOrError.isFailure) {
+      console.log(userOrError.error);
+      throw new Error("Can't create User from UserPersistent");
+    } else {
+      return userOrError.getValue();
+    }
   }
 
   public static toPersistence(user: User): UserPersistent {
@@ -31,6 +36,23 @@ export class UserMapper {
       lastName: user.lastname,
       verified: user.verified,
       googleId: user.googleId,
+      googleRefreshToken: user.googleRefreshToken,
+      googleAccessToken: user.googleAccessToken,
     };
+  }
+
+  public static toDatabaseEntity(user: User): Record<string, any> {
+    // TODO: pass DBModel as dependency to make method db agnostic
+    const DBModel = UserModel;
+    return new DBModel ({
+      id: user.id.toValue(),
+      username: user.username.value,
+      firstName: user.firstname,
+      lastName: user.lastname,
+      verified: user.verified,
+      googleId: user.googleId,
+      googleRefreshToken: user.googleRefreshToken,
+      googleAccessToken: user.googleAccessToken,
+    });
   }
 }

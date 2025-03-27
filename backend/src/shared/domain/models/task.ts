@@ -10,6 +10,7 @@ export interface ITaskProps {
   type: string; // #TODO need to be special TYPE
   title: string;
   status: string; // #TODO need to be special TYPE
+  imageUri?: string;
   createdAt: Date;
   modifiedAt: Date;
 }
@@ -54,6 +55,10 @@ export class Task extends AggregateRoot<ITaskProps> {
     return this.props.status;
   }
 
+  get imageUri(): string {
+    return this.props.imageUri;
+  }
+
   get createdAt(): Date {
     return this.props.createdAt;
   }
@@ -81,6 +86,7 @@ export class Task extends AggregateRoot<ITaskProps> {
     this.props.title = props.title;
     this.props.status = props.status;
     this.props.modifiedAt = props.modifiedAt;
+    this.props.imageUri = props.imageUri;
     return Result.ok<Task>();
   }
 

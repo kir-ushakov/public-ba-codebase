@@ -33,6 +33,7 @@ export class CreateTaskController extends BaseController {
       type: task.type,
       title: task.title,
       status: task.status,
+      imageUri: task.imageUri,
       createdAt: new Date(task.createdAt),
       modifiedAt: new Date(task.modifiedAt),
     };

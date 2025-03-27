@@ -1,13 +1,14 @@
 import { Model, PassportLocalModel } from 'mongoose';
-import TaskModel, { TaskDocument } from './task.model';
-import UserModel, { UserDocument } from './user.model';
-import ClientModel, { ClientDocument } from './client.model';
+import TaskModel, { TaskDocument } from './task.model.js';
+import UserModel, { UserDocument } from './user.model.js';
+import ClientModel, { ClientDocument } from './client.model.js';
+import ActionModel, { ActionDocument } from './action.model.js';
 import VerificationTokenModel, {
   VerificationTokenDocument,
-} from './verification-token.model';
+} from './verification-token.model.js';
 import SlackOAuthAccessModel, {
   ISlackOAuthAccessDocument,
-} from './slack-oauth-access.model';
+} from './slack-oauth-access.model.js';
 
 export interface IDbModels {
   TaskModel: Model<TaskDocument>;
@@ -15,11 +16,14 @@ export interface IDbModels {
   VerificationTokenModel: Model<VerificationTokenDocument>;
   ClientModel: Model<ClientDocument>;
   SlackOAuthAccessModel: Model<ISlackOAuthAccessDocument>;
+  ActionModel: Model<ActionDocument>;
 }
+
 export const models: IDbModels = {
   TaskModel,
   UserModel,
   VerificationTokenModel,
   ClientModel,
   SlackOAuthAccessModel,
+  ActionModel,
 };

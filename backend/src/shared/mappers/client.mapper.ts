@@ -1,6 +1,6 @@
-import { Client } from '../domain/models/client';
-import { IClientPersistent } from '../infra/database/mongodb/client.model';
-import { UniqueEntityID } from '../domain/UniqueEntityID';
+import { Client } from '../domain/models/client.js';
+import { IClientPersistent } from '../infra/database/mongodb/client.model.js';
+import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 
 export class ClientMapper {
   public static toDomain(raw: IClientPersistent): Client {

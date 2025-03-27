@@ -1,8 +1,6 @@
 import express from 'express';
-import { IApiErrorDto } from '../dtos/api-errors.dto';
-import { UseCaseError } from '../../../core/use-case-error';
-import { EAppError } from '../../../core/app-error';
-import { serialize } from '../utils/middleware';
+import { EAppError } from '../../../core/app-error.js';
+import { serialize } from '../utils/middleware.js';
 
 export enum EHttpStatus {
   Ok = 200,
@@ -60,40 +58,6 @@ export abstract class BaseController {
 
   public created(res: express.Response, payload: any = null) {
     return BaseController.jsonResponse(res, 201, payload);
-  }
-
-  // TODO: Need to remove all error's methods like clientError, notFound and others
-  // TOCKET: https://brainas.atlassian.net/browse/BA-117
-  public clientError(res: express.Response, payload?: IApiErrorDto | string) {
-    return BaseController.jsonResponse(
-      res,
-      EHttpStatus.BadRequest,
-      payload ? payload : 'Wrong Parameters'
-    );
-  }
-
-  public notFound(res: express.Response, payload?: IApiErrorDto | string) {
-    return BaseController.jsonResponse(
-      res,
-      404,
-      payload ? payload : 'Not found'
-    );
-  }
-
-  public conflict(res: express.Response, payload?: IApiErrorDto | string) {
-    return BaseController.jsonResponse(
-      res,
-      409,
-      payload ? payload : 'Conflict'
-    );
-  }
-
-  public tooMany(res: express.Response, payload?: IApiErrorDto | string) {
-    return BaseController.jsonResponse(
-      res,
-      429,
-      payload ? payload : 'Too many requests'
-    );
   }
 
   public fail(res: express.Response, error: Error | string) {

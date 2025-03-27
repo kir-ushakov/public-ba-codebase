@@ -34,6 +34,7 @@ export class UpdateTask implements UseCase<Request, Promise<Response>> {
       type: taskDto.type,
       title: taskDto.title,
       status: taskDto.status,
+      imageUri: taskDto.imageUri,
       createdAt: new Date(taskDto.createdAt),
       modifiedAt: new Date(),
     };

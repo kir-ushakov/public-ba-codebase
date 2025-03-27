@@ -4,12 +4,12 @@ import mongoose, {
   Schema,
 } from 'mongoose';
 import passportLocalMongoose from 'passport-local-mongoose';
-import { UserPersistent } from '../../../domain/models/user';
+import { UserPersistent } from '../../../domain/models/user.js';
 import VerificationTokenModel, {
   VerificationTokenDocument,
-} from './verification-token.model';
+} from './verification-token.model.js';
 
-const { randomBytes } = require('node:crypto');
+import { randomBytes } from 'node:crypto';
 
 export interface UserDocument extends UserPersistent, PassportLocalDocument {
   generateVerificationToken: () => VerificationTokenDocument;
@@ -21,6 +21,8 @@ const UserSchema = new Schema({
   username: { type: String, require: true },
   verified: { type: Boolean, required: true, default: false },
   googleId: { type: String, required: false },
+  googleRefreshToken: { type: String, required: false },
+  googleAccessToken: { type: String, required: false },
 });
 
 /**

@@ -1,7 +1,7 @@
-import { ITaskProps, Task, TaskPresitant } from '../domain/models/task';
-import { TaskDTO } from '../../modules/sync/domain/dtos/task.dto';
-import { UniqueEntityID } from '../domain/UniqueEntityID';
-import { DomainError } from '../core/domain-error';
+import { ITaskProps, Task, TaskPresitant } from '../domain/models/task.js';
+import { TaskDTO } from '../../modules/sync/domain/dtos/task.dto.js';
+import { UniqueEntityID } from '../domain/UniqueEntityID.js';
+import { DomainError } from '../core/domain-error.js';
 
 export class TaskMapper {
   public static toDomain(raw: TaskPresitant): Task | DomainError {

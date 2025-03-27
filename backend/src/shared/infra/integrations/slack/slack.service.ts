@@ -4,9 +4,9 @@ import {
   ConversationsCreateResponse,
   WebClient,
 } from '@slack/web-api';
-import { Channel } from '@slack/web-api/dist/response/ConversationsListResponse';
-import { SlackOAuthAccessRepo } from '../../../repo/slack-oauth-access.repo';
-import { SlackOAuthAccess } from '../../../domain/models/slack-oauth-access';
+import { Channel } from '@slack/web-api/dist/response/ConversationsListResponse.js';
+import { SlackOAuthAccessRepo } from '../../../repo/slack-oauth-access.repo.js';
+import { SlackOAuthAccess } from '../../../domain/models/slack-oauth-access.js';
 
 export class SlackService {
   readonly CHANNEL_NAME = 'brainasapp';

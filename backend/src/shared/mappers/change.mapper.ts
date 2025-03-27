@@ -1,5 +1,5 @@
-import { ChangeDTO } from '../../modules/sync/domain/dtos/change.dto';
-import { Change } from '../../modules/sync/domain/values/change';
+import { ChangeDTO } from '../../modules/sync/domain/dtos/change.dto.js';
+import { Change } from '../../modules/sync/domain/values/change.js';
 
 export class ChangeMapper {
   public static toDTO(change: Change): ChangeDTO {

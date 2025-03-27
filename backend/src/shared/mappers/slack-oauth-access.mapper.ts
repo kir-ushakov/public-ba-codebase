@@ -1,10 +1,10 @@
-import { DomainError } from '../core/domain-error';
-import { UniqueEntityID } from '../domain/UniqueEntityID';
+import { DomainError } from '../core/domain-error.js';
+import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 import {
   CreateSlackOAuthAccessResult,
   ISlackOAuthAccessPresitant,
   SlackOAuthAccess,
-} from '../domain/models/slack-oauth-access';
+} from '../domain/models/slack-oauth-access.js';
 
 export class SlackOAuthAccessMapper {
   public static toDomain(

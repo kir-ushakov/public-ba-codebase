@@ -1,10 +1,10 @@
-import { IDbModels } from '../infra/database/mongodb';
+import { IDbModels } from '../infra/database/mongodb/index.js';
 import {
   ISlackOAuthAccessPresitant,
   SlackOAuthAccess,
-} from '../domain/models/slack-oauth-access';
-import { ISlackOAuthAccessDocument } from '../infra/database/mongodb/slack-oauth-access.model';
-import { SlackOAuthAccessMapper } from '../mappers/slack-oauth-access.mapper';
+} from '../domain/models/slack-oauth-access.js';
+import { ISlackOAuthAccessDocument } from '../infra/database/mongodb/slack-oauth-access.model.js';
+import { SlackOAuthAccessMapper } from '../mappers/slack-oauth-access.mapper.js';
 
 export class SlackOAuthAccessRepo {
   private _models: IDbModels;

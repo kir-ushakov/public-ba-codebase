@@ -1,8 +1,9 @@
 import express from 'express';
-import { syncRouter } from '../../../../modules/sync/routers';
-import { authRouter } from '../../../../modules/auth/routers';
-import { integrationsRouter } from '../../../../modules/integrations/router';
-import { isAuthenticated } from '../../auth';
+import { syncRouter } from '../../../../modules/sync/routers/index.js';
+import { authRouter } from '../../../../modules/auth/routers/index.js';
+import { integrationsRouter } from '../../../../modules/integrations/router.js';
+import { isAuthenticated } from '../../auth/index.js';
+import { filesRouter } from '../../../../modules/files/router.js';
 
 const apiRouters = express.Router();
 
@@ -13,5 +14,6 @@ apiRouters.get('/', (req, res) => {
 apiRouters.use('/api/auth', authRouter);
 apiRouters.use('/api/sync', isAuthenticated, syncRouter);
 apiRouters.use('/api/integrations', integrationsRouter);
+apiRouters.use('/api/files/', isAuthenticated, filesRouter);
 
 export { apiRouters };

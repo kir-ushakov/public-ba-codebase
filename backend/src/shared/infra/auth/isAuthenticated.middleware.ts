@@ -1,7 +1,7 @@
 import passport from 'passport';
-import { EAppError } from '../../core/app-error';
-import { EHttpStatus } from '../http/models/base-controller';
-import { IApiErrorDto } from '../http/dtos/api-errors.dto';
+import { EAppError } from '../../core/app-error.js';
+import { EHttpStatus } from '../http/models/base-controller.js';
+import { IApiErrorDto } from '../http/dtos/api-errors.dto.js';
 
 export function isAuthenticated(req, res, next) {
   switch (process.env.AUTHENTICATION_STRATEGY) {
@@ -24,7 +24,7 @@ export function isAuthenticated(req, res, next) {
         return next();
       } else {
         const errorDto: IApiErrorDto = {
-          name: EAppError.UnexpectedError,
+          name: EAppError.UserNotAuthenticated,
           message: 'User not authenticated',
         };
         return res.status(401).send(errorDto);
