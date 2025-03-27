@@ -1,0 +1,11 @@
+# local test ssl
+/ssl
+
+# dependencies
+/node_modules
+
+# variables
+.env
+
+#compiled ts -> js
+/dist
