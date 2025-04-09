@@ -1,4 +1,3 @@
-import { GaxiosResponse } from "googleapis-common";
 import sharp from "sharp";
 import { Readable, PassThrough } from "stream";
 import probe from "probe-image-size";
