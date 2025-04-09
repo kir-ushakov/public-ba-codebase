@@ -27,10 +27,17 @@ export class GetImageUsecase
     const fileId: string = req.fileId;
     const user: User = req.user;
 
-
+    /**
+     * #NOTE:
+     * Retrieve an image by its ID from Google Drive.
+     */
     let file: GaxiosResponse<Readable> =
       await this._googleDriveService.getImageById(user, fileId);
     
+    /**
+     * #NOTE:
+     * If a width is specified, the Image Resize Service resizes the image before returning it.
+     */
     if(req.imageWidth) {
       file = await this.resize(file, req.imageWidth);
     }
@@ -38,7 +45,12 @@ export class GetImageUsecase
   }
 
   private async resize(file: GaxiosResponse<Readable>, width: number) {
-
+    /**
+     * #NOTE:
+     * The Resize Service operates on a Readable Stream, modifying the image on-the-fly 
+     * and returning a resized stream along with the correct content type. 
+     * This ensures efficient processing without loading the entire image into memory.
+     */
     const resizeResult: {resized: Readable, contentType: string} 
       = await this._imageResizeService.resizeImage(file.data, width);
     file.data = resizeResult.resized;
