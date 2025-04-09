@@ -40,6 +40,7 @@ export class TaskTileComponent {
     let imageUri = this.task.imageUri;
 
     /**
+     * #NOTE
      * Add the width query parameter only if the image is retrieved from the API.  
      * If the image comes from the device's local storage, no modification is needed.
      */
