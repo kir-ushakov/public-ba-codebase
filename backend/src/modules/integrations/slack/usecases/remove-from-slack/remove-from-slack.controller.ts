@@ -7,7 +7,7 @@ import {
 import {
   RemoveFromSlackUsecase,
   RemoveFromSlackResponse,
-} from './remove-from-slack.usecase';
+} from './remove-from-slack.usecase.js';
 import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
 

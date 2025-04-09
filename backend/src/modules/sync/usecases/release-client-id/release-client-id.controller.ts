@@ -6,8 +6,8 @@ import { BaseController } from '../../../../shared/infra/http/models/base-contro
 import {
   IReleaseClientIdRequestDTO,
   IReleaseClientIdResponseDTO,
-} from './release-client-id.dto';
-import { ReleaseClientId } from './release-client-id.usecase';
+} from './release-client-id.dto.js';
+import { ReleaseClientId } from './release-client-id.usecase.js';
 
 export class ReleaseClientIdController extends BaseController {
   private _useCase: ReleaseClientId;

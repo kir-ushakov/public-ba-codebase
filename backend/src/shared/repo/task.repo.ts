@@ -1,7 +1,7 @@
-import { Task, TaskPresitant } from '../domain/models/task';
-import { IDbModels } from '../infra/database/mongodb';
-import { TaskDocument } from '../infra/database/mongodb/task.model';
-import { TaskMapper } from '../mappers/task.mapper';
+import { Task, TaskPresitant } from '../domain/models/task.js';
+import { IDbModels } from '../infra/database/mongodb/index.js';
+import { TaskDocument } from '../infra/database/mongodb/task.model.js';
+import { TaskMapper } from '../mappers/task.mapper.js';
 
 export class TaskRepo {
   private _models: IDbModels;

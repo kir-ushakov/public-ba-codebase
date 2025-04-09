@@ -20,15 +20,25 @@ export class GetImageController extends BaseController {
     res: Response
   ): Promise<void | any> {
     const authenticatedUser: UserPersistent = req.user as UserPersistent;
-    const imageWidth = req.query.width ? parseInt(req.query.width as string) : undefined;
+    
+
+    const MAX_IMAGE_WIDTH = 1000;
+    let imageWidth = req.query.width ? parseInt(req.query.width as string) : undefined;
+
+    if (imageWidth && imageWidth > MAX_IMAGE_WIDTH) {
+      imageWidth = MAX_IMAGE_WIDTH;
+    }
+
     try {
-      let dto: GetImageRequest = {
+
+      let getImageRequest: GetImageRequest = {
         fileId: req.params.file.split('.')[0],
         user: UserMapper.toDomain(authenticatedUser),
+
         imageWidth
       };
 
-      const result: GetImageResult = await this.useCase.execute(dto);
+      const result: GetImageResult = await this.useCase.execute(getImageRequest);
 
       if (result.isFailure) {
         const error: UseCaseError = result.error as UseCaseError;

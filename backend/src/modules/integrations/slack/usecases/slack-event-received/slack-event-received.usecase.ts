@@ -6,7 +6,7 @@ import {
   AppUninstalledSlackEvent,
   MemberLeftChannelSlackEvent,
   SlackEventReceivedReqestDTO,
-} from './slack-event-received.dto';
+} from './slack-event-received.dto.js';
 import { ESlackEventType } from '../../enums/slack-event.enum.js';
 import { SlackEventReceivedErrors } from './slack-event-recieved.errors.js';
 import { SlackOAuthAccessRepo } from '../../../../../shared/repo/slack-oauth-access.repo.js';

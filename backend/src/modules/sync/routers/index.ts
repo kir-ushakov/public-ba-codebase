@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { createTaskController } from '../useCases/task/create/index.js';
-import { updateTaskController } from '../useCases/task/update/index.js';
-import { deleteTaskController } from '../useCases/task/delete/index.js';
-import { releaseClientIdController } from '../useCases/release-client-id/index.js';
-import { getChnagesController } from '../useCases/get-changes/_index.js';
+import { createTaskController } from '../usecases/task/create/index.js';
+import { updateTaskController } from '../usecases/task/update/index.js';
+import { deleteTaskController } from '../usecases/task/delete/index.js';
+import { releaseClientIdController } from '../usecases/release-client-id/index.js';
+import { getChnagesController } from '../usecases/get-changes/_index.js';
 
 const syncRouter: Router = Router();
 
