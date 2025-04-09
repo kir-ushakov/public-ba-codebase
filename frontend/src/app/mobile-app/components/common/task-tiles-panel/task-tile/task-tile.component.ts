@@ -36,7 +36,6 @@ export class TaskTileComponent {
     this.resizedImageUri.set(imageUri);
   }
 
-  
   private calculateImageWidth(): number {
     const width = this.spinnerComponent?.getNativeElement()?.offsetWidth || this.DEFAULT_IMAGE_WIDTH;
     const dpr = window.devicePixelRatio || 1;

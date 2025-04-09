@@ -27,8 +27,6 @@
     },
     {
       "name": "apiImages",
-      "installMode": "lazy",
-      "updateMode": "prefetch",
       "resources": {
         "urls": ["/api/files/image/*"]
       }
