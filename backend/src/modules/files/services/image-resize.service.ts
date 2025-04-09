@@ -1,35 +1,32 @@
 import { GaxiosResponse } from "googleapis-common";
 import sharp from "sharp";
-import { Readable } from "stream";
+import { Readable, PassThrough } from "stream";
+import probe from "probe-image-size";
 
 export class ImageResizeService {
 
-   public async resizeImage(file: GaxiosResponse<Readable>, width: number): Promise<GaxiosResponse<Readable>> {
-    const stream = file.data;
-    const buffer = await this.streamToBuffer(stream);
-    const sharpObj = await sharp(buffer);
-    const metadata = await sharpObj.metadata();
+   public async resizeImage(stream: Readable, width: number): Promise<{ resized: Readable, contentType: string }> {
 
-    if (!metadata.width || !metadata.height) {
-      throw new Error("Could not determine image dimensions.");
-    }
-    
-    const aspectRatio = metadata.height / metadata.width;
+    const passForProbe = new PassThrough();
+    const passForResize = new PassThrough();
 
-    //const format = metadata.format || "webp";
-    const format =  "webp";
-    console.log(format);
+    stream.pipe(passForProbe);
+    stream.pipe(passForResize);
+
+
+    const probeResult = await probe(passForProbe);
+    const aspectRatio = probeResult.height / probeResult.width;
     const height = Math.round(width * aspectRatio);
-
-    file.data = sharp(buffer).resize(width, height).webp();
+    const mime = probeResult.mime;
     
-    const headers = { ...file.headers };
-    delete headers["content-length"];
-    
-    headers["content-type"] = "image/webp";
-    file.headers = headers;
 
-    return file;
+    const resized = passForResize.pipe(
+      sharp().resize(width, height, { fit: "inside", fastShrinkOnLoad: true })
+    );
+    const contentType = mime;
+
+
+    return { resized, contentType };
   }
 
   private async streamToBuffer(stream: Readable): Promise<Buffer> {

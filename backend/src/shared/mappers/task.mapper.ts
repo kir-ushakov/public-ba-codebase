@@ -11,6 +11,7 @@ export class TaskMapper {
         type: raw.type,
         title: raw.title,
         status: raw.status,
+        imageUri: raw.imageUri,
         createdAt: raw.createdAt,
         modifiedAt: raw.modifiedAt,
       },
@@ -29,6 +30,7 @@ export class TaskMapper {
       type: task.type,
       title: task.title,
       status: task.status,
+      imageUri: task.imageUri,
       createdAt: task.createdAt,
       modifiedAt: task.modifiedAt,
     };

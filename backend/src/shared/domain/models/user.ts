@@ -1,4 +1,5 @@
 import { Result } from '../../core/Result.js';
+import { GoogleAuthTokens } from '../../infra/auth/google.strategy.js';
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 import { UserEmail } from '../values/user/user-email.js';
@@ -56,6 +57,12 @@ export class User extends AggregateRoot<UserProps> {
 
   get googleAccessToken(): string {
     return this.props.googleAccessToken;
+  }
+
+  // TDOD: setGoogleTokens has not to be a part of domain logic
+  setGoogleTokens(googleTokens: GoogleAuthTokens) {
+    this.props.googleAccessToken = googleTokens.accessToken;
+    this.props.googleRefreshToken = googleTokens.refreshToken;
   }
 
   public static create(props: UserProps, id?: UniqueEntityID): Result<User> {

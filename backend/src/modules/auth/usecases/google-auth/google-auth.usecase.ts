@@ -79,9 +79,15 @@ export class GoogleAuthUsecase
     tokens: GoogleAuthTokens
   ): Promise<Result<User | UseCaseError>> {
     let user: User;
-
     user = await this.userRepo.getUserByGoogleId(profile.id);
+
+
+
     if (user) {
+      if(tokens.accessToken && tokens.refreshToken) {
+        user.setGoogleTokens(tokens);
+        await this.userRepo.save(user);
+      }
       return Result.ok(user);
     }
 

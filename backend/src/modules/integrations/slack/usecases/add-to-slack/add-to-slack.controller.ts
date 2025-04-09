@@ -4,9 +4,9 @@ import {
   EHttpStatus,
 } from '../../../../../shared/infra/http/models/base-controller.js';
 
-import { AddToSlackUsecase, AddToSlackResponse } from './add-to-slack.usecase';
-import { UseCaseError } from '../../../../../shared/core/use-case-error';
-import { UserPersistent } from '../../../../../shared/domain/models/user';
+import { AddToSlackUsecase, AddToSlackResponse } from './add-to-slack.usecase.js';
+import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
+import { UserPersistent } from '../../../../../shared/domain/models/user.js';
 
 export class AddToSlackController extends BaseController {
   private _useCase: AddToSlackUsecase;

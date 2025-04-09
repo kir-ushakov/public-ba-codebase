@@ -27,11 +27,27 @@ export class GetImageUsecase
     const fileId: string = req.fileId;
     const user: User = req.user;
 
+
     let file: GaxiosResponse<Readable> =
       await this._googleDriveService.getImageById(user, fileId);
-      if(req.imageWidth) {
-        file = await this._imageResizeService.resizeImage(file, req.imageWidth);
-      }
-      return Result.ok<GaxiosResponse<Readable>>(file);
+    
+    if(req.imageWidth) {
+      file = await this.resize(file, req.imageWidth);
+    }
+    return Result.ok<GaxiosResponse<Readable>>(file);
+  }
+
+  private async resize(file: GaxiosResponse<Readable>, width: number) {
+
+    const resizeResult: {resized: Readable, contentType: string} 
+      = await this._imageResizeService.resizeImage(file.data, width);
+    file.data = resizeResult.resized;
+    file.headers = { 
+      ...file.headers,
+      'content-type': resizeResult.contentType
+    };
+    delete file.headers["content-length"];
+
+    return file;
   }
 }

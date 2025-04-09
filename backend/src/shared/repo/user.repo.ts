@@ -1,15 +1,15 @@
 import mongoose, { PassportLocalModel } from 'mongoose';
-import { IDbModels } from '../infra/database/mongodb';
-import { UserEmail } from '../domain/values/user/user-email';
-import { UserDocument } from '../infra/database/mongodb/user.model';
-import { User, UserPersistent } from '../domain/models/user';
-import { UserMapper } from '../mappers/user.mapper';
-import { VerificationTokenDocument } from '../infra/database/mongodb/verification-token.model';
+import { IDbModels } from '../infra/database/mongodb/index.js';
+import { UserEmail } from '../domain/values/user/user-email.js';
+import { UserDocument } from '../infra/database/mongodb/user.model.js';
+import { User, UserPersistent } from '../domain/models/user.js';
+import { UserMapper } from '../mappers/user.mapper.js';
+import { VerificationTokenDocument } from '../infra/database/mongodb/verification-token.model.js';
 import {
   IVerificationTokenProps,
   VerificationToken,
-} from '../domain/values/user/verification-token';
-import { Result } from '../core/Result';
+} from '../domain/values/user/verification-token.js';
+import { Result } from '../core/Result.js';
 
 export class UserRepo {
   private _models: IDbModels;
@@ -27,20 +27,14 @@ export class UserRepo {
     return found;
   }
 
-  public async create(user: User, password: string): Promise<UserDocument> {
+  public async create(user: User, password: string): Promise<User> {
     const userData: UserPersistent = UserMapper.toPersistence(user);
 
     const UserModel: PassportLocalModel<UserDocument> = this._models.UserModel;
 
-    const userDocument: UserDocument = new UserModel({
-      username: userData.username,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      googleId: userData.googleId,
-      verified: userData.verified,
-    });
+    const userDocument: UserDocument = new UserModel(userData);
 
-    return await UserModel.register(userDocument, password);
+    return UserMapper.toDomain((await UserModel.register(userDocument, password)));
   }
 
   public async findUserById(
@@ -93,11 +87,12 @@ export class UserRepo {
     return updatedUser;
   }
 
-  public async getUserByGoogleId(googleId: string): Promise<UserDocument> {
+  public async getUserByGoogleId(googleId: string): Promise<User> {
     const UserModel = this._models.UserModel;
     const filter = { googleId: googleId };
-    const user: UserDocument = await UserModel.findOne(filter);
-    return user;
+    const userDocument: UserDocument = await UserModel.findOne(filter);
+    if (!userDocument) return null;
+    return UserMapper.toDomain(userDocument);
   }
 
   public async getUserByUsername(username: string): Promise<UserDocument> {
