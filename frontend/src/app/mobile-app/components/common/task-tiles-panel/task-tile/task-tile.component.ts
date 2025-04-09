@@ -42,7 +42,7 @@ export class TaskTileComponent {
     return dpr * width;
   }
 
-  private isBlobUrl(url: string): boolean {
+  private isLocalImage(url: string): boolean {
     if(!url)  return false;
 
     return url.startsWith('blob:');
