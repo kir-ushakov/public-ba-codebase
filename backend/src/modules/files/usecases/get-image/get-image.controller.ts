@@ -19,9 +19,18 @@ export class GetImageController extends BaseController {
     req: Request,
     res: Response
   ): Promise<void | any> {
+    /**
+     * #NOTE:
+     * On the backend, the controller extracts the requested image width from the query parameters.
+     */
     const authenticatedUser: UserPersistent = req.user as UserPersistent;
     
-
+    /**
+     * #NOTE:
+     * At this stage, it's essential to enforce a maximum limit—allowing users to request arbitrarily large images 
+     * could degrade performance or even expose the system to DDoS attacks. 
+     * In my case, I restrict the maximum width to 1000px.
+     */
     const MAX_IMAGE_WIDTH = 1000;
     let imageWidth = req.query.width ? parseInt(req.query.width as string) : undefined;
 
@@ -34,7 +43,10 @@ export class GetImageController extends BaseController {
       let getImageRequest: GetImageRequest = {
         fileId: req.params.file.split('.')[0],
         user: UserMapper.toDomain(authenticatedUser),
-
+        /**
+         * NOTE:
+         * Once validated, the width is passed to the Get Image Use Case, which handles the image retrieval logic. 
+         */
         imageWidth
       };
 

@@ -2,8 +2,19 @@
   <div class="task-tile-title">{{ task.title }}</div>
   <div class="task-tile-picture" *ngIf="task.imageUri">
     @if(isLoading()) {
+      <!-- 
+        #NOTE: 
+        Each thumbnail initially has a spinner placeholder 
+        that occupies the full width the image will take once loaded
+      -->
       <ba-spinner></ba-spinner>
     } 
+    <!-- 
+      #NOTE: 
+      resizedImageUri is a signal initially set to null.
+      When it gets updated with the image (path including the width parameter), 
+      the loading process begins.
+    -->
     <img [src]="resizedImageUri()" 
       (load)="isLoading.set(false)" 
       (error)="isLoading.set(false)"
