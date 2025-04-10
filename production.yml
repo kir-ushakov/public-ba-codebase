@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    volumes:
+    - ./frontend/dist:/usr/src/app/dist/app/browser
+    environment:
+      - BUILD_MODE=build-prod
+
+  backend:
+    restart: always
+    volumes:
+      - ./nginx/ssl:/usr/ssl
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile.prod
+    environment:
+      - PORT=3443
+      - CRT_PATH=/usr/ssl/brainassistant.app.crt
+      - KEY_PATH=/usr/ssl/brainassistant.app.key
+
+  nginx:
+    ports: !override
+      - '543:543'
+    volumes:
+      - ./nginx/prod.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./frontend/dist:/srv/www/static:ro

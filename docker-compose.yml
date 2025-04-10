@@ -1,0 +1,87 @@
+version: '3'
+
+services:
+  frontend:
+    image: kirushakov/braias:frontend
+    container_name: frontend
+    build:
+      context: ./frontend
+    tty: true
+    ports:
+      - '4200:8080'
+    volumes:
+      - ./frontend/dist:/usr/src/app/dist/app/browser
+      - ./frontend/src:/usr/src/app/src
+    environment:
+      - BUILD_MODE=build-dev
+
+    depends_on:
+      - nginx
+
+  backend:
+    image: kirushakov/braias:backend
+    container_name: backend
+    build:
+      context: ./backend
+    ports:
+      - '3443:3443'
+    volumes:
+      - ./backend/src:/usr/src/app/src
+      - files:/usr/src/app/files
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=3443
+      - DB_PORT=27017
+      - CRT_PATH=./ssl/server.crt
+      - KEY_PATH=./ssl/server.key
+      - DB_CONTAINER=db
+      - FILES_UPLOAD_PATH=/usr/src/app/files
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - EMAIL_DOMAIN=${EMAIL_DOMAIN}
+      - HOST=${HOST}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - MAILGUN_API_KEY=${MAILGUN_API_KEY}
+      - MAIL_API=${MAIL_API}
+      - SLACK_CLIENT_ID=${SLACK_CLIENT_ID}
+      - SLACK_CLIENT_SECRET=${SLACK_CLIENT_SECRET}
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+      - NGROK_STATIC_DOMAIN=${NGROK_STATIC_DOMAIN}
+      - NGROK_FORWARD_PATH=${NGROK_FORWARD_PATH}
+      - AUTHENTICATION_STRATEGY=${AUTHENTICATION_STRATEGY}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_OAUTH_CALLBACK=${GOOGLE_OAUTH_CALLBACK}
+
+  nginx:
+    image: nginx:mainline
+    container_name: nginx
+    ports:
+      - '443:443'
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./frontend/dist:/srv/www/static:ro
+    restart: on-failure
+
+  db:
+    image: kirushakov/braias:db
+    build: ./db
+    container_name: db
+    restart: always
+    ports:
+      - '27017:27017'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${DB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_PASSWORD}
+      - MONGO_INITDB_DATABASE=ba
+
+    volumes:
+      - mongodb:/data/db
+
+volumes:
+  mongodb:
+  files:
