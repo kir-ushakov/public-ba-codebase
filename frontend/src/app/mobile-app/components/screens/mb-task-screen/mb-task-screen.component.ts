@@ -18,7 +18,7 @@ import { MbTaskTopPanelComponent } from './mb-task-top-panel/mb-task-top-panel.c
 import { MbTaskEditComponent } from './mb-task-edit/mb-task-edit.component';
 import { MbTaskViewComponent } from './mb-task-view/mb-task-view.component';
 import { MbTaskSideMenuComponent } from './mb-task-side-menu/mb-task-side-menu.component';
-import { BottomPanelComponent } from 'src/app/shared/components/ui-elements/bottom-panel/bottom-panel.component';
+import { MbTaskBottomPanelComponent } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-bottom-panel/mb-task-bottom-panel.component';
 
 @Component({
     selector: 'ba-mb-task-screen',
@@ -27,7 +27,7 @@ import { BottomPanelComponent } from 'src/app/shared/components/ui-elements/bott
     imports: [ 
       CommonModule, 
       MatSidenavModule,
-      BottomPanelComponent,
+      MbTaskBottomPanelComponent,
       MbTaskTopPanelComponent,
       MbTaskEditComponent,
       MbTaskViewComponent,
