@@ -23,8 +23,8 @@ import { AppAction } from './app.actions';
 import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
 import {
   UploadImageResponseDTO,
-  UploaderService,
-} from '../services/api/uploader.service';
+  ImageUploaderService,
+} from '../services/api/image-uploader.service';
 
 interface ITasksStateModel {
   entities: Array<Task>;
@@ -40,7 +40,7 @@ interface ITasksStateModel {
 export class TasksState {
   static readonly actualStatuses: Array<ETaskStatus> = [ETaskStatus.Todo];
 
-  constructor(private uploaderService: UploaderService) {}
+  constructor(private imageUploaderService: ImageUploaderService) {}
 
   @Selector([TasksState, UserState.userId])
   static allTasks(state: ITasksStateModel, userId: string): Array<Task> {
@@ -58,50 +58,25 @@ export class TasksState {
     ctx: StateContext<ITasksStateModel>,
     { taskInitData, userId }: { taskInitData: Task; userId: string }
   ): Promise<void> {
-    const createdTask: Task = {
-      type: ETaskType.Basic,
-      userId: userId,
-      id: uuidv4(),
-      title: taskInitData.title,
-      imageUri: taskInitData.imageUri,
-      status: ETaskStatus.Todo,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
-    };
+
+    const now = this.now();
+
+    const baseTask = this.createTaskEntity(taskInitData, userId, now);
+
+    const taskWithImage = await this.processImageUpload(baseTask);
 
     ctx.setState(
       patch({
-        entities: append([createdTask]),
+        entities: append([taskWithImage]),
       })
     );
-
-    if (createdTask.imageUri) {
-      try {
-        const res: UploadImageResponseDTO =
-          await this.uploaderService.uploadImageFromBlobUri(createdTask.imageUri, .6);
-        const imageUri = `${UploaderService.IMAGE_API_ENDPOINT}/${res.fileId}.${res.extension}`;
-        createdTask.imageUri = imageUri;
-
-        ctx.setState(
-          patch({
-            entities: updateItem(
-              (task) => task.id === createdTask.id,
-              patch({ imageUri })
-            ),
-          })
-        );
-      } catch(err) {
-        // TODO: handle this case
-        console.log("Image upload failed");
-      }
-    }
 
     ctx.dispatch(
       new AppAction.ChangeForSyncOccurred({
         entity: EChangedEntity.Task,
         action: EChangeAction.Created,
-        object: createdTask as Task,
-        modifiedAt: new Date().toISOString(),
+        object: taskWithImage,
+        modifiedAt: now,
       } as Change)
     );
   }
@@ -134,7 +109,7 @@ export class TasksState {
         entity: EChangedEntity.Task,
         action: EChangeAction.Updated,
         object: updatedTask,
-        modifiedAt: new Date().toISOString(),
+        modifiedAt: this.now(),
       } as Change)
     );
   }
@@ -146,12 +121,15 @@ export class TasksState {
         entities: removeItem<Task>((task) => task.id === taskId),
       })
     );
+
+    const now = this.now();
+
     ctx.dispatch(
       new AppAction.ChangeForSyncOccurred({
         entity: EChangedEntity.Task,
         action: EChangeAction.Deleted,
-        object: { id: taskId, modifiedAt: new Date().toISOString() },
-        modifiedAt: new Date().toISOString(),
+        object: { id: taskId, modifiedAt: now },
+        modifiedAt: now,
       })
     );
   }
@@ -186,6 +164,33 @@ export class TasksState {
     }
   }
 
+  private createTaskEntity(taskInitData: Task, userId: string, timestamp: string): Task {
+    return {
+      type: ETaskType.Basic,
+      userId,
+      id: uuidv4(),
+      title: taskInitData.title,
+      imageUri: taskInitData.imageUri,
+      status: ETaskStatus.Todo,
+      createdAt: timestamp,
+      modifiedAt: timestamp,
+    };
+  }
+
+  private async processImageUpload(task: Task): Promise<Task> {
+    if (!task.imageUri) return task;
+
+    try {
+      const QUALITY = 0.6;
+      const res: UploadImageResponseDTO = await this.imageUploaderService.uploadImageFromBlobUri(task.imageUri, QUALITY);
+      const newImageUri = `${ImageUploaderService.IMAGE_API_ENDPOINT}/${res.fileId}.${res.extension}`;
+      return { ...task, imageUri: newImageUri };
+    } catch (error) {
+      console.log("Image upload failed");
+      return task;
+    }
+  }
+
   private static getSortedUserTasks(
     state: ITasksStateModel,
     userId: string
@@ -197,5 +202,9 @@ export class TasksState {
         const dateB = new Date(b.createdAt).getTime();
         return dateB - dateA; // descending order
       });
+  }
+
+  private now(): string {
+    return new Date().toISOString()
   }
 }
