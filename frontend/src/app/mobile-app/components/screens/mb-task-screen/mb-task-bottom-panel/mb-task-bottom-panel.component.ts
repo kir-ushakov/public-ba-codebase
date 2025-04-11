@@ -7,7 +7,7 @@ import { ETaskViewMode, MbTaskScreenState } from 'src/app/mobile-app/components/
 
 @Component({
     selector: 'ba-mb-task-bottom-panel',
-    templateUrl: './mb-task-bottom-panel.html',
+    templateUrl: './mb-task-bottom-panel.component.html',
     styleUrls: ['./mb-task-bottom-panel.component.scss'],
     imports: [ CommonModule ]
 })
