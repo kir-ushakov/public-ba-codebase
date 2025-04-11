@@ -14,7 +14,7 @@ export type UploadImageResponseDTO = {
 @Injectable({
   providedIn: 'root',
 })
-export class UploaderService {
+export class ImageUploaderService {
   public static readonly IMAGE_API_ENDPOINT = `${environment.baseUrl}files/image`;
 
   constructor(
