@@ -4,4 +4,3 @@ nginx/ssl/*
 # evirament variables
 .env
 
-db/*
