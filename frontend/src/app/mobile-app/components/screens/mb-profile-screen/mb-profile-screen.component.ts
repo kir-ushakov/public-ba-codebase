@@ -9,23 +9,23 @@ import { CommonModule } from '@angular/common';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 
 @Component({
-    selector: 'app-profile-screen',
-    templateUrl: './mb-profile-screen.component.html',
-    styleUrls: ['./mb-profile-screen.component.scss'],
-    imports: [ 
-      CommonModule,
-      RouterModule, 
-      MatIconModule,
-      UserAvatarComponent,
-      MbIntegrationsComponent,
-    ]
+  selector: 'app-profile-screen',
+  templateUrl: './mb-profile-screen.component.html',
+  styleUrls: ['./mb-profile-screen.component.scss'],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatIconModule,
+    UserAvatarComponent,
+    MbIntegrationsComponent,
+  ],
 })
 export class MbProfileScreenComponent {
   selectors = createSelectMap({
     userFullName: UserState.userFullName,
     userEmail: UserState.userEmail,
-    isLoggedIn: UserState.isLoggedIn
-  })
+    isLoggedIn: UserState.isLoggedIn,
+  });
 
   avatarInputData = {};
 
@@ -44,9 +44,7 @@ export class MbProfileScreenComponent {
   }
 
   private setAvatarInputData() {
-    const userNameFirstLetter = this.store.selectSnapshot(
-      UserState.userNameFirstLetter
-    );
+    const userNameFirstLetter = this.store.selectSnapshot(UserState.userNameFirstLetter);
 
     this.avatarInputData = {
       firstLetter: userNameFirstLetter,

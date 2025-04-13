@@ -4,6 +4,6 @@ import { RouterModule } from '@angular/router';
 @Component({
   selector: 'app-mobile',
   template: `<router-outlet></router-outlet>`,
-  imports: [ RouterModule ],
+  imports: [RouterModule],
 })
-export class MobileAppComponent { }
+export class MobileAppComponent {}

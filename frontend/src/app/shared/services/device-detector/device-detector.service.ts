@@ -10,16 +10,10 @@ export class DeviceDetectorService {
   constructor(private windowRef: WindowRefService) {}
 
   public isMobile(): boolean {
-    return (
-      this.windowRef.nativeWindow.innerWidth <=
-      DeviceDetectorService.MOBILE_DEVICE_SIZE
-    );
+    return this.windowRef.nativeWindow.innerWidth <= DeviceDetectorService.MOBILE_DEVICE_SIZE;
   }
 
   public isDesktop(): boolean {
-    return (
-      this.windowRef.nativeWindow.innerWidth >
-      DeviceDetectorService.MOBILE_DEVICE_SIZE
-    );
+    return this.windowRef.nativeWindow.innerWidth > DeviceDetectorService.MOBILE_DEVICE_SIZE;
   }
 }

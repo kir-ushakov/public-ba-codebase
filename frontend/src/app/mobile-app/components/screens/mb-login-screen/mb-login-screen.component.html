@@ -12,9 +12,7 @@
         formControlName="email"
         autocomplete="email"
       />
-      <mat-error *ngIf="form.get('email').invalid">
-        Please input correct email
-      </mat-error>
+      <mat-error *ngIf="form.get('email').invalid"> Please input correct email </mat-error>
     </mat-form-field>
 
     <mat-form-field class="login-form__password" floatLabel="never">
@@ -39,7 +37,7 @@
       Login
     </button>
   </form>
-  @if(authError()) {
+  @if (authError()) {
     <div class="auth-failed-msg">
       {{ authError() }}
     </div>
@@ -49,7 +47,5 @@
   </div>
 </div>
 <div class="signup-link-holder">
-  <div id="signup-link" class="signup-link" (click)="onSingUpClick()">
-    Sing Up
-  </div>
+  <div id="signup-link" class="signup-link" (click)="onSingUpClick()">Sing Up</div>
 </div>

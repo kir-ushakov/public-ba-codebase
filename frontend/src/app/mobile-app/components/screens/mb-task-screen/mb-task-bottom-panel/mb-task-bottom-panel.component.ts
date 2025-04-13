@@ -3,13 +3,16 @@ import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { Store } from '@ngxs/store';
 import { MbTaskScreenAction } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.actions';
-import { ETaskViewMode, MbTaskScreenState } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.state';
+import {
+  ETaskViewMode,
+  MbTaskScreenState,
+} from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.state';
 
 @Component({
-    selector: 'ba-mb-task-bottom-panel',
-    templateUrl: './mb-task-bottom-panel.component.html',
-    styleUrls: ['./mb-task-bottom-panel.component.scss'],
-    imports: [ CommonModule ]
+  selector: 'ba-mb-task-bottom-panel',
+  templateUrl: './mb-task-bottom-panel.component.html',
+  styleUrls: ['./mb-task-bottom-panel.component.scss'],
+  imports: [CommonModule],
 })
 export class MbTaskBottomPanelComponent {
   @Input() enabled: boolean;

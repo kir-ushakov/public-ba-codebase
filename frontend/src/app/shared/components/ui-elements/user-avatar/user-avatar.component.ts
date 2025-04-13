@@ -2,9 +2,9 @@ import { Component, ViewChild, ElementRef, Input } from '@angular/core';
 import { IUserAvatarInputData } from './user-avatar.interface';
 
 @Component({
-    selector: 'ba-user-avatar',
-    templateUrl: './user-avatar.component.html',
-    styleUrls: ['./user-avatar.component.scss'],
+  selector: 'ba-user-avatar',
+  templateUrl: './user-avatar.component.html',
+  styleUrls: ['./user-avatar.component.scss'],
 })
 export class UserAvatarComponent {
   @Input() data: IUserAvatarInputData;
@@ -20,8 +20,7 @@ export class UserAvatarComponent {
   private fitLetterSizeToCont() {
     if (this.avatarHolderRef) {
       const elHeight = this._el.nativeElement.offsetHeight;
-      this.avatarHolderRef.nativeElement.style.fontSize =
-        elHeight * 0.75 + 'px';
+      this.avatarHolderRef.nativeElement.style.fontSize = elHeight * 0.75 + 'px';
     }
   }
 

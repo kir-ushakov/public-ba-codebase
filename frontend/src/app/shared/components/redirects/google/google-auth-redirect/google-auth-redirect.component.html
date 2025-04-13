@@ -2,9 +2,9 @@
   <img src="/assets/ui/icons/google-logo.png" class="slack-icon" />
 </div>
 <div class="in-progress-text" *ngIf="selectors.isLogging()">Logging...</div>
-@if(selectors.errorOccurred()) {
+@if (selectors.errorOccurred()) {
   <div class="error-holder">
-    @if(selectors.errorMessage()) {
+    @if (selectors.errorMessage()) {
       <span class="error-text">
         {{ selectors.errorMessage() }}
       </span>
@@ -15,9 +15,6 @@
       </span>
     }
     <br />
-    <span class="error-back" 
-      (click)="goToLoginScreen()"> 
-      ← go to login
-    </span>
+    <span class="error-back" (click)="goToLoginScreen()"> ← go to login </span>
   </div>
 }

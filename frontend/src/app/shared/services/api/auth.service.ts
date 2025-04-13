@@ -44,13 +44,11 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   public login(data: LoginRequestDTO): Observable<User> {
-    return this.http
-      .post<LoginResponseDTO>(AuthService.API_ENDPOINTS.LOGIN, data)
-      .pipe(
-        map((date) => {
-          return UserMapper.toModel(date.user);
-        })
-      );
+    return this.http.post<LoginResponseDTO>(AuthService.API_ENDPOINTS.LOGIN, data).pipe(
+      map(date => {
+        return UserMapper.toModel(date.user);
+      }),
+    );
   }
 
   public logout(): Observable<void> {

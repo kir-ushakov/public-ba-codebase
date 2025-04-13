@@ -19,7 +19,7 @@ export class TasksMapper {
   public static toDto(task: Task): TaskDTO {
     if (!task) {
       throw new AppError(
-        'An error occurred while converting the task to a DTO: the passed task object is NULL or undefined.'
+        'An error occurred while converting the task to a DTO: the passed task object is NULL or undefined.',
       );
     }
 

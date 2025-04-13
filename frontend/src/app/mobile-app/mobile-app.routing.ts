@@ -21,12 +21,8 @@ export const mobileRoutes: Routes = [
   {
     path: '',
     component: MobileAppComponent,
-    providers: [
-      provideStates([
-        MobileAppState
-      ])
-    ],
-    canActivateChild: [ AuthGuardService ],
+    providers: [provideStates([MobileAppState])],
+    canActivateChild: [AuthGuardService],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       {
@@ -40,12 +36,12 @@ export const mobileRoutes: Routes = [
       {
         path: 'task/:mode',
         component: MbTaskScreenComponent,
-        providers: [ provideStates([ MbTaskScreenState] ) ]
+        providers: [provideStates([MbTaskScreenState])],
       },
       {
         path: 'task/:mode/:id',
         component: MbTaskScreenComponent,
-        providers: [ provideStates([ MbTaskScreenState] ) ]
+        providers: [provideStates([MbTaskScreenState])],
       },
       {
         path: 'sync',
@@ -54,15 +50,23 @@ export const mobileRoutes: Routes = [
       {
         path: 'integrations/slack/install',
         component: AddToSlackRedirectComponent,
-        providers: [ provideStates([ AddToSlackRedirectScreenState]) ]
+        providers: [provideStates([AddToSlackRedirectScreenState])],
       },
     ],
   },
-  { path: 'login', component: MbLoginScreenComponent, providers: [ provideStates([ MbLoginScreenState ]) ] },
-  { path: 'signup', component: MbSignupScreenComponent, providers: [ provideStates([ MbSignupScreenState ]) ] },
+  {
+    path: 'login',
+    component: MbLoginScreenComponent,
+    providers: [provideStates([MbLoginScreenState])],
+  },
+  {
+    path: 'signup',
+    component: MbSignupScreenComponent,
+    providers: [provideStates([MbSignupScreenState])],
+  },
   {
     path: 'google/oauth2callback',
     component: GoogleAuthRedirectScreenComponent,
-    providers: [ provideStates([GoogleAuthRedirectScreenState]) ]
+    providers: [provideStates([GoogleAuthRedirectScreenState])],
   },
 ];

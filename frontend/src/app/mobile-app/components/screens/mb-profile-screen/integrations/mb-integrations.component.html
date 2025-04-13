@@ -4,29 +4,22 @@
 <div class="integration">
   <div>
     <img src="/assets/ui/icons/slack-mark.svg" class="integration-icon" />
-    @if(isAddedToSlack()) {
-      <div class="integration-desc">
-        installed into slack workspace
-      </div>
+    @if (isAddedToSlack()) {
+      <div class="integration-desc">installed into slack workspace</div>
     }
-    @if(!isAddedToSlack()) {
-      <div class="integration-desc">
-        add to slack
-      </div>
+    @if (!isAddedToSlack()) {
+      <div class="integration-desc">add to slack</div>
     }
   </div>
 
   <div>
-    @if(!isAddedToSlack()) {
+    @if (!isAddedToSlack()) {
       <app-add-to-slack-btn></app-add-to-slack-btn>
     }
-    @if(isAddedToSlack()) {
-      <div class="remove-btn"
-        (click)="removeFromSlack()">
+    @if (isAddedToSlack()) {
+      <div class="remove-btn" (click)="removeFromSlack()">
         <span class="remove-btn-text">remove from slack</span>
-        <img
-          class="remove-btn-icon"
-          src="assets/ui/icons/disconnect-svgrepo-com.svg"/>
+        <img class="remove-btn-icon" src="assets/ui/icons/disconnect-svgrepo-com.svg" />
       </div>
     }
   </div>

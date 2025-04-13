@@ -9,6 +9,9 @@ export namespace MbLoginScreenAction {
   export class LoginUser {
     static readonly type = '[MbLoginScreen] Login User';
 
-    constructor(public email: string, public password: string) {}
+    constructor(
+      public email: string,
+      public password: string,
+    ) {}
   }
 }

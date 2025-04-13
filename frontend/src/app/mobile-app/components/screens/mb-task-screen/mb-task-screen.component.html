@@ -5,12 +5,10 @@
     </div>
     <div class="main-panel-holder">
       @let mode = mode$ | async;
-      @if(
-        mode === ETaskViewMode.Create || 
-        mode === ETaskViewMode.Edit) {
+      @if (mode === ETaskViewMode.Create || mode === ETaskViewMode.Edit) {
         <ba-mb-task-edit></ba-mb-task-edit>
       }
-      @if(mode === ETaskViewMode.View) {
+      @if (mode === ETaskViewMode.View) {
         <ba-mb-task-view></ba-mb-task-view>
       }
     </div>

@@ -19,35 +19,21 @@ export class ImageUploaderService {
 
   constructor(
     private http: HttpClient,
-    private imageOptimizerService: ImageOptimizerService
+    private imageOptimizerService: ImageOptimizerService,
   ) {}
 
   public async uploadImageFromBlobUri(
     imageUri: string,
-    quality: number
+    quality: number,
   ): Promise<UploadImageResponseDTO> {
     try {
-      const formData = await this.convertBlobUriToFormData(imageUri, quality);      
+      const formData = await this.convertBlobUriToFormData(imageUri, quality);
 
-      /**
-       * #NOTE: 
-       * In ngsw-config.json Service Worker configurationsets up caching 
-       * for all images fetched from the specified API endpoint, 
-       * enhancing performance by allowing them to be stored locally for offline access 
-       * or faster retrieval on subsequent visits.
-       * {
-       *   "name": "apiImages",
-       *   "resources": {
-       *     "urls": ["/api/files/image/*"]
-       *  }
-       * },
-       */
-      return firstValueFrom(this.http
-        .post<UploadImageResponseDTO>('/api/files/image', formData));
-      } catch(error) {
-        console.error('Error uploading image:', error);
-        throw error;
-      }
+      return firstValueFrom(this.http.post<UploadImageResponseDTO>('/api/files/image', formData));
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
   }
 
   private async convertBlobUriToFormData(imageUri: string, quality: number): Promise<FormData> {

@@ -22,9 +22,9 @@ export class GoogleAPIService {
         params: params,
       })
       .pipe(
-        map((date) => {
+        map(date => {
           return UserMapper.toModel(date.user);
-        })
+        }),
       );
   }
 }

@@ -1,19 +1,17 @@
 <div class="icon-holder">
   <img src="/assets/ui/icons/slack-mark.svg" class="slack-icon" />
 </div>
-@if(isInstalling()) {
+@if (isInstalling()) {
   <div class="in-progress-text">Installing...</div>
 }
 
-@if(errorOccurred()) {
+@if (errorOccurred()) {
   <div class="error-holder">
     <span class="error-text">
       Something went wrong :( <br />
       Try again later
     </span>
     <br />
-    <span class="error-back" (click)="goToProfileScreen()">
-      ← go to profile
-    </span>
+    <span class="error-back" (click)="goToProfileScreen()"> ← go to profile </span>
   </div>
 }

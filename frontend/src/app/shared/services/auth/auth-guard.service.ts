@@ -1,9 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  ActivatedRouteSnapshot,
-  Router,
-  RouterStateSnapshot,
-} from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { UserState } from '../../state/user.state';
@@ -12,18 +8,21 @@ import { UserState } from '../../state/user.state';
   providedIn: 'root',
 })
 export class AuthGuardService {
-  constructor(private router: Router, private store: Store) {}
+  constructor(
+    private router: Router,
+    private store: Store,
+  ) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
+    state: RouterStateSnapshot,
   ): Observable<boolean> | Promise<boolean> | boolean {
     return this.redirectIfNotLoggedIn();
   }
 
   canActivateChild(
     childRoute: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
+    state: RouterStateSnapshot,
   ): Observable<boolean> | Promise<boolean> | boolean {
     return this.redirectIfNotLoggedIn();
   }

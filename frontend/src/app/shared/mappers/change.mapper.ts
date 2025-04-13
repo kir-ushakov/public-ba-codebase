@@ -1,10 +1,6 @@
 import { TaskDTO, TagDTO, ChangeDTO, ChangeableObjectDTO } from '../dto/';
 import { Tag } from '../models';
-import {
-  ChangeableObject,
-  Change,
-  EChangedEntity,
-} from '../models/change.model';
+import { ChangeableObject, Change, EChangedEntity } from '../models/change.model';
 import { Task } from '../models/task.model';
 import { TagMapper } from './tag.mapper';
 import { TasksMapper } from './task.mapper';

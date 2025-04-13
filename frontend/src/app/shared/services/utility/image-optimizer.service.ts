@@ -9,7 +9,7 @@ export class ImageOptimizerService {
     return new Promise((resolve, reject) => {
       new Compressor(blob, {
         quality: quality,
-        mimeType: "image/jpeg",
+        mimeType: 'image/jpeg',
         success(result) {
           resolve(result);
         },
