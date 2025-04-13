@@ -1,27 +1,15 @@
 <div class="top-panel-holder">
   <div class="icon-holder">
-    <mat-icon
-      [routerLink]="['/home']"
-      aria-hidden="false"
-      aria-label="Arrow Back Icon"
-    >
+    <mat-icon [routerLink]="['/home']" aria-hidden="false" aria-label="Arrow Back Icon">
       arrow_back
     </mat-icon>
   </div>
 </div>
 <div class="main-panel-holder">
-  <div class="message">
-    Please enter your password to synchronize with server
-  </div>
+  <div class="message">Please enter your password to synchronize with server</div>
   <form [formGroup]="syncForm" class="login-form">
     <mat-form-field class="password-field" floatLabel="never">
-      <input
-        autofocus
-        matInput
-        type="password"
-        placeholder="Password"
-        formControlName="password"
-      />
+      <input autofocus matInput type="password" placeholder="Password" formControlName="password" />
       <mat-error *ngIf="syncForm.get('password').invalid">
         Please input correct password
       </mat-error>

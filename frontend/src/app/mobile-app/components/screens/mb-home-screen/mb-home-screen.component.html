@@ -4,17 +4,11 @@
     <div *ngIf="!selectors.online()">
       <img src="assets/ui/icons/no-connection.png" />
     </div>
-    <div
-      *ngIf="selectors.isLocalAuthenticated() && selectors.online()"
-      [routerLink]="['/sync']"
-    >
+    <div *ngIf="selectors.isLocalAuthenticated() && selectors.online()" [routerLink]="['/sync']">
       <img src="assets/ui/icons/no-synchronize.png" />
     </div>
     <div *ngIf="selectors.isLoggedIn()" class="avatar-holder">
-      <ba-user-avatar
-        [data]="avatarInputData"
-        [routerLink]="['/profile']"
-      ></ba-user-avatar>
+      <ba-user-avatar [data]="avatarInputData" [routerLink]="['/profile']"></ba-user-avatar>
     </div>
   </div>
 </div>

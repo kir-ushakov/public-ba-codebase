@@ -1,11 +1,9 @@
 <div class="logo-holder">
   <img class="logo-image" src="assets/ui/main/ba_logo.png" />
 </div>
-@if(!signUpResult()) {
+@if (!signUpResult()) {
   <div class="login-form-holder">
-    <form class="login-form" 
-      [formGroup]="form" 
-      (ngSubmit)="onSubmit()">
+    <form class="login-form" [formGroup]="form" (ngSubmit)="onSubmit()">
       <div class="name-row">
         <mat-form-field class="first-name" floatLabel="never">
           <input
@@ -13,20 +11,13 @@
             autofocus
             matInput
             placeholder="First Name"
-            formControlName="firstName"/>
-          <mat-error *ngIf="form.get('email').invalid">
-            First Name required
-          </mat-error>
+            formControlName="firstName"
+          />
+          <mat-error *ngIf="form.get('email').invalid"> First Name required </mat-error>
         </mat-form-field>
         <mat-form-field class="login-form__email" floatLabel="never">
-          <input
-            id="lastNameInput"
-            matInput
-            placeholder="Last Name"
-            formControlName="lastName"/>
-          <mat-error *ngIf="form.get('email').invalid">
-            Last Name required
-          </mat-error>
+          <input id="lastNameInput" matInput placeholder="Last Name" formControlName="lastName" />
+          <mat-error *ngIf="form.get('email').invalid"> Last Name required </mat-error>
         </mat-form-field>
       </div>
 
@@ -36,10 +27,9 @@
           matInput
           placeholder="Email"
           formControlName="email"
-          autocomplete="email"/>
-        <mat-error *ngIf="form.get('email').invalid">
-          Please input correct email
-        </mat-error>
+          autocomplete="email"
+        />
+        <mat-error *ngIf="form.get('email').invalid"> Please input correct email </mat-error>
       </mat-form-field>
 
       <mat-form-field class="login-form__password" floatLabel="never">
@@ -49,30 +39,28 @@
           matInput
           placeholder="Password"
           formControlName="password"
-          autocomplete="off"/>
+          autocomplete="off"
+        />
         <mat-error *ngIf="form.get('password').invalid">
           Please input password, not less than 8 symbols
         </mat-error>
       </mat-form-field>
-      <button  class="login-form__btn green-btn"
+      <button
+        class="login-form__btn green-btn"
         id="submitBtn"
         type="submit"
-        [disabled]="form.invalid">
+        [disabled]="form.invalid"
+      >
         Signup
       </button>
     </form>
   </div>
   <div class="login-link-holder">
-    <div class="login-link" 
-      id="login-link"  
-      (click)="onLoginLinkClick()">
-      Login
-    </div>
+    <div class="login-link" id="login-link" (click)="onLoginLinkClick()">Login</div>
   </div>
 } @else {
   <div class="mb-signup__success-block">
-    Hi, {{ signUpResult().firstName }}
-    {{ signUpResult().lastName }}!
+    Hi, {{ signUpResult().firstName }} {{ signUpResult().lastName }}!
     <br />
     The verification link was sent on <br />
     {{ signUpResult().email }}

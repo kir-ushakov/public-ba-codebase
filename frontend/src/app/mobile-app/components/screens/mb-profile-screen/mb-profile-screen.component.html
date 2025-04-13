@@ -1,11 +1,6 @@
 <div class="top-panel">
   <div class="icon-holder">
-    <mat-icon
-      aria-hidden="false"
-      aria-label="Arrow Back Icon"
-      [routerLink]="['/home']"
-      inline
-    >
+    <mat-icon aria-hidden="false" aria-label="Arrow Back Icon" [routerLink]="['/home']" inline>
       arrow_back
     </mat-icon>
   </div>
@@ -14,26 +9,16 @@
   <div class="user-info-container">
     <div class="avatar-holder">
       <ba-user-avatar [data]="avatarInputData"></ba-user-avatar>
-      <img class="edit-avatar-icon"
-        src="assets/ui/icons/edit.png"
-        (click)="editAvatar()"
-      />
+      <img class="edit-avatar-icon" src="assets/ui/icons/edit.png" (click)="editAvatar()" />
     </div>
     <div class="user-info">
       <div class="user-name-holder">
         <span>{{ selectors.userFullName() }}</span>
-        <img
-          class="edit-avatar-icon"
-          src="assets/ui/icons/edit.png"
-          (click)="editAvatar()"
-        />
+        <img class="edit-avatar-icon" src="assets/ui/icons/edit.png" (click)="editAvatar()" />
       </div>
       <div class="user-email-holder">{{ selectors.userEmail() }}</div>
       <div class="logout-btn-holder" *ngIf="selectors.isLoggedIn()">
-        <button class="light-gray-btn logout-btn"
-          mat-button
-          color="primary"
-          (click)="logout()">
+        <button class="light-gray-btn logout-btn" mat-button color="primary" (click)="logout()">
           Logout
         </button>
       </div>

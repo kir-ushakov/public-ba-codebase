@@ -1,6 +1,5 @@
 <div class="title-input-holder">
-  <form class="task-form"
-    [formGroup]="form">
+  <form class="task-form" [formGroup]="form">
     <mat-form-field class="title-input-holder" floatLabel="never">
       <input
         #titleInput
@@ -9,12 +8,11 @@
         formControlName="title"
         placeholder="Task title here"
         autocomplete="off"
-        autofocus />
-      <mat-error *ngIf="false">
-        Task title is <strong>required</strong>
-      </mat-error>
+        autofocus
+      />
+      <mat-error *ngIf="false"> Task title is <strong>required</strong> </mat-error>
     </mat-form-field>
-    @if ((imageUri$ | async)) {
+    @if (imageUri$ | async) {
       <div class="task-picture-holder">
         <img class="task-picture" src="{{ imageUri$ | async }}" />
       </div>
@@ -24,7 +22,8 @@
           aria-hidden="false"
           aria-label="Picture Icon"
           inline
-          (click)="addPictureBtnPressed()">
+          (click)="addPictureBtnPressed()"
+        >
           image
         </mat-icon>
       </div>
