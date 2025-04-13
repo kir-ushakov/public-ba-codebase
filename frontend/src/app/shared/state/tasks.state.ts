@@ -196,6 +196,7 @@ export class TasksState {
       return { ...task, imageUri: newImageUri };
     } catch (error) {
       console.log("Image upload failed");
+      console.log(error);
       return task;
     }
   }
