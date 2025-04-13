@@ -29,23 +29,20 @@ export class MbSignupScreenState {
   }
 
   @Action(MbSignupScreenAction.SignupUser)
-  signup(
-    ctx: StateContext<IMbSignupScreenStateModel>,
-    { dto }: { dto: SignUpRequestDTO }
-  ) {
+  signup(ctx: StateContext<IMbSignupScreenStateModel>, { dto }: { dto: SignUpRequestDTO }) {
     this.authService
       .signUp(dto)
       .pipe(
-        tap((res) => {
+        tap(res => {
           ctx.patchState({
             signUpResult: res,
           });
         }),
-        catchError((err) => {
+        catchError(err => {
           // TODO: Need to handle error here
           console.log(err);
           return EMPTY;
-        })
+        }),
       )
       .subscribe();
   }

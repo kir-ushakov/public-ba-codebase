@@ -1,5 +1,5 @@
-export interface ITaskSideMenuOptionItem  {
+export interface ITaskSideMenuOptionItem {
   label: string;
   icon: string;
-  callback: () => void
+  callback: () => void;
 }

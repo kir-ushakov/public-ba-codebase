@@ -4,7 +4,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
   selector: 'ba-spinner',
   imports: [],
   templateUrl: './spinner.component.html',
-  styleUrl: './spinner.component.scss'
+  styleUrl: './spinner.component.scss',
 })
 export class SpinnerComponent {
   @ViewChild('spinner', { static: true }) spinnerRef!: ElementRef;

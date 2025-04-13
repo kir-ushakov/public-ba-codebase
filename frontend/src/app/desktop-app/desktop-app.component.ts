@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'desktop-mobile',
-  imports: [ RouterModule ],
-  template: `<router-outlet></router-outlet>`
+  imports: [RouterModule],
+  template: `<router-outlet></router-outlet>`,
 })
 export class DesktopAppComponent {}

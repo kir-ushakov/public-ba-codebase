@@ -18,7 +18,10 @@ export interface MobileAppStateModel {}
 })
 @Injectable()
 export class MobileAppState {
-  constructor(private router: Router, private ngZone: NgZone) {}
+  constructor(
+    private router: Router,
+    private ngZone: NgZone,
+  ) {}
 
   @Action(MbHomeBottomPanelAction.CreateTask)
   openCreateTaskView() {

@@ -5,7 +5,10 @@ export namespace MbTaskScreenAction {
   export class Opened {
     static readonly type = '[MbTaskScreen] Opened';
 
-    constructor(public mode: ETaskViewMode, public taskId: string) {}
+    constructor(
+      public mode: ETaskViewMode,
+      public taskId: string,
+    ) {}
   }
   export class ApplyButtonPressed {
     static readonly type = '[MbTaskScreen] Apply Button Pressed';
@@ -22,7 +25,10 @@ export namespace MbTaskScreenAction {
   export class CreateTask {
     static readonly type = '[MbTaskScreen] Create Task';
 
-    constructor(public taskInitData: Task, public userId: string) {}
+    constructor(
+      public taskInitData: Task,
+      public userId: string,
+    ) {}
   }
 
   export class UpdateTask {
@@ -68,10 +74,13 @@ export namespace MbTaskScreenAction {
   export class SideMenuToggle {
     static readonly type = '[MbTaskScreen] Side Menu Toggle';
   }
-  
+
   export class UpdateForm {
     static readonly type = '[MbTaskScreen] Update Form';
-    
-    constructor(public valid: boolean, public formData: IEditTaskFormData) { }
+
+    constructor(
+      public valid: boolean,
+      public formData: IEditTaskFormData,
+    ) {}
   }
 }

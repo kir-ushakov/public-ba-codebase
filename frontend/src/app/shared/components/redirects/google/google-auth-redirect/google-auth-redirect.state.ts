@@ -39,7 +39,10 @@ export class GoogleAuthRedirectScreenState {
   }
 
   @Action(GoogleAuthRedirectScreenAction.Opened)
-  async opened(ctx: StateContext<IGoogleAuthRedirectScreenStateModel>, payload : GoogleAuthRedirectScreenAction.Opened) {
+  async opened(
+    ctx: StateContext<IGoogleAuthRedirectScreenStateModel>,
+    payload: GoogleAuthRedirectScreenAction.Opened,
+  ) {
     ctx.patchState({
       ...defaults,
     });
@@ -59,7 +62,7 @@ export class GoogleAuthRedirectScreenState {
             ctx.patchState({ errorMessage: err.error.message });
           }
           return EMPTY;
-        })
+        }),
       )
       .subscribe((userData: User) => {
         ctx.patchState({

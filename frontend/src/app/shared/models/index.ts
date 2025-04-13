@@ -1,11 +1,6 @@
 import { User } from './user.model';
 import { Task, ETaskStatus, ETaskType } from './task.model';
-import {
-  Change,
-  ChangeableObject,
-  EChangedEntity,
-  EChangeAction,
-} from './change.model';
+import { Change, ChangeableObject, EChangedEntity, EChangeAction } from './change.model';
 import { Tag, ETagType } from './tag.model';
 
 export {

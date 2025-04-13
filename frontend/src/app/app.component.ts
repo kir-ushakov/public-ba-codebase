@@ -9,12 +9,11 @@ import { Router, RouterOutlet } from '@angular/router';
 import { mobileRoutes } from './mobile-app/mobile-app.routing';
 import { desktopRoutes } from './desktop-app/desktop-app.routing';
 
-
 @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss'],
-    imports: [ RouterOutlet ]
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
+  imports: [RouterOutlet],
 })
 export class AppComponent {
   onlineEvent: Observable<Event>;
@@ -24,13 +23,13 @@ export class AppComponent {
   constructor(
     private readonly _router: Router,
     private readonly _store: Store,
-    private readonly _deviceDetectorService: DeviceDetectorService
+    private readonly _deviceDetectorService: DeviceDetectorService,
   ) {
     defineCustomElements(window);
   }
 
   ngOnInit(): void {
-    this.attachModuleDependOnDevice()
+    this.attachModuleDependOnDevice();
     this.setOnOffLineHandlers();
   }
 
@@ -38,10 +37,10 @@ export class AppComponent {
     this.online$ = merge(
       of(navigator.onLine),
       fromEvent(window, 'online').pipe(map(() => true)),
-      fromEvent(window, 'offline').pipe(map(() => false))
+      fromEvent(window, 'offline').pipe(map(() => false)),
     );
 
-    this.online$.subscribe((isOnline) => {
+    this.online$.subscribe(isOnline => {
       if (isOnline) {
         this._store.dispatch(new AppAction.Online());
       } else {

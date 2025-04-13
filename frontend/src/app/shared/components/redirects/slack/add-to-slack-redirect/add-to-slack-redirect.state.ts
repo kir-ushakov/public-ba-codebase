@@ -16,10 +16,8 @@ export interface IAddToSlackRedirectScreenStateModel {
 })
 @Injectable()
 export class AddToSlackRedirectScreenState {
-  constructor(
-    private _slackService: SlackService
-  ) {}
-  
+  constructor(private _slackService: SlackService) {}
+
   @Selector()
   static isInstalling(state: IAddToSlackRedirectScreenStateModel): boolean {
     return state.isInstalling;
@@ -31,7 +29,10 @@ export class AddToSlackRedirectScreenState {
   }
 
   @Action(AddToSlackRedirectScreenAction.Opened)
-  async opened(ctx: StateContext<IAddToSlackRedirectScreenStateModel>, payload: AddToSlackRedirectScreenAction.Opened) {
+  async opened(
+    ctx: StateContext<IAddToSlackRedirectScreenStateModel>,
+    payload: AddToSlackRedirectScreenAction.Opened,
+  ) {
     const { code } = { ...payload };
     ctx.patchState({
       isInstalling: true,
@@ -39,7 +40,6 @@ export class AddToSlackRedirectScreenState {
     });
 
     try {
-
       await this._slackService.addToSlack(code);
 
       ctx.patchState({

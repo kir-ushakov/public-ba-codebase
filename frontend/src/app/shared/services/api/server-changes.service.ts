@@ -21,17 +21,13 @@ export class ServerChangesService {
       clientId,
     });
     return this.http
-      .get<GetChangesResponceDTO>(
-        `${API_ENDPOINTS.SYNC.CHANGES}?${queryString}`
-      )
+      .get<GetChangesResponceDTO>(`${API_ENDPOINTS.SYNC.CHANGES}?${queryString}`)
       .pipe(
-        map((response) => {
+        map(response => {
           const changeDTOs: ChangeDTO[] = response.changes;
-          const changes: Array<Change> = changeDTOs.map((dto) =>
-            ChangeMapper.toModel(dto)
-          );
+          const changes: Array<Change> = changeDTOs.map(dto => ChangeMapper.toModel(dto));
           return changes;
-        })
+        }),
       );
   }
 }

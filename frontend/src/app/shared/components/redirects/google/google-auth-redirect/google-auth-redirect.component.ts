@@ -7,23 +7,22 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
-    selector: 'ba-google-auth-redirect',
-    templateUrl: './google-auth-redirect.component.html',
-    styleUrls: ['./google-auth-redirect.component.scss'],
-    imports: [ CommonModule ]
+  selector: 'ba-google-auth-redirect',
+  templateUrl: './google-auth-redirect.component.html',
+  styleUrls: ['./google-auth-redirect.component.scss'],
+  imports: [CommonModule],
 })
 export class GoogleAuthRedirectScreenComponent {
-
   selectors = createSelectMap({
     isLogging: GoogleAuthRedirectScreenState.isLogging,
     errorOccurred: GoogleAuthRedirectScreenState.errorOccurred,
-    errorMessage: GoogleAuthRedirectScreenState.errorMessage
-
-  })
+    errorMessage: GoogleAuthRedirectScreenState.errorMessage,
+  });
 
   constructor(
     private readonly _activatedRoute: ActivatedRoute,
-    private readonly _store: Store) {}
+    private readonly _store: Store,
+  ) {}
 
   ngOnInit() {
     const code: string = this._activatedRoute.snapshot.queryParamMap.get('code');

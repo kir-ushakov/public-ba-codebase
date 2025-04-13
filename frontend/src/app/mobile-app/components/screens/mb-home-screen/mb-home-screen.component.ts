@@ -12,23 +12,23 @@ import { TaskTilesPanelComponent } from '../../common/task-tiles-panel/task-tile
 import { RouterModule } from '@angular/router';
 
 @Component({
-    selector: 'ba-home-screen',
-    templateUrl: './mb-home-screen.component.html',
-    styleUrls: ['./mb-home-screen.component.scss'],
-    imports: [ 
-      CommonModule,
-      RouterModule,
-      UserAvatarComponent, 
-      MbHomeBottomPanelComponent, 
-      TaskTilesPanelComponent
-    ]
+  selector: 'ba-home-screen',
+  templateUrl: './mb-home-screen.component.html',
+  styleUrls: ['./mb-home-screen.component.scss'],
+  imports: [
+    CommonModule,
+    RouterModule,
+    UserAvatarComponent,
+    MbHomeBottomPanelComponent,
+    TaskTilesPanelComponent,
+  ],
 })
 export class MbHomeScreenComponent implements OnInit {
   selectors = createSelectMap({
     tasks: TasksState.actualTasks,
     isLoggedIn: UserState.isLoggedIn,
     isLocalAuthenticated: UserState.isLocalAuthenticated,
-    online: AppState.online
+    online: AppState.online,
   });
 
   avatarInputData: IUserAvatarInputData;
@@ -41,9 +41,7 @@ export class MbHomeScreenComponent implements OnInit {
   }
 
   private setAvatarInputData() {
-    const userNameFirstLetter = this.store.selectSnapshot(
-      UserState.userNameFirstLetter
-    );
+    const userNameFirstLetter = this.store.selectSnapshot(UserState.userNameFirstLetter);
 
     this.avatarInputData = {
       firstLetter: userNameFirstLetter,

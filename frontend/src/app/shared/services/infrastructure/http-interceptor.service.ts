@@ -8,14 +8,14 @@ import { AppAction } from '../../state/app.actions';
 
 @Injectable()
 export class HttpInterceptorService implements HttpInterceptor {
-  constructor(public router: Router, private _store: Store) {}
+  constructor(
+    public router: Router,
+    private _store: Store,
+  ) {}
 
-  intercept(
-    req: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
-      catchError((error) => {
+      catchError(error => {
         if (error.status === 401) {
           this._store.dispatch(AppAction.UserNotAuthenticated);
         }
@@ -26,7 +26,7 @@ export class HttpInterceptorService implements HttpInterceptor {
           console.log(error);
         }
         return throwError(error);
-      })
+      }),
     );
   }
 }

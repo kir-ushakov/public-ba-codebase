@@ -3,10 +3,10 @@ import { Task } from 'src/app/shared/models/task.model';
 import { TaskTileComponent } from './task-tile/task-tile.component';
 
 @Component({
-    selector: 'ba-task-tiles-panel',
-    templateUrl: './task-tiles-panel.component.html',
-    styleUrls: ['./task-tiles-panel.component.scss'],
-    imports: [ TaskTileComponent ]
+  selector: 'ba-task-tiles-panel',
+  templateUrl: './task-tiles-panel.component.html',
+  styleUrls: ['./task-tiles-panel.component.scss'],
+  imports: [TaskTileComponent],
 })
 export class TaskTilesPanelComponent {
   @Input() set tasks(tasks: Array<Task>) {

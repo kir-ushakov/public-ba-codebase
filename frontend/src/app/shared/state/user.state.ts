@@ -14,7 +14,6 @@ import { AuthAPIAction } from '../services/api/auth.actions';
 import { EMPTY, catchError, tap } from 'rxjs';
 import { GoogleAPIAction } from '../services/integrations/google-api.actions';
 
-
 interface IUserIntegrations {
   isAddedToSlack: boolean | undefined;
 }
@@ -43,7 +42,7 @@ export enum EUserAuthState {
 export class UserState {
   constructor(
     private _authService: AuthService,
-    private _slackService: SlackService
+    private _slackService: SlackService,
   ) {}
 
   @Selector()
@@ -71,7 +70,7 @@ export class UserState {
   }
 
   @Selector()
-  static userFullName(state: IUserStateModel): string | null{
+  static userFullName(state: IUserStateModel): string | null {
     return `${state.userData?.firstName} ${state.userData?.lastName}`;
   }
 
@@ -88,17 +87,14 @@ export class UserState {
   @Action(MbLoginScreenAction.LoginUser)
   async login(
     ctx: StateContext<IUserStateModel>,
-    { email, password }: { email: string; password: string }
+    { email, password }: { email: string; password: string },
   ): Promise<void> {
     this.loginUser(ctx, email, password);
   }
 
   @Action(AuthAPIAction.UserLoggedIn)
   @Action(GoogleAPIAction.UserAuthenticated)
-  loggedIn(
-    ctx: StateContext<IUserStateModel>,
-    { userData }: { userData: User }
-  ): void {
+  loggedIn(ctx: StateContext<IUserStateModel>, { userData }: { userData: User }): void {
     ctx.patchState({
       userData: userData,
       authState: EUserAuthState.Authenticated,
@@ -111,12 +107,12 @@ export class UserState {
     this._authService
       .logout()
       .pipe(
-        catchError((err) => {
+        catchError(err => {
           ctx.dispatch(AuthAPIAction.UserLogoutFailed);
           return EMPTY;
-        })
+        }),
       )
-      .subscribe(() => { 
+      .subscribe(() => {
         ctx.setState(patch({ userData: null }));
         ctx.dispatch(AuthAPIAction.UserLoggedOut);
         ctx.dispatch(AppAction.NavigateToLoginScreen);
@@ -133,7 +129,7 @@ export class UserState {
   @Action(MbSyncScreenAction.Relogin)
   async relogin(
     ctx: StateContext<IUserStateModel>,
-    { password }: { password: string }
+    { password }: { password: string },
   ): Promise<void> {
     const email = ctx.getState().userData.email;
     this.loginUser(ctx, email, password);
@@ -172,11 +168,7 @@ export class UserState {
     ctx.dispatch(SlackAPIAction.RemovedFromSlack);
   }
 
-  private loginUser(
-    ctx: StateContext<IUserStateModel>,
-    email: string,
-    password: string
-  ) {
+  private loginUser(ctx: StateContext<IUserStateModel>, email: string, password: string) {
     this._authService
       .login({
         username: email,
@@ -186,7 +178,7 @@ export class UserState {
         tap((user: User) => {
           ctx.dispatch(new AuthAPIAction.UserLoggedIn(user));
         }),
-        catchError((err) => {
+        catchError(err => {
           if (err instanceof HttpErrorResponse) {
             if (err.status === 401) {
               ctx.dispatch(new AuthAPIAction.UserAuthFailed(err.error.message));
@@ -196,7 +188,7 @@ export class UserState {
             console.log(err);
           }
           return EMPTY;
-        })
+        }),
       )
       .subscribe();
   }

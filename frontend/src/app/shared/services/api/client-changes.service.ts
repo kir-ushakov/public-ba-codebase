@@ -1,9 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  Change,
-  EChangeAction,
-  EChangedEntity,
-} from 'src/app/shared/models/change.model';
+import { Change, EChangeAction, EChangedEntity } from 'src/app/shared/models/change.model';
 import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
 import { ChangeDTO } from '../../dto/change.dto';
 import { ChangeMapper } from '../../mappers/change.mapper';
@@ -45,9 +41,7 @@ export class ClientChangesService {
   private getPath(change: Change): string {
     if (change.action === EChangeAction.Deleted) {
       return (
-        ClientChangesService.SYNC_REQUESTS_MAP[change.entity].endpoint +
-        '/' +
-        change.object.id
+        ClientChangesService.SYNC_REQUESTS_MAP[change.entity].endpoint + '/' + change.object.id
       );
     } else {
       return ClientChangesService.SYNC_REQUESTS_MAP[change.entity].endpoint;

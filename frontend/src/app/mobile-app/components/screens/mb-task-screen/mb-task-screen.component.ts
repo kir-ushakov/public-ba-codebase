@@ -21,18 +21,18 @@ import { MbTaskSideMenuComponent } from './mb-task-side-menu/mb-task-side-menu.c
 import { MbTaskBottomPanelComponent } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-bottom-panel/mb-task-bottom-panel.component';
 
 @Component({
-    selector: 'ba-mb-task-screen',
-    templateUrl: './mb-task-screen.component.html',
-    styleUrls: ['./mb-task-screen.component.scss'],
-    imports: [ 
-      CommonModule, 
-      MatSidenavModule,
-      MbTaskBottomPanelComponent,
-      MbTaskTopPanelComponent,
-      MbTaskEditComponent,
-      MbTaskViewComponent,
-      MbTaskSideMenuComponent
-    ]
+  selector: 'ba-mb-task-screen',
+  templateUrl: './mb-task-screen.component.html',
+  styleUrls: ['./mb-task-screen.component.scss'],
+  imports: [
+    CommonModule,
+    MatSidenavModule,
+    MbTaskBottomPanelComponent,
+    MbTaskTopPanelComponent,
+    MbTaskEditComponent,
+    MbTaskViewComponent,
+    MbTaskSideMenuComponent,
+  ],
 })
 export class MbTaskScreenComponent implements OnInit, OnDestroy {
   @ViewChild('menuDrawer') menuDrawer: MatDrawer;
@@ -54,7 +54,7 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
   constructor(
     private store: Store,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -72,18 +72,14 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToRouteParams() {
-    this.route.paramMap.subscribe((params) => {
+    this.route.paramMap.subscribe(params => {
       this.store.dispatch(
-        new MbTaskScreenAction.Opened(
-          <ETaskViewMode>params.get('mode'),
-          params.get('id')
-        )
+        new MbTaskScreenAction.Opened(<ETaskViewMode>params.get('mode'), params.get('id')),
       );
     });
   }
 
   private subscribeToSelectors() {
-    this.isSideMenuOpened$.subscribe(
-      isSideMenuOpened => this.menuDrawer?.toggle(isSideMenuOpened));
+    this.isSideMenuOpened$.subscribe(isSideMenuOpened => this.menuDrawer?.toggle(isSideMenuOpened));
   }
 }

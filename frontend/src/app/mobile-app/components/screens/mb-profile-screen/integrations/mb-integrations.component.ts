@@ -7,10 +7,10 @@ import { AddToSlackBtnComponent } from '../add-to-slack-btn/add-to-slack-btn.com
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'ba-mb-integrations',
-    templateUrl: './mb-integrations.component.html',
-    styleUrls: ['./mb-integrations.component.scss'],
-    imports: [ CommonModule, AddToSlackBtnComponent ]
+  selector: 'ba-mb-integrations',
+  templateUrl: './mb-integrations.component.html',
+  styleUrls: ['./mb-integrations.component.scss'],
+  imports: [CommonModule, AddToSlackBtnComponent],
 })
 export class MbIntegrationsComponent {
   @HostBinding('class') get hostClass() {

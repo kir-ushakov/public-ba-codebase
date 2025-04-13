@@ -3,7 +3,7 @@ import { SwUpdate } from '@angular/service-worker';
 @Injectable()
 export class PwaService {
   constructor(private swUpdate: SwUpdate) {
-    this.swUpdate.versionUpdates.subscribe((event) => {
+    this.swUpdate.versionUpdates.subscribe(event => {
       if (event.type === 'VERSION_READY') {
         window.location.reload();
       }

@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
-import {
-  Task,
-  ETaskStatus,
-  defaultTask,
-} from 'src/app/shared/models/task.model';
+import { Task, ETaskStatus, defaultTask } from 'src/app/shared/models/task.model';
 import { MbTaskScreenAction } from './mb-task-screen.actions';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
@@ -29,7 +25,7 @@ export interface IMbTaskScreenStateModel {
     formData: IEditTaskFormData;
     status: boolean;
   };
-  isSideMenuOpened: boolean,
+  isSideMenuOpened: boolean;
 }
 
 const defaults = {
@@ -38,10 +34,10 @@ const defaults = {
     formData: {
       title: '',
     } as IEditTaskFormData,
-    status: false
+    status: false,
   },
   taskData: defaultTask,
-  isSideMenuOpened: false
+  isSideMenuOpened: false,
 };
 
 @State<IMbTaskScreenStateModel>({
@@ -50,10 +46,9 @@ const defaults = {
 })
 @Injectable()
 export class MbTaskScreenState {
-
   constructor(
     private _store: Store,
-    private _deviceCameraService: DeviceCameraService
+    private _deviceCameraService: DeviceCameraService,
   ) {}
 
   @Selector()
@@ -98,10 +93,8 @@ export class MbTaskScreenState {
   opened(ctx: StateContext<IMbTaskScreenStateModel>, { mode, taskId }) {
     ctx.patchState({ mode: mode });
     if (taskId) {
-      const actualTasks: Task[] = this._store.selectSnapshot(
-        TasksState.actualTasks
-      );
-      const selectedTask = actualTasks.find((t) => t.id === taskId) ?? defaultTask;
+      const actualTasks: Task[] = this._store.selectSnapshot(TasksState.actualTasks);
+      const selectedTask = actualTasks.find(t => t.id === taskId) ?? defaultTask;
       ctx.patchState({ taskData: selectedTask });
     }
   }
@@ -117,9 +110,7 @@ export class MbTaskScreenState {
 
     if (ctx.getState().mode === ETaskViewMode.Create) {
       const userId: string = this._store.selectSnapshot(UserState.userId);
-      ctx.dispatch(
-        new MbTaskScreenAction.CreateTask(ctx.getState().taskData, userId)
-      );
+      ctx.dispatch(new MbTaskScreenAction.CreateTask(ctx.getState().taskData, userId));
       ctx.dispatch(MbTaskScreenAction.Close);
     } else {
       ctx.dispatch(new MbTaskScreenAction.UpdateTask(ctx.getState().taskData));
@@ -130,15 +121,15 @@ export class MbTaskScreenState {
   @Action(MbTaskScreenAction.EditTaskOptionSelected)
   editTask(ctx: StateContext<IMbTaskScreenStateModel>) {
     const task = this._store.selectSnapshot(MbTaskScreenState.task);
-    
+
     const taskViewForm = ctx.getState().taskViewForm;
-    ctx.patchState({ 
-      mode: ETaskViewMode.Edit, 
+    ctx.patchState({
+      mode: ETaskViewMode.Edit,
       taskData: { ...task },
-      taskViewForm : {
+      taskViewForm: {
         ...taskViewForm,
-        formData: { title: task.title }
-      }
+        formData: { title: task.title },
+      },
     });
   }
 
@@ -175,10 +166,7 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.HomeButtonPressed)
   homeButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>) {
-    ctx.dispatch([
-      MbTaskScreenAction.Close, 
-      AppAction.NavigateToHomeScreen
-    ]);
+    ctx.dispatch([MbTaskScreenAction.Close, AppAction.NavigateToHomeScreen]);
   }
 
   @Action(MbTaskScreenAction.AddPictureBtnPressed)
@@ -197,22 +185,25 @@ export class MbTaskScreenState {
   @Action(MbTaskScreenAction.SideMenuToggle)
   sideMenuToggled(ctx: StateContext<IMbTaskScreenStateModel>) {
     const isSideMenuOpened = ctx.getState().isSideMenuOpened;
-    ctx.setState(patch({
-      isSideMenuOpened: !isSideMenuOpened
-    }));
+    ctx.setState(
+      patch({
+        isSideMenuOpened: !isSideMenuOpened,
+      }),
+    );
   }
 
   @Action(MbTaskScreenAction.UpdateForm)
   updateFormDate(
-      ctx: StateContext<IMbTaskScreenStateModel>, 
-      { valid, formData } : { valid: boolean, formData: IEditTaskFormData }) {
+    ctx: StateContext<IMbTaskScreenStateModel>,
+    { valid, formData }: { valid: boolean; formData: IEditTaskFormData },
+  ) {
     const state = ctx.getState();
     ctx.patchState({
       taskViewForm: {
         ...state.taskViewForm,
         formData: formData,
-        status: valid
-      }
+        status: valid,
+      },
     });
   }
 }

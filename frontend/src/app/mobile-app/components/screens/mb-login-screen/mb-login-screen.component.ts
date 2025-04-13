@@ -1,9 +1,5 @@
 import { Component, OnInit, Signal } from '@angular/core';
-import {
-  UntypedFormControl,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngxs/store';
 import { AppAction } from 'src/app/shared/state/app.actions';
 import { MbLoginScreenState } from './mb-login-screen.state';
@@ -14,26 +10,23 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ReactiveFormsModule } from '@angular/forms';
 @Component({
-    selector: 'app-mb-login',
-    templateUrl: './mb-login-screen.component.html',
-    styleUrls: ['./mb-login-screen.component.scss'],
-    imports: [ 
-      CommonModule, 
-      MatFormFieldModule,
-      MatInputModule,
-      ReactiveFormsModule,  
-      SignInWithGoogleBtnComponent
-    ]
+  selector: 'app-mb-login',
+  templateUrl: './mb-login-screen.component.html',
+  styleUrls: ['./mb-login-screen.component.scss'],
+  imports: [
+    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    SignInWithGoogleBtnComponent,
+  ],
 })
 export class MbLoginScreenComponent implements OnInit {
   authError: Signal<string> = this.store.selectSignal(MbLoginScreenState.authError);
 
   public form: UntypedFormGroup = new UntypedFormGroup({
     email: new UntypedFormControl('', [Validators.required, Validators.email]),
-    password: new UntypedFormControl('', [
-      Validators.required,
-      Validators.minLength(8),
-    ]),
+    password: new UntypedFormControl('', [Validators.required, Validators.minLength(8)]),
   });
 
   constructor(private store: Store) {}
