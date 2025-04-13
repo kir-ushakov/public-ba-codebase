@@ -25,22 +25,13 @@ export class TaskTileComponent {
   @HostListener('click') onClick() {
     this.store.dispatch(new MbTaskTileAction.Clicked(this.task.id));
   }
-  /** 
-    #NOTE: 
-    This tells Angular to query for an instance of SpinnerComponent
-    after the view has been initialized ({ static: false })
-  */
+
   @ViewChild(SpinnerComponent, { static: false }) spinnerComponent!: SpinnerComponent;
 
   DEFAULT_IMAGE_WIDTH = 50;
 
-  /**
-   *
-   * #NOTE:
-   * Use this property to display the spinner as a placeholder for the thumbnail.
-   */
   isLoading = signal(true);
-  // #NOTE: Set to null initially to prevent loading until the width has been calculated
+
   resizedImageUri: WritableSignal<null | string> = signal(null);
 
   constructor(private store: Store) {}
@@ -48,35 +39,18 @@ export class TaskTileComponent {
   ngAfterViewInit() {
     let imageUri = this.task.imageUri;
 
-    /**
-     * #NOTE
-     * Add the width query parameter only if the image is retrieved from the API.
-     * If the image comes from the device's local storage, no modification is needed.
-     */
     if (!this.isLocalImage(imageUri)) {
       const width = this.calculateImageWidth();
       imageUri = imageUri + `?width=${width}`;
     }
 
-    /**
-     * #NOTE:
-     * The resizedImageUri signal property triggers the image loading process automatically
-     * because in the template, we bind it to [src] using [src]="resizedImageUri()".
-     */
     this.resizedImageUri.set(imageUri);
   }
 
   private calculateImageWidth(): number {
-    /**
-     * #NOTE:
-     * Use the spinner's native element to dynamically determine its width
-     */
     const width =
       this.spinnerComponent?.getNativeElement()?.offsetWidth || this.DEFAULT_IMAGE_WIDTH;
-    /**
-     * #NOTE: Device Pixel Ratio (DPR) factor in modern high-DPI screens determines
-     * how many physical pixels exist per CSS pixel.
-     */
+
     const dpr = window.devicePixelRatio || 1;
     return dpr * width;
   }
