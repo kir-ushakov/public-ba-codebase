@@ -1,5 +1,5 @@
-import { State, Action, StateContext, Selector } from '@ngxs/store';
-import { Injectable } from '@angular/core';
+import { State, Action, StateContext, Selector } from "@ngxs/store";
+import { Injectable } from "@angular/core";
 import {
   patch,
   append,
@@ -7,8 +7,8 @@ import {
   iif,
   insertItem,
   removeItem,
-} from '@ngxs/store/operators';
-import { v4 as uuidv4 } from 'uuid';
+} from "@ngxs/store/operators";
+import { v4 as uuidv4 } from "uuid";
 import {
   Task,
   ETaskStatus,
@@ -16,22 +16,22 @@ import {
   Change,
   EChangeAction,
   EChangedEntity,
-} from 'src/app/shared/models/';
-import { UserState } from './user.state';
-import { MbTaskScreenAction } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.actions';
-import { AppAction } from './app.actions';
-import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
+} from "src/app/shared/models/";
+import { UserState } from "./user.state";
+import { MbTaskScreenAction } from "src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.actions";
+import { AppAction } from "./app.actions";
+import { SyncServiceAPIAction } from "../services/api/server-changes.actions";
 import {
   UploadImageResponseDTO,
   ImageUploaderService,
-} from '../services/api/image-uploader.service';
+} from "../services/api/image-uploader.service";
 
 interface ITasksStateModel {
   entities: Array<Task>;
 }
 
 @State<ITasksStateModel>({
-  name: 'tasks',
+  name: "tasks",
   defaults: {
     entities: [],
   },
@@ -56,9 +56,8 @@ export class TasksState {
   @Action(MbTaskScreenAction.CreateTask)
   async createTask(
     ctx: StateContext<ITasksStateModel>,
-    { taskInitData, userId }: { taskInitData: Task; userId: string }
+    { taskInitData, userId }: { taskInitData: Task; userId: string },
   ): Promise<void> {
-
     const now = this.now();
 
     const baseTask = this.createTaskEntity(taskInitData, userId, now);
@@ -68,7 +67,7 @@ export class TasksState {
     ctx.setState(
       patch({
         entities: append([taskWithImage]),
-      })
+      }),
     );
 
     ctx.dispatch(
@@ -77,30 +76,32 @@ export class TasksState {
         action: EChangeAction.Created,
         object: taskWithImage,
         modifiedAt: now,
-      } as Change)
+      } as Change),
     );
   }
 
   @Action(MbTaskScreenAction.UpdateTask)
   updateTask(
     ctx: StateContext<ITasksStateModel>,
-    { taskUpdateData }: { taskUpdateData: Task }
+    { taskUpdateData }: { taskUpdateData: Task },
   ) {
     ctx.setState(
       patch({
         entities: updateItem(
           (task) => task.id === taskUpdateData.id,
-          patch({ ...taskUpdateData })
+          patch({ ...taskUpdateData }),
         ),
-      })
+      }),
     );
 
-    const updatedTask: Task = ctx.getState().entities.find(
-      (t) => t.id === taskUpdateData.id
-    );
+    const updatedTask: Task = ctx
+      .getState()
+      .entities.find((t) => t.id === taskUpdateData.id);
 
     if (!updatedTask) {
-      console.error(`Task with id ${taskUpdateData.id} was not found after update.`);
+      console.error(
+        `Task with id ${taskUpdateData.id} was not found after update.`,
+      );
       return;
     }
 
@@ -110,7 +111,7 @@ export class TasksState {
         action: EChangeAction.Updated,
         object: updatedTask,
         modifiedAt: this.now(),
-      } as Change)
+      } as Change),
     );
   }
 
@@ -119,7 +120,7 @@ export class TasksState {
     ctx.setState(
       patch({
         entities: removeItem<Task>((task) => task.id === taskId),
-      })
+      }),
     );
 
     const now = this.now();
@@ -130,14 +131,14 @@ export class TasksState {
         action: EChangeAction.Deleted,
         object: { id: taskId, modifiedAt: now },
         modifiedAt: now,
-      })
+      }),
     );
   }
 
   @Action(SyncServiceAPIAction.ServerChangesLoaded)
   synchronize(
     ctx: StateContext<ITasksStateModel>,
-    { changes }: { changes: Change[] }
+    { changes }: { changes: Change[] },
   ): void {
     const taskChanges = changes.filter((c) => c.entity === EChangedEntity.Task);
     for (const taskChange of taskChanges) {
@@ -145,9 +146,9 @@ export class TasksState {
         ctx.setState(
           patch({
             entities: removeItem<Task>(
-              (task) => task.id === taskChange.object.id
+              (task) => task.id === taskChange.object.id,
             ),
-          })
+          }),
         );
       } else {
         const task = taskChange.object as Task;
@@ -156,15 +157,19 @@ export class TasksState {
             entities: iif<Array<Task>>(
               (tasks) => tasks.some((t) => t.id === task.id),
               updateItem((t) => t.id === task.id, patch(task)),
-              insertItem(task)
+              insertItem(task),
             ),
-          })
+          }),
         );
       }
     }
   }
 
-  private createTaskEntity(taskInitData: Task, userId: string, timestamp: string): Task {
+  private createTaskEntity(
+    taskInitData: Task,
+    userId: string,
+    timestamp: string,
+  ): Task {
     return {
       type: ETaskType.Basic,
       userId,
@@ -182,7 +187,11 @@ export class TasksState {
 
     try {
       const QUALITY = 0.6;
-      const res: UploadImageResponseDTO = await this.imageUploaderService.uploadImageFromBlobUri(task.imageUri, QUALITY);
+      const res: UploadImageResponseDTO =
+        await this.imageUploaderService.uploadImageFromBlobUri(
+          task.imageUri,
+          QUALITY,
+        );
       const newImageUri = `${ImageUploaderService.IMAGE_API_ENDPOINT}/${res.fileId}.${res.extension}`;
       return { ...task, imageUri: newImageUri };
     } catch (error) {
@@ -193,7 +202,7 @@ export class TasksState {
 
   private static getSortedUserTasks(
     state: ITasksStateModel,
-    userId: string
+    userId: string,
   ): Task[] {
     return state.entities
       .filter((e) => e.userId === userId)
@@ -205,6 +214,6 @@ export class TasksState {
   }
 
   private now(): string {
-    return new Date().toISOString()
+    return new Date().toISOString();
   }
 }
