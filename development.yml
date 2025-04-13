@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  backend-test:
+    container_name: backend_test
+    build:
+      context: ./backend
+    ports:
+      - '4443:4443'
+    environment:
+      - PORT=4443
+      - CRT_PATH=./ssl/server.crt
+      - KEY_PATH=./ssl/server.key
+      - DB_PORT=27018
+      - DB_USER=${DB_USER}
+      - DB_CONTAINER=db-test
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - EMAIL_DOMAIN=${EMAIL_DOMAIN}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - MAILGUN_API_KEY=${MAILGUN_API_KEY}
+      - MAIL_API=${MAIL_API}
+
+
+  backend:
+    environment:
+      - SSL_CERT_FILE=${SSL_CERT_FILE}

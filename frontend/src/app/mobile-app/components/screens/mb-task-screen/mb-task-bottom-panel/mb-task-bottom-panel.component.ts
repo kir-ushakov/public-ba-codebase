@@ -6,12 +6,12 @@ import { MbTaskScreenAction } from 'src/app/mobile-app/components/screens/mb-tas
 import { ETaskViewMode, MbTaskScreenState } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.state';
 
 @Component({
-    selector: 'ba-bottom-panel',
-    templateUrl: './bottom-panel.component.html',
-    styleUrls: ['./bottom-panel.component.scss'],
+    selector: 'ba-mb-task-bottom-panel',
+    templateUrl: './mb-task-bottom-panel.component.html',
+    styleUrls: ['./mb-task-bottom-panel.component.scss'],
     imports: [ CommonModule ]
 })
-export class BottomPanelComponent {
+export class MbTaskBottomPanelComponent {
   @Input() enabled: boolean;
 
   mode: Signal<ETaskViewMode> = this.store.selectSignal(MbTaskScreenState.mode);
