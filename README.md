@@ -1,2 +1,2 @@
 # # Angular Clean Architecture
-# Youtube Channel: https://www.youtube.com/playlist?list=PLeS42wGodzA7I5JRpSWlVQHPIP5BMTVWI
+# Youtube Channel: https://www.youtube.com/@kirillushakov-webmobiledev6785
