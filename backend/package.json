@@ -42,7 +42,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "passport-local-mongoose": "^8.0.0",
-    "prettier": "^2.7.1",
+    "prettier": "^3.5.3",
     "probe-image-size": "^7.2.3",
     "sharp": "^0.33.5",
     "uuid": "^9.0.1"
@@ -50,11 +50,11 @@
   "devDependencies": {
     "@types/chai": "^4.2.21",
     "@types/mocha": "^8.2.3",
-    "@typescript-eslint/eslint-plugin": "^4.14.2",
-    "@typescript-eslint/parser": "^4.14.2",
+    "@typescript-eslint/eslint-plugin": "^8.31.0",
+    "@typescript-eslint/parser": "8.31",
     "chai": "^4.2.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint": "^9.25.1",
+    "eslint-config-prettier": "^10.1.2",
     "mocha": "^10.1.0",
     "ts-node": "^9.1.1",
     "typescript": "^5.4.5"
