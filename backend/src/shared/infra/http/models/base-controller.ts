@@ -1,5 +1,5 @@
 import express from 'express';
-import { EAppError } from '../../../core/app-error.js';
+import { EGeneralError } from '../../../core/app-error.enum.js';
 import { serialize } from '../utils/middleware.js';
 
 export enum EHttpStatus {
@@ -64,7 +64,7 @@ export abstract class BaseController {
     // Log errors here
     console.log(error);
     return res.status(EHttpStatus.InternalServerError).json({
-      name: EAppError.UnexpectedError,
+      name: EGeneralError.UnexpectedError,
       message: 'Some unexpected error occurred',
     });
   }

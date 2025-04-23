@@ -3,12 +3,13 @@ import { ERemoveFromSlackErrors } from '../../modules/integrations/slack/usecase
 import { EClientError } from '../domain/models/client.errors.js';
 import { ETaskError } from '../domain/models/task.errors.js';
 
-export enum EAppError {
+export enum EGeneralError {
   UnexpectedError = 'UNEXPECTED_ERROR',
-  UserNotAuthenticated = 'USER_NOT_AUTHENTICATED',
+  NotAuthenticatedError = 'USER_NOT_AUTHENTICATED',
 }
-export type AppError =
-  | EAppError
+
+export type EAppErrors =
+  | EGeneralError
   | ETaskError
   | EClientError
   | ERemoveFromSlackErrors

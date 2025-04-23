@@ -1,5 +1,5 @@
 import passport from 'passport';
-import { EAppError } from '../../core/app-error.js';
+import { EGeneralError } from '../../core/app-error.enum.js';
 import { EHttpStatus } from '../http/models/base-controller.js';
 import { IApiErrorDto } from '../http/dtos/api-errors.dto.js';
 
@@ -8,11 +8,15 @@ export function isAuthenticated(req, res, next) {
     case 'JWT':
       passport.authenticate('jwt', { session: false }, async (error, user) => {
         if (error || !user) {
+          const RESPONSE_CODE = EHttpStatus.Unauthorized;
+          const RESPONSE_ERROR_MESSAGE = 'User not authenticated';
+
           const errorDto: IApiErrorDto = {
-            name: EAppError.UserNotAuthenticated,
-            message: 'User not authenticated',
+            name: EGeneralError.NotAuthenticatedError,
+            message: RESPONSE_ERROR_MESSAGE,
           };
-          return res.status(EHttpStatus.Unauthorized).send(errorDto);
+
+          return res.status(RESPONSE_CODE).send(errorDto);
         }
         req.user = user;
         next();
@@ -24,7 +28,7 @@ export function isAuthenticated(req, res, next) {
         return next();
       } else {
         const errorDto: IApiErrorDto = {
-          name: EAppError.UserNotAuthenticated,
+          name: EGeneralError.NotAuthenticatedError,
           message: 'User not authenticated',
         };
         return res.status(401).send(errorDto);
