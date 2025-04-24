@@ -27,7 +27,6 @@
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
     "dotenv": "^8.2.0",
-    "eslint-plugin-prettier": "^4.2.1",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "form-data": "^4.0.0",
@@ -42,7 +41,6 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "passport-local-mongoose": "^8.0.0",
-    "prettier": "^3.5.3",
     "probe-image-size": "^7.2.3",
     "sharp": "^0.33.5",
     "uuid": "^9.0.1"
@@ -55,7 +53,11 @@
     "chai": "^4.2.0",
     "eslint": "^9.25.1",
     "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-security": "^3.0.1",
     "mocha": "^10.1.0",
+    "prettier": "^3.5.3",
     "ts-node": "^9.1.1",
     "typescript": "^5.4.5"
   },
