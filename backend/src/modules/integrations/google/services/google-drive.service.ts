@@ -5,16 +5,19 @@ import { OAuth2Client, GaxiosResponse } from 'googleapis-common';
 import { Readable } from 'stream';
 import mime from 'mime';
 import { User } from '../../../../shared/domain/models/user.js';
+import { config as defaultConfig } from '../../../../config/index.js';
 
 export class GoogleDriveService {
-  private oAuth2Client: OAuth2Client;
-
-  constructor(oAuth2Client: OAuth2Client) {
+  constructor(
+    private readonly oAuth2Client: OAuth2Client,
+    private readonly logger = console,
+    private readonly config = defaultConfig,
+  ) {
     this.oAuth2Client = oAuth2Client;
   }
 
   public async listFiles(user: User) {
-    const driveService: drive_v3.Drive = await this.getDirveService(user);
+    const driveService: drive_v3.Drive = await this.getDriveService(user);
 
     const res = await driveService.files.list({
       pageSize: 10,
@@ -24,13 +27,13 @@ export class GoogleDriveService {
 
     const files = res.data.files;
     if (files!.length === 0) {
-      console.log('No files found.');
+      this.logger.log('No files found.');
       return;
     }
 
-    console.log('Files:');
-    files!.map(file => {
-      console.log(
+    this.logger.log('Files:');
+    files!.forEach(file => {
+      this.logger.log(
         `${file.name} (${file.id}), thumb ${file.thumbnailLink}, webViewLink ${file.webViewLink}`,
       );
     });
@@ -38,10 +41,16 @@ export class GoogleDriveService {
 
   public async uploadFile(user: User, filePath: string) {
     try {
-      await this.getDirveService(user);
+      const safeBaseDir = this.config.paths.uploadTempDir;
+      const resolvedFilePath = path.resolve(filePath);
+      if (!resolvedFilePath.startsWith(safeBaseDir)) {
+        throw new Error('Invalid file path');
+      }
 
-      const filename = path.basename(filePath);
-      const extension = path.extname(filePath);
+      await this.getDriveService(user);
+
+      const filename = path.basename(resolvedFilePath);
+      const extension = path.extname(resolvedFilePath);
       const mimeType = mime.getType(extension);
 
       const options: drive_v3.Options = {
@@ -57,7 +66,7 @@ export class GoogleDriveService {
 
       const media = {
         mimeType: mimeType,
-        body: fs.createReadStream(filePath),
+        body: fs.createReadStream(resolvedFilePath),
       };
 
       const file = await service.files.create({
@@ -68,14 +77,14 @@ export class GoogleDriveService {
 
       return file.data.id;
     } catch (err) {
-      console.log(err);
+      this.logger.error('Upload failed:', err);
       throw err;
     }
   }
 
   public async getImageById(user: User, imageId: string): Promise<GaxiosResponse<Readable>> {
     try {
-      const driveService: drive_v3.Drive = await this.getDirveService(user);
+      const driveService: drive_v3.Drive = await this.getDriveService(user);
       const file: GaxiosResponse<Readable> = await driveService.files.get(
         {
           fileId: imageId,
@@ -86,12 +95,12 @@ export class GoogleDriveService {
 
       return file;
     } catch (error) {
-      // TODO: Handle error
-      console.log(error);
+      this.logger.error(error);
+      throw error;
     }
   }
 
-  private async getDirveService(user: User): Promise<drive_v3.Drive> {
+  private async getDriveService(user: User): Promise<drive_v3.Drive> {
     this.oAuth2Client.setCredentials({
       refresh_token: user.googleRefreshToken,
     });
