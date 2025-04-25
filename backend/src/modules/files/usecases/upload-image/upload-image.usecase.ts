@@ -9,12 +9,11 @@ import { GoogleDriveService } from '././../../../integrations/google/services/go
 import { User } from '../../../../shared/domain/models/user.js';
 import { UploadImageRequest } from './upload-image.request.js';
 import { UploadImageResponse } from './upload-image.response.js';
+import { config } from '../../../../config/index.js';
 
 export type UploadImageResult = Result<UploadImageResponse | UseCaseError>;
 
-export class UploadImageUsecase
-  implements UseCase<UploadImageRequest, Promise<UploadImageResult>>
-{
+export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<UploadImageResult>> {
   private googleDriveService: GoogleDriveService;
   private allowedTypes = ['png', 'jpeg', 'jpg'];
 
@@ -22,28 +21,22 @@ export class UploadImageUsecase
     this.googleDriveService = googleDriveService;
   }
 
-  public async execute(
-    req: UploadImageRequest,
-    user: User
-  ): Promise<UploadImageResult> {
+  public async execute(req: UploadImageRequest, user: User): Promise<UploadImageResult> {
     const file: Express.Multer.File = req.file;
     const userId: string = user.id.toString();
     const tempPath = file.path;
     const originalname = req.file.originalname;
-    const targetDir = `${process.env.FILES_UPLOAD_PATH}/uploads/${userId}`;
-    const targetPath = `${targetDir}/${originalname}`;
+    const userUploadDir = `${config.paths.uploadTempDir}/${userId}`;
+    const pathToFile = `${userUploadDir}/${originalname}`;
 
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir, { recursive: true });
+    if (!fs.existsSync(userUploadDir)) {
+      fs.mkdirSync(userUploadDir, { recursive: true });
     }
 
-    const fileType = path
-      .extname(req.file.originalname)
-      .toLowerCase()
-      .replace('.', '');
+    const fileType = path.extname(req.file.originalname).toLowerCase().replace('.', '');
     if (!this.allowedTypes.includes(fileType)) {
       return await new Promise<Result<UseCaseError>>((resolve, reject) => {
-        fs.unlink(tempPath, (err) => {
+        fs.unlink(tempPath, err => {
           if (err) reject(err);
           resolve(new UploadImageErrors.NotSupportedTypeError(fileType));
         });
@@ -51,20 +44,21 @@ export class UploadImageUsecase
     }
 
     await new Promise<void>((resolve, reject) => {
-      fs.rename(tempPath, targetPath, (err) => {
+      fs.rename(tempPath, pathToFile, err => {
         if (err) reject(err);
         resolve();
       });
     });
 
-    const fileId: string = await this.googleDriveService.uploadFile(
-      user,
-      targetPath
-    );
+    try {
+      const fileId: string = await this.googleDriveService.uploadFile(user, pathToFile);
 
-    return Result.ok<UploadImageResponse>({
-      fileId,
-      extension: fileType,
-    });
+      return Result.ok<UploadImageResponse>({
+        fileId,
+        extension: fileType,
+      });
+    } catch (error) {
+      return new UploadImageErrors.UploadToGoogleDriveFailed();
+    }
   }
 }
