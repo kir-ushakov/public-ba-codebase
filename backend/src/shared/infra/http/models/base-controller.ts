@@ -1,5 +1,4 @@
 import express from 'express';
-import { EGeneralError } from '../../../core/app-error.enum.js';
 import { serialize } from '../utils/middleware.js';
 
 export enum EHttpStatus {
@@ -12,6 +11,7 @@ export enum EHttpStatus {
   NotFound = 404,
   Conflict = 409,
   InternalServerError = 500,
+  BadGateway = 502,
 }
 
 // TODO: need to return resp_code and message in BE response
@@ -20,13 +20,13 @@ export abstract class BaseController {
   protected abstract executeImpl(
     req: express.Request,
     res: express.Response,
-    next?: express.NextFunction
+    next?: express.NextFunction,
   ): Promise<void | any>;
 
   public async execute(
     req: express.Request,
     res: express.Response,
-    next?: express.NextFunction
+    next?: express.NextFunction,
   ): Promise<void> {
     try {
       await this.executeImpl(req, res, next);
@@ -37,11 +37,7 @@ export abstract class BaseController {
     }
   }
 
-  public static jsonResponse<T>(
-    res: express.Response,
-    code: number,
-    payload: T | any = null
-  ) {
+  public static jsonResponse<T>(res: express.Response, code: number, payload: T | any = null) {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     return res.status(code).json(payload);
   }
@@ -63,8 +59,9 @@ export abstract class BaseController {
   public fail(res: express.Response, error: Error | string) {
     // Log errors here
     console.log(error);
+    const UNEXPECTED_ERROR = 'UNEXPECTED_ERROR';
     return res.status(EHttpStatus.InternalServerError).json({
-      name: EGeneralError.UnexpectedError,
+      name: UNEXPECTED_ERROR,
       message: 'Some unexpected error occurred',
     });
   }

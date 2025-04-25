@@ -1,9 +1,10 @@
 import passport from 'passport';
-import { EGeneralError } from '../../core/app-error.enum.js';
 import { EHttpStatus } from '../http/models/base-controller.js';
 import { IApiErrorDto } from '../http/dtos/api-errors.dto.js';
 
 export function isAuthenticated(req, res, next) {
+  const NOT_AUTHENTICATED_ERROR = 'USER_NOT_AUTHENTICATED';
+
   switch (process.env.AUTHENTICATION_STRATEGY) {
     case 'JWT':
       passport.authenticate('jwt', { session: false }, async (error, user) => {
@@ -12,7 +13,7 @@ export function isAuthenticated(req, res, next) {
           const RESPONSE_ERROR_MESSAGE = 'User not authenticated';
 
           const errorDto: IApiErrorDto = {
-            name: EGeneralError.NotAuthenticatedError,
+            name: NOT_AUTHENTICATED_ERROR,
             message: RESPONSE_ERROR_MESSAGE,
           };
 
@@ -28,14 +29,12 @@ export function isAuthenticated(req, res, next) {
         return next();
       } else {
         const errorDto: IApiErrorDto = {
-          name: EGeneralError.NotAuthenticatedError,
+          name: NOT_AUTHENTICATED_ERROR,
           message: 'User not authenticated',
         };
         return res.status(401).send(errorDto);
       }
     default:
-      throw new Error(
-        `Not Supported Auth Strategy: ${process.env.AUTHENTICATION_STRATEGY}`
-      );
+      throw new Error(`Not Supported Auth Strategy: ${process.env.AUTHENTICATION_STRATEGY}`);
   }
 }
