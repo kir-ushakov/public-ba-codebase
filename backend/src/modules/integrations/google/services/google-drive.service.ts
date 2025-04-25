@@ -29,9 +29,9 @@ export class GoogleDriveService {
     }
 
     console.log('Files:');
-    files!.map((file) => {
+    files!.map(file => {
       console.log(
-        `${file.name} (${file.id}), thumb ${file.thumbnailLink}, webViewLink ${file.webViewLink}`
+        `${file.name} (${file.id}), thumb ${file.thumbnailLink}, webViewLink ${file.webViewLink}`,
       );
     });
   }
@@ -68,15 +68,12 @@ export class GoogleDriveService {
 
       return file.data.id;
     } catch (err) {
-      // TODO: Handle error
       console.log(err);
+      throw err;
     }
   }
 
-  public async getImageById(
-    user: User,
-    imageId: string
-  ): Promise<GaxiosResponse<Readable>> {
+  public async getImageById(user: User, imageId: string): Promise<GaxiosResponse<Readable>> {
     try {
       const driveService: drive_v3.Drive = await this.getDirveService(user);
       const file: GaxiosResponse<Readable> = await driveService.files.get(
@@ -84,7 +81,7 @@ export class GoogleDriveService {
           fileId: imageId,
           alt: 'media',
         },
-        { responseType: 'stream' }
+        { responseType: 'stream' },
       );
 
       return file;
