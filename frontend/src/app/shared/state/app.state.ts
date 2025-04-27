@@ -34,4 +34,10 @@ export class AppState {
   offline(ctx: StateContext<AppStateModel>) {
     ctx.patchState({ online: false });
   }
+
+  @Action(AppAction.ShowErrorInUI)
+  showErrorInUI(ctx: StateContext<AppStateModel>) {
+    debugger;
+    console.log('TODO: Show error in UI');
+  }
 }

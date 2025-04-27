@@ -42,8 +42,9 @@ export class TasksState {
 
   @Selector([TasksState, UserState.userId])
   static actualTasks(state: ITasksStateModel, userId: string): Array<Task> {
-    const allTasks = this.getSortedUserTasks(state, userId);
-    return allTasks.filter(t => TasksState.actualStatuses.includes(t.status));
+    return this.getSortedUserTasks(state, userId).filter(t =>
+      TasksState.actualStatuses.includes(t.status),
+    );
   }
 
   @Action(MbTaskScreenAction.CreateTask)
@@ -51,26 +52,30 @@ export class TasksState {
     ctx: StateContext<ITasksStateModel>,
     { taskInitData, userId }: { taskInitData: Task; userId: string },
   ): Promise<void> {
-    const now = this.now();
+    try {
+      const now = this.now();
 
-    const baseTask = this.createTaskEntity(taskInitData, userId, now);
+      const baseTask = this.createTaskEntity(taskInitData, userId, now);
 
-    const taskWithImage = await this.processImageUpload(baseTask);
+      const taskWithImage = await this.processImageUpload(baseTask);
 
-    ctx.setState(
-      patch({
-        entities: append([taskWithImage]),
-      }),
-    );
+      ctx.setState(
+        patch({
+          entities: append([taskWithImage]),
+        }),
+      );
 
-    ctx.dispatch(
-      new AppAction.ChangeForSyncOccurred({
-        entity: EChangedEntity.Task,
-        action: EChangeAction.Created,
-        object: taskWithImage,
-        modifiedAt: now,
-      } as Change),
-    );
+      ctx.dispatch(
+        new AppAction.ChangeForSyncOccurred({
+          entity: EChangedEntity.Task,
+          action: EChangeAction.Created,
+          object: taskWithImage,
+          modifiedAt: now,
+        } as Change),
+      );
+    } catch (error) {
+      ctx.dispatch(new AppAction.ShowErrorInUI('Task creation failed.'));
+    }
   }
 
   @Action(MbTaskScreenAction.UpdateTask)
@@ -156,6 +161,8 @@ export class TasksState {
     };
   }
 
+  // TODO: I think this should be part of service
+  // TICKET:
   private async processImageUpload(task: Task): Promise<Task> {
     if (!task.imageUri) return task;
 
@@ -168,9 +175,9 @@ export class TasksState {
       const newImageUri = `${ImageUploaderService.IMAGE_API_ENDPOINT}/${res.fileId}.${res.extension}`;
       return { ...task, imageUri: newImageUri };
     } catch (error) {
-      console.log('Image upload failed');
-      console.log(error);
-      return task;
+      console.error('Image upload failed');
+      console.error(error);
+      throw error;
     }
   }
 

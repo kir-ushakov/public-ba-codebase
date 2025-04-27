@@ -38,4 +38,10 @@ export namespace AppAction {
 
     constructor(public change: Change) {}
   }
+
+  export class ShowErrorInUI {
+    static readonly type = '[App] Change Occurred';
+
+    constructor(public message: string) {}
+  }
 }
