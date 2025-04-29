@@ -8,18 +8,14 @@ import { append, patch, removeItem } from '@ngxs/store/operators';
 import { ServerChangesService } from '../services/api/server-changes.service';
 import { ClientChangesService } from '../services/api/client-changes.service';
 import { AuthAPIAction } from '../services/api/auth.actions';
-import { EMPTY, Observable, concat, lastValueFrom, tap } from 'rxjs';
+import { EMPTY, Observable, catchError, concat, lastValueFrom, tap } from 'rxjs';
 import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
-import { AppError } from '../core/app.error';
+import { SyncAction } from './sync.action';
 
 export interface SyncStateModel {
   clientId: string;
   lastTime: Date;
   changes: Change[];
-}
-
-enum ESyncStateApiError {
-  INVALID_CLIENT_ID = 'API_ERROR_INVALID_CLIENT_ID',
 }
 
 @State<SyncStateModel>({
@@ -33,12 +29,12 @@ enum ESyncStateApiError {
 @Injectable()
 export class SyncState {
   readonly SYNC_PERIOD = 1000 * 20; // sync interval 20 sec;
-  private _intervalId: null | ReturnType<typeof setTimeout> = null;
+  private intervalId: null | ReturnType<typeof setTimeout> = null;
 
   constructor(
-    private _clientIdSerivce: ClientIdService,
-    private _clientChangesService: ClientChangesService,
-    private _serverChangesService: ServerChangesService,
+    private clientIdSerivce: ClientIdService,
+    private clientChangesService: ClientChangesService,
+    private serverChangesService: ServerChangesService,
   ) {}
 
   @Selector()
@@ -58,6 +54,7 @@ export class SyncState {
   }
 
   @Action(SyncServiceAPIAction.LocalChangeWasSynchronized)
+  @Action(SyncAction.LocalChangeWasCanceled)
   clientChangesSynchronized(
     ctx: StateContext<SyncStateModel>,
     { change }: { change: Change },
@@ -71,8 +68,8 @@ export class SyncState {
 
   @Action(AppAction.Opened)
   updateSyncTimer(ctx: StateContext<SyncStateModel>): void {
-    clearInterval(this._intervalId);
-    this._intervalId = setInterval(() => {
+    clearInterval(this.intervalId);
+    this.intervalId = setInterval(() => {
       this.synchronizeApp(ctx);
     }, this.SYNC_PERIOD);
   }
@@ -80,7 +77,7 @@ export class SyncState {
   @Action(AuthAPIAction.UserLoggedOut)
   @Action(AppAction.UserNotAuthenticated)
   clearTimer(): void {
-    clearInterval(this._intervalId);
+    clearInterval(this.intervalId);
   }
 
   private async synchronizeApp(ctx: StateContext<SyncStateModel>): Promise<void> {
@@ -89,23 +86,21 @@ export class SyncState {
       const clientId: string = await lastValueFrom(this.getClientIdAPICall(ctx));
       ctx.patchState({ clientId });
     }
-    syncApiCalls.push(this.getChangesAPICall(ctx));
-    syncApiCalls.push(this.sendChangesAPICalls(ctx));
+    syncApiCalls.push(this.fetchServerChanges(ctx));
+    syncApiCalls.push(this.syncPendingChanges(ctx));
     concat(...syncApiCalls)
       .pipe(
         tap({
           next: () => {
             ctx.patchState({ lastTime: new Date() });
           },
-          error: err => this.syncErrorsHand(err, ctx),
         }),
       )
       .subscribe();
   }
 
-  private getChangesAPICall(ctx: StateContext<SyncStateModel>): Observable<Change[]> {
-    const state = ctx.getState();
-    return this._serverChangesService.getChanges(state.clientId).pipe(
+  private fetchServerChanges(ctx: StateContext<SyncStateModel>): Observable<Change[]> {
+    return this.serverChangesService.fetch(ctx.getState().clientId).pipe(
       tap({
         next: (changes: Change[]) => {
           ctx.dispatch(new SyncServiceAPIAction.ServerChangesLoaded(changes));
@@ -118,36 +113,32 @@ export class SyncState {
     );
   }
 
-  private sendChangesAPICalls(ctx: StateContext<SyncStateModel>): Observable<void> {
-    const state = ctx.getState();
-    const apiCalls: Observable<void>[] = [];
+  private syncPendingChanges(ctx: StateContext<SyncStateModel>): Observable<void> {
+    const apiCalls = ctx.getState().changes.map(change =>
+      this.clientChangesService.send(change).pipe(
+        tap({
+          next: () => {
+            ctx.dispatch(new SyncServiceAPIAction.LocalChangeWasSynchronized(change));
+          },
+          error: error => {
+            console.error('Sync Pending Change Error:', change, error);
 
-    for (let i = 0; i < state.changes.length; i++) {
-      apiCalls.push(
-        this._clientChangesService.sendChanges(state.changes[i]).pipe(
-          tap({
-            next: () => {
-              ctx.dispatch(new SyncServiceAPIAction.LocalChangeWasSynchronized(state.changes[i]));
-            },
-            error: error => {
-              if (error.status === 404) {
-                this.handleEntity404(ctx, i);
-                return EMPTY;
-              }
-              if (error instanceof AppError) {
-                ctx.dispatch(new SyncServiceAPIAction.LocalChangeWasSynchronized(state.changes[i]));
-              }
-              ctx.dispatch(SyncServiceAPIAction.LocalChangeSynchronizationFailed);
-            },
-          }),
-        ),
-      );
-    }
+            if (error instanceof HttpErrorResponse && error.status === 404) {
+              this.handleEntity404(ctx, change);
+              return;
+            }
+
+            ctx.dispatch(new SyncAction.LocalChangeWasCanceled(change));
+          },
+        }),
+        catchError(() => EMPTY),
+      ),
+    );
     return concat(...apiCalls);
   }
 
   private getClientIdAPICall(ctx: StateContext<SyncStateModel>): Observable<string> {
-    return this._clientIdSerivce.releaseClientId().pipe(
+    return this.clientIdSerivce.releaseClientId().pipe(
       tap({
         next: clientId => {
           ctx.patchState({ clientId: clientId });
@@ -160,32 +151,20 @@ export class SyncState {
     );
   }
 
-  private syncErrorsHand(err: Error, ctx) {
-    if (err instanceof HttpErrorResponse) {
-      if (err.status === 400 && ESyncStateApiError.INVALID_CLIENT_ID) {
-        this.getClientIdAPICall(ctx).subscribe();
-      }
-    }
-
-    console.log(err);
-    return EMPTY;
-  }
-
-  private handleEntity404(ctx: StateContext<SyncStateModel>, chnageIndex: number) {
-    const state = ctx.getState();
+  private handleEntity404(ctx: StateContext<SyncStateModel>, change: Change): void {
     // The entity did not found on server
     // so we need to dispatch Delete Change action locally
     // to be synchronized with server
     const deleteChange: Change = {
-      entity: state.changes[chnageIndex].entity,
+      entity: change.entity,
       action: EChangeAction.Deleted,
       object: {
-        id: state.changes[chnageIndex].object.id,
+        id: change.object.id,
         modifiedAt: new Date().toISOString(),
       },
     };
     ctx.dispatch(new SyncServiceAPIAction.ServerChangesLoaded([deleteChange]));
-    ctx.dispatch(new SyncServiceAPIAction.LocalChangeWasSynchronized(state.changes[chnageIndex]));
+    ctx.dispatch(new SyncAction.LocalChangeWasCanceled(change));
 
     // TICKET: https://brainas.atlassian.net/browse/BA-136
     // TODO: Notify user about error happened and task was deleted
