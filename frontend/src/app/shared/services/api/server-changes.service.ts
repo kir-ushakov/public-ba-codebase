@@ -16,7 +16,7 @@ interface GetChangesResponceDTO {
 export class ServerChangesService {
   constructor(private http: HttpClient) {}
 
-  public getChanges(clientId: string): Observable<Change[]> {
+  public fetch(clientId: string): Observable<Change[]> {
     const queryString: string = convertObjectToUrlParams({
       clientId,
     });

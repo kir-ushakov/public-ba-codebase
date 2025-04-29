@@ -21,7 +21,7 @@ export class ClientChangesService {
 
   constructor(private http: HttpClient) {}
 
-  public sendChanges(change: Change): Observable<void> {
+  public send(change: Change): Observable<void> {
     try {
       const path = this.getPath(change);
       const payload = this.getPayLoad(change);
@@ -34,6 +34,7 @@ export class ClientChangesService {
           return this.http.delete<void>(path);
       }
     } catch (err) {
+      console.error(err);
       return throwError(() => err);
     }
   }
