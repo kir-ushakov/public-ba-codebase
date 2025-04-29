@@ -37,7 +37,6 @@ export class AppState {
 
   @Action(AppAction.ShowErrorInUI)
   showErrorInUI(ctx: StateContext<AppStateModel>) {
-    debugger;
     console.log('TODO: Show error in UI');
   }
 }
