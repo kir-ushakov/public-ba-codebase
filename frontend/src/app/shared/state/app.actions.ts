@@ -40,7 +40,7 @@ export namespace AppAction {
   }
 
   export class ShowErrorInUI {
-    static readonly type = '[App] Change Occurred';
+    static readonly type = '[App] Show Error In UI';
 
     constructor(public message: string) {}
   }
