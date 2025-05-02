@@ -1,8 +1,8 @@
 export class AppError<U = string> extends Error {
   public readonly code: U;
 
-  constructor(message: string, code: U) {
-    super(message);
+  constructor(message: string, code: U, options?: ErrorOptions) {
+    super(message, options);
     this.code = code;
 
     // Fix the prototype chain (important if you compile to ES5)
