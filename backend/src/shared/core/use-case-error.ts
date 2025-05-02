@@ -1,10 +1,12 @@
-import { DomainError } from './domain-error.js';
+import { EHttpStatus } from '../infra/http/models/base-controller.js';
+import { AppError } from './app-error.js';
 
-export class UseCaseError extends DomainError {
-  public readonly code: number;
-
-  constructor(code: number, name, message: string, error: unknown = null) {
-    super(name, message, error);
-    this.code = code;
+export class UseCaseError<U extends string> extends AppError<U> {
+  constructor(
+    code: U,
+    message: string,
+    public readonly httpCode: EHttpStatus,
+  ) {
+    super(message, code);
   }
 }
