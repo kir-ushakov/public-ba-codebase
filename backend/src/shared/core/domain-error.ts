@@ -1,11 +1,11 @@
-export class DomainError {
-  public readonly name: string;
-  public readonly message: string;
-  public readonly error: any;
+import { AppError } from './app-error';
 
-  constructor(name: string, message: string, error: any = null) {
-    this.message = message;
-    this.error = error;
-    this.name = name;
+export class DomainError<T, U = string> extends AppError<U> {
+  constructor(
+    public readonly code: U,
+    public readonly message: string,
+    public readonly object: T = null,
+  ) {
+    super(message, code);
   }
 }
