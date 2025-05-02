@@ -2,8 +2,13 @@ import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 import { Result } from '../../core/Result.js';
 import { Guard } from '../../core/guard.js';
-import { TaskError } from './task.errors.js';
 import { DomainError } from '../../core/domain-error.js';
+
+export enum ETaskError {
+  TitleMissed = 'TASK_ERROR__TITLE_MISSED',
+  TitleTooShort = 'TASK_ERROR__TITLE_TOO_SHORT',
+  TitleTooLong = 'TASK_ERROR__TITLE_TOO_LONG',
+}
 
 export interface ITaskProps {
   userId: string;
@@ -18,18 +23,6 @@ export interface ITaskProps {
 export interface TaskPresitant extends ITaskProps {
   _id?: string;
 }
-
-export type CreateTaskResult =
-  | Result<Task>
-  | TaskError.TitleMissedError
-  | TaskError.TitleTooLongError
-  | TaskError.TitleTooShortError;
-
-export type UpdateTaskResult =
-  | Result<Task>
-  | TaskError.TitleMissedError
-  | TaskError.TitleTooLongError
-  | TaskError.TitleTooShortError;
 
 export class Task extends AggregateRoot<ITaskProps> {
   static readonly TITLE_MIN_LENGTH = 5;
@@ -68,48 +61,71 @@ export class Task extends AggregateRoot<ITaskProps> {
   }
 
   public static create(
-    props: ITaskProps,
-    id?: UniqueEntityID
-  ): CreateTaskResult {
-    const validationResult = Task.isValid(props);
-    if (!validationResult) return validationResult as Result<DomainError>;
+    props: Omit<ITaskProps, 'createdAt' | 'modifiedAt'>,
+    id?: UniqueEntityID,
+  ): Result<Task | never, DomainError<Task, ETaskError>> {
+    const now = new Date();
 
-    const task = new Task(props, id);
+    const fullProps: ITaskProps = {
+      ...props,
+      createdAt: now,
+      modifiedAt: now,
+    };
 
-    return Result.ok<Task>(task);
+    const validationResult = Task.isValid(fullProps);
+    if (!validationResult) return validationResult as Result<never, DomainError<Task, ETaskError>>;
+
+    const task = new Task(fullProps, id);
+
+    return Result.ok<Task, never>(task);
   }
 
-  public update(props: ITaskProps): UpdateTaskResult {
-    const validationResult = Task.isValid(props);
-    if (!validationResult) return validationResult as Result<DomainError>;
-    this.props.type = props.type;
-    this.props.title = props.title;
-    this.props.status = props.status;
-    this.props.modifiedAt = props.modifiedAt;
-    this.props.imageUri = props.imageUri;
-    return Result.ok<Task>();
+  public update(
+    props: Partial<Omit<ITaskProps, 'createdAt' | 'modifiedAt'>>,
+  ): Result<Task | never, DomainError<Task, ETaskError>> {
+    const newProps: ITaskProps = {
+      ...this.props,
+      ...props,
+      modifiedAt: new Date(),
+    };
+
+    const validationResult = Task.isValid(newProps);
+    if (!validationResult) return validationResult as Result<never, DomainError<Task, ETaskError>>;
+
+    this.props.type = newProps.type;
+    this.props.title = newProps.title;
+    this.props.status = newProps.status;
+    this.props.modifiedAt = newProps.modifiedAt;
+    this.props.imageUri = newProps.imageUri;
+    return Result.ok<Task, never>();
   }
 
   private constructor(props: ITaskProps, id?: UniqueEntityID) {
     super(props, id);
   }
 
-  private static isValid(props: ITaskProps): true | Result<DomainError> {
+  private static isValid(props: ITaskProps): true | Result<never, DomainError<Task, ETaskError>> {
     if (!Guard.notEmptyString(props.title)) {
-      return new TaskError.TitleMissedError();
+      return Result.fail<never, DomainError<Task, ETaskError>>(
+        new DomainError<Task, ETaskError>(ETaskError.TitleMissed, 'Title for task missed'),
+      );
     }
 
     if (!Guard.textLengthAtLeast(props.title, Task.TITLE_MIN_LENGTH)) {
-      return new TaskError.TitleTooShortError(
-        props.title,
-        Task.TITLE_MIN_LENGTH
+      return Result.fail<never, DomainError<Task, ETaskError>>(
+        new DomainError<Task, ETaskError>(
+          ETaskError.TitleMissed,
+          `Title "${props.title}" too short. It has to be not less thant ${Task.TITLE_MIN_LENGTH}`,
+        ),
       );
     }
 
     if (!Guard.textLengthAtMost(props.title, Task.TITLE_MAX_LENGTH)) {
-      return new TaskError.TitleTooLongError(
-        props.title,
-        Task.TITLE_MAX_LENGTH
+      return Result.fail<never, DomainError<Task, ETaskError>>(
+        new DomainError<Task, ETaskError>(
+          ETaskError.TitleTooShort,
+          `Title "${props.title}" too long. It has to be not longer than ${Task.TITLE_MAX_LENGTH}`,
+        ),
       );
     }
 

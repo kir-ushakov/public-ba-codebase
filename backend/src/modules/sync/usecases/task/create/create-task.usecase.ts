@@ -1,17 +1,22 @@
 import { UseCase } from '../../../../../shared/core/UseCase.js';
 import { CreateTaskRequestDTO } from './create-task.dto.js';
 import { Result } from '../../../../../shared/core/Result.js';
-import { ITaskProps, Task } from '../../../../../shared/domain/models/task.js';
+import { ETaskError, Task } from '../../../../../shared/domain/models/task.js';
 import { TaskRepo } from '../../../../../shared/repo/task.repo.js';
-import { DomainError } from '../../../../../shared/core/domain-error.js';
 import { UniqueEntityID } from '../../../../../shared/domain/UniqueEntityID.js';
-import { CreateTaskErrors } from './create-task.errors.js';
+import { CreateTaskError, ECreateTaskError } from './create-task.errors.js';
 import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
 import { SlackService } from '../../../../../shared/infra/integrations/slack/slack.service.js';
+import { DomainError } from '../../../../../shared/core/domain-error.js';
 
-export class CreateTaskUC
-  implements UseCase<CreateTaskRequestDTO, Promise<Result<any>>>
-{
+type Request = {
+  userId: string;
+  dto: CreateTaskRequestDTO;
+};
+
+type Response = Promise<Result<Task | never, UseCaseError<ECreateTaskError>>>;
+
+export class CreateTask implements UseCase<Request, Response> {
   private _taskRepo: TaskRepo;
   private _slackService: SlackService;
 
@@ -21,34 +26,30 @@ export class CreateTaskUC
   }
 
   public async execute(
-    dto: CreateTaskRequestDTO
-  ): Promise<Result<Task | UseCaseError>> {
-    const taskProps: ITaskProps = {
-      userId: dto.userId,
-      type: dto.type,
-      title: dto.title,
-      status: dto.status,
-      imageUri: dto.imageUri,
-      createdAt: new Date(),
-      modifiedAt: new Date(),
-    };
+    req: Request,
+  ): Promise<Result<Task | never, UseCaseError<ECreateTaskError>>> {
+    const userId = req.userId;
+    const dto: CreateTaskRequestDTO = req.dto;
 
-    const taskOrError: Result<Task | DomainError> = await Task.create(
-      taskProps,
-      new UniqueEntityID(dto.id)
+    const taskOrError: Result<Task | never, DomainError<Task, ETaskError>> = await Task.create(
+      {
+        ...dto,
+        userId,
+      },
+      new UniqueEntityID(dto.id),
     );
 
     if (taskOrError.isFailure) {
-      return new CreateTaskErrors.TaskDataInvalid(
-        taskOrError.error as DomainError
+      return new CreateTaskError.TaskDataInvalid(
+        taskOrError.error as DomainError<Task, ETaskError>,
       );
     }
 
-    const task: Task = taskOrError.getValue() as Task;
+    const task: Task = taskOrError.getValue();
 
     await this._taskRepo.create(task);
 
-    // TODO: Use DDD/node events here
+    // TODO: this._eventBus.publish(new TaskCreatedEvent(task));
     // TICKET: https://brainas.atlassian.net/browse/BA-119
     // TODO: We need to make slack feature available later
     // TOCKET: not created yet
