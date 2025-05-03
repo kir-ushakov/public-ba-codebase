@@ -2,7 +2,7 @@ import { UseCase } from '../../../../../shared/core/UseCase.js';
 import { CreateTaskRequestDTO } from './create-task.dto.js';
 import { Result } from '../../../../../shared/core/Result.js';
 import { ETaskError, Task } from '../../../../../shared/domain/models/task.js';
-import { TaskRepo } from '../../../../../shared/repo/task.repo.js';
+import { TaskRepoService } from '../../../../../shared/repo/task-repo.service.js';
 import { UniqueEntityID } from '../../../../../shared/domain/UniqueEntityID.js';
 import { CreateTaskError, CreateTaskErrors } from './create-task.errors.js';
 import { SlackService } from '../../../../../shared/infra/integrations/slack/slack.service.js';
@@ -16,13 +16,10 @@ type Request = {
 type Response = Promise<Result<Task | never, CreateTaskError>>;
 
 export class CreateTask implements UseCase<Request, Response> {
-  private _taskRepo: TaskRepo;
-  private _slackService: SlackService;
-
-  constructor(taskRepo: TaskRepo, slackService: SlackService) {
-    this._taskRepo = taskRepo;
-    this._slackService = slackService;
-  }
+  constructor(
+    private readonly taskRepoService: TaskRepoService,
+    private readonly slackService: SlackService,
+  ) {}
 
   public async execute(req: Request): Promise<Result<Task | never, CreateTaskError>> {
     const userId = req.userId;
@@ -42,7 +39,7 @@ export class CreateTask implements UseCase<Request, Response> {
 
     const task: Task = taskOrError.getValue();
 
-    await this._taskRepo.create(task);
+    await this.taskRepoService.create(task);
 
     // TODO: this._eventBus.publish(new TaskCreatedEvent(task));
     // TICKET: https://brainas.atlassian.net/browse/BA-119

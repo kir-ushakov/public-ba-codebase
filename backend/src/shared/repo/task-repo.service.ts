@@ -10,16 +10,12 @@ export enum ETaskRepoServiceError {
 }
 
 export class TaskRepoService {
-  private _models: IDbModels;
-
-  constructor(models: IDbModels) {
-    this._models = models;
-  }
+  constructor(private readonly models: IDbModels) {}
 
   public async create(task: Task): Promise<TaskDocument> {
     const taskData: TaskPresitant = TaskMapper.toPersistence(task);
 
-    const TaskModel = this._models.TaskModel;
+    const TaskModel = this.models.TaskModel;
 
     const newTask: TaskDocument = await TaskModel.create(taskData);
 
@@ -27,7 +23,7 @@ export class TaskRepoService {
   }
 
   public async save(task: Task): Promise<TaskDocument> {
-    const taskModel = this._models.TaskModel;
+    const taskModel = this.models.TaskModel;
 
     const taskPresitant: TaskPresitant = TaskMapper.toPersistence(task);
     const taskId = task.id.toString();
@@ -44,7 +40,7 @@ export class TaskRepoService {
     userId: string,
     taskId: string,
   ): Promise<Result<Task, ServiceError<ETaskRepoServiceError>>> {
-    const TaskModel = this._models.TaskModel;
+    const TaskModel = this.models.TaskModel;
     let params = {
       _id: taskId,
       userId: userId,
@@ -64,7 +60,7 @@ export class TaskRepoService {
   }
 
   public async getChanges(userId: string, syncTime: Date): Promise<Task[]> {
-    const taskModel = this._models.TaskModel;
+    const taskModel = this.models.TaskModel;
     const changedTasks: TaskDocument[] = await taskModel
       .find({ userId: userId, modifiedAt: { $gte: new Date(syncTime) } })
       .sort({ modifiedAt: 1 });
@@ -72,7 +68,7 @@ export class TaskRepoService {
   }
 
   public async deleteTaskById(taskId: string): Promise<void> {
-    const taskModel = this._models.TaskModel;
+    const taskModel = this.models.TaskModel;
     await taskModel.deleteOne({
       id: taskId,
     });
