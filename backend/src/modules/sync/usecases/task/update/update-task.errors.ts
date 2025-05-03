@@ -1,21 +1,16 @@
 import { Result } from '../../../../../shared/core/Result.js';
+import { ServiceError } from '../../../../../shared/core/service-error.js';
 import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
 import { EHttpStatus } from '../../../../../shared/infra/http/models/base-controller.js';
+import { ETaskRepoServiceError } from '../../../../../shared/repo/task.repo.js';
 
-export enum EUpdateTaskError {
-  TaskNotFound = 'UPDATE_TASK_ERROR_TASK_NOT_FOUNDS',
-}
+type EUpdateTaskError = ETaskRepoServiceError;
+export class UpdateTaskError extends UseCaseError<EUpdateTaskError> {}
+
 export namespace UpdateTaskErrors {
-  export class TaskNotFoundError extends Result<UseCaseError> {
-    constructor(userId: string, taskId: string) {
-      super(
-        false,
-        new UseCaseError(
-          EHttpStatus.NotFound,
-          EUpdateTaskError.TaskNotFound,
-          `The task with id = "${taskId}" for user with id = ${userId} dosn't exists`
-        )
-      );
+  export class TaskNotFoundError extends Result<never, UpdateTaskError> {
+    constructor(error: ServiceError<ETaskRepoServiceError>) {
+      super(false, new UpdateTaskError(error.code, error.message, EHttpStatus.NotFound));
     }
   }
 }
