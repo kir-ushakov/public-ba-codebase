@@ -5,11 +5,8 @@ import {
 } from '../../../../../shared/infra/http/models/base-controller.js';
 import { CreateTask } from './create-task.usecase.js';
 import { CreateTaskRequestDTO } from './create-task.dto.js';
-import { Result } from '../../../../../shared/core/Result.js';
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
-import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
 import { Task } from '../../../../../shared/domain/models/task.js';
-import { ECreateTaskError } from './create-task.errors.js';
 
 export class CreateTaskController extends BaseController {
   private _useCase: CreateTask;
@@ -31,10 +28,7 @@ export class CreateTaskController extends BaseController {
     };
 
     try {
-      const createResult: Result<
-        Task | never,
-        UseCaseError<ECreateTaskError>
-      > = await this._useCase.execute({
+      const createResult = await this._useCase.execute({
         userId,
         dto,
       });
@@ -43,7 +37,7 @@ export class CreateTaskController extends BaseController {
         const createdTaks = createResult.getValue() as Task;
         return BaseController.jsonResponse(res, EHttpStatus.Created, createdTaks);
       } else {
-        const error = createResult.error as UseCaseError<ECreateTaskError>;
+        const error = createResult.error;
         BaseController.jsonResponse(res, error.httpCode, {
           name: error.name,
           message: error.message,

@@ -4,8 +4,7 @@ import { Result } from '../../../../../shared/core/Result.js';
 import { ETaskError, Task } from '../../../../../shared/domain/models/task.js';
 import { TaskRepo } from '../../../../../shared/repo/task.repo.js';
 import { UniqueEntityID } from '../../../../../shared/domain/UniqueEntityID.js';
-import { CreateTaskError, ECreateTaskError } from './create-task.errors.js';
-import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
+import { CreateTaskError, CreateTaskErrors } from './create-task.errors.js';
 import { SlackService } from '../../../../../shared/infra/integrations/slack/slack.service.js';
 import { DomainError } from '../../../../../shared/core/domain-error.js';
 
@@ -14,7 +13,7 @@ type Request = {
   dto: CreateTaskRequestDTO;
 };
 
-type Response = Promise<Result<Task | never, UseCaseError<ECreateTaskError>>>;
+type Response = Promise<Result<Task | never, CreateTaskError>>;
 
 export class CreateTask implements UseCase<Request, Response> {
   private _taskRepo: TaskRepo;
@@ -25,9 +24,7 @@ export class CreateTask implements UseCase<Request, Response> {
     this._slackService = slackService;
   }
 
-  public async execute(
-    req: Request,
-  ): Promise<Result<Task | never, UseCaseError<ECreateTaskError>>> {
+  public async execute(req: Request): Promise<Result<Task | never, CreateTaskError>> {
     const userId = req.userId;
     const dto: CreateTaskRequestDTO = req.dto;
 
@@ -40,9 +37,7 @@ export class CreateTask implements UseCase<Request, Response> {
     );
 
     if (taskOrError.isFailure) {
-      return new CreateTaskError.TaskDataInvalid(
-        taskOrError.error as DomainError<Task, ETaskError>,
-      );
+      return new CreateTaskErrors.DataInvalid(taskOrError.error as DomainError<Task, ETaskError>);
     }
 
     const task: Task = taskOrError.getValue();
