@@ -1,38 +1,36 @@
-import { ITaskProps, Task, TaskPresitant } from '../domain/models/task.js';
+import { Task, TaskPresitant } from '../domain/models/task.js';
 import { TaskDTO } from '../../modules/sync/domain/dtos/task.dto.js';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 import { DomainError } from '../core/domain-error.js';
 
 export class TaskMapper {
-  public static toDomain(raw: TaskPresitant): Task | DomainError {
-    const taskOrError = Task.create(
-      {
-        userId: raw.userId,
-        type: raw.type,
-        title: raw.title,
-        status: raw.status,
-        imageUri: raw.imageUri,
-        createdAt: raw.createdAt,
-        modifiedAt: raw.modifiedAt,
-      },
-      new UniqueEntityID(raw._id)
-    );
+  public static toDomain(raw: TaskPresitant): Task | DomainError<Task> {
+    const { userId, type, title, status, imageUri, _id } = raw;
 
-    taskOrError.isFailure ? console.log(taskOrError.error) : '';
+    const taskProps = { userId, type, title, status, imageUri };
+    const taskId = new UniqueEntityID(_id);
+
+    const taskOrError = Task.create(taskProps, taskId);
+
+    if (taskOrError.isFailure) {
+      console.log(taskOrError.error);
+    }
 
     return taskOrError.isSuccess ? taskOrError.getValue() : null;
   }
 
   public static toPersistence(task: Task): TaskPresitant {
+    const { id, userId, type, title, status, imageUri, createdAt, modifiedAt } = task;
+
     return {
-      _id: task.id.toString(),
-      userId: task.userId,
-      type: task.type,
-      title: task.title,
-      status: task.status,
-      imageUri: task.imageUri,
-      createdAt: task.createdAt,
-      modifiedAt: task.modifiedAt,
+      _id: id.toString(),
+      userId,
+      type,
+      title,
+      status,
+      imageUri,
+      createdAt,
+      modifiedAt,
     };
   }
 
