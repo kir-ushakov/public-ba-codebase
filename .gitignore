@@ -4,3 +4,5 @@ nginx/ssl/*
 # evirament variables
 .env
 
+node_modules/
+
