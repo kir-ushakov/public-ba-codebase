@@ -1,4 +1,3 @@
-import { AppError } from '../core/app.error';
 import { TaskDTO } from '../dto/task.dto';
 import { Task, ETaskStatus, ETaskType } from '../models/task.model';
 
@@ -18,7 +17,7 @@ export class TasksMapper {
 
   public static toDto(task: Task): TaskDTO {
     if (!task) {
-      throw new AppError(
+      throw new Error(
         'An error occurred while converting the task to a DTO: the passed task object is NULL or undefined.',
       );
     }
