@@ -4,22 +4,14 @@ import {
   IReleaseClientIdResponseDTO,
 } from './release-client-id.dto.js';
 import { Result } from '../../../../shared/core/Result.js';
-import {
-  Client,
-  IClientProps,
-} from '../../../../shared/domain/models/client.js';
+import { Client, IClientProps } from '../../../../shared/domain/models/client.js';
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
-import { ReleaseClientIdErrors } from './release-client-id.errors.js';
-import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { ReleaseClientIdError, ReleaseClientIdErrors } from './release-client-id.errors.js';
 
-type Response =
-  | Result<IReleaseClientIdResponseDTO | UseCaseError>
-  | ReleaseClientIdErrors.UserDoesNotExistError;
+type Response = Result<IReleaseClientIdResponseDTO | never, ReleaseClientIdError>;
 
-export class ReleaseClientId
-  implements UseCase<IReleaseClientIdRequestDTO, Promise<Response>>
-{
+export class ReleaseClientId implements UseCase<IReleaseClientIdRequestDTO, Promise<Response>> {
   private _clientRepo: ClientRepo;
   private _userRepo: UserRepo;
 
@@ -37,15 +29,18 @@ export class ReleaseClientId
     try {
       await this._userRepo.findUserById(userId);
     } catch (err) {
-      return new ReleaseClientIdErrors.UserDoesNotExistError(userId);
+      // TODO: handle error proper way (use service error)
+      // TICKET: https://brainas.atlassian.net/browse/BA-217
+      console.error(err);
+      return new ReleaseClientIdErrors.UserDoesNotExist(userId);
     }
 
-    const clientOrError: Result<Client> = await this.createNewCleintInDB(
-      userId
-    );
+    const clientOrError: Result<Client> = await this.createNewCleintInDB(userId);
 
     if (clientOrError.isFailure) {
-      return Result.fail('Cannot get ClientId for sync');
+      // TODO: Need to handle this case
+      // TICKET: https://brainas.atlassian.net/browse/BA-217
+      //return Result.fail('Cannot get ClientId for sync');
     }
     const client: Client = clientOrError.getValue() as Client;
     return Result.ok({ clientId: client.id.toString() });

@@ -3,8 +3,7 @@ import {
   BaseController,
   EHttpStatus,
 } from '../../../../shared/infra/http/models/base-controller.js';
-import { LoginResult, LoginUsecase } from './login.usecase.js';
-import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { LoginUsecase } from './login.usecase.js';
 
 export class LoginController extends BaseController {
   private loginUsecase: LoginUsecase;
@@ -14,31 +13,22 @@ export class LoginController extends BaseController {
     this.loginUsecase = loginUsecase;
   }
 
-  protected async executeImpl(
-    req: Request,
-    res: Response,
-    next?: NextFunction
-  ): Promise<void | any> {
+  protected async executeImpl(req: Request, res: Response, next?: NextFunction): Promise<void> {
     try {
-      const result: LoginResult | UseCaseError =
-        await this.loginUsecase.execute({
-          context: { req, res, next },
-        });
+      const result = await this.loginUsecase.execute({
+        context: { req, res, next },
+      });
       if (result.isSuccess) {
-        return BaseController.jsonResponse(
-          res,
-          EHttpStatus.Ok,
-          result.getValue()
-        );
+        BaseController.jsonResponse(res, EHttpStatus.Ok, result.getValue());
       } else {
-        const error: UseCaseError = result.error as UseCaseError;
-        return BaseController.jsonResponse(res, error.code, {
+        const error = result.error;
+        BaseController.jsonResponse(res, error.httpCode, {
           name: error.name,
           message: error.message,
         });
       }
     } catch (err) {
-      return this.fail(res, err.toString());
+      this.fail(res, err.toString());
     }
   }
 }

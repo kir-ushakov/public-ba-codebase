@@ -1,4 +1,4 @@
-import { AppError } from './app-error';
+import { AppError } from './app-error.js';
 
 export class DomainError<T, U = string> extends AppError<U> {
   constructor(

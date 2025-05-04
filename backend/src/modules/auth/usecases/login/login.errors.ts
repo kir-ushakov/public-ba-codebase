@@ -2,34 +2,37 @@ import { Result } from '../../../../shared/core/Result.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { EHttpStatus } from '../../../../shared/infra/http/models/base-controller.js';
 
-export enum ELoginErrorName {
-  LoginFailed = 'LOGIN_ERROR_AUTHENTICATION_FAILED',
-  UserAccountNotVerified = 'LOGIN_ERROR_ACCOUNT_NOT_VERIFIED',
+type ELoginError = ELoginUsecaseError;
+export class LoginError extends UseCaseError<ELoginError> {}
+
+export enum ELoginUsecaseError {
+  LoginFailed = 'LOGIN_USECASE_ERROR__AUTHENTICATION_FAILED',
+  UserAccountNotVerified = 'LOGIN_USECASE_ERROR__ACCOUNT_NOT_VERIFIED',
 }
 
 export namespace LoginError {
-  export class LoginFailed extends Result<UseCaseError> {
+  export class LoginFailed extends Result<never, LoginError> {
     constructor() {
       super(
         false,
-        new UseCaseError(
+        new LoginError(
+          ELoginUsecaseError.LoginFailed,
+          'Authorization failed!',
           EHttpStatus.BadRequest,
-          ELoginErrorName.LoginFailed,
-          'Authorization failed!'
-        )
+        ),
       );
     }
   }
 
-  export class UserAccountNotVerified extends Result<UseCaseError> {
+  export class UserAccountNotVerified extends Result<never, LoginError> {
     constructor() {
       super(
         false,
-        new UseCaseError(
+        new LoginError(
+          ELoginUsecaseError.UserAccountNotVerified,
+          'User account not verified!',
           EHttpStatus.BadRequest,
-          ELoginErrorName.UserAccountNotVerified,
-          'User account not verified!'
-        )
+        ),
       );
     }
   }

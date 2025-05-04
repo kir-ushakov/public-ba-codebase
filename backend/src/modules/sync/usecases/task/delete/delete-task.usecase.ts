@@ -5,13 +5,14 @@ import { TaskRepoService } from '../../../../../shared/repo/task-repo.service.js
 import { ActionRepo } from '../../../../../shared/repo/action.repo.js';
 import { Action, IActionProps } from '../../../../../shared/domain/models/actions.js';
 import { EActionType } from '../../../../../shared/infra/database/mongodb/action.model.js';
+import { DeleteTaskError } from './delete-task.erros.js';
 
 type Request = {
   userId: string;
   dto: DeleteTaskRequestDTO;
 };
 
-type Response = Result<void>;
+type Response = Result<void | never, DeleteTaskError>;
 
 export class DeleteTaskUsecase implements UseCase<Request, Promise<Response>> {
   private taskRepoService: TaskRepoService;
@@ -28,7 +29,7 @@ export class DeleteTaskUsecase implements UseCase<Request, Promise<Response>> {
 
     const taskExists = await this.doesTaskExist(userId, taskId);
     if (!taskExists) {
-      return Result.ok<void>();
+      return Result.ok<void, never>();
     }
 
     await this.taskRepoService.deleteTaskById(taskId);
@@ -42,7 +43,7 @@ export class DeleteTaskUsecase implements UseCase<Request, Promise<Response>> {
     const action: Action = await Action.create(actionProps);
     await this.actionRepo.create(action);
 
-    return Result.ok<void>();
+    return Result.ok<void, never>();
   }
 
   private async doesTaskExist(userId: string, taskId: string): Promise<boolean> {

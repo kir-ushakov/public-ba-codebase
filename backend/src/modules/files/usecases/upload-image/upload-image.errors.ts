@@ -2,33 +2,37 @@ import { Result } from '../../../../shared/core/Result.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { EHttpStatus } from '../../../../shared/infra/http/models/base-controller.js';
 
-export enum EUploadImageError {
-  NotSupportedType = 'UPLOAD_IMAGE_ERROR__NOT_SUPPORTED_TYPE',
-  UploadToGoogleDriveFailed = 'UPLOAD_IMAGE_ERROR__UPLOAD_TO_GOOGLE_DRIVE_FAILED',
+export class UploadImageError extends UseCaseError<UploadImageErrorCodes> {}
+
+enum UploadImageErrorCode {
+  NotSupportedType = 'UPLOAD_IMAGE_ERROR_CODE__NOT_SUPPORTED_TYPE',
+  UploadToGoogleDriveFailed = 'UPLOAD_IMAGE_ERROR_CODE__UPLOAD_TO_GOOGLE_DRIVE_FAILED',
 }
 
+type UploadImageErrorCodes = UploadImageErrorCode;
+
 export namespace UploadImageErrors {
-  export class NotSupportedTypeError extends Result<UseCaseError> {
+  export class NotSupportedTypeError extends Result<never, UploadImageError> {
     constructor(type: string) {
       super(
         false,
-        new UseCaseError(
-          EHttpStatus.BadRequest,
-          EUploadImageError.NotSupportedType,
+        new UploadImageError(
+          UploadImageErrorCode.NotSupportedType,
           `The file type "${type}" doesn't supported`,
+          EHttpStatus.BadRequest,
         ),
       );
     }
   }
 
-  export class UploadToGoogleDriveFailed extends Result<UseCaseError> {
+  export class UploadToGoogleDriveFailed extends Result<never, UploadImageError> {
     constructor() {
       super(
         false,
         new UseCaseError(
-          EHttpStatus.BadGateway,
-          EUploadImageError.UploadToGoogleDriveFailed,
+          UploadImageErrorCode.UploadToGoogleDriveFailed,
           `Uploading file to Google Drive failed`,
+          EHttpStatus.BadGateway,
         ),
       );
     }

@@ -1,35 +1,28 @@
 import { Result } from '../../../../shared/core/Result.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
-import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { VerificationToken } from '../../../../shared/domain/values/user/verification-token.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
-import {
-  VerifyEmailRequestDTO,
-  IVerifyEmailResponceDTO,
-} from './verify-email.dto.js';
+import { VerifyEmailRequestDTO, IVerifyEmailResponceDTO } from './verify-email.dto.js';
+import { VerifyEmailError } from './verify-email.errors.js';
 
-export class VerifyEmailUseCase
-  implements
-    UseCase<
-      VerifyEmailRequestDTO,
-      Promise<Result<UseCaseError | IVerifyEmailResponceDTO>>
-    >
-{
+type UseCaseRequest = {
+  dto: VerifyEmailRequestDTO;
+};
+type UseCaseResult = Result<IVerifyEmailResponceDTO | never, VerifyEmailError>;
+
+export class VerifyEmailUseCase implements UseCase<UseCaseRequest, Promise<UseCaseResult>> {
   private userRepo: UserRepo;
 
   constructor(userRepo: UserRepo) {
     this.userRepo = userRepo;
   }
 
-  public async execute(
-    dto: VerifyEmailRequestDTO
-  ): Promise<Result<UseCaseError | IVerifyEmailResponceDTO>> {
+  public async execute(reqest: UseCaseRequest): Promise<UseCaseResult> {
+    const dto = reqest.dto;
     const tokenId: string = dto.token;
 
-    const token: VerificationToken = await this.userRepo.getTokenByTokenId(
-      tokenId
-    );
+    const token: VerificationToken = await this.userRepo.getTokenByTokenId(tokenId);
     if (!token) {
       // TODO: Potentially we can handle case if token not found (throw usecase error)
     }

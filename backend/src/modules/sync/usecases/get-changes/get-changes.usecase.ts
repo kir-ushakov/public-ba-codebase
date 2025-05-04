@@ -11,10 +11,10 @@ import { TaskRepoService } from '../../../../shared/repo/task-repo.service.js';
 import { TaskDTO } from '../../domain/dtos/task.dto.js';
 import { Change, EChangeAction, EChangedEntity } from '../../domain/values/change.js';
 import { IGetChangesRequestDTO } from './get-changes.dto.js';
-import { GetChangesErrors } from './get-changes.errors.js';
+import { GetChangesErrors, GoogleAuthError } from './get-changes.errors.js';
 
 export type GetChangesRequest = IGetChangesRequestDTO;
-export type GetChangesResponse = Result<Change[]> | GetChangesErrors.ClientNotFoundError;
+export type GetChangesResponse = Result<Change[] | never, GoogleAuthError>;
 
 export class GetChangesUC implements UseCase<GetChangesRequest, Promise<GetChangesResponse>> {
   private clientRepo: ClientRepo;

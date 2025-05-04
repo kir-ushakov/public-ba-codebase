@@ -73,4 +73,15 @@ export class TaskRepoService {
       id: taskId,
     });
   }
+
+  public async exists(taskId: string, userId: string = null): Promise<boolean> {
+    const TaskModel = this.models.TaskModel;
+    let params = { _id: taskId };
+    if (userId) {
+      params['userId'] = userId;
+    }
+    const existingTask: TaskDocument = await TaskModel.findOne(params);
+    const found: boolean = !!existingTask === true;
+    return found;
+  }
 }
