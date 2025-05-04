@@ -1,7 +1,7 @@
 import { UseCase } from '../../../../../shared/core/UseCase.js';
 import { Result } from '../../../../../shared/core/Result.js';
 import { IUpdateTaskRequestDTO } from './update-task.dto.js';
-import { TaskRepo } from '../../../../../shared/repo/task.repo.js';
+import { TaskRepoService } from '../../../../../shared/repo/task-repo.service.js';
 import { UpdateTaskError, UpdateTaskErrors } from './update-task.errors.js';
 
 type Request = {
@@ -12,17 +12,12 @@ type Request = {
 type Response = Result<void | never, UpdateTaskError>;
 
 export class UpdateTask implements UseCase<Request, Promise<Response>> {
-  private _taskRepo: TaskRepo;
-
-  constructor(taskRepo: TaskRepo) {
-    this._taskRepo = taskRepo;
-  }
-
+  constructor(private readonly taskRepoService: TaskRepoService) {}
   public async execute(req: Request): Promise<Response> {
     const userId = req.userId;
     const taskDto: IUpdateTaskRequestDTO = req.dto;
 
-    const taskOrError = await this._taskRepo.getUserTaskById(userId, taskDto.id);
+    const taskOrError = await this.taskRepoService.getUserTaskById(userId, taskDto.id);
 
     if (taskOrError.isFailure) {
       return new UpdateTaskErrors.TaskNotFoundError(taskOrError.error);
@@ -33,7 +28,7 @@ export class UpdateTask implements UseCase<Request, Promise<Response>> {
       ...taskDto,
     });
 
-    await this._taskRepo.save(task);
+    await this.taskRepoService.save(task);
 
     return Result.ok<void, never>();
   }
