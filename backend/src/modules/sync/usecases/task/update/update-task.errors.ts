@@ -2,7 +2,7 @@ import { Result } from '../../../../../shared/core/Result.js';
 import { ServiceError } from '../../../../../shared/core/service-error.js';
 import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
 import { EHttpStatus } from '../../../../../shared/infra/http/models/base-controller.js';
-import { ETaskRepoServiceError } from '../../../../../shared/repo/task.repo.js';
+import { ETaskRepoServiceError } from '../../../../../shared/repo/task-repo.service.js';
 
 type EUpdateTaskError = ETaskRepoServiceError;
 export class UpdateTaskError extends UseCaseError<EUpdateTaskError> {}
