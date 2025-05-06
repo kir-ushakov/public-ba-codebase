@@ -13,3 +13,15 @@
     width: $picture-icon-size;
   }
 }
+
+.mic-icon-button {
+  border: none;
+  background: none;
+}
+
+.mic-icon {
+  font-size: 2rem;
+  cursor: pointer;
+  width: auto;
+  height: auto;
+}

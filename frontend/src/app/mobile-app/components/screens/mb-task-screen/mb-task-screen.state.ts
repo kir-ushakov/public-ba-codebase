@@ -15,7 +15,7 @@ export enum ETaskViewMode {
 }
 
 export interface IEditTaskFormData {
-  title: string;
+  title?: string;
 }
 
 export interface IMbTaskScreenStateModel {

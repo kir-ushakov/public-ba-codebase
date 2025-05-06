@@ -10,6 +10,18 @@
         autocomplete="off"
         autofocus
       />
+
+      <button
+        class="mic-icon-button"
+        mat-icon-button
+        matSuffix
+        aria-label="Microphone"
+        type="button"
+        (click)="onMicClick()"
+      >
+        <mat-icon class="mic-icon">mic</mat-icon>
+      </button>
+
       <mat-error *ngIf="false"> Task title is <strong>required</strong> </mat-error>
     </mat-form-field>
     @if (imageUri$ | async) {
