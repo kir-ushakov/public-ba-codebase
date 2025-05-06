@@ -8,7 +8,6 @@ import {
   SlackEventReceivedResponse,
 } from './slack-event-received.usecase.js';
 import { SlackEventReceivedReqestDTO } from './slack-event-received.dto.js';
-import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
 
 export class SlackEventReceivedController extends BaseController {
   private _useCase: SlackEventReceivedUsecase;
@@ -17,29 +16,24 @@ export class SlackEventReceivedController extends BaseController {
     super();
     this._useCase = useCase;
   }
-  protected async executeImpl(
-    req: Request,
-    res: Response
-  ): Promise<void | any> {
+  protected async executeImpl(req: Request, res: Response): Promise<void> {
     const dto: SlackEventReceivedReqestDTO = req.body;
     try {
-      const slackEventReceivedResult: SlackEventReceivedResponse =
-        await this._useCase.execute({
-          dto: dto,
-        });
+      const slackEventReceivedResult: SlackEventReceivedResponse = await this._useCase.execute({
+        dto: dto,
+      });
 
       if (slackEventReceivedResult.isSuccess) {
-        return BaseController.jsonResponse(res, EHttpStatus.Ok);
+        BaseController.jsonResponse(res, EHttpStatus.Ok);
       } else {
-        const error: UseCaseError =
-          slackEventReceivedResult.error as UseCaseError;
-        return BaseController.jsonResponse(res, error.code, {
+        const error = slackEventReceivedResult.error;
+        BaseController.jsonResponse(res, error.httpCode, {
           name: error.name,
           message: error.message,
         });
       }
     } catch (err) {
-      return this.fail(res, err.toString());
+      this.fail(res, err.toString());
     }
   }
 }

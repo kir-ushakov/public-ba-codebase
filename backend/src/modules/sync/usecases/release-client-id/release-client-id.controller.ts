@@ -1,12 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
-import { Result } from '../../../../shared/core/Result.js';
-import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { Request, Response } from 'express';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
 import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
-import {
-  IReleaseClientIdRequestDTO,
-  IReleaseClientIdResponseDTO,
-} from './release-client-id.dto.js';
+import { IReleaseClientIdRequestDTO } from './release-client-id.dto.js';
 import { ReleaseClientId } from './release-client-id.usecase.js';
 
 export class ReleaseClientIdController extends BaseController {
@@ -17,11 +12,7 @@ export class ReleaseClientIdController extends BaseController {
     this._useCase = useCase;
   }
 
-  protected async executeImpl(
-    req: Request,
-    res: Response,
-    next?: NextFunction
-  ): Promise<void | any> {
+  protected async executeImpl(req: Request, res: Response): Promise<void> {
     const authenticatedUser: UserPersistent = req.user as UserPersistent;
 
     // TODO: We need to take from req device identity object in future
@@ -31,24 +22,23 @@ export class ReleaseClientIdController extends BaseController {
     };
 
     try {
-      const result: Result<UseCaseError | IReleaseClientIdResponseDTO> =
-        await this._useCase.execute(dto);
+      const result = await this._useCase.execute(dto);
 
       if (result.isFailure) {
-        const error: UseCaseError = result.error as UseCaseError;
+        const error = result.error;
         switch (result.constructor) {
           // TODO: For this moment we don't have special usecase errors to handle here
           // case1,
           // case2
           //....
           default:
-            return this.fail(res, error.message);
+            this.fail(res, error.message);
         }
       } else {
-        return this.ok(res, result.getValue());
+        this.ok(res, result.getValue());
       }
     } catch (err) {
-      return this.fail(res, err);
+      this.fail(res, err);
     }
   }
 }

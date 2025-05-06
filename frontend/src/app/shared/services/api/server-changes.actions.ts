@@ -15,8 +15,4 @@ export namespace SyncServiceAPIAction {
 
     constructor(public change: Change) {}
   }
-
-  export class LocalChangeSynchronizationFailed {
-    static readonly type = '[Sync Service API] Local Change Synchronization Failed';
-  }
 }

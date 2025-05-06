@@ -8,32 +8,27 @@ import {
 
 export class SlackOAuthAccessMapper {
   public static toDomain(
-    raw: ISlackOAuthAccessPresitant
-  ): SlackOAuthAccess | DomainError {
-    const slackOAuthAccessOrError: CreateSlackOAuthAccessResult =
-      SlackOAuthAccess.create(
-        {
-          userId: raw.userId,
-          accessToken: raw.accessToken,
-          authedUserId: raw.authedUserId,
-          slackBotUserId: raw.slackBotUserId,
-          teamId: raw.teamId,
-        },
-        new UniqueEntityID(raw._id)
-      );
+    raw: ISlackOAuthAccessPresitant,
+  ): SlackOAuthAccess | DomainError<SlackOAuthAccess> {
+    const slackOAuthAccessOrError: CreateSlackOAuthAccessResult = SlackOAuthAccess.create(
+      {
+        userId: raw.userId,
+        accessToken: raw.accessToken,
+        authedUserId: raw.authedUserId,
+        slackBotUserId: raw.slackBotUserId,
+        teamId: raw.teamId,
+      },
+      new UniqueEntityID(raw._id),
+    );
 
-    slackOAuthAccessOrError.isFailure
-      ? console.log(slackOAuthAccessOrError.error)
-      : '';
+    if (slackOAuthAccessOrError.isFailure) {
+      console.log(slackOAuthAccessOrError.error);
+    }
 
-    return slackOAuthAccessOrError.isSuccess
-      ? slackOAuthAccessOrError.getValue()
-      : null;
+    return slackOAuthAccessOrError.isSuccess ? slackOAuthAccessOrError.getValue() : null;
   }
 
-  public static toPersistence(
-    slackOAuthAccess: SlackOAuthAccess
-  ): ISlackOAuthAccessPresitant {
+  public static toPersistence(slackOAuthAccess: SlackOAuthAccess): ISlackOAuthAccessPresitant {
     return {
       _id: slackOAuthAccess.id.toString(),
       userId: slackOAuthAccess.userId,

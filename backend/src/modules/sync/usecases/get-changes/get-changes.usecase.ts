@@ -7,35 +7,23 @@ import { EActionType } from '../../../../shared/infra/database/mongodb/action.mo
 import { TaskMapper } from '../../../../shared/mappers/task.mapper.js';
 import { ActionRepo } from '../../../../shared/repo/action.repo.js';
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
-import { TaskRepo } from '../../../../shared/repo/task.repo.js';
+import { TaskRepoService } from '../../../../shared/repo/task-repo.service.js';
 import { TaskDTO } from '../../domain/dtos/task.dto.js';
-import {
-  Change,
-  EChangeAction,
-  EChangedEntity,
-} from '../../domain/values/change.js';
+import { Change, EChangeAction, EChangedEntity } from '../../domain/values/change.js';
 import { IGetChangesRequestDTO } from './get-changes.dto.js';
-import { GetChangesErrors } from './get-changes.errors.js';
+import { GetChangesErrors, GoogleAuthError } from './get-changes.errors.js';
 
 export type GetChangesRequest = IGetChangesRequestDTO;
-export type GetChangesResponse =
-  | Result<Change[]>
-  | GetChangesErrors.ClientNotFoundError;
+export type GetChangesResponse = Result<Change[] | never, GoogleAuthError>;
 
-export class GetChangesUC
-  implements UseCase<GetChangesRequest, Promise<GetChangesResponse>>
-{
+export class GetChangesUC implements UseCase<GetChangesRequest, Promise<GetChangesResponse>> {
   private clientRepo: ClientRepo;
-  private taskRepo: TaskRepo;
+  private taskRepoService: TaskRepoService;
   private actionRepo: ActionRepo;
 
-  constructor(
-    clientRepo: ClientRepo,
-    taskRepo: TaskRepo,
-    actionRepo: ActionRepo
-  ) {
+  constructor(clientRepo: ClientRepo, taskRepoService: TaskRepoService, actionRepo: ActionRepo) {
     this.clientRepo = clientRepo;
-    this.taskRepo = taskRepo;
+    this.taskRepoService = taskRepoService;
     this.actionRepo = actionRepo;
   }
 
@@ -44,16 +32,17 @@ export class GetChangesUC
     const changes: Array<Change> = [];
     let client: Client;
 
+    // TODO: hande potential error the right way
+    // TICKET: https://brainas.atlassian.net/browse/BA-215
     try {
       client = await this.clientRepo.find(userId, clientId);
     } catch (err) {
+      console.error(`Failed to find client (userId: ${userId}, clientId: ${clientId})`, err);
       return new GetChangesErrors.ClientNotFoundError(userId, clientId);
     }
+
     const lastSyncTime: Date = client.syncTime;
-    const changedTasks: Task[] = await this.taskRepo.getChanges(
-      userId,
-      lastSyncTime
-    );
+    const changedTasks: Task[] = await this.taskRepoService.getChanges(userId, lastSyncTime);
 
     for (let changedTask of changedTasks) {
       const taskDto: TaskDTO = TaskMapper.toDTO(changedTask);
@@ -62,16 +51,15 @@ export class GetChangesUC
           entity: EChangedEntity.Task,
           action: EChangeAction.Updated,
           object: taskDto,
-        })
+        }),
       );
     }
 
-    const deleteTaskActions: Action[] =
-      await this.actionRepo.getActionsOccurredSince(
-        userId,
-        lastSyncTime,
-        EActionType.TaskDeleted
-      );
+    const deleteTaskActions: Action[] = await this.actionRepo.getActionsOccurredSince(
+      userId,
+      lastSyncTime,
+      EActionType.TaskDeleted,
+    );
 
     for (let i = 0; i < deleteTaskActions.length; i++) {
       const deleteTaskAction: Action = deleteTaskActions[i];
@@ -83,7 +71,7 @@ export class GetChangesUC
             id: deleteTaskAction.entityId.toString(),
             modifiedAt: deleteTaskAction.occurredAt.toISOString(),
           },
-        })
+        }),
       );
     }
 

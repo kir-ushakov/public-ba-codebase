@@ -1,11 +1,12 @@
-export class DomainError {
-  public readonly name: string;
-  public readonly message: string;
-  public readonly error: any;
+import { AppError } from './app-error.js';
 
-  constructor(name: string, message: string, error: any = null) {
-    this.message = message;
-    this.error = error;
-    this.name = name;
+export class DomainError<T, U = string> extends AppError<U> {
+  constructor(
+    code: U,
+    message: string,
+    public readonly object?: T,
+  ) {
+    super(message, code);
+    this.object = object ? Object.freeze(object) : undefined;
   }
 }

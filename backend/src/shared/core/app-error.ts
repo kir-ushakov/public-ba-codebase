@@ -1,7 +1,18 @@
-export class AppError extends Error {
-  constructor(public readonly message: string, public readonly code: string) {
-    super(message);
+export class AppError<U = string> extends Error {
+  public readonly code: U;
+
+  constructor(message: string, code: U, options?: ErrorOptions) {
+    super(message, options);
+    this.code = code;
+
+    // Fix the prototype chain (important if you compile to ES5)
+    Object.setPrototypeOf(this, new.target.prototype);
+
     this.name = this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
+
+    // V8-only: capture a cleaner stack trace
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, new.target);
+    }
   }
 }
