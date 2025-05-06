@@ -16,15 +16,15 @@ export class CreateTaskController extends BaseController {
     this._useCase = useCase;
   }
 
-  protected async executeImpl(req: Request, res: Response): Promise<void | any> {
+  protected async executeImpl(req: Request, res: Response): Promise<void> {
     const loggedUser: UserPersistent = req.user as UserPersistent;
     const userId = loggedUser._id;
 
     const task = req.body.changeableObjectDto;
 
     const dto: CreateTaskRequestDTO = {
+      ...task,
       id: task.id.toString(),
-      ...task.toPrimitives(),
     };
 
     try {
@@ -35,7 +35,7 @@ export class CreateTaskController extends BaseController {
 
       if (createResult.isSuccess) {
         const createdTaks = createResult.getValue() as Task;
-        return BaseController.jsonResponse(res, EHttpStatus.Created, createdTaks);
+        BaseController.jsonResponse(res, EHttpStatus.Created, createdTaks);
       } else {
         const error = createResult.error;
         BaseController.jsonResponse(res, error.httpCode, {
@@ -44,7 +44,7 @@ export class CreateTaskController extends BaseController {
         });
       }
     } catch (err) {
-      return this.fail(res, err.toString());
+      this.fail(res, err.toString());
     }
   }
 }

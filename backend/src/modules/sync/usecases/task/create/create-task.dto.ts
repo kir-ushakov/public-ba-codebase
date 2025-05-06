@@ -4,6 +4,4 @@ export interface CreateTaskRequestDTO {
   title: string;
   status: string;
   imageUri?: string;
-  createdAt: Date;
-  modifiedAt: Date;
 }
