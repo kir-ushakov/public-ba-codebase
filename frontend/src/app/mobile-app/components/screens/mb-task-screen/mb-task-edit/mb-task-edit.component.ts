@@ -1,7 +1,13 @@
 import { Component, inject, output } from '@angular/core';
 import { MbTaskScreenAction } from '../mb-task-screen.actions';
 import { Store } from '@ngxs/store';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
@@ -11,8 +17,6 @@ import { MatInputModule } from '@angular/material/input';
 import { SpeechRecorderComponent } from 'src/app/shared/components/ui-elements/speech-recorder/speech-recorder.component';
 import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
-
-type TaskFormControls = FormControlsOf<IEditTaskFormData>;
 
 @Component({
   selector: 'ba-mb-task-edit',
@@ -46,8 +50,11 @@ export class MbTaskEditComponent {
     this.initSubscriptions();
   }
 
-  form = this.fb.group({
-    title: ['', this.requiredTitleValidators],
+  form = this.fb.group<FormControlsOf<IEditTaskFormData>>({
+    title: this.fb.control('', {
+      validators: this.requiredTitleValidators,
+      nonNullable: true,
+    }),
   });
 
   addPictureBtnPressed() {
