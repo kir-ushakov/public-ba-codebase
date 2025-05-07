@@ -1,13 +1,7 @@
 import { Component, inject, output } from '@angular/core';
 import { MbTaskScreenAction } from '../mb-task-screen.actions';
 import { Store } from '@ngxs/store';
-import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
