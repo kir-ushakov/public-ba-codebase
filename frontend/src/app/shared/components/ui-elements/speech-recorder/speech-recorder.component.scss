@@ -1,0 +1,95 @@
+@use 'src/scss/colors';
+
+:host {
+  background: colors.$color-main-bg;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.recorder-bottom {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+  margin-top: auto; // pushes it to the bottom
+
+  .close-icon {
+    color: white;
+  }
+}
+
+.recording-indicator {
+  width: clamp(60px, 40vw, 150px);
+  height: clamp(60px, 40vw, 150px);
+  border-radius: 50%;
+  background-color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: shimmer 2s infinite;
+  position: relative;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+  transition: box-shadow 0.3s ease;
+  margin: auto;
+
+  mat-icon {
+    color: white;
+    font-size: clamp(24px, 5vw, 40px);
+    z-index: 2;
+  }
+}
+
+.progress-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); // start top
+  z-index: 1;
+  overflow: visible;
+
+  &__circle {
+    stroke: yellow;
+    stroke-linecap: butt;
+    stroke-dasharray: 295.31;
+    stroke-dashoffset: 295.31;
+    transition: stroke 0.3s ease;
+    //filter: drop-shadow(0 0 4px rgba(255, 255, 0, 0.8));
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.7); // green
+    background-color: rgba(0, 255, 0, 0.1);
+  }
+  33% {
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); // red
+    background-color: rgba(255, 0, 0, 0.1);
+  }
+  66% {
+    box-shadow: 0 0 15px rgba(255, 105, 180, 0.7); // pink
+    background-color: rgba(255, 105, 180, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.7);
+    background-color: rgba(0, 255, 0, 0.1);
+  }
+}
+
+.mic-icon-wrapper {
+  width: clamp(40px, 15vw, 240px);
+  height: clamp(40px, 15vw, 240px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    transition: fill 0.3s ease;
+    fill: currentColor; /* Make sure to use fill */
+  }
+}
