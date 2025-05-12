@@ -9,12 +9,27 @@
 
 .recorder-bottom {
   display: flex;
-  justify-content: flex-end;
-  padding: 1rem;
-  margin-top: auto; // pushes it to the bottom
+  justify-content: center;
+  padding: 5rem;
+  margin-top: auto;
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
   .close-icon {
     color: white;
+    min-height: 7rem;
+    min-width: 7rem;
+    font-size: 4rem;
+    overflow: visible;
+    border-radius: 50%;
+    background-color: rgba(200, 203, 203, 0.075);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
