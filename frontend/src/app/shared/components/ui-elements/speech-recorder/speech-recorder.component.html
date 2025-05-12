@@ -18,34 +18,9 @@
   </svg>
   <!-- Optionally scale with CSS, or use `width="..." height="..."` props -->
   <div class="mic-icon-wrapper">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 64 64"
-      width="48"
-      height="48"
-      fill="currentColor"
-    >
-      <defs>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      <g transform="translate(2, 0)" filter="url(#glow)">
-        <!-- Mic body -->
-        <rect x="24" y="14" width="16" height="28" rx="8" />
-        <!-- Mic grill lines -->
-        <line x1="28" y1="18" x2="36" y2="18" stroke="currentColor" stroke-width="2" />
-        <line x1="28" y1="22" x2="36" y2="22" stroke="currentColor" stroke-width="2" />
-        <line x1="28" y1="26" x2="36" y2="26" stroke="currentColor" stroke-width="2" />
-        <!-- Mic base -->
-        <line x1="32" y1="42" x2="32" y2="50" stroke="currentColor" stroke-width="3" />
-        <line x1="24" y1="50" x2="40" y2="50" stroke="currentColor" stroke-width="3" />
-      </g>
-    </svg>
+    <div class="mic-icon-wrapper">
+      <ba-mic-icon [color]="micColor"></ba-mic-icon>
+    </div>
   </div>
 </div>
 <div class="recorder-bottom">

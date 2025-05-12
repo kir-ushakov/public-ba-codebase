@@ -1,16 +1,20 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, signal, ViewChild } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MicIconComponent } from './mic-icon/mic-icon.component';
 
 @Component({
   selector: 'ba-speech-recorder',
-  imports: [MatIconModule, MatButtonModule],
+  imports: [MatIconModule, MatButtonModule, MicIconComponent],
   templateUrl: './speech-recorder.component.html',
   styleUrl: './speech-recorder.component.scss',
 })
 export class SpeechRecorderComponent {
   @ViewChild('progressCircle', { static: false }) circleRef!: ElementRef<SVGCircleElement>;
+  isRecording: boolean = false;
+
+  micColor = signal('rgba(0, 255, 0, 0.7)'); // initial green color
 
   constructor(private dialogRef: MatDialogRef<SpeechRecorderComponent>) {}
 
@@ -49,10 +53,8 @@ export class SpeechRecorderComponent {
 
       const color = `rgb(${red}, ${green}, 0)`;
 
-      // Update the mic icon's parent wrapper color, which the mic icon inherits
-      if (micIconWrapper) {
-        micIconWrapper.style.color = color; // This will change the mic icon color
-      }
+      console.log('color' + color);
+      this.micColor.set(color);
 
       if (progress < 1) {
         this.animationFrame = requestAnimationFrame(animate);
