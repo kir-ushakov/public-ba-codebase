@@ -4,6 +4,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MicIconComponent } from './mic-icon/mic-icon.component';
 
+const DEFAULT_MIC_COLOR = 'rgba(0, 255, 0, 0.7)';
+
 @Component({
   selector: 'ba-voice-recorder',
   imports: [MatIconModule, MatButtonModule, MicIconComponent],
@@ -12,17 +14,12 @@ import { MicIconComponent } from './mic-icon/mic-icon.component';
 })
 export class VoiceRecorderComponent {
   @ViewChild('progressCircle', { static: false }) circleRef!: ElementRef<SVGCircleElement>;
-  @ViewChild('micWrapper', { static: false }) micWrapperRef!: ElementRef<HTMLElement>;
 
-  micColor = signal('rgba(0, 255, 0, 0.7)');
+  micColor = signal(DEFAULT_MIC_COLOR);
 
   constructor(private dialogRef: MatDialogRef<VoiceRecorderComponent>) {}
 
   private animationFrame: number | null = null;
-
-  ngAfterViewInit(): void {
-    this.micWrapperRef.nativeElement.style.color = 'rgb(0, 255, 0, 0.7)';
-  }
 
   startRecording(duration = 10000) {
     const circle = this.circleRef.nativeElement;
@@ -46,7 +43,11 @@ export class VoiceRecorderComponent {
     this.dialogRef.close();
   }
 
-  private animateProgress(circle, duration, totalLength) {
+  ngOnDestroy(): void {
+    this.stopRecording();
+  }
+
+  private animateProgress(circle: SVGCircleElement, duration: number, totalLength: number) {
     const start = performance.now();
 
     const animate = (now: number) => {
