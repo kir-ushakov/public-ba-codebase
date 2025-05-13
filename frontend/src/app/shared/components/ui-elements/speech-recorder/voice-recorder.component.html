@@ -16,10 +16,9 @@
       filter="url(#blurFilter)"
     />
   </svg>
-  <!-- Optionally scale with CSS, or use `width="..." height="..."` props -->
-  <div class="mic-icon-wrapper">
+  <div class="mic-icon-wrapper" #micWrapper>
     <div class="mic-icon-wrapper">
-      <ba-mic-icon [color]="micColor"></ba-mic-icon>
+      <ba-mic-icon [color]="micColor()"></ba-mic-icon>
     </div>
   </div>
 </div>

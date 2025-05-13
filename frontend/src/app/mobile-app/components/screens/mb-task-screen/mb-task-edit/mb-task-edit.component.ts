@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import { IEditTaskFormData, MbTaskScreenState } from '../mb-task-screen.state';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { SpeechRecorderComponent } from 'src/app/shared/components/ui-elements/speech-recorder/speech-recorder.component';
+import { VoiceRecorderComponent } from 'src/app/shared/components/ui-elements/speech-recorder/voice-recorder.component';
 import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 
@@ -20,7 +20,7 @@ import { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
     MatInputModule,
     MatIconModule,
     ReactiveFormsModule,
-    SpeechRecorderComponent,
+    VoiceRecorderComponent,
   ],
   templateUrl: './mb-task-edit.component.html',
   styleUrl: './mb-task-edit.component.scss',
@@ -56,7 +56,7 @@ export class MbTaskEditComponent {
   }
 
   onMicClick() {
-    this.dialogService.showFullScreenDialog(SpeechRecorderComponent);
+    this.dialogService.showFullScreenDialog(VoiceRecorderComponent);
   }
 
   private initSubscriptions() {

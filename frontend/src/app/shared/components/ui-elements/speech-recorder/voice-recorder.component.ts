@@ -5,38 +5,48 @@ import { MatButtonModule } from '@angular/material/button';
 import { MicIconComponent } from './mic-icon/mic-icon.component';
 
 @Component({
-  selector: 'ba-speech-recorder',
+  selector: 'ba-voice-recorder',
   imports: [MatIconModule, MatButtonModule, MicIconComponent],
-  templateUrl: './speech-recorder.component.html',
-  styleUrl: './speech-recorder.component.scss',
+  templateUrl: './voice-recorder.component.html',
+  styleUrl: './voice-recorder.component.scss',
 })
-export class SpeechRecorderComponent {
+export class VoiceRecorderComponent {
   @ViewChild('progressCircle', { static: false }) circleRef!: ElementRef<SVGCircleElement>;
-  isRecording: boolean = false;
+  @ViewChild('micWrapper', { static: false }) micWrapperRef!: ElementRef<HTMLElement>;
 
-  micColor = signal('rgba(0, 255, 0, 0.7)'); // initial green color
+  micColor = signal('rgba(0, 255, 0, 0.7)');
 
-  constructor(private dialogRef: MatDialogRef<SpeechRecorderComponent>) {}
+  constructor(private dialogRef: MatDialogRef<VoiceRecorderComponent>) {}
 
   private animationFrame: number | null = null;
 
   ngAfterViewInit(): void {
-    // Ensure that the mic icon is initialized with the desired color
-    const micIconWrapper = document.querySelector('.mic-icon-wrapper') as HTMLElement;
-    if (micIconWrapper) {
-      micIconWrapper.style.color = 'rgb(0, 255, 0, 0.7)';
-    }
+    this.micWrapperRef.nativeElement.style.color = 'rgb(0, 255, 0, 0.7)';
   }
 
   startRecording(duration = 10000) {
     const circle = this.circleRef.nativeElement;
-    const micIconWrapper = document.querySelector('.mic-icon-wrapper') as HTMLElement;
 
     const radius = 47;
     const totalLength = 2 * Math.PI * radius; // = ~295.31
     circle.style.strokeDasharray = `${totalLength}`;
     circle.style.strokeDashoffset = `${totalLength}`;
 
+    this.animateProgress(circle, duration, totalLength);
+  }
+
+  stopRecording() {
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = null;
+    }
+  }
+
+  close(): void {
+    this.dialogRef.close();
+  }
+
+  private animateProgress(circle, duration, totalLength) {
     const start = performance.now();
 
     const animate = (now: number) => {
@@ -53,7 +63,6 @@ export class SpeechRecorderComponent {
 
       const color = `rgb(${red}, ${green}, 0)`;
 
-      console.log('color' + color);
       this.micColor.set(color);
 
       if (progress < 1) {
@@ -62,16 +71,5 @@ export class SpeechRecorderComponent {
     };
 
     this.animationFrame = requestAnimationFrame(animate);
-  }
-
-  stopRecording() {
-    if (this.animationFrame) {
-      cancelAnimationFrame(this.animationFrame);
-      this.animationFrame = null;
-    }
-  }
-
-  close(): void {
-    this.dialogRef.close();
   }
 }
