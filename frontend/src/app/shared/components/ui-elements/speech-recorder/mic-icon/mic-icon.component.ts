@@ -1,4 +1,4 @@
-import { Component, Input, Signal } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'ba-mic-icon',
@@ -8,5 +8,5 @@ import { Component, Input, Signal } from '@angular/core';
   styleUrl: './mic-icon.component.scss',
 })
 export class MicIconComponent {
-  @Input() color!: Signal<string>;
+  @Input() color!: string;
 }
