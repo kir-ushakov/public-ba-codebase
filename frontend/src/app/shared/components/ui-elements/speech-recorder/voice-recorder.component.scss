@@ -34,8 +34,6 @@
 }
 
 .recording-indicator {
-  width: clamp(60px, 40vw, 150px);
-  height: clamp(60px, 40vw, 150px);
   border-radius: 50%;
   background-color: black;
   display: flex;
@@ -67,8 +65,6 @@
   &__circle {
     stroke: yellow;
     stroke-linecap: butt;
-    stroke-dasharray: 295.31;
-    stroke-dashoffset: 295.31;
     transition: stroke 0.3s ease;
     //filter: drop-shadow(0 0 4px rgba(255, 255, 0, 0.8));
   }
