@@ -1,12 +1,12 @@
-import { ComponentType } from '@angular/cdk/portal';
-import { Injectable } from '@angular/core';
+import type { ComponentType } from '@angular/cdk/portal';
+import { inject, Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DialogService {
-  constructor(private dialog: MatDialog) {}
+  private dialog = inject(MatDialog);
 
   public showFullScreenDialog<C extends ComponentType<unknown>>(componentClass: C) {
     return this.dialog.open(componentClass, {
