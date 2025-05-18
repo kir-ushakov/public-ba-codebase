@@ -7,8 +7,9 @@ import { MatDialog } from '@angular/material/dialog';
 })
 export class DialogService {
   constructor(private dialog: MatDialog) {}
+
   public showFullScreenDialog<C extends ComponentType<unknown>>(componentClass: C) {
-    this.dialog.open(componentClass, {
+    return this.dialog.open(componentClass, {
       maxWidth: '100vw',
       width: '100vw',
       height: '100vh',
