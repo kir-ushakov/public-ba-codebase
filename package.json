@@ -1,6 +1,6 @@
 {
   "lint-staged": {
-    "frontend/**/*.{ts,js,json}": "npx --prefix frontend eslint --fix --config frontend/eslint.config.js",
+    "frontend/**/*.{ts,js,json}": "npx eslint --config frontend/eslint.config.mjs --no-warn-ignored",
     "backend/**/*.{ts,js,json}": "npx --prefix backend eslint --fix --config backend/eslint.config.js"
   },
   "devDependencies": {

@@ -1,17 +1,16 @@
-// eslint.config.js
-import tsParser from '@typescript-eslint/parser';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
-import angularPlugin from '@angular-eslint/eslint-plugin';
-import angularTemplatePlugin from '@angular-eslint/eslint-plugin-template';
-import prettierPlugin from 'eslint-plugin-prettier';
+const tsParser = (await import('@typescript-eslint/parser')).default;
+const tsPlugin = (await import('@typescript-eslint/eslint-plugin')).default;
+const angularPlugin = (await import('@angular-eslint/eslint-plugin')).default;
+const angularTemplate = (await import('@angular-eslint/eslint-plugin-template')).default;
+const prettierPlugin = (await import('eslint-plugin-prettier')).default;
 
 export default [
   {
-    files: ['src/app/**/*.ts'],
+    files: ['frontend/src/app/**/*.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: ['./tsconfig.json', './e2e/tsconfig.json'],
+        project: ['frontend/tsconfig.json', 'frontend/e2e/tsconfig.json'],
         sourceType: 'module',
       },
     },
@@ -101,9 +100,9 @@ export default [
     },
   },
   {
-    files: ['*.html'],
+    files: ['frontend/src/app/**/*.html'],
     plugins: {
-      '@angular-eslint/template': angularTemplatePlugin,
+      '@angular-eslint/template': angularTemplate,
       prettier: prettierPlugin,
     },
     rules: {
