@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 export class VoiceRecorderService {
   private mediaRecorder!: MediaRecorder;
   private audioChunks: Blob[] = [];
-  private stream!: MediaStream;
+  private stream: MediaStream;
   private _isRecording = false;
 
   get isRecording(): boolean {
@@ -25,6 +25,7 @@ export class VoiceRecorderService {
     };
 
     this.mediaRecorder.start();
+    this._isRecording = true;
   }
 
   stopRecording(): Promise<Blob> {
@@ -35,10 +36,11 @@ export class VoiceRecorderService {
         resolve(audioBlob);
       };
       this.mediaRecorder.stop();
+      this._isRecording = false;
     });
   }
 
-  private cleanup() {
+  private cleanup(): void {
     this.stream?.getTracks().forEach(track => track.stop());
   }
 }
