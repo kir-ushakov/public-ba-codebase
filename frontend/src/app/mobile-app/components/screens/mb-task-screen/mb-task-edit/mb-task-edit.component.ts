@@ -60,13 +60,13 @@ export class MbTaskEditComponent {
     const recorder = dialogRef.componentInstance as VoiceRecorderComponent;
 
     if (recorder) {
-      recorder.onStart.subscribe(() => {
+      recorder.started.subscribe(() => {
         this.store.dispatch(MbTaskScreenAction.StartVoiceRecording);
       });
-      recorder.onStop.subscribe(() => {
+      recorder.stopped.subscribe(() => {
         this.store.dispatch(MbTaskScreenAction.StopVoiceRecording);
       });
-      recorder.onCancel.subscribe(() => {
+      recorder.canceled.subscribe(() => {
         this.store.dispatch(MbTaskScreenAction.CancelVoiceRecording);
       });
     }

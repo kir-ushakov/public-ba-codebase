@@ -1,4 +1,5 @@
-import { Component, ElementRef, signal, ViewChild } from '@angular/core';
+import { Component, inject, output, signal, ViewChild } from '@angular/core';
+import type { ElementRef } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,6 +19,12 @@ const RECORDING_DURATION = 10000;
 export class VoiceRecorderComponent {
   @ViewChild('progressCircle', { static: false }) circleRef!: ElementRef<SVGCircleElement>;
 
+  readonly started = output<void>();
+  readonly stopped = output<void>();
+  readonly canceled = output<void>();
+
+  readonly dialogRef = inject(MatDialogRef<VoiceRecorderComponent>);
+
   radius = CIRCLE_RADIUS;
   micColor = signal(DEFAULT_MIC_COLOR);
 
@@ -29,34 +36,46 @@ export class VoiceRecorderComponent {
     return `clamp(60px, 40vw, ${this.radius / 2}px)`;
   }
 
-  constructor(private dialogRef: MatDialogRef<VoiceRecorderComponent>) {}
-
   private animationFrame: number | null = null;
+  private recordingTimeout: number | null = null;
 
-  ngOnInit() {}
+  ngAfterViewInit(): void {
+    this.startRecording();
+  }
 
-  ngAfterViewInit() {}
+  emitStart(): void {
+    this.started.emit();
+  }
 
-  startRecording(duration = RECORDING_DURATION) {
+  emitStop(): void {
+    this.started.emit();
+  }
+
+  emitCancel(): void {
+    this.canceled.emit();
+  }
+
+  startRecording(duration = RECORDING_DURATION): void {
+    this.emitStart();
     this.animateProgress(duration);
+    this.recordingTimeout = window.setTimeout(() => this.stopRecording(), duration);
   }
 
-  stopRecording() {
-    if (this.animationFrame) {
-      cancelAnimationFrame(this.animationFrame);
-      this.animationFrame = null;
-    }
+  stopRecording(): void {
+    this.emitStop();
+    this.finalize();
   }
 
-  close(): void {
-    this.dialogRef.close();
+  cancel(): void {
+    this.emitCancel();
+    this.finalize();
   }
 
   ngOnDestroy(): void {
     this.stopRecording();
   }
 
-  private animateProgress(duration: number) {
+  private animateProgress(duration: number): void {
     const circle = this.circleRef.nativeElement;
     const totalLength = 2 * Math.PI * this.radius;
     circle.style.strokeDasharray = `${totalLength}`;
@@ -64,7 +83,7 @@ export class VoiceRecorderComponent {
 
     const start = performance.now();
 
-    const animate = (now: number) => {
+    const animate = (now: number): void => {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
 
@@ -72,8 +91,9 @@ export class VoiceRecorderComponent {
       circle.style.strokeDashoffset = progress >= 1 ? '0' : `${totalLength * (1 - progress)}`;
 
       // Color interpolation (green → red)
-      const red = Math.round(255 * progress);
-      const green = Math.round(255 * (1 - progress));
+      const MAX_RGB_COLOR_VALUE = 255;
+      const red = Math.round(MAX_RGB_COLOR_VALUE * progress);
+      const green = Math.round(MAX_RGB_COLOR_VALUE * (1 - progress));
       circle.style.stroke = `rgb(${red}, ${green}, 0)`;
 
       const color = `rgb(${red}, ${green}, 0)`;
@@ -86,5 +106,16 @@ export class VoiceRecorderComponent {
     };
 
     this.animationFrame = requestAnimationFrame(animate);
+  }
+
+  private finalize(): void {
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = null;
+    }
+    if (this.recordingTimeout) {
+      clearTimeout(this.recordingTimeout);
+    }
+    this.dialogRef.close();
   }
 }
