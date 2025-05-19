@@ -1,5 +1,6 @@
-import { ETaskViewMode, IEditTaskFormData } from './mb-task-screen.state';
-import { Task } from 'src/app/shared/models/task.model';
+import type { ITaskEditFormData } from './mb-task-edit/mb-task-edit.component.interface';
+import type { ETaskViewMode } from './mb-task-screen.state';
+import type { Task } from 'src/app/shared/models/task.model';
 
 export namespace MbTaskScreenAction {
   export class Opened {
@@ -75,12 +76,30 @@ export namespace MbTaskScreenAction {
     static readonly type = '[MbTaskScreen] Side Menu Toggle';
   }
 
-  export class UpdateForm {
+  export class UpdateFormData {
     static readonly type = '[MbTaskScreen] Update Form';
 
     constructor(
       public valid: boolean,
-      public formData: IEditTaskFormData,
+      public formData: ITaskEditFormData,
     ) {}
+  }
+
+  export class StartVoiceRecording {
+    static readonly type = '[MbTaskScreen] Start Voice Recording';
+  }
+
+  export class StopVoiceRecording {
+    static readonly type = '[MbTaskScreen] Stop Voice Recording';
+  }
+
+  export class CancelVoiceRecording {
+    static readonly type = '[MbTaskScreen] Cancel Voice Recording';
+  }
+
+  export class VoiceConvertedToTextSuccessful {
+    static readonly type = '[MbTaskScreen] Voice Converted To Text Successful';
+
+    constructor(public text: string) {}
   }
 }

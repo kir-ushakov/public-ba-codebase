@@ -1,16 +1,20 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, DestroyRef, inject, output } from '@angular/core';
 import { MbTaskScreenAction } from '../mb-task-screen.actions';
-import { Store } from '@ngxs/store';
+import { Actions, ofActionDispatched, Store } from '@ngxs/store';
+import type { FormGroup } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
-import { IEditTaskFormData, MbTaskScreenState } from '../mb-task-screen.state';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime } from 'rxjs';
+import type { Observable } from 'rxjs';
+import { MbTaskScreenState } from '../mb-task-screen.state';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { VoiceRecorderComponent } from 'src/app/shared/components/ui-elements/speech-recorder/voice-recorder.component';
 import { DialogService } from 'src/app/shared/services/utility/dialog.service';
-import { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
+import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
+import type { ITaskEditFormData } from './mb-task-edit.component.interface';
 
 @Component({
   selector: 'ba-mb-task-edit',
@@ -28,58 +32,86 @@ import { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 export class MbTaskEditComponent {
   formValidStatus = output<boolean>();
   imageUri$: Observable<string> = inject(Store).select(MbTaskScreenState.imageUri);
+  form: FormGroup<FormControlsOf<ITaskEditFormData>>;
 
   MbTaskScreenState = MbTaskScreenState;
+
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly store = inject(Store);
+  private readonly dialogService = inject(DialogService);
+  private readonly fb = inject(FormBuilder);
+  private readonly actions$ = inject(Actions);
 
   private readonly baseTitleValidators = [Validators.minLength(5), Validators.maxLength(50)];
   private readonly requiredTitleValidators = [Validators.required, ...this.baseTitleValidators];
 
-  constructor(
-    private store: Store,
-    private dialogService: DialogService,
-    private fb: FormBuilder,
-  ) {}
-
-  ngOnInit() {
+  ngOnInit(): void {
+    this.buildForm();
     this.initSubscriptions();
   }
 
-  form = this.fb.group<FormControlsOf<IEditTaskFormData>>({
-    title: this.fb.control('', {
-      validators: this.requiredTitleValidators,
-      nonNullable: true,
-    }),
-  });
-
-  addPictureBtnPressed() {
+  addPictureBtnPressed(): void {
     this.store.dispatch(MbTaskScreenAction.AddPictureBtnPressed);
   }
 
-  onMicClick() {
-    this.dialogService.showFullScreenDialog(VoiceRecorderComponent);
+  onMicClick(): void {
+    const dialogRef = this.dialogService.showFullScreenDialog(VoiceRecorderComponent);
+
+    const recorder = dialogRef.componentInstance as VoiceRecorderComponent;
+
+    if (recorder) {
+      recorder.onStart.subscribe(() => {
+        this.store.dispatch(MbTaskScreenAction.StartVoiceRecording);
+      });
+      recorder.onStop.subscribe(() => {
+        this.store.dispatch(MbTaskScreenAction.StopVoiceRecording);
+      });
+      recorder.onCancel.subscribe(() => {
+        this.store.dispatch(MbTaskScreenAction.CancelVoiceRecording);
+      });
+    }
   }
 
-  private initSubscriptions() {
-    this.form.valueChanges.subscribe(() => {
-      this.store.dispatch(new MbTaskScreenAction.UpdateForm(this.form.valid, this.form.value));
-    });
+  private initSubscriptions(): void {
+    this.form.valueChanges
+      .pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.store.dispatch(
+          new MbTaskScreenAction.UpdateFormData(this.form.valid, this.form.value),
+        );
+      });
 
-    this.imageUri$.subscribe(imageUri => {
-      const isPictureAdded = !!imageUri;
+    this.imageUri$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(imageUri => {
+      const isPictureAdded = Boolean(imageUri);
       this.updateTitleValidation(!isPictureAdded);
     });
+
+    this.actions$
+      .pipe(
+        ofActionDispatched(MbTaskScreenAction.VoiceConvertedToTextSuccessful),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((payload: { text: string }) => {
+        this.form.controls.title.setValue(payload.text);
+      });
   }
 
-  private updateTitleValidation(isRequired: boolean) {
+  private updateTitleValidation(isRequired: boolean): void {
     const titleControl = this.form.get('title');
 
-    if (titleControl) {
-      if (isRequired) {
-        titleControl.setValidators(this.requiredTitleValidators);
-      } else {
-        titleControl.setValidators(this.baseTitleValidators);
-      }
-      titleControl.updateValueAndValidity();
-    }
+    isRequired
+      ? titleControl.setValidators(this.requiredTitleValidators)
+      : titleControl.setValidators(this.baseTitleValidators);
+
+    titleControl.updateValueAndValidity();
+  }
+
+  private buildForm(): void {
+    this.form = this.fb.group<FormControlsOf<ITaskEditFormData>>({
+      title: this.fb.control('', {
+        validators: this.requiredTitleValidators,
+        nonNullable: true,
+      }),
+    });
   }
 }

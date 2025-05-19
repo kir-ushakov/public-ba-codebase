@@ -1,6 +1,8 @@
 import { inject, Injectable } from '@angular/core';
-import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
-import { Task, ETaskStatus, defaultTask } from 'src/app/shared/models/task.model';
+import type { StateContext } from '@ngxs/store';
+import { State, Action, Selector, Store } from '@ngxs/store';
+import type { Task } from 'src/app/shared/models/task.model';
+import { ETaskStatus, defaultTask } from 'src/app/shared/models/task.model';
 import { MbTaskScreenAction } from './mb-task-screen.actions';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
@@ -9,7 +11,7 @@ import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.s
 import { SpeechToTextService } from 'src/app/shared/services/api/speech-to-text.service';
 import { VoiceRecorderService } from 'src/app/shared/services/pwa/voice-recorder.service';
 import { firstValueFrom } from 'rxjs';
-import { IEditTaskFormData } from './mb-task-edit/mb-task-edit.component.interface';
+import type { ITaskEditFormData } from './mb-task-edit/mb-task-edit.component.interface';
 
 export enum ETaskViewMode {
   Create = 'TASK_VIEW_MODE_CREATE',
@@ -21,7 +23,7 @@ export interface IMbTaskScreenStateModel {
   mode: ETaskViewMode;
   taskData: Task;
   taskViewForm: {
-    formData: IEditTaskFormData;
+    formData: ITaskEditFormData;
     status: boolean;
   };
   isSideMenuOpened: boolean;
@@ -32,7 +34,7 @@ const defaults = {
   taskViewForm: {
     formData: {
       title: '',
-    } as IEditTaskFormData,
+    },
     status: false,
   },
   taskData: defaultTask,
@@ -61,7 +63,7 @@ export class MbTaskScreenState {
   }
 
   @Selector()
-  static showCompleteTaskBtn(state: IMbTaskScreenStateModel) {
+  static showCompleteTaskBtn(state: IMbTaskScreenStateModel): boolean {
     if (state.mode === ETaskViewMode.View && state.taskData.status === ETaskStatus.Todo) {
       return true;
     }
@@ -89,7 +91,7 @@ export class MbTaskScreenState {
   }
 
   @Action(MbTaskScreenAction.Opened)
-  opened(ctx: StateContext<IMbTaskScreenStateModel>, { mode, taskId }) {
+  opened(ctx: StateContext<IMbTaskScreenStateModel>, { mode, taskId }): void {
     ctx.patchState({ mode: mode });
     if (taskId) {
       const actualTasks: Task[] = this.store.selectSnapshot(TasksState.actualTasks);
@@ -99,7 +101,7 @@ export class MbTaskScreenState {
   }
 
   @Action(MbTaskScreenAction.ApplyButtonPressed)
-  applyButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>) {
+  applyButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>): void {
     const state = ctx.getState();
     ctx.patchState({
       taskData: {
@@ -119,7 +121,7 @@ export class MbTaskScreenState {
   }
 
   @Action(MbTaskScreenAction.EditTaskOptionSelected)
-  editTask(ctx: StateContext<IMbTaskScreenStateModel>) {
+  editTask(ctx: StateContext<IMbTaskScreenStateModel>): void {
     const task = this.store.selectSnapshot(MbTaskScreenState.task);
 
     ctx.patchState({
@@ -133,41 +135,41 @@ export class MbTaskScreenState {
   }
 
   @Action(MbTaskScreenAction.CompleteTaskOptionSelected)
-  completeTask(ctx: StateContext<IMbTaskScreenStateModel>) {
+  completeTask(ctx: StateContext<IMbTaskScreenStateModel>): void {
     const taskUpdateData: Task = { ...ctx.getState().taskData, status: ETaskStatus.Done };
     this.updateAndClose(ctx, taskUpdateData);
   }
 
   @Action(MbTaskScreenAction.CancelTaskOptionSelected)
-  cancelTask(ctx: StateContext<IMbTaskScreenStateModel>) {
+  cancelTask(ctx: StateContext<IMbTaskScreenStateModel>): void {
     const task = ctx.getState().taskData;
     const taskUpdateData: Task = { ...task, status: ETaskStatus.Cancel };
     this.updateAndClose(ctx, taskUpdateData);
   }
 
   @Action(MbTaskScreenAction.DeleteTaskOptionSelected)
-  deleteTask(ctx: StateContext<IMbTaskScreenStateModel>) {
+  deleteTask(ctx: StateContext<IMbTaskScreenStateModel>): void {
     ctx.dispatch(new MbTaskScreenAction.DeleteTask(ctx.getState().taskData.id));
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
 
   @Action(MbTaskScreenAction.CancelButtonPressed)
-  cancelChanges(ctx: StateContext<IMbTaskScreenStateModel>) {
+  cancelChanges(ctx: StateContext<IMbTaskScreenStateModel>): void {
     ctx.dispatch(MbTaskScreenAction.Close);
   }
 
   @Action(MbTaskScreenAction.Close)
-  close(ctx: StateContext<IMbTaskScreenStateModel>) {
+  close(ctx: StateContext<IMbTaskScreenStateModel>): void {
     ctx.setState(defaults);
   }
 
   @Action(MbTaskScreenAction.HomeButtonPressed)
-  homeButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>) {
+  homeButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>): void {
     ctx.dispatch([MbTaskScreenAction.Close, AppAction.NavigateToHomeScreen]);
   }
 
   @Action(MbTaskScreenAction.AddPictureBtnPressed)
-  async selectPictureFromDevice(ctx: StateContext<IMbTaskScreenStateModel>) {
+  async selectPictureFromDevice(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
     const imageUri: string = await this.deviceCameraService.takePicture();
 
     const state: IMbTaskScreenStateModel = ctx.getState();
@@ -180,7 +182,7 @@ export class MbTaskScreenState {
   }
 
   @Action(MbTaskScreenAction.SideMenuToggle)
-  sideMenuToggled(ctx: StateContext<IMbTaskScreenStateModel>) {
+  sideMenuToggled(ctx: StateContext<IMbTaskScreenStateModel>): void {
     const isSideMenuOpened = ctx.getState().isSideMenuOpened;
     ctx.patchState({
       isSideMenuOpened: !isSideMenuOpened,
@@ -190,8 +192,8 @@ export class MbTaskScreenState {
   @Action(MbTaskScreenAction.UpdateFormData)
   updateFormDate(
     ctx: StateContext<IMbTaskScreenStateModel>,
-    { valid, formData }: { valid: boolean; formData: IEditTaskFormData },
-  ) {
+    { valid, formData }: { valid: boolean; formData: ITaskEditFormData },
+  ): void {
     ctx.patchState({
       taskViewForm: {
         formData: formData,
@@ -201,15 +203,19 @@ export class MbTaskScreenState {
   }
 
   @Action(MbTaskScreenAction.StartVoiceRecording)
-  async startVoiceRecording() {
-    if (this.voiceRecorderService.isRecording) return;
+  async startVoiceRecording(): Promise<void> {
+    if (this.voiceRecorderService.isRecording) {
+      return;
+    }
     await this.voiceRecorderService.startRecording();
   }
 
   @Action(MbTaskScreenAction.StopVoiceRecording)
-  async stopVoiceRecording(ctx: StateContext<IMbTaskScreenStateModel>) {
+  async stopVoiceRecording(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
     try {
-      if (!this.voiceRecorderService.isRecording) return;
+      if (!this.voiceRecorderService.isRecording) {
+        return;
+      }
       const record: Blob = await this.voiceRecorderService.stopRecording();
       const result = await firstValueFrom(this.speechToTextService.uploadAudio(record));
       ctx.dispatch(new MbTaskScreenAction.VoiceConvertedToTextSuccessful(result.transcript));
@@ -220,12 +226,14 @@ export class MbTaskScreenState {
   }
 
   @Action(MbTaskScreenAction.CancelVoiceRecording)
-  async cancelVoiceRecording() {
-    if (!this.voiceRecorderService.isRecording) return;
+  async cancelVoiceRecording(): Promise<void> {
+    if (!this.voiceRecorderService.isRecording) {
+      return;
+    }
     await this.voiceRecorderService.stopRecording();
   }
 
-  private updateAndClose(ctx: StateContext<IMbTaskScreenStateModel>, updated: Task) {
+  private updateAndClose(ctx: StateContext<IMbTaskScreenStateModel>, updated: Task): void {
     ctx.dispatch([new MbTaskScreenAction.UpdateTask(updated), MbTaskScreenAction.Close]);
   }
 }
