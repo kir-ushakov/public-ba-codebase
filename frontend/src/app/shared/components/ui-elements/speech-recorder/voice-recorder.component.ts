@@ -43,36 +43,20 @@ export class VoiceRecorderComponent {
     this.startRecording();
   }
 
-  emitStart(): void {
-    this.started.emit();
-  }
-
-  emitStop(): void {
-    this.started.emit();
-  }
-
-  emitCancel(): void {
-    this.canceled.emit();
-  }
-
   startRecording(duration = RECORDING_DURATION): void {
-    this.emitStart();
+    this.started.emit();
     this.animateProgress(duration);
     this.recordingTimeout = window.setTimeout(() => this.stopRecording(), duration);
   }
 
   stopRecording(): void {
-    this.emitStop();
+    this.stopped.emit();
     this.finalize();
   }
 
   cancel(): void {
-    this.emitCancel();
+    this.canceled.emit();
     this.finalize();
-  }
-
-  ngOnDestroy(): void {
-    this.stopRecording();
   }
 
   private animateProgress(duration: number): void {

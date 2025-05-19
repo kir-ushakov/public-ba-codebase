@@ -17,19 +17,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 3rem;
   }
 
-  .close-icon {
+  .close-icon,
+  .ok-icon {
     color: white;
     min-height: 7rem;
     min-width: 7rem;
     font-size: 4rem;
     overflow: visible;
     border-radius: 50%;
-    background-color: rgba(200, 203, 203, 0.075);
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .close-icon {
+    background-color: rgba(200, 203, 203, 0.075);
+  }
+
+  .ok-icon {
+    background-color: rgba(0, 200, 100, 0.35);
   }
 }
 
