@@ -42,10 +42,10 @@ export default [
       ], // Disallow magic numbers
       'prefer-arrow-callback': 'error', // Enforce arrow functions for callbacks
       'consistent-return': 'error', // Enforce consistent return values from functions
-      'no-unused-private-class-members': 'warn',
+      'no-unused-private-class-members': 'error',
 
-      '@typescript-eslint/no-explicit-any': 'warn', // Prevent usage of any type
-      '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }],
+      '@typescript-eslint/no-explicit-any': 'error', // Prevent usage of any type
+      '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: true }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }], // Unused variables warning
       '@typescript-eslint/consistent-type-imports': 'error', // Consistent imports
       '@typescript-eslint/member-ordering': [
@@ -69,10 +69,6 @@ export default [
         },
       ],
       '@typescript-eslint/no-namespace': 'off',
-      '@typescript-eslint/no-unnecessary-condition': [
-        'warn',
-        { allowConstantLoopConditions: true },
-      ],
       '@typescript-eslint/no-useless-constructor': 'error',
       '@typescript-eslint/prefer-literal-enum-member': 'warn',
 
