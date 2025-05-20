@@ -1,0 +1,43 @@
+<div
+  class="recording-indicator"
+  [ngStyle]="{
+    width: radiusCssValue,
+    height: radiusCssValue,
+  }"
+  (click)="startRecording()"
+>
+  <svg class="progress-ring" [attr.viewBox]="'0 0 ' + 2 * radius + ' ' + 2 * radius">
+    <defs>
+      <filter id="blurFilter" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" />
+      </filter>
+    </defs>
+    <circle
+      #progressCircle
+      class="progress-ring__circle"
+      [attr.cx]="radius"
+      [attr.cy]="radius"
+      [attr.r]="radius"
+      stroke-width="3"
+      fill="none"
+      filter="url(#blurFilter)"
+    />
+  </svg>
+  <div
+    class="mic-icon-wrapper"
+    [ngStyle]="{
+      width: micSizeCssValue,
+      height: micSizeCssValue,
+    }"
+  >
+    <ba-mic-icon [color]="micColor()"></ba-mic-icon>
+  </div>
+</div>
+<div class="recorder-bottom">
+  <button mat-icon-button (click)="cancel()" aria-label="Close">
+    <mat-icon class="close-icon">close</mat-icon>
+  </button>
+  <button mat-icon-button (click)="stopRecording()" aria-label="OK">
+    <mat-icon class="ok-icon">check</mat-icon>
+  </button>
+</div>

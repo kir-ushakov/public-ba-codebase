@@ -18,7 +18,7 @@ export default [
     rules: {
       ...eslintPluginTs.configs.recommended.rules,
       ...securityPlugin.configs.recommended.rules,
-      ...prettierConfig.rules, // <- This fixes the original problem
+      ...prettierConfig.rules,
 
       '@typescript-eslint/no-namespace': 'off',
       'arrow-body-style': 'off',
