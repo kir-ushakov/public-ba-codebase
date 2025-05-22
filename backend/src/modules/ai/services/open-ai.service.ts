@@ -2,6 +2,7 @@ import OpenAI, { toFile } from 'openai';
 import { Result } from '../../../shared/core/Result.js';
 import { ServiceError } from '../../../shared/core/service-error.js';
 import { ServiceErrorLevel } from '../../../shared/core/service-error-level.enum.js';
+import { serviceFail } from '../../../shared/core/service-fail.factory.js';
 import { extension } from 'mime-types';
 import { FileLike } from 'openai/uploads.js';
 
@@ -47,13 +48,12 @@ export class OpenAIService {
 
   private validateMimeType(mimeType: string): Result<never, ServiceError<EOpenAIServiceError>> {
     if (!OpenAIService.SUPPORTED_AUDIO_MIME_TYPES.includes(mimeType)) {
-      return Result.fail(
-        new ServiceError(
-          `Unsupported media type: ${mimeType}`,
-          EOpenAIServiceError.UnsupportedType,
-          undefined,
-          ServiceErrorLevel.Low,
-        ),
+      return serviceFail<EOpenAIServiceError>(
+        `Unsupported media type: ${mimeType}`,
+        EOpenAIServiceError.UnsupportedType,
+        {
+          level: ServiceErrorLevel.Low,
+        },
       );
     }
     return Result.ok();
@@ -67,13 +67,12 @@ export class OpenAIService {
   ): Result<string, ServiceError<EOpenAIServiceError>> {
     const ext = extension(mimeType);
     if (!ext) {
-      return Result.fail(
-        new ServiceError(
-          `Could not derive extension for: ${mimeType}`,
-          EOpenAIServiceError.UnsupportedType,
-          undefined,
-          ServiceErrorLevel.Low,
-        ),
+      return serviceFail<EOpenAIServiceError>(
+        `Could not derive extension for: ${mimeType}`,
+        EOpenAIServiceError.UnsupportedType,
+        {
+          level: ServiceErrorLevel.Low,
+        },
       );
     }
     const filename = `${baseName}.${ext}`;
@@ -87,13 +86,12 @@ export class OpenAIService {
 
   private getClientOrFail(): Result<OpenAI, ServiceError<EOpenAIServiceError>> {
     if (!this.apiKey) {
-      return Result.fail(
-        new ServiceError(
-          'OpenAIService requires an apiKey',
-          EOpenAIServiceError.TranscriptAPIRequestFailed,
-          undefined,
-          ServiceErrorLevel.Critical,
-        ),
+      return serviceFail<EOpenAIServiceError>(
+        'OpenAIService requires an apiKey',
+        EOpenAIServiceError.TranscriptAPIRequestFailed,
+        {
+          level: ServiceErrorLevel.Critical,
+        },
       );
     }
     return Result.ok(new OpenAI({ apiKey: this.apiKey }));
@@ -111,13 +109,12 @@ export class OpenAIService {
       });
       return Result.ok(transcription.text);
     } catch (error) {
-      return Result.fail(
-        new ServiceError(
-          'OpenAI transcription API Request Failed',
-          EOpenAIServiceError.TranscriptAPIRequestFailed,
-          error,
-          this.mapOpenAIErrorToLevel(error),
-        ),
+      return serviceFail<EOpenAIServiceError>(
+        'OpenAI transcription API Request Failed',
+        EOpenAIServiceError.TranscriptAPIRequestFailed,
+        {
+          level: this.mapOpenAIErrorToLevel(error),
+        },
       );
     }
   }
