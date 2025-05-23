@@ -1,10 +1,12 @@
 import { AppError } from './app-error.js';
+import { ServiceErrorLevel } from './service-error-level.enum.js';
 
 export class ServiceError<U = string> extends AppError<U> {
   constructor(
     message: string,
     code: U,
     public readonly error?: unknown,
+    public readonly level?: ServiceErrorLevel,
     public readonly details?: Record<string, unknown>,
   ) {
     super(message, code, {
