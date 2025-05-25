@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import { speechToTextController } from './usecases/speech-to-text';
+import { speechToTextController } from './usecases/speech-to-text/index.js';
+import { asyncHandler } from '../../shared/core/async-handler.function.js';
 
 const aIRouter: Router = Router();
 
-aIRouter.post('/speech-to-text', (req, res, next) =>
-  speechToTextController.execute(req, res, next),
-);
+aIRouter.post('/speech-to-text', asyncHandler(speechToTextController.execute));
 
 export { aIRouter };

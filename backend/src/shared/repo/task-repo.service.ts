@@ -3,7 +3,7 @@ import { IDbModels } from '../infra/database/mongodb/index.js';
 import { TaskDocument } from '../infra/database/mongodb/task.model.js';
 import { TaskMapper } from '../mappers/task.mapper.js';
 import { ServiceError } from '../core/service-error.js';
-import { Result } from '../core/Result.js';
+import { Result } from '../core/result.js';
 import { serviceFail } from '../core/service-fail.factory.js';
 
 export enum ETaskRepoServiceError {

@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import { GaxiosResponse } from 'googleapis-common';
 import { UseCase } from '../../../../shared/core/UseCase.js';
-import { Result } from '../../../../shared/core/Result.js';
+import { Result } from '../../../../shared/core/result.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { GoogleDriveService } from '././../../../integrations/google/services/google-drive.service.js';
 import { ImageResizeService } from '../../services/image-resize.service.js';
@@ -33,7 +33,10 @@ export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImag
     return Result.ok<GaxiosResponse<Readable>, never>(file);
   }
 
-  private async resize(file: GaxiosResponse<Readable>, width: number) {
+  private async resize(
+    file: GaxiosResponse<Readable>,
+    width: number,
+  ): Promise<GaxiosResponse<Readable>> {
     const resizeResult: { resized: Readable; contentType: string } =
       await this._imageResizeService.resizeImage(file.data, width);
     file.data = resizeResult.resized;

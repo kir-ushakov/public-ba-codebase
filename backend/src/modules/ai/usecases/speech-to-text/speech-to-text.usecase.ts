@@ -1,4 +1,4 @@
-import { Result } from '../../../../shared/core/Result.js';
+import { Result } from '../../../../shared/core/result.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { SpeechToTextRequestDTO, SpeechToTextResponseDTO } from './speech-to-text.dto.js';
 import { EOpenAIServiceError, OpenAIService } from '../../services/open-ai.service.js';

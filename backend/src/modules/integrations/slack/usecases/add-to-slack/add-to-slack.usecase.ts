@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { OauthV2AccessResponse, WebClient } from '@slack/web-api';
-import { Result } from '../../../../../shared/core/Result.js';
+import { Result } from '../../../../../shared/core/result.js';
 import { UseCase } from '../../../../../shared/core/UseCase.js';
 import { SlackOAuthAccessRepo } from '../../../../../shared/repo/slack-oauth-access.repo.js';
 import {

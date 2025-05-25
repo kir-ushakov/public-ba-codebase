@@ -1,4 +1,4 @@
-import { Result } from '../../../../shared/core/Result.js';
+import { Result } from '../../../../shared/core/result.js';
 import { ServiceError } from '../../../../shared/core/service-error.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { EHttpStatus } from '../../../../shared/infra/http/models/base-controller.js';

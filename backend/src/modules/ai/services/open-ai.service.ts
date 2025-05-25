@@ -1,5 +1,5 @@
 import OpenAI, { toFile } from 'openai';
-import { Result } from '../../../shared/core/Result.js';
+import { Result } from '../../../shared/core/result.js';
 import { ServiceError } from '../../../shared/core/service-error.js';
 import { ServiceErrorLevel } from '../../../shared/core/service-error-level.enum.js';
 import { serviceFail } from '../../../shared/core/service-fail.factory.js';

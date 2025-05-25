@@ -3,7 +3,7 @@ import {
   IReleaseClientIdRequestDTO,
   IReleaseClientIdResponseDTO,
 } from './release-client-id.dto.js';
-import { Result } from '../../../../shared/core/Result.js';
+import { Result } from '../../../../shared/core/result.js';
 import { Client, IClientProps } from '../../../../shared/domain/models/client.js';
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';

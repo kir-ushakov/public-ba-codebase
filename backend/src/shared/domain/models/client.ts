@@ -1,6 +1,6 @@
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
-import { Result } from '../../core/Result.js';
+import { Result } from '../../core/result.js';
 
 export interface IClientProps {
   userId: string;
@@ -20,10 +20,7 @@ export class Client extends AggregateRoot<IClientProps> {
     return this.props.syncTime;
   }
 
-  public static create(
-    props: IClientProps,
-    id?: UniqueEntityID
-  ): Result<Client> {
+  public static create(props: IClientProps, id?: UniqueEntityID): Result<Client> {
     const client = new Client(props, id);
 
     return Result.ok<Client>(client);
