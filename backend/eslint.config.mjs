@@ -8,6 +8,10 @@ export default [
     files: ['**/*.ts'],
     languageOptions: {
       parser: tsParser,
+      parserOptions: {
+        project: './backend/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+      },
       ecmaVersion: 'latest',
       sourceType: 'module',
     },
