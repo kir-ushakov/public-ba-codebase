@@ -1,9 +1,16 @@
 import { Router } from 'express';
 import { speechToTextController } from './usecases/speech-to-text/index.js';
 import { asyncHandler } from '../../shared/core/async-handler.function.js';
+import multer from 'multer';
 
 const aIRouter: Router = Router();
 
-aIRouter.post('/speech-to-text', asyncHandler(speechToTextController.execute));
+const upload = multer();
+
+aIRouter.post(
+  '/speech-to-text',
+  upload.single('file'),
+  asyncHandler(speechToTextController.execute.bind(speechToTextController)),
+);
 
 export { aIRouter };

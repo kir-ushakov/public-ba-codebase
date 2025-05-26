@@ -1,5 +1,5 @@
 export interface SpeechToTextRequestDTO {
-  file: Blob;
+  audio: Blob;
 }
 
 export interface SpeechToTextResponseDTO {

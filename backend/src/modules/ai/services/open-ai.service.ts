@@ -13,30 +13,33 @@ export enum EOpenAIServiceError {
 
 export class OpenAIService {
   static readonly SUPPORTED_AUDIO_MIME_TYPES = [
-    'audio/mpeg',
+    'audio/flac',
     'audio/mp4',
+    'audio/x-m4a',
+    'audio/mpeg',
     'audio/mpga',
     'audio/wav',
     'audio/x-wav',
     'audio/webm',
+    'audio/ogg',
   ];
   static readonly MODEL_WHISPER_V1 = 'whisper-1';
 
   constructor(private readonly apiKey: string) {}
 
   async transcribeAudioFile(
-    record: Blob,
+    audio: Blob,
   ): Promise<Result<string, ServiceError<EOpenAIServiceError>>> {
-    const mimeType = record.type;
+    const mimeType = audio.type;
 
     const mimeValidation = this.validateMimeType(mimeType);
     if (mimeValidation.isFailure) return mimeValidation;
 
-    const filenameOrError = this.createFilenameFromMimeType(mimeType, 'recording');
+    const filenameOrError = this.createFilenameFromMimeType(mimeType, 'audio');
     if (filenameOrError.isFailure) return filenameOrError;
     const filename = filenameOrError.getValue();
 
-    const filelike = await this.convertBlobToFile(record, filename);
+    const filelike = await this.convertBlobToFile(audio, filename);
 
     const clientOrFail = this.getClientOrFail();
     if (clientOrFail.isFailure)
@@ -65,7 +68,13 @@ export class OpenAIService {
     mimeType: string,
     baseName: string,
   ): Result<string, ServiceError<EOpenAIServiceError>> {
-    const ext = extension(mimeType);
+    // Override map for OpenAI-supported formats
+    const overrides: Record<string, string> = {
+      'audio/webm': 'webm',
+    };
+
+    const ext = overrides[mimeType] ?? extension(mimeType);
+
     if (!ext) {
       return serviceFail<EOpenAIServiceError>(
         `Could not derive extension for: ${mimeType}`,
@@ -85,16 +94,19 @@ export class OpenAIService {
   }
 
   private getClientOrFail(): Result<OpenAI, ServiceError<EOpenAIServiceError>> {
-    if (!this.apiKey) {
+    try {
+      return Result.ok(new OpenAI({ apiKey: this.apiKey }));
+    } catch (error) {
+      console.error(error);
       return serviceFail<EOpenAIServiceError>(
-        'OpenAIService requires an apiKey',
+        'OpenAI transcription API Request Failed',
         EOpenAIServiceError.TranscriptAPIRequestFailed,
         {
+          error: error,
           level: ServiceErrorLevel.Critical,
         },
       );
     }
-    return Result.ok(new OpenAI({ apiKey: this.apiKey }));
   }
 
   private async transcribeAudio(
@@ -109,6 +121,7 @@ export class OpenAIService {
       });
       return Result.ok(transcription.text);
     } catch (error) {
+      console.error(error);
       return serviceFail<EOpenAIServiceError>(
         'OpenAI transcription API Request Failed',
         EOpenAIServiceError.TranscriptAPIRequestFailed,

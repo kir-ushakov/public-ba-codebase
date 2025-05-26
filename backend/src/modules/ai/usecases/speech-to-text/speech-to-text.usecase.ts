@@ -11,7 +11,7 @@ export class SpeechToText implements UseCase<SpeechToTextRequest, Promise<Speech
   constructor(private readonly openAIService: OpenAIService) {}
 
   public async execute(req: SpeechToTextRequest): Promise<SpeechToTextResponse> {
-    const textOrError = await this.openAIService.transcribeAudioFile(req.file);
+    const textOrError = await this.openAIService.transcribeAudioFile(req.audio);
     if (textOrError.isFailure) {
       switch (textOrError.error.code) {
         case EOpenAIServiceError.UnsupportedType:
