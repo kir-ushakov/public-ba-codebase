@@ -5,7 +5,7 @@ import { ServiceErrorLevel } from './service-error-level.enum.js';
 export interface FailOptions {
   error?: unknown;
   level?: ServiceErrorLevel;
-  details?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
 
 export function serviceFail<E>(
@@ -13,7 +13,7 @@ export function serviceFail<E>(
   errorCode: E,
   options: FailOptions = {},
 ): Result<never, ServiceError<E>> {
-  const { error, level = ServiceErrorLevel.Medium, details } = options;
+  const { error, level = ServiceErrorLevel.Medium, metadata } = options;
 
-  return Result.fail(new ServiceError(message, errorCode, error, level, details));
+  return Result.fail(new ServiceError(message, errorCode, error, level, metadata));
 }
