@@ -8,7 +8,7 @@ import { retry } from '../../../shared/infra/http/utils/retry-helper.function.js
 import { AudioPreprocessorService } from '../../../shared/services/audio/audio-preprocessor.service.js';
 import { BufferUtilsService } from '../../../shared/services/files/buffer-utils.service.js';
 import { FilenameUtilsService } from '../../../shared/services/files/filename-utils.service.js';
-import { wrapServiceError } from '../../../shared/core/utils/wrap-service-error.functions.js';
+import { wrapServiceError } from '../../../shared/utils/wrap-service-error.functions.js';
 
 export enum EOpenAIServiceError {
   UnsupportedType = 'OPEN_AI_SERVICE_ERROR__UNSUPPORTED_TYPE',
