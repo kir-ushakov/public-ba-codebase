@@ -4,19 +4,39 @@ import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { EHttpStatus } from '../../../../shared/infra/http/models/base-controller.js';
 import { EOpenAIServiceError } from '../../services/open-ai.service.js';
 
-type ESpeechToTextError = EOpenAIServiceError;
-export class SpeechToTextError extends UseCaseError<ESpeechToTextError> {}
+export enum SpeechToTextErrorCode {
+  UnsupportedMimeType = 'SPEECH_TO_TEXT_ERROR__UNSUPPORTED_MIME_TYPE',
+  TranscribeAudioFileFailed = 'SPEECH_TO_TEXT_ERROR__TRANSCRIBE_FAILED',
+}
+
+export class SpeechToTextError extends UseCaseError<SpeechToTextErrorCode> {}
 
 export namespace SpeechToTextErrors {
   export class UnsupportedMimeType extends Result<never, SpeechToTextError> {
     constructor(error: ServiceError<EOpenAIServiceError>) {
-      super(false, new SpeechToTextError(error.code, error.message, EHttpStatus.BadRequest));
+      super(
+        false,
+        new SpeechToTextError(
+          SpeechToTextErrorCode.UnsupportedMimeType,
+          error.message,
+          EHttpStatus.BadRequest,
+          error,
+        ),
+      );
     }
   }
 
   export class TranscribeAudioFileFailed extends Result<never, SpeechToTextError> {
     constructor(error: ServiceError<EOpenAIServiceError>) {
-      super(false, new SpeechToTextError(error.code, error.message, EHttpStatus.BadGateway));
+      super(
+        false,
+        new SpeechToTextError(
+          SpeechToTextErrorCode.TranscribeAudioFileFailed,
+          error.message,
+          EHttpStatus.BadGateway,
+          error,
+        ),
+      );
     }
   }
 }
