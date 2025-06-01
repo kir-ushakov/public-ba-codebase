@@ -19,7 +19,7 @@ export class SpeechToText implements UseCase<SpeechToTextRequest, Promise<Speech
       switch (textOrError.error.code) {
         case OpenAISpeechTranscriberError.UnsupportedType:
           return new SpeechToTextErrors.UnsupportedMimeType(textOrError.error);
-        case OpenAISpeechTranscriberError.TranscriptAPIRequestFailed:
+        default:
           return new SpeechToTextErrors.TranscribeAudioFileFailed(textOrError.error);
       }
     }
