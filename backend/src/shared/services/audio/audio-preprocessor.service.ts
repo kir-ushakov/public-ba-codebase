@@ -1,10 +1,10 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { Readable } from 'stream';
 import concat from 'concat-stream';
-import { Result } from '../../core/result';
-import { ServiceError } from '../../core/service-error';
-import { serviceFail } from '../../core/service-fail.factory';
-import { isErrorWithCode } from '../../types/guards/is-error-with-code';
+import { Result } from '../../core/result.js';
+import { ServiceError } from '../../core/service-error.js';
+import { serviceFail } from '../../core/service-fail.factory.js';
+import { isErrorWithCode } from '../../types/guards/is-error-with-code.js';
 
 export enum EAudioPreprocessorError {
   InvalidFormat = 'AUDIO_PREPROCESSOR_ERROR__INVALID_FORMAT',
