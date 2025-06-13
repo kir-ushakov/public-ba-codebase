@@ -17,7 +17,7 @@ export class OpenAIClientService {
     } catch (error) {
       console.error(error);
       return serviceFail<OpenAIClientError>(
-        'OpenAI transcription API Request Failed',
+        'Init OpenAI Client Failed',
         OpenAIClientError.ClientInitializationFailed,
         {
           error: error,
