@@ -7,7 +7,8 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node"]
   },
   "lib": ["es2022"],
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]

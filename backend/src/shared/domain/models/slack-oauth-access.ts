@@ -1,5 +1,5 @@
 import { AggregateRoot } from '../AggregateRoot.js';
-import { Result } from '../../core/Result.js';
+import { Result } from '../../core/result.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 
 export interface ISlackOAuthAccessProps {
@@ -43,7 +43,7 @@ export class SlackOAuthAccess extends AggregateRoot<ISlackOAuthAccessProps> {
 
   public static create(
     props: ISlackOAuthAccessProps,
-    id?: UniqueEntityID
+    id?: UniqueEntityID,
   ): CreateSlackOAuthAccessResult {
     const slackOAuthAccess = new SlackOAuthAccess(props, id);
 

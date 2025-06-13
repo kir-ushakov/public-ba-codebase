@@ -3,7 +3,7 @@ import { PassportStatic } from 'passport';
 import { Profile } from 'passport-google-oauth20';
 import { v4 as uuidv4 } from 'uuid';
 import { UseCase } from '../../../../shared/core/UseCase.js';
-import { Result } from '../../../../shared/core/Result.js';
+import { Result } from '../../../../shared/core/result.js';
 import { GoogleAuthError, GoogleAuthErrors } from './google-auth.errors.js';
 import { LoginResponseDTO } from '../login/login.dto.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
@@ -33,30 +33,35 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
   }
 
   public execute(request: GoogleAuthRequest): Promise<GoogleAuthResult> {
-    return new Promise<GoogleAuthResult>(async (resolve, reject) => {
+    return new Promise<GoogleAuthResult>((resolve, reject) => {
+      const handleGoogleCallback = async (err: unknown, res: GoogleProfileWithTokens) => {
+        if (err) return reject(err);
+
+        const profile = res.profile;
+        const tokens = res.tokens;
+
+        const userOrError = await this.findOrCreateUser(profile, tokens);
+        if (userOrError.isFailure) {
+          return resolve(userOrError as Result<never, GoogleAuthError>);
+        }
+
+        const user = userOrError.getValue();
+
+        const loginResponseDto = await this.loginService.login(
+          user,
+          request.context.req,
+          request.context.res,
+        );
+
+        return resolve(Result.ok(loginResponseDto));
+      };
+
       try {
-        this.passport.authenticate('google', async (err, res: GoogleProfileWithTokens) => {
-          if (err) {
-            return reject(err);
-          }
-          const profile = res.profile;
-          const tokens = res.tokens;
-          const userOrError = await this.findOrCreateUser(profile, tokens);
-          if (userOrError.isFailure) {
-            return resolve(userOrError as Result<never, GoogleAuthError>);
-          }
-          let user: User = userOrError.getValue() as User;
-
-          const loginResponseDto: LoginResponseDTO = await this.loginService.login(
-            user,
-            request.context.req,
-            request.context.res,
-          );
-
-          return resolve(Result.ok(loginResponseDto));
+        this.passport.authenticate('google', (err, res: GoogleProfileWithTokens) => {
+          handleGoogleCallback(err, res).catch(reject);
         })(request.context.req, request.context.res, request.context.next);
       } catch (err) {
-        return reject(err);
+        reject(err);
       }
     });
   }

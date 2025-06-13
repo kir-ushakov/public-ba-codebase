@@ -1,6 +1,6 @@
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
-import { Result } from '../../core/Result.js';
+import { Result } from '../../core/result.js';
 import { Guard } from '../../core/guard.js';
 import { DomainError } from '../../core/domain-error.js';
 

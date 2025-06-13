@@ -3,7 +3,8 @@ import { IDbModels } from '../infra/database/mongodb/index.js';
 import { TaskDocument } from '../infra/database/mongodb/task.model.js';
 import { TaskMapper } from '../mappers/task.mapper.js';
 import { ServiceError } from '../core/service-error.js';
-import { Result } from '../core/Result.js';
+import { Result } from '../core/result.js';
+import { serviceFail } from '../core/service-fail.factory.js';
 
 export enum ETaskRepoServiceError {
   UserTaskNotFound = 'TASK_REPO_SERVICE_ERROR__USER_TASK_NOT_FOUND',
@@ -48,11 +49,9 @@ export class TaskRepoService {
     const taskDocument = await TaskModel.findOne(params).lean();
 
     if (!taskDocument)
-      return Result.fail(
-        new ServiceError(
-          `The task with id = "${taskId}" for user with id = ${userId} dosn't exists`,
-          ETaskRepoServiceError.UserTaskNotFound,
-        ),
+      return serviceFail<ETaskRepoServiceError>(
+        `The task with id = "${taskId}" for user with id = ${userId} dosn't exists`,
+        ETaskRepoServiceError.UserTaskNotFound,
       );
 
     const task = TaskMapper.toDomain(taskDocument) as Task;

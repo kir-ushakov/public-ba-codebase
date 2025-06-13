@@ -9,7 +9,7 @@ import {
   IVerificationTokenProps,
   VerificationToken,
 } from '../domain/values/user/verification-token.js';
-import { Result } from '../core/Result.js';
+import { Result } from '../core/result.js';
 
 export class UserRepo {
   private _models: IDbModels;
@@ -34,16 +34,13 @@ export class UserRepo {
 
     const userDocument: UserDocument = new UserModel(userData);
 
-    return UserMapper.toDomain((await UserModel.register(userDocument, password)));
+    return UserMapper.toDomain(await UserModel.register(userDocument, password));
   }
 
-  public async findUserById(
-    userId: mongoose.Types.ObjectId | string
-  ): Promise<User> {
+  public async findUserById(userId: mongoose.Types.ObjectId | string): Promise<User> {
     const UserModel = this._models.UserModel;
     // TODO: Do we need to convert string -> ObjectId ? or we can use string directly?
-    userId =
-      typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
+    userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
     const userDocument: UserDocument = await UserModel.findOne({ _id: userId });
     const found = !!userDocument === true;
     if (!found) throw new Error(`User with id ${userId} not found`);
@@ -53,8 +50,9 @@ export class UserRepo {
 
   public async getTokenByTokenId(tokenId: string): Promise<VerificationToken> {
     const VerificationTokenModel = this._models.VerificationTokenModel;
-    const tokenDocument: VerificationTokenDocument =
-      await VerificationTokenModel.findOne({ token: tokenId });
+    const tokenDocument: VerificationTokenDocument = await VerificationTokenModel.findOne({
+      token: tokenId,
+    });
 
     if (!tokenDocument) return null;
 
@@ -64,8 +62,7 @@ export class UserRepo {
       createdAt: tokenDocument.createdAt,
     };
 
-    const tokenOrError: Result<VerificationToken> =
-      VerificationToken.create(props);
+    const tokenOrError: Result<VerificationToken> = VerificationToken.create(props);
     return tokenOrError.isSuccess ? tokenOrError.getValue() : null;
   }
 
@@ -78,11 +75,9 @@ export class UserRepo {
     const filter = { _id: userId };
     const update = { ...userPersistent };
 
-    const updatedUser: UserDocument = await UserModel.findOneAndUpdate(
-      filter,
-      update,
-      { useFindAndModify: false }
-    );
+    const updatedUser: UserDocument = await UserModel.findOneAndUpdate(filter, update, {
+      useFindAndModify: false,
+    });
 
     return updatedUser;
   }

@@ -1,4 +1,4 @@
-import { Result } from '../../core/Result.js';
+import { Result } from '../../core/result.js';
 import { GoogleAuthTokens } from '../../infra/auth/google.strategy.js';
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
@@ -16,6 +16,7 @@ export interface UserProps {
 }
 
 export interface UserPersistent {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _id?: string | any; // used 'any' to support compatibility with '_id?: T;' property of class mongoose Document
   username: string;
   firstName: string;

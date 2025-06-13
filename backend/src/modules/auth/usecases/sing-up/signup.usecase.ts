@@ -1,5 +1,5 @@
 import { UseCase } from '../../../../shared/core/UseCase.js';
-import { Result } from '../../../../shared/core/Result.js';
+import { Result } from '../../../../shared/core/result.js';
 import { SignUpRequestDTO, SignUpResponseDTO } from './signup.dto.js';
 import { SignUpError, SignUpErrors } from './signup.errors.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';

@@ -8,6 +8,10 @@ export default [
     files: ['**/*.ts'],
     languageOptions: {
       parser: tsParser,
+      parserOptions: {
+        project: './backend/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+      },
       ecmaVersion: 'latest',
       sourceType: 'module',
     },
@@ -19,8 +23,10 @@ export default [
       ...eslintPluginTs.configs.recommended.rules,
       ...securityPlugin.configs.recommended.rules,
       ...prettierConfig.rules,
-
       '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'warn',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
       'arrow-body-style': 'off',
       'prefer-arrow-callback': 'off',
     },

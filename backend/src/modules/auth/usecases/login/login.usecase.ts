@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { PassportStatic } from 'passport';
-import { Result } from '../../../../shared/core/Result.js';
+import { Result } from '../../../../shared/core/result.js';
 import { LoginResponseDTO } from './login.dto.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
@@ -23,31 +23,34 @@ export class LoginUsecase implements UseCase<LoginRequest, Promise<LoginResult>>
   }
 
   public execute(request: LoginRequest): Promise<LoginResult> {
-    return new Promise<LoginResult>(async (resolve, reject) => {
+    return new Promise<LoginResult>((resolve, reject) => {
+      const handleLocalCallback = async (err: unknown, userPersistent: UserPersistent | false) => {
+        if (err) return reject(err);
+
+        if (!userPersistent) {
+          return resolve(new LoginError.LoginFailed());
+        }
+
+        if (!userPersistent.verified) {
+          return resolve(new LoginError.UserAccountNotVerified());
+        }
+
+        const user = UserMapper.toDomain(userPersistent);
+        const loginResponseDto = await this.loginService.login(
+          user,
+          request.context.req,
+          request.context.res,
+        );
+
+        return resolve(Result.ok(loginResponseDto));
+      };
+
       try {
-        this.passport.authenticate('local', async (err, userPersistent: UserPersistent) => {
-          if (err) {
-            return reject(err);
-          }
-
-          if (!userPersistent) {
-            return resolve(new LoginError.LoginFailed());
-          }
-
-          if (!userPersistent.verified) {
-            return resolve(new LoginError.UserAccountNotVerified());
-          }
-
-          const user = UserMapper.toDomain(userPersistent);
-          const loginResponseDto: LoginResponseDTO = await this.loginService.login(
-            user,
-            request.context.req,
-            request.context.res,
-          );
-          return resolve(Result.ok(loginResponseDto));
+        this.passport.authenticate('local', (err, userPersistent) => {
+          handleLocalCallback(err, userPersistent).catch(reject);
         })(request.context.req, request.context.res, request.context.next);
       } catch (err) {
-        return reject(err);
+        reject(err);
       }
     });
   }

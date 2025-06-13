@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 
 import { UseCase } from '../../../../shared/core/UseCase.js';
-import { Result } from '../../../../shared/core/Result.js';
+import { Result } from '../../../../shared/core/result.js';
 import { UploadImageError, UploadImageErrors } from './upload-image.errors.js';
 import { GoogleDriveService } from '././../../../integrations/google/services/google-drive.service.js';
 import { User } from '../../../../shared/domain/models/user.js';

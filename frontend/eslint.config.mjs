@@ -47,7 +47,6 @@ export default [
       '@typescript-eslint/no-explicit-any': 'error', // Prevent usage of any type
       '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: true }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }], // Unused variables warning
-      '@typescript-eslint/consistent-type-imports': 'error', // Consistent imports
       '@typescript-eslint/member-ordering': [
         'error',
         {
