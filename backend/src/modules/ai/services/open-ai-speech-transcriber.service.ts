@@ -5,7 +5,6 @@ import { ServiceErrorLevel } from '../../../shared/core/service-error-level.enum
 import { serviceFail } from '../../../shared/core/service-fail.factory.js';
 import { FileLike } from 'openai/uploads.js';
 import { retry } from '../../../shared/infra/http/utils/retry-helper.function.js';
-import { AudioPreprocessorService } from '../../../shared/services/audio/audio-preprocessor.service.js';
 import { BufferUtilsService } from '../../../shared/services/files/buffer-utils.service.js';
 import { FilenameUtilsService } from '../../../shared/services/files/filename-utils.service.js';
 import { wrapServiceError } from '../../../shared/utils/wrap-service-error.functions.js';
@@ -35,10 +34,7 @@ export class OpenAISpeechTranscriberService {
   };
   static readonly MODEL_WHISPER_V1 = 'whisper-1';
 
-  constructor(
-    private readonly openAIClientService: OpenAIClientService,
-    private readonly audioPreprocessorService: AudioPreprocessorService,
-  ) {}
+  constructor(private readonly openAIClientService: OpenAIClientService) {}
 
   async transcribeAudioFile(
     audio: Blob,
@@ -54,15 +50,7 @@ export class OpenAISpeechTranscriberService {
 
     const buffer = await BufferUtilsService.convertBlobToBuffer(audio);
 
-    let processedBuffer = buffer;
-    const preprocessedResult = await this.audioPreprocessorService.removeSilence(buffer, filename);
-    if (preprocessedResult.isSuccess) {
-      processedBuffer = preprocessedResult.getValue();
-    } else {
-      console.warn('Silence removal failed, proceeding with original audio.');
-    }
-
-    const fileResult = await this.convertBufferToFileOrFail(processedBuffer, filename);
+    const fileResult = await this.convertBufferToFileOrFail(buffer, filename);
     if (fileResult.isFailure) return Result.fail(fileResult.error);
     const filelike = fileResult.getValue();
 
@@ -147,9 +135,11 @@ export class OpenAISpeechTranscriberService {
         client.audio.transcriptions.create({
           file: filelike,
           model: OpenAISpeechTranscriberService.MODEL_WHISPER_V1,
-          temperature: 0.2,
+          temperature: 0,
         }),
       );
+      console.log('++++++++++ !!!');
+      console.log(filelike.type);
       return Result.ok(transcription.text);
     } catch (error) {
       console.error(error);
@@ -158,12 +148,12 @@ export class OpenAISpeechTranscriberService {
         OpenAISpeechTranscriberError.TranscriptAPIRequestFailed,
         {
           level: this.mapOpenAIErrorToLevel(error),
+          error: error,
           metadata: {
             model: OpenAISpeechTranscriberService.MODEL_WHISPER_V1,
             fileName: filelike.name,
             fileSize: filelike.size ?? 'unknown',
             mimeType: filelike.type ?? 'unknown',
-            retryAttempts: 'see retry wrapper',
             timestamp: new Date().toISOString(),
           },
         },
