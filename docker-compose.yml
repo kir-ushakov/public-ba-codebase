@@ -55,6 +55,7 @@ services:
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - GOOGLE_OAUTH_CALLBACK=${GOOGLE_OAUTH_CALLBACK}
+      - OPEN_AI_API_KEY=${OPEN_AI_API_KEY}
 
   nginx:
     image: nginx:mainline

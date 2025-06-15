@@ -1,4 +1,4 @@
-import { Result } from '../../../core/Result.js';
+import { Result } from '../../../core/result.js';
 import { ValueObject } from '../../ValueObject.js';
 
 export interface UserEmailProps {

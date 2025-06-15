@@ -102,4 +102,8 @@ export namespace MbTaskScreenAction {
 
     constructor(public text: string) {}
   }
+
+  export class VoiceConvertedToTextFailed {
+    static readonly type = '[MbTaskScreen] Voice Converted To Text Failed';
+  }
 }

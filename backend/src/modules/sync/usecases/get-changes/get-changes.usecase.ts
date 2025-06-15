@@ -1,4 +1,4 @@
-import { Result } from '../../../../shared/core/Result.js';
+import { Result } from '../../../../shared/core/result.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Action } from '../../../../shared/domain/models/actions.js';
 import { Client } from '../../../../shared/domain/models/client.js';
@@ -82,7 +82,7 @@ export class GetChangesUC implements UseCase<GetChangesRequest, Promise<GetChang
     // during handle this second `confirm` request
     // TICKET: https://brainas.atlassian.net/browse/BA-76
     client.updateSyncTime(new Date());
-    this.clientRepo.save(client);
+    await this.clientRepo.save(client);
 
     return Result.ok(changes);
   }

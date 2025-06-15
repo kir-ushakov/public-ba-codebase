@@ -6,9 +6,10 @@
         matInput
         id="titleInput"
         formControlName="title"
-        placeholder="Task title here"
+        [placeholder]="(voiceToTextConverting$ | async) ? '' : 'Task title here'"
         autocomplete="off"
         autofocus
+        [disabled]="voiceToTextConverting$ | async"
       />
 
       <button
@@ -19,8 +20,15 @@
         type="button"
         (click)="onMicClick()"
       >
-        <mat-icon class="mic-icon">mic</mat-icon>
+        @if (!(voiceToTextConverting$ | async)) {
+          <mat-icon class="mic-icon">mic</mat-icon>
+        }
       </button>
+
+      <!-- Jumping dots animation as prefix -->
+      <span class="dots-prefix" matPrefix *ngIf="voiceToTextConverting$ | async">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </span>
 
       <mat-error *ngIf="false"> Task title is <strong>required</strong> </mat-error>
     </mat-form-field>

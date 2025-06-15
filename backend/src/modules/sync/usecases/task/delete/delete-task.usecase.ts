@@ -1,5 +1,5 @@
 import { UseCase } from '../../../../../shared/core/UseCase.js';
-import { Result } from '../../../../../shared/core/Result.js';
+import { Result } from '../../../../../shared/core/result.js';
 import { DeleteTaskRequestDTO } from './delete-task.dto.js';
 import { TaskRepoService } from '../../../../../shared/repo/task-repo.service.js';
 import { ActionRepo } from '../../../../../shared/repo/action.repo.js';

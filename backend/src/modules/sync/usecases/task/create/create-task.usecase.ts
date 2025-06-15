@@ -1,6 +1,6 @@
 import { UseCase } from '../../../../../shared/core/UseCase.js';
 import { CreateTaskRequestDTO } from './create-task.dto.js';
-import { Result } from '../../../../../shared/core/Result.js';
+import { Result } from '../../../../../shared/core/result.js';
 import { ETaskError, Task } from '../../../../../shared/domain/models/task.js';
 import { TaskRepoService } from '../../../../../shared/repo/task-repo.service.js';
 import { UniqueEntityID } from '../../../../../shared/domain/UniqueEntityID.js';

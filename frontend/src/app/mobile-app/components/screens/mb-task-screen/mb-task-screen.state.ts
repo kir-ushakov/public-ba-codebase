@@ -27,6 +27,7 @@ export interface IMbTaskScreenStateModel {
     status: boolean;
   };
   isSideMenuOpened: boolean;
+  voiceToTextConverting?: boolean;
 }
 
 const defaults = {
@@ -39,6 +40,7 @@ const defaults = {
   },
   taskData: defaultTask,
   isSideMenuOpened: false,
+  voiceToTextConverting: false,
 };
 
 @State<IMbTaskScreenStateModel>({
@@ -88,6 +90,11 @@ export class MbTaskScreenState {
   @Selector()
   static isEditFormValid(state: IMbTaskScreenStateModel): boolean {
     return state.taskViewForm.status;
+  }
+
+  @Selector()
+  static voiceToTextConverting(state: IMbTaskScreenStateModel): boolean {
+    return state.voiceToTextConverting ?? false;
   }
 
   @Action(MbTaskScreenAction.Opened)
@@ -217,11 +224,12 @@ export class MbTaskScreenState {
         return;
       }
       const record: Blob = await this.voiceRecorderService.stopRecording();
+      ctx.patchState({ voiceToTextConverting: true });
       const result = await firstValueFrom(this.speechToTextService.uploadAudio(record));
       ctx.dispatch(new MbTaskScreenAction.VoiceConvertedToTextSuccessful(result.transcript));
     } catch (error) {
       console.error(error);
-      ctx.dispatch(new AppAction.ShowErrorInUI('Voice record failed'));
+      ctx.dispatch(MbTaskScreenAction.VoiceConvertedToTextFailed);
     }
   }
 
@@ -231,6 +239,17 @@ export class MbTaskScreenState {
       return;
     }
     await this.voiceRecorderService.stopRecording();
+  }
+
+  @Action(MbTaskScreenAction.VoiceConvertedToTextSuccessful)
+  voiceConvertedToTextSuccessful(ctx: StateContext<IMbTaskScreenStateModel>): void {
+    ctx.patchState({ voiceToTextConverting: false });
+  }
+
+  @Action(MbTaskScreenAction.VoiceConvertedToTextFailed)
+  voiceConvertedToTextFailed(ctx: StateContext<IMbTaskScreenStateModel>): void {
+    ctx.patchState({ voiceToTextConverting: false });
+    ctx.dispatch(new AppAction.ShowErrorInUI('Voice Conversion To Text Failed'));
   }
 
   private updateAndClose(ctx: StateContext<IMbTaskScreenStateModel>, updated: Task): void {

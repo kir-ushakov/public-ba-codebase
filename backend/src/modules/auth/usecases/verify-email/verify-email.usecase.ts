@@ -1,4 +1,4 @@
-import { Result } from '../../../../shared/core/Result.js';
+import { Result } from '../../../../shared/core/result.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { VerificationToken } from '../../../../shared/domain/values/user/verification-token.js';
