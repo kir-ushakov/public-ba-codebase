@@ -32,6 +32,9 @@ import type { ITaskEditFormData } from './mb-task-edit.component.interface';
 export class MbTaskEditComponent {
   formValidStatus = output<boolean>();
   imageUri$: Observable<string> = inject(Store).select(MbTaskScreenState.imageUri);
+  voiceToTextConverting$: Observable<boolean> = inject(Store).select(
+    MbTaskScreenState.voiceToTextConverting,
+  );
   form: FormGroup<FormControlsOf<ITaskEditFormData>>;
 
   MbTaskScreenState = MbTaskScreenState;
@@ -69,6 +72,15 @@ export class MbTaskEditComponent {
       recorder.canceled.subscribe(() => {
         this.store.dispatch(MbTaskScreenAction.CancelVoiceRecording);
       });
+
+      this.actions$
+        .pipe(
+          ofActionDispatched(MbTaskScreenAction.StopVoiceRecording),
+          takeUntilDestroyed(this.destroyRef),
+        )
+        .subscribe(() => {
+          this.form.controls.title.setValue('');
+        });
     }
   }
 

@@ -138,8 +138,7 @@ export class OpenAISpeechTranscriberService {
           temperature: 0,
         }),
       );
-      console.log('++++++++++ !!!');
-      console.log(filelike.type);
+
       return Result.ok(transcription.text);
     } catch (error) {
       console.error(error);
