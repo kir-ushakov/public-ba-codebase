@@ -53,7 +53,7 @@ export class AddToSlackUsecase implements UseCase<AddToSlackRequest, Promise<Add
       );
     }
     const createSlackOAuthAccessResult: CreateSlackOAuthAccessResult =
-      await SlackOAuthAccess.create(slackOAuthAccessProps);
+      SlackOAuthAccess.create(slackOAuthAccessProps);
 
     const slackOAuthAccess: SlackOAuthAccess =
       createSlackOAuthAccessResult.getValue() as SlackOAuthAccess;

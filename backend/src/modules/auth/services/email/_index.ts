@@ -11,8 +11,10 @@ let mailAdapter;
 switch (process.env.MAIL_API) {
   case 'MAILGUN':
     mailAdapter = mailgunAdapter;
+    break;
   case 'SENDGRID':
     mailAdapter = sendgridMailAdapter;
+    break;
 
   // other adapters can be added here
   // ....
@@ -31,9 +33,6 @@ if (new Date().getMonth() === 11 && new Date().getDate() === 25) {
   mailFactory = simpleMailFactory;
 }
 
-const emailVerificationService = new EmailVerificationService(
-  mailAdapter,
-  mailFactory
-);
+const emailVerificationService = new EmailVerificationService(mailAdapter, mailFactory);
 
 export { emailVerificationService };
