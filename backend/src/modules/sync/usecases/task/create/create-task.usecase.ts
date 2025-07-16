@@ -25,7 +25,7 @@ export class CreateTask implements UseCase<Request, Response> {
     const userId = req.userId;
     const dto: CreateTaskRequestDTO = req.dto;
 
-    const taskOrError: Result<Task | never, DomainError<Task, ETaskError>> = await Task.create(
+    const taskOrError: Result<Task | never, DomainError<Task, ETaskError>> = Task.create(
       {
         ...dto,
         userId,
