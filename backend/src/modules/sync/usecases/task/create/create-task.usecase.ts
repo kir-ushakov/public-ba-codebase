@@ -34,7 +34,7 @@ export class CreateTask implements UseCase<Request, Response> {
     );
 
     if (taskOrError.isFailure) {
-      return new CreateTaskErrors.DataInvalid(taskOrError.error as DomainError<Task, ETaskError>);
+      return new CreateTaskErrors.DataInvalid(taskOrError.error);
     }
 
     const task: Task = taskOrError.getValue();
