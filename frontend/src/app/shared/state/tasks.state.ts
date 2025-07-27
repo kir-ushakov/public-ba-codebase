@@ -54,14 +54,19 @@ export class TasksState {
   ): Promise<void> {
     try {
       const now = this.now();
-
       const baseTask = this.createTaskEntity(taskInitData, userId, now);
+
+      ctx.setState(
+        patch({
+          entities: append([baseTask]),
+        }),
+      );
 
       const taskWithImage = await this.processImageUpload(baseTask);
 
       ctx.setState(
         patch({
-          entities: append([taskWithImage]),
+          entities: updateItem(task => task.id === taskWithImage.id, patch({ ...taskWithImage })),
         }),
       );
 
