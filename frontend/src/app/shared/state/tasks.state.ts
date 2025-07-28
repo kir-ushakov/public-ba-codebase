@@ -47,6 +47,8 @@ export class TasksState {
     );
   }
 
+  // TODO: This method needs to be refactored to allow asynchronous/offline loading of images.
+  // TICKET: https://brainas.atlassian.net/browse/BA-237
   @Action(MbTaskScreenAction.CreateTask)
   async createTask(
     ctx: StateContext<ITasksStateModel>,
