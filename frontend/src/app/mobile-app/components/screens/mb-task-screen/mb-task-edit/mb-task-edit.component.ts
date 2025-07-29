@@ -19,14 +19,7 @@ import { ViewChild, ElementRef } from '@angular/core';
 
 @Component({
   selector: 'ba-mb-task-edit',
-  imports: [
-    CommonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
-    ReactiveFormsModule,
-    VoiceRecorderComponent,
-  ],
+  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatIconModule, ReactiveFormsModule],
   templateUrl: './mb-task-edit.component.html',
   styleUrl: './mb-task-edit.component.scss',
 })
