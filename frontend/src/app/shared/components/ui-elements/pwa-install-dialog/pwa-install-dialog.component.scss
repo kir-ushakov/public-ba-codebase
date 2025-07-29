@@ -1,0 +1,131 @@
+@use 'src/scss/colors';
+
+// Global styles for modal backdrop
+::ng-deep .pwa-install-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+::ng-deep .pwa-install-modal {
+  .mat-mdc-dialog-container {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #212a30 !important;
+  }
+
+  .mat-mdc-dialog-surface {
+    background: #212a30 !important;
+    border-radius: 12px !important;
+  }
+}
+
+.pwa-install-dialog {
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  background: #212a30;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.dialog-header {
+  margin-bottom: 0.75rem;
+
+  .install-icon {
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+
+  .dialog-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+  }
+}
+
+.dialog-content {
+  margin-bottom: 2rem;
+
+  .dialog-message {
+    color: #d9d9d9;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+  }
+
+  .benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.75rem;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+
+      mat-icon {
+        color: #fff;
+        font-size: 1.25rem;
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+
+      span {
+        color: #d9d9d9;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+
+  .dismiss-btn {
+    color: #d9d9d9;
+    font-weight: 500;
+  }
+
+  .install-btn {
+    background: #fff;
+    color: #212a30;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+
+    &:hover {
+      background: #f2f2f2;
+    }
+  }
+}
+
+// Mobile responsive adjustments
+@media (max-width: 480px) {
+  .pwa-install-dialog {
+    padding: 1.5rem;
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+    width: calc(100vw - 2rem);
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}

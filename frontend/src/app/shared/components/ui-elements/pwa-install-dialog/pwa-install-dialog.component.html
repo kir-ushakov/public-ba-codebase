@@ -1,0 +1,35 @@
+<div class="pwa-install-dialog">
+  <div class="dialog-header">
+    <mat-icon class="install-icon">download</mat-icon>
+    <h2 class="dialog-title">Install App</h2>
+  </div>
+
+  <div class="dialog-content">
+    <p class="dialog-message">
+      Install this app on your device for a better experience. You'll get quick access and offline
+      functionality.
+    </p>
+
+    <div class="benefits">
+      <div class="benefit-item">
+        <mat-icon>offline_pin</mat-icon>
+        <span>Works offline</span>
+      </div>
+      <div class="benefit-item">
+        <mat-icon>speed</mat-icon>
+        <span>Faster access</span>
+      </div>
+      <div class="benefit-item">
+        <mat-icon>home</mat-icon>
+        <span>Home screen icon</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-actions">
+    <button mat-button class="dismiss-btn" (click)="dismiss()">Not now</button>
+    <button mat-raised-button color="primary" class="install-btn" (click)="installPWA()">
+      Install
+    </button>
+  </div>
+</div>

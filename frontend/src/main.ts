@@ -15,7 +15,6 @@ import { SyncState } from './app/shared/state/sync.state';
 import { TasksState } from './app/shared/state/tasks.state';
 import { HttpInterceptorService } from './app/shared/services/infrastructure/http-interceptor.service';
 
-
 if (environment.production) {
   enableProdMode();
 }
@@ -25,27 +24,24 @@ bootstrapApplication(AppComponent, {
     provideStore(
       [],
       withNgxsStoragePlugin({
-        keys: '*'
-      })
+        keys: '*',
+      }),
     ),
-    provideStates([ 
-      AppState,        
-      UserState, 
-      SyncState, 
-      TasksState,
-    ]),
+    provideStates([AppState, UserState, SyncState, TasksState]),
     provideHttpClient(),
     provideNoopAnimations(),
     provideRouter(mobileRoutes),
-    importProvidersFrom(ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled: !isDevMode(),
-      registrationStrategy: 'registerWhenStable:30000'
-    })),
+    importProvidersFrom(
+      ServiceWorkerModule.register('ngsw-worker.js', {
+        enabled: !isDevMode(),
+        registrationStrategy: 'registerWhenStable:30000',
+      }),
+    ),
     provideHttpClient(withInterceptorsFromDi()),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpInterceptorService,
       multi: true,
-    }
-  ]
-}).catch((err) => console.error(err));
+    },
+  ],
+}).catch(err => console.error(err));

@@ -16,4 +16,17 @@ export class DialogService {
       autoFocus: false,
     });
   }
+
+  public showModalDialog<C extends ComponentType<unknown>>(componentClass: C) {
+    return this.dialog.open(componentClass, {
+      maxWidth: '400px',
+      width: '90vw',
+      maxHeight: '90vh',
+      panelClass: 'pwa-install-modal',
+      hasBackdrop: true,
+      backdropClass: 'pwa-install-backdrop',
+      disableClose: false,
+      autoFocus: false,
+    });
+  }
 }
