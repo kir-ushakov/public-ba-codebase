@@ -8,6 +8,9 @@ import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import { Router, RouterOutlet } from '@angular/router';
 import { mobileRoutes } from './mobile-app/mobile-app.routing';
 import { desktopRoutes } from './desktop-app/desktop-app.routing';
+import { PwaInstallService } from './shared/services/pwa/pwa-install.service';
+import { DialogService } from './shared/services/utility/dialog.service';
+import { PwaInstallDialogComponent } from './shared/components/ui-elements/pwa-install-dialog/pwa-install-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +27,8 @@ export class AppComponent {
     private readonly _router: Router,
     private readonly _store: Store,
     private readonly _deviceDetectorService: DeviceDetectorService,
+    private readonly pwaInstallService: PwaInstallService,
+    private readonly dialogService: DialogService,
   ) {
     defineCustomElements(window);
   }
@@ -31,6 +36,13 @@ export class AppComponent {
   ngOnInit(): void {
     this.attachModuleDependOnDevice();
     this.setOnOffLineHandlers();
+    // Listen for PWA install prompt availability and show dialog automatically
+    this.pwaInstallService.installPromptAvailable.subscribe(isAvailable => {
+      if (isAvailable) {
+        console.log('PWA install prompt is available, opening dialog');
+        this.dialogService.showModalDialog(PwaInstallDialogComponent);
+      }
+    });
   }
 
   private setOnOffLineHandlers() {
