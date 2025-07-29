@@ -15,6 +15,7 @@ import { VoiceRecorderComponent } from 'src/app/shared/components/ui-elements/sp
 import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './mb-task-edit.component.interface';
+import { ViewChild, ElementRef } from '@angular/core';
 
 @Component({
   selector: 'ba-mb-task-edit',
@@ -39,6 +40,8 @@ export class MbTaskEditComponent {
 
   MbTaskScreenState = MbTaskScreenState;
 
+  @ViewChild('titleInput') titleInput!: ElementRef<HTMLInputElement>;
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);
   private readonly dialogService = inject(DialogService);
@@ -58,6 +61,8 @@ export class MbTaskEditComponent {
   }
 
   onMicClick(): void {
+    this.titleInput.nativeElement.blur();
+
     const dialogRef = this.dialogService.showFullScreenDialog(VoiceRecorderComponent);
 
     const recorder = dialogRef.componentInstance as VoiceRecorderComponent;

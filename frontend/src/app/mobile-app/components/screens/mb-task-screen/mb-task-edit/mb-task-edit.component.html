@@ -19,6 +19,8 @@
         aria-label="Microphone"
         type="button"
         (click)="onMicClick()"
+        (mousedown)="$event.preventDefault()"
+        (touchstart)="$event.preventDefault()"
       >
         @if (!(voiceToTextConverting$ | async)) {
           <mat-icon class="mic-icon">mic</mat-icon>

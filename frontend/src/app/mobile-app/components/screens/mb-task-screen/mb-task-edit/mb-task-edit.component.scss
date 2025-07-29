@@ -17,6 +17,11 @@
 .mic-icon-button {
   border: none;
   background: none;
+  // Prevent keyboard from showing on mobile when mic is clicked
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .mic-icon {
@@ -24,6 +29,9 @@
   cursor: pointer;
   width: auto;
   height: auto;
+  // Prevent text selection and keyboard
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .dots-prefix {
