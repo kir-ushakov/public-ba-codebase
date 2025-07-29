@@ -1,9 +1,9 @@
-@use "sass:map";
-@import "src/scss/colors";
-@import "src/scss/button";
+@use 'sass:map';
+@use 'src/scss/colors' as colors;
+@import 'src/scss/button';
 
 :host {
-  background: $color-main-bg;
+  background: colors.$color-main-bg;
   display: flex;
   height: 100%;
   flex-direction: column;
@@ -12,7 +12,7 @@
 }
 
 .top-panel-holder {
-  background-color: map.get($colors-gray-palette, 600);
+  background-color: map.get(colors.$colors-gray-palette, 600);
   display: flex;
   height: 7vh;
   padding: 0 5px;

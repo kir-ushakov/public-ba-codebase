@@ -1,10 +1,10 @@
-@use "sass:map";
-@import "src/scss/colors";
-@import "src/scss/button";
-@import "src/scss/breakpoints";
+@use 'sass:map';
+@use 'src/scss/colors' as colors;
+@import 'src/scss/button';
+@import 'src/scss/breakpoints';
 
 :host {
-  background: $color-main-bg;
+  background: colors.$color-main-bg;
   display: flex;
   height: 100%;
   flex-direction: column;
@@ -13,7 +13,7 @@
 }
 
 .top-panel {
-  background-color: map.get($colors-gray-palette, 600);
+  background-color: map.get(colors.$colors-gray-palette, 600);
   display: flex;
   height: 7vh;
   padding: 0 5px;
@@ -93,7 +93,7 @@
     flex-direction: row;
     justify-content: left;
     align-items: flex-start;
-    border-bottom: 1px solid map.get($colors-green-palette, 100);
+    border-bottom: 1px solid map.get(colors.$colors-green-palette, 100);
     box-shadow: 0px 9px 15px -1px #000;
     padding-bottom: 1rem;
     margin-bottom: 3rem;

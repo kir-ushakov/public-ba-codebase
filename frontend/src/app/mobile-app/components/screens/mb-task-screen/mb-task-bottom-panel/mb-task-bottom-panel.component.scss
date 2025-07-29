@@ -1,21 +1,19 @@
-@use "sass:map";
-@import "src/scss/colors";
+@use 'sass:map';
+@use 'src/scss/colors' as colors;
 
 .mb-task-ok-panel {
-  background-color: $color-panel-bg;
+  background-color: colors.$color-panel-bg;
   display: flex;
   height: 100%;
 
   .cancel-task-btn {
-    background: url("/assets/ui/icons/cancel-cross-icon-gray.png") center / auto
-      85% no-repeat;
+    background: url('/assets/ui/icons/cancel-cross-icon-gray.png') center / auto 85% no-repeat;
     display: flex;
     width: 50%;
   }
 
   .create-task-btn {
-    background: url("/assets/ui/icons/checkmark-green.png") center / auto 85%
-      no-repeat;
+    background: url('/assets/ui/icons/checkmark-green.png') center / auto 85% no-repeat;
     display: flex;
     opacity: 0.4;
     width: 50%;
@@ -27,7 +25,7 @@
 }
 
 .go-home-btn {
-  background-color: map.get($colors-gray-palette, 600);
+  background-color: map.get(colors.$colors-gray-palette, 600);
   display: flex;
   justify-content: center;
   align-items: center;

@@ -1,5 +1,5 @@
 @use 'sass:map';
-@import 'src/scss/colors';
+@use 'src/scss/colors' as colors;
 
 :host {
   display: flex;
@@ -9,7 +9,7 @@
 }
 
 .top-panel-holder {
-  background-color: map.get($colors-gray-palette, 600);
+  background-color: map.get(colors.$colors-gray-palette, 600);
   display: flex;
   height: 7vh;
   padding: 0 5px;
@@ -36,7 +36,7 @@
 }
 
 .main-panel-holder {
-  background: $color-main-bg;
+  background: colors.$color-main-bg;
   flex: 1;
   overflow: hidden;
   overflow-y: scroll;

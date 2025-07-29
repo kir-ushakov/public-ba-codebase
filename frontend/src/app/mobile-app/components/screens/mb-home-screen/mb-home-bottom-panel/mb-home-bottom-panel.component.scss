@@ -1,8 +1,8 @@
-@use "sass:map";
-@import "src/scss/colors";
+@use 'sass:map';
+@use 'src/scss/colors' as colors;
 
 :host {
-  background-color: map.get($colors-gray-palette, 600);
+  background-color: map.get(colors.$colors-gray-palette, 600);
   display: flex;
   justify-content: center;
   align-items: center;
