@@ -11,6 +11,7 @@ import { desktopRoutes } from './desktop-app/desktop-app.routing';
 import { PwaInstallService } from './shared/services/pwa/pwa-install.service';
 import { DialogService } from './shared/services/utility/dialog.service';
 import { PwaInstallDialogComponent } from './shared/components/ui-elements/pwa-install-dialog/pwa-install-dialog.component';
+import { PwaVersionUpdateService } from './shared/services/pwa/pwa-version-update.service';
 
 @Component({
   selector: 'app-root',
@@ -29,6 +30,7 @@ export class AppComponent {
     private readonly _deviceDetectorService: DeviceDetectorService,
     private readonly pwaInstallService: PwaInstallService,
     private readonly dialogService: DialogService,
+    private readonly pwaVersionUpdateService: PwaVersionUpdateService,
   ) {
     defineCustomElements(window);
   }
