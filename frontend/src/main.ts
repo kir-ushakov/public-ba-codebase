@@ -14,6 +14,7 @@ import { UserState } from './app/shared/state/user.state';
 import { SyncState } from './app/shared/state/sync.state';
 import { TasksState } from './app/shared/state/tasks.state';
 import { HttpInterceptorService } from './app/shared/services/infrastructure/http-interceptor.service';
+import { PwaVersionUpdateService } from './app/shared/services/pwa/pwa-version-update.service';
 
 if (environment.production) {
   enableProdMode();
@@ -43,5 +44,6 @@ bootstrapApplication(AppComponent, {
       useClass: HttpInterceptorService,
       multi: true,
     },
+    PwaVersionUpdateService,
   ],
 }).catch(err => console.error(err));
