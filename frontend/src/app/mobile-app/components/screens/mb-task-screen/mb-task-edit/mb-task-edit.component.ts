@@ -82,6 +82,12 @@ export class MbTaskEditComponent {
     }
   }
 
+  onTouchStart(event: TouchEvent): void {
+    // Prevent virtual keyboard from appearing on mobile devices
+    // but allow the click event to fire normally
+    event.preventDefault();
+  }
+
   private initSubscriptions(): void {
     this.form.valueChanges
       .pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef))
