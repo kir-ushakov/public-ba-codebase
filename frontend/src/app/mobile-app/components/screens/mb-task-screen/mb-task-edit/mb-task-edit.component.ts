@@ -54,6 +54,7 @@ export class MbTaskEditComponent {
   }
 
   onMicClick(): void {
+    // Blur the input to prevent virtual keyboard
     this.titleInput.nativeElement.blur();
 
     const dialogRef = this.dialogService.showFullScreenDialog(VoiceRecorderComponent);
@@ -80,12 +81,6 @@ export class MbTaskEditComponent {
           this.form.controls.title.setValue('');
         });
     }
-  }
-
-  onTouchStart(event: TouchEvent): void {
-    // Prevent virtual keyboard from appearing on mobile devices
-    // but allow the click event to fire normally
-    event.preventDefault();
   }
 
   private initSubscriptions(): void {
