@@ -67,19 +67,11 @@ export class MbTaskEditComponent {
       });
       recorder.stopped.subscribe(() => {
         this.store.dispatch(MbTaskScreenAction.StopVoiceRecording);
+        this.form.controls.title.setValue('');
       });
       recorder.canceled.subscribe(() => {
         this.store.dispatch(MbTaskScreenAction.CancelVoiceRecording);
       });
-
-      this.actions$
-        .pipe(
-          ofActionDispatched(MbTaskScreenAction.StopVoiceRecording),
-          takeUntilDestroyed(this.destroyRef),
-        )
-        .subscribe(() => {
-          this.form.controls.title.setValue('');
-        });
     }
   }
 

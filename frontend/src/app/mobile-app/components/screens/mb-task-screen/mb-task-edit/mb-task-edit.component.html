@@ -18,6 +18,7 @@
         matSuffix
         aria-label="Microphone"
         type="button"
+        (mousedown)="$event.preventDefault()"
         (click)="onMicClick()"
         tabindex="-1"
       >
