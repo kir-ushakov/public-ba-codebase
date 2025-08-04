@@ -53,9 +53,8 @@ export class MbTaskEditComponent {
     this.store.dispatch(MbTaskScreenAction.AddPictureBtnPressed);
   }
 
-  onMicClick(): void {
-    // Blur the input to prevent virtual keyboard
-    this.titleInput.nativeElement.blur();
+  onMicClick(event: MouseEvent): void {
+    this.preventInputFocus(event);
 
     const dialogRef = this.dialogService.showFullScreenDialog(VoiceRecorderComponent);
 
@@ -73,6 +72,11 @@ export class MbTaskEditComponent {
         this.store.dispatch(MbTaskScreenAction.CancelVoiceRecording);
       });
     }
+  }
+
+  preventInputFocus(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   private initSubscriptions(): void {
