@@ -8,7 +8,6 @@
         formControlName="title"
         [placeholder]="(voiceToTextConverting$ | async) ? '' : 'Task title here'"
         autocomplete="off"
-        autofocus
         [disabled]="voiceToTextConverting$ | async"
       />
 
