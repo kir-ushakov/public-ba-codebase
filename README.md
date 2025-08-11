@@ -12,7 +12,7 @@
 
 </p>
 
-#### <i>Originally created to support my [YouTube channel](https://www.youtube.com/@kirillushakov-webmobiledev6785) with a real codebase, this project has evolved into a playground for exploring different approaches, APIs, and technologies.</i>
+#### <i>This is a lean personal task manager, originally built to support my [YouTube channel](https://www.youtube.com/@kirillushakov-webmobiledev6785) with a real-world codebase. Over time, it has evolved into my personal playground for experimenting with new technologies, APIs, and development approaches.</i>
 
 ## Main Tech View
 
