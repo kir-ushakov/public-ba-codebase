@@ -1,0 +1,16 @@
+$spacing: (
+  1: 0.125rem,
+  2: 0.25rem,
+  3: 0.5rem,
+  4: 1rem,
+  5: 1.5rem,
+  6: 2rem,
+  7: 3rem,
+  8: 4rem,
+);
+
+:root {
+  @each $key, $value in $spacing {
+    --space-#{$key}: #{$value};
+  }
+}
