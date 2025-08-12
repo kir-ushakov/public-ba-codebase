@@ -20,7 +20,6 @@ export class TaskTilesPanelComponent {
       for (let i = k; i < tasks.length; i += this.noOfColumns) {
         column.tasks.push(tasks[i]);
       }
-      console.log('K: ' + k);
       this.columns = [...this.columns, column];
     }
   }
