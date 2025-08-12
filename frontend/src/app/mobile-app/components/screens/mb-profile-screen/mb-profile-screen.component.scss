@@ -1,7 +1,6 @@
 @use 'sass:map';
 @use 'src/scss/colors' as colors;
-@import 'src/scss/button';
-@import 'src/scss/breakpoints';
+@use 'src/scss/breakpoints' as breakpoints;
 
 :host {
   background: colors.$color-main-bg;
@@ -89,7 +88,7 @@
     font-size: 1.5rem;
   }
 
-  @include up(sm) {
+  @include breakpoints.up(sm) {
     flex-direction: row;
     justify-content: left;
     align-items: flex-start;

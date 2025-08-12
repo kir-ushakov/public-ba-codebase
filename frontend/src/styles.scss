@@ -1,4 +1,4 @@
-@import 'scss/breakpoints';
+@use 'scss/breakpoints' as bp; // exposes mixins like `up()` without namespacing
 
 html,
 body {
@@ -31,19 +31,19 @@ app-root {
   // Start narrow
   max-width: 100%;
 
-  @include up(md) {
+  @include bp.up(md) {
     max-width: 768px;
   }
 
-  @include up(lg) {
+  @include bp.up(lg) {
     max-width: 960px;
   }
 
-  @include up(xl) {
+  @include bp.up(xl) {
     max-width: 1140px;
   }
 
-  @include up(xxl) {
+  @include bp.up(xxl) {
     max-width: 1320px;
   }
 }
