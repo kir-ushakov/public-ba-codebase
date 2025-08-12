@@ -4,10 +4,9 @@
     <div *ngIf="!selectors.online()">
       <img src="assets/ui/icons/no-connection.png" />
     </div>
-    {{ selectors.isLocalAuthenticated() }}111
     <div
       class="sync-icon-holder"
-      *ngIf="(selectors.isLocalAuthenticated() && selectors.online()) || true"
+      *ngIf="selectors.isLocalAuthenticated() && selectors.online()"
       [routerLink]="['/sync']"
     >
       <img src="assets/ui/icons/no-synchronize.png" />
