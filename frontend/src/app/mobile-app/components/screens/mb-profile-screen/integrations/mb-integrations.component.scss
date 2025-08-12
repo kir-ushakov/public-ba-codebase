@@ -64,7 +64,7 @@
   height: 1.25rem;
 }
 
-@media screen and (min-width: $breakpoint-sm) {
+@include up(sm) {
   :host {
     border: 1px solid #fff;
     border-radius: 4px;
