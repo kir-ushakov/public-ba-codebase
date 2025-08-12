@@ -9,10 +9,15 @@
 }
 
 .task-tile-inner {
-  padding: .75rem;
+  padding: 0.75rem;
+  width: 100%;
 }
 
 .task-tile-title {
   text-align: center;
   word-break: break-word;
+}
+
+.task-tile-picture {
+  text-align: center;
 }
