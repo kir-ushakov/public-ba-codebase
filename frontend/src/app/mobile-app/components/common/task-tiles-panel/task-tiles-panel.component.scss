@@ -1,7 +1,7 @@
 :host {
   display: grid;
   flex-wrap: nowrap;
-  gap: clamp(0.3125rem, 1.5vw, 1rem); // This sets both row and column gaps
+  gap: clamp(0.3125rem, 1.5vw, 1rem);
   grid-template-columns: repeat(3, 1fr);
 }
 
