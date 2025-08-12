@@ -1,5 +1,5 @@
-*, *::after, *::before {
-  box-sizing: border-box;
+:host {
+  display: block;
 }
 
 .spinner {
@@ -59,10 +59,10 @@
   }
 
   50% {
-    color: rgba(0, 0, 0, .5);
+    color: rgba(0, 0, 0, 0.5);
   }
 
   100% {
-    color: rgba(0, 0, 0, .1);
+    color: rgba(0, 0, 0, 0.1);
   }
 }

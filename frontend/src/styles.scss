@@ -16,6 +16,12 @@ svg {
   height: auto;
 }
 
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
 app-root {
   display: block;
   width: 100%;
