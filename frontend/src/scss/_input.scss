@@ -1,5 +1,5 @@
-@use "sass:map";
-@use "colors";
+@use 'sass:map';
+@use 'colors';
 
 $padding-text-h: 10px;
 $color-main: map.get(map.get(colors.$colors-gray-palette, contrast), 500);
