@@ -1,0 +1,78 @@
+@use 'breakpoints';
+
+$typography: (
+  xs: (
+    font-size: 0.75rem,
+    line-height: 1.2,
+  ),
+  sm: (
+    font-size: 0.875rem,
+    line-height: 1.4,
+  ),
+  base: (
+    font-size: 1rem,
+    line-height: 1.5,
+  ),
+  lg: (
+    font-size: 1.125rem,
+    line-height: 1.6,
+  ),
+  xl: (
+    font-size: 1.25rem,
+    line-height: 1.6,
+  ),
+  xxl: (
+    font-size: 1.5rem,
+    line-height: 1.4,
+  ),
+);
+
+@mixin text-size($size) {
+  $settings: map-get($typography, $size);
+  @if $settings != null {
+    font-size: map-get($settings, font-size);
+    line-height: map-get($settings, line-height);
+  } @else {
+    @warn "Unknown typography size: #{$size}";
+  }
+}
+
+// Base font-size (mobile first)
+html {
+  font-size: 14px; // xs
+}
+
+// Tablet
+@include breakpoints.up(sm) {
+  html {
+    font-size: 14.5px;
+  }
+}
+
+// Medium devices (landscape tablets)
+@include breakpoints.up(md) {
+  html {
+    font-size: 15px;
+  }
+}
+
+// Large devices (small laptops)
+@include breakpoints.up(lg) {
+  html {
+    font-size: 16px;
+  }
+}
+
+// Extra large devices (desktop)
+@include breakpoints.up(xl) {
+  html {
+    font-size: 17px;
+  }
+}
+
+// 4K screens
+@include breakpoints.up(xxl) {
+  html {
+    font-size: 18px;
+  }
+}
