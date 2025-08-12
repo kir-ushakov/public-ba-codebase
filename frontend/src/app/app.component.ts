@@ -36,7 +36,9 @@ export class AppComponent {
   }
 
   ngOnInit(): void {
-    this.attachModuleDependOnDevice();
+    // TODO: Remove desktop logic
+    // TICKET: https://brainas.atlassian.net/browse/BA-239
+    //this.attachModuleDependOnDevice();
     this.setOnOffLineHandlers();
     // Listen for PWA install prompt availability and show dialog automatically
     this.pwaInstallService.installPromptAvailable.subscribe(isAvailable => {
@@ -63,6 +65,8 @@ export class AppComponent {
     });
   }
 
+  // TODO: Remove desctop logic
+  // TICKET: https://brainas.atlassian.net/browse/BA-239
   private attachModuleDependOnDevice() {
     const isMobile = this._deviceDetectorService.isMobile();
     this._router.resetConfig(isMobile ? mobileRoutes : desktopRoutes);
