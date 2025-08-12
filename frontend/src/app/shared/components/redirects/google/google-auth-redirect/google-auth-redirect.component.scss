@@ -1,6 +1,5 @@
-@import './../../styles.scss';
+@use './../../styles.scss' as *;
 
 :host {
   @extend .redirectPage;
 }
-

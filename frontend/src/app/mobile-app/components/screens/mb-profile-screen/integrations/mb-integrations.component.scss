@@ -1,6 +1,6 @@
 @use 'sass:map';
-@import 'src/scss/breakpoints';
-@import 'src/scss/colors';
+@use 'src/scss/breakpoints' as bp;
+@use 'src/scss/colors' as colors;
 
 :host {
   text-align: center;
@@ -22,7 +22,7 @@
   position: relative;
   font-size: 2rem;
   text-align: center;
-  background-color: map.get($colors-gray-palette, 500);
+  background-color: map.get(colors.$colors-gray-palette, 500);
   z-index: 1;
   padding: 0 0.5rem;
   text-transform: capitalize;
@@ -64,7 +64,7 @@
   height: 1.25rem;
 }
 
-@include up(sm) {
+@include bp.up(sm) {
   :host {
     border: 1px solid #fff;
     border-radius: 4px;
@@ -81,7 +81,7 @@
     display: inline;
     position: absolute;
     top: -1rem;
-    background: map.get($colors-gray-palette, 500);
+    background: map.get(colors.$colors-gray-palette, 500);
     padding: 0 1rem;
   }
 

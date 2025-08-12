@@ -1,6 +1,6 @@
 @use 'sass:map';
 @use 'src/scss/colors' as colors;
-@import 'src/scss/button';
+@use 'src/scss/button' as button;
 
 :host {
   background: colors.$color-main-bg;
