@@ -32,8 +32,8 @@ export class ImageSrcPipe implements PipeTransform, OnDestroy {
         .then(record => {
           this.revokeUrl();
 
-          if (record?.uploaded && record.url) {
-            this.latestValue = record.url;
+          if (record?.uploaded && record.uri) {
+            this.latestValue = record.uri;
           } else if (record?.blob) {
             this.currentUrl = URL.createObjectURL(record.blob);
             this.latestValue = this.sanitizer.bypassSecurityTrustUrl(this.currentUrl);
