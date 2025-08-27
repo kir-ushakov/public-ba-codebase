@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { DatabaseService, AppDB, DATABASE_CONFIG } from './database.service';
 
-interface ImageRecord {
+export interface ImageRecord {
   id: string;
   blob?: Blob;
   uploaded: boolean;
-  url?: string;
+  uri?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -13,9 +13,14 @@ export class ImageDbService {
   constructor(private databaseService: DatabaseService) {}
 
   /** Save or update image record */
-  async putImage(id: string, blob: Blob | null, uploaded: boolean, url?: string): Promise<void> {
+  async putImage(
+    id: string,
+    blob: Blob | null,
+    uploaded: boolean = false,
+    uri?: string,
+  ): Promise<void> {
     const db = await this.databaseService.getDatabase();
-    const record: ImageRecord = { id, uploaded, url };
+    const record: ImageRecord = { id, uploaded, uri };
     if (blob) {
       record.blob = blob;
     }
