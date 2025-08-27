@@ -2,7 +2,7 @@
 <div class="title-holder">
   <span>{{ task.title }}</span>
 </div>
-@if (task?.imageUri) {
+@if (task?.imageId) {
   <div class="task-picture-holder">
     <img class="task-picture" src="{{ (task$ | async)?.imageUri | imageSrc }}" />
   </div>
