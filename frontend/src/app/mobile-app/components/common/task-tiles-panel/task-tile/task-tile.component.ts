@@ -1,18 +1,12 @@
-import {
-  Component,
-  Input,
-  HostListener,
-  signal,
-  ViewChild,
-  ElementRef,
-  Signal,
-  WritableSignal,
-} from '@angular/core';
+import { Component, Input, HostListener, signal, ViewChild, WritableSignal } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { MbTaskTileAction } from './task-tile.actions';
 import { Task } from 'src/app/shared/models/task.model';
 import { CommonModule } from '@angular/common';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
+import { ImageService } from 'src/app/shared/services/infrastructure/image.service';
+import { from, map } from 'rxjs';
+import { ImageRecord } from 'src/app/shared/services/infrastructure/image-db.service';
 
 @Component({
   selector: 'ba-task-tile',
@@ -34,17 +28,26 @@ export class TaskTileComponent {
 
   resizedImageUri: WritableSignal<null | string> = signal(null);
 
-  constructor(private store: Store) {}
+  constructor(
+    private store: Store,
+    private imageService: ImageService,
+  ) {}
 
   ngAfterViewInit() {
-    let imageUri = this.task.imageUri;
-
-    if (!this.isLocalImage(imageUri)) {
-      const width = this.calculateImageWidth();
-      imageUri = imageUri + `?width=${width}`;
-    }
-
-    this.resizedImageUri.set(imageUri);
+    from(this.imageService.getImageRecord(this.task.imageId))
+      .pipe(
+        map((imageRecord: ImageRecord) => {
+          if (imageRecord.uploaded) {
+            const width = this.calculateImageWidth();
+            return imageRecord.uri + `?width=${width}`;
+          }
+          return imageRecord.uri;
+        }),
+      )
+      .subscribe({
+        next: resizedImageUri => this.resizedImageUri.set(resizedImageUri),
+        error: err => console.error('Failed to load image', err),
+      });
   }
 
   private calculateImageWidth(): number {
@@ -53,11 +56,5 @@ export class TaskTileComponent {
 
     const dpr = window.devicePixelRatio || 1;
     return dpr * width;
-  }
-
-  private isLocalImage(url: string): boolean {
-    if (!url) return false;
-
-    return url.startsWith('blob:');
   }
 }
