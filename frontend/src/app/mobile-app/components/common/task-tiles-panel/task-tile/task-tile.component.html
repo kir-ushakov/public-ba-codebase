@@ -1,9 +1,11 @@
 <div class="task-tile-inner">
   <div class="task-tile-title">{{ task.title }}</div>
-  <div class="task-tile-picture" *ngIf="task.imageId">
-    @if (isLoading()) {
-      <ba-spinner></ba-spinner>
-    }
-    <img [src]="resizedImageUri()" (load)="isLoading.set(false)" (error)="isLoading.set(false)" />
-  </div>
+  @if (task.imageId) {
+    <div class="task-tile-picture" *ngIf="task.imageId">
+      @if (isLoading()) {
+        <ba-spinner></ba-spinner>
+      }
+      <img [src]="resizedImageUri()" (load)="isLoading.set(false)" (error)="isLoading.set(false)" />
+    </div>
+  }
 </div>

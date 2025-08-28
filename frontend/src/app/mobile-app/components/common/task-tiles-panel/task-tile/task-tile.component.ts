@@ -41,12 +41,16 @@ export class TaskTileComponent {
             const width = this.calculateImageWidth();
             return imageRecord.uri + `?width=${width}`;
           }
-          return imageRecord.uri;
+          return URL.createObjectURL(imageRecord.blob);
         }),
       )
       .subscribe({
-        next: resizedImageUri => this.resizedImageUri.set(resizedImageUri),
-        error: err => console.error('Failed to load image', err),
+        next: resizedImageUri => {
+          this.resizedImageUri.set(resizedImageUri);
+        },
+        error: err => {
+          console.error('Failed to load image', err);
+        },
       });
   }
 
