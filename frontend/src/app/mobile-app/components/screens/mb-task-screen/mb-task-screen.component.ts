@@ -67,10 +67,6 @@ export class MbTaskScreenComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  openTaksOptions() {
-    this.store.dispatch(MbTaskScreenAction.OpenTaskOptions);
-  }
-
   private subscribeToRouteParams() {
     this.route.paramMap.subscribe(params => {
       this.store.dispatch(
