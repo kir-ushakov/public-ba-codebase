@@ -12,6 +12,8 @@ import { SpeechToTextService } from 'src/app/shared/services/api/speech-to-text.
 import { VoiceRecorderService } from 'src/app/shared/services/pwa/voice-recorder.service';
 import { firstValueFrom } from 'rxjs';
 import type { ITaskEditFormData } from './mb-task-edit/mb-task-edit.component.interface';
+import { TasksAction } from 'src/app/shared/state/tasks.action';
+import { ImageService } from 'src/app/shared/services/infrastructure/image.service';
 
 export enum ETaskViewMode {
   Create = 'TASK_VIEW_MODE_CREATE',
@@ -28,6 +30,7 @@ export interface IMbTaskScreenStateModel {
   };
   isSideMenuOpened: boolean;
   voiceToTextConverting?: boolean;
+  imageUrl: string | null;
 }
 
 const defaults = {
@@ -41,6 +44,7 @@ const defaults = {
   taskData: defaultTask,
   isSideMenuOpened: false,
   voiceToTextConverting: false,
+  imageUrl: null,
 };
 
 @State<IMbTaskScreenStateModel>({
@@ -53,6 +57,7 @@ export class MbTaskScreenState {
   private readonly deviceCameraService = inject(DeviceCameraService);
   private readonly voiceRecorderService = inject(VoiceRecorderService);
   private readonly speechToTextService = inject(SpeechToTextService);
+  private readonly imageService = inject(ImageService);
 
   @Selector()
   static mode(state: IMbTaskScreenStateModel): ETaskViewMode {
@@ -79,7 +84,7 @@ export class MbTaskScreenState {
 
   @Selector()
   static imageUri(state: IMbTaskScreenStateModel): string {
-    return state.taskData.imageUri;
+    return state.imageUrl;
   }
 
   @Selector()
@@ -108,23 +113,48 @@ export class MbTaskScreenState {
   }
 
   @Action(MbTaskScreenAction.ApplyButtonPressed)
-  applyButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>): void {
+  async applyButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
     const state = ctx.getState();
+
     ctx.patchState({
       taskData: {
         ...state.taskData,
         ...state.taskViewForm.formData,
       },
     });
-
-    if (ctx.getState().mode === ETaskViewMode.Create) {
-      const userId: string = this.store.selectSnapshot(UserState.userId);
-      ctx.dispatch(new MbTaskScreenAction.CreateTask(ctx.getState().taskData, userId));
-      ctx.dispatch(MbTaskScreenAction.Close);
+    if (state.mode === ETaskViewMode.Create) {
+      await this.handleCreateTask(ctx);
     } else {
-      ctx.dispatch(new MbTaskScreenAction.UpdateTask(ctx.getState().taskData));
-      ctx.patchState({ mode: ETaskViewMode.View });
+      this.handleUpdateTask(ctx);
     }
+  }
+
+  private async handleCreateTask(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
+    const taskData = ctx.getState().taskData;
+    const userId: string = this.store.selectSnapshot(UserState.userId);
+
+    let finalTaskData = { ...taskData };
+
+    if (ctx.getState().imageUrl) {
+      const imageId = await this.imageService.saveImage(ctx.getState().imageUrl);
+      finalTaskData = { ...finalTaskData, imageId };
+    }
+
+    ctx.patchState({ taskData: finalTaskData });
+    ctx.dispatch(new TasksAction.CreateTask(finalTaskData, userId));
+    ctx.dispatch(MbTaskScreenAction.Close);
+  }
+
+  private handleUpdateTask(ctx: StateContext<IMbTaskScreenStateModel>): void {
+    const taskData = ctx.getState().taskData;
+
+    ctx.dispatch(
+      new TasksAction.UpdateTask({
+        taskId: taskData.id,
+        changes: taskData,
+      }),
+    );
+    ctx.patchState({ mode: ETaskViewMode.View });
   }
 
   @Action(MbTaskScreenAction.EditTaskOptionSelected)
@@ -143,20 +173,19 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.CompleteTaskOptionSelected)
   completeTask(ctx: StateContext<IMbTaskScreenStateModel>): void {
-    const taskUpdateData: Task = { ...ctx.getState().taskData, status: ETaskStatus.Done };
+    const taskUpdateData: Partial<Task> = { status: ETaskStatus.Done };
     this.updateAndClose(ctx, taskUpdateData);
   }
 
   @Action(MbTaskScreenAction.CancelTaskOptionSelected)
   cancelTask(ctx: StateContext<IMbTaskScreenStateModel>): void {
-    const task = ctx.getState().taskData;
-    const taskUpdateData: Task = { ...task, status: ETaskStatus.Cancel };
+    const taskUpdateData: Partial<Task> = { status: ETaskStatus.Cancel };
     this.updateAndClose(ctx, taskUpdateData);
   }
 
   @Action(MbTaskScreenAction.DeleteTaskOptionSelected)
   deleteTask(ctx: StateContext<IMbTaskScreenStateModel>): void {
-    ctx.dispatch(new MbTaskScreenAction.DeleteTask(ctx.getState().taskData.id));
+    ctx.dispatch(new TasksAction.DeleteTask(ctx.getState().taskData.id));
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
 
@@ -178,14 +207,7 @@ export class MbTaskScreenState {
   @Action(MbTaskScreenAction.AddPictureBtnPressed)
   async selectPictureFromDevice(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
     const imageUri: string = await this.deviceCameraService.takePicture();
-
-    const state: IMbTaskScreenStateModel = ctx.getState();
-    const taskData: Task = {
-      ...state.taskData,
-      imageUri: imageUri,
-    };
-
-    ctx.patchState({ taskData: taskData });
+    ctx.patchState({ imageUrl: imageUri });
   }
 
   @Action(MbTaskScreenAction.SideMenuToggle)
@@ -252,7 +274,13 @@ export class MbTaskScreenState {
     ctx.dispatch(new AppAction.ShowErrorInUI('Voice Conversion To Text Failed'));
   }
 
-  private updateAndClose(ctx: StateContext<IMbTaskScreenStateModel>, updated: Task): void {
-    ctx.dispatch([new MbTaskScreenAction.UpdateTask(updated), MbTaskScreenAction.Close]);
+  private updateAndClose(
+    ctx: StateContext<IMbTaskScreenStateModel>,
+    updatedTaskData: Partial<Task>,
+  ): void {
+    ctx.dispatch([
+      new TasksAction.UpdateTask({ taskId: ctx.getState().taskData.id, changes: updatedTaskData }),
+      MbTaskScreenAction.Close,
+    ]);
   }
 }
