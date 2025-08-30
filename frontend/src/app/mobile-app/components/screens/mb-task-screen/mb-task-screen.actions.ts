@@ -23,33 +23,8 @@ export namespace MbTaskScreenAction {
     static readonly type = '[MbTaskScreen] Home Button Pressed';
   }
 
-  export class CreateTask {
-    static readonly type = '[MbTaskScreen] Create Task';
-
-    constructor(
-      public taskInitData: Task,
-      public userId: string,
-    ) {}
-  }
-
-  export class UpdateTask {
-    static readonly type = '[MbTaskScreen] Update Task ';
-
-    constructor(public taskUpdateData: Task) {}
-  }
-
-  export class DeleteTask {
-    static readonly type = '[MbTaskScreen] Delete Task ';
-
-    constructor(public taskId: string) {}
-  }
-
   export class Close {
     static readonly type = '[MbTaskScreen] Close';
-  }
-
-  export class OpenTaskOptions {
-    static readonly type = '[MbTaskScreen] Open Task Options';
   }
 
   export class EditTaskOptionSelected {
