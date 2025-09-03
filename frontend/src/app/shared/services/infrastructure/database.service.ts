@@ -4,12 +4,9 @@ import { openDB, DBSchema, IDBPDatabase } from 'idb';
 // Database constants
 export const DATABASE_CONFIG = {
   NAME: 'ba-db',
-  VERSION: 1,
+  VERSION: 2,
   STORES: {
-    IMAGES: 'images',
-    // Add future stores here
-    // USERS: 'users',
-    // SETTINGS: 'settings',
+    IMAGES: 'images' as const, // runtime name
   },
 } as const;
 
@@ -21,17 +18,14 @@ interface ImageRecord {
   url?: string;
 }
 
-// Main database interface - extend this as you add more stores
 export interface AppDB extends DBSchema {
-  [DATABASE_CONFIG.STORES.IMAGES]: {
+  images: {
     key: string;
     value: ImageRecord;
+    indexes: {
+      uploaded: IDBValidKey;
+    };
   };
-  // Future stores will be added here
-  // [DATABASE_CONFIG.STORES.USERS]: {
-  //   key: string;
-  //   value: UserRecord;
-  // };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -40,31 +34,32 @@ export class DatabaseService {
 
   constructor() {
     this.dbPromise = openDB<AppDB>(DATABASE_CONFIG.NAME, DATABASE_CONFIG.VERSION, {
-      upgrade: (db, oldVersion, newVersion) => {
-        console.log(`Upgrading database from version ${oldVersion} to ${newVersion}`);
-        this.handleUpgrade(db, oldVersion, newVersion);
+      upgrade(db, oldVersion, newVersion, transaction) {
+        console.log(`Upgrading DB from v${oldVersion} to v${newVersion}`);
+
+        switch (oldVersion) {
+          case 0:
+            // First install → create store
+            const store = db.createObjectStore(DATABASE_CONFIG.STORES.IMAGES, {
+              keyPath: 'id',
+            });
+            store.createIndex('uploaded', 'uploaded', { unique: false });
+            break;
+
+          case 1:
+            // Migration from v1 → v2
+            const imageStore = transaction.objectStore(DATABASE_CONFIG.STORES.IMAGES);
+            if (!imageStore.indexNames.contains('uploaded')) {
+              imageStore.createIndex('uploaded', 'uploaded', { unique: false });
+            }
+            break;
+
+          default:
+            // For future migrations
+            console.warn(`No specific migration for v${oldVersion}`);
+        }
       },
     });
-  }
-
-  /**
-   * Centralized upgrade handler for all database schema changes
-   */
-  private handleUpgrade(db: IDBPDatabase<AppDB>, oldVersion: number, newVersion: number): void {
-    // Version 1: Initial setup
-    if (oldVersion < 1) {
-      // Create images store
-      if (!db.objectStoreNames.contains(DATABASE_CONFIG.STORES.IMAGES)) {
-        db.createObjectStore(DATABASE_CONFIG.STORES.IMAGES, { keyPath: 'id' });
-        console.log(`Created ${DATABASE_CONFIG.STORES.IMAGES} store`);
-      }
-    }
-
-    // Future versions will be added here as needed
-    // Example:
-    // if (oldVersion < 2) {
-    //   // Add new store or modify existing
-    // }
   }
 
   /**
