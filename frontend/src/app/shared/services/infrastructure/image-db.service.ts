@@ -12,7 +12,6 @@ export interface ImageRecord {
 export class ImageDbService {
   constructor(private databaseService: DatabaseService) {}
 
-  /** Save or update image record */
   async putImage(
     id: string,
     blob: Blob | null,
@@ -27,21 +26,32 @@ export class ImageDbService {
     await db.put(DATABASE_CONFIG.STORES.IMAGES, record);
   }
 
-  /** Get image record by id */
   async getImage(id: string): Promise<ImageRecord | undefined> {
     const db = await this.databaseService.getDatabase();
     return db.get(DATABASE_CONFIG.STORES.IMAGES, id);
   }
 
-  /** Delete image record */
   async deleteImage(id: string): Promise<void> {
     const db = await this.databaseService.getDatabase();
     await db.delete(DATABASE_CONFIG.STORES.IMAGES, id);
   }
 
-  /** Get all image records */
-  async getAllImages(): Promise<ImageRecord[]> {
+  async getAllUnuploadedImages(): Promise<ImageRecord[]> {
     const db = await this.databaseService.getDatabase();
-    return db.getAll(DATABASE_CONFIG.STORES.IMAGES);
+    return db.getAllFromIndex(DATABASE_CONFIG.STORES.IMAGES, 'uploaded', IDBKeyRange.only(false));
+  }
+
+  async updateImage(id: string, updates: Partial<Omit<ImageRecord, 'id'>>): Promise<void> {
+    const db = await this.databaseService.getDatabase();
+    const existing: any = await db.get(DATABASE_CONFIG.STORES.IMAGES, id);
+
+    const merged: ImageRecord = {
+      id,
+      uploaded: updates.uploaded ?? existing?.uploaded ?? false,
+      uri: updates.uri ?? existing?.uri ?? existing?.url,
+      blob: updates.blob ?? existing?.blob,
+    };
+
+    await db.put(DATABASE_CONFIG.STORES.IMAGES, merged);
   }
 }
