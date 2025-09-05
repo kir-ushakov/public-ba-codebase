@@ -35,19 +35,28 @@ export class ImageService {
     return reducedBlob;
   }
 
-  public uploadImages(): void {
-    this.imageDbService.getAllUnuploadedImages().then(images => {
-      images.forEach(image => {
-        this.convertBlobUriToBlob(image.uri).then(async blob => {
-          const res: UploadImageResponseDTO = await this.imageUploaderService.uploadImageBlob(blob);
+  public async uploadImages(): Promise<void> {
+    const images = await this.imageDbService.getAllUnuploadedImages();
+
+    await Promise.all(
+      images.map(async image => {
+        try {
+          const blob = await this.convertBlobUriToBlob(image.uri);
+          const res: UploadImageResponseDTO = await this.imageUploaderService.uploadImageBlob(
+            image.id,
+            blob,
+          );
           const imageUrl = `${ImageUploaderService.IMAGE_API_ENDPOINT}/${res.fileId}.${res.extension}`;
+
           // set upload to true + url
           await this.imageDbService.updateImage(image.id, {
             uploaded: true,
             uri: imageUrl,
           });
-        });
-      });
-    });
+        } catch (error) {
+          console.error(`Failed to upload image ${image.id}:`, error);
+        }
+      }),
+    );
   }
 }
