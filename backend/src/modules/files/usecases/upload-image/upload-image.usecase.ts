@@ -23,8 +23,35 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
   public async execute(req: UploadImageRequest, user: User): Promise<UploadImageResult> {
     const file: Express.Multer.File = req.file;
     const userId: string = user.id.toString();
+
+    const prepareResult = await this.prepareAndValidateFile(file, userId);
+    if (prepareResult.isFailure) {
+      return prepareResult as Result<never, UploadImageError>;
+    }
+
+    const { pathToFile, fileType } = prepareResult.getValue();
+
+    try {
+      const fileId: string = await this.googleDriveService.uploadFile(user, pathToFile);
+
+      return Result.ok<UploadImageResponse, never>({
+        fileId,
+        extension: fileType,
+      });
+    } catch (error) {
+      // TODO: handele error properly (as service error)
+      // TICKET: https://brainas.atlassian.net/browse/BA-218
+      console.error('Error uploading file to Google Drive:', error);
+      return new UploadImageErrors.UploadToGoogleDriveFailed();
+    }
+  }
+
+  private async prepareAndValidateFile(
+    file: Express.Multer.File,
+    userId: string
+  ): Promise<Result<{ pathToFile: string; fileType: string }, UploadImageError>> {
     const tempPath = file.path;
-    const originalname = req.file.originalname;
+    const originalname = file.originalname;
     const userUploadDir = `${config.paths.uploadTempDir}/${userId}`;
     const pathToFile = `${userUploadDir}/${originalname}`;
 
@@ -32,7 +59,7 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
       fs.mkdirSync(userUploadDir, { recursive: true });
     }
 
-    const fileType = path.extname(req.file.originalname).toLowerCase().replace('.', '');
+    const fileType = path.extname(originalname).toLowerCase().replace('.', '');
     if (!this.allowedTypes.includes(fileType)) {
       return await new Promise<Result<never, UploadImageError>>((resolve, reject) => {
         fs.unlink(tempPath, err => {
@@ -49,18 +76,6 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
       });
     });
 
-    try {
-      const fileId: string = await this.googleDriveService.uploadFile(user, pathToFile);
-
-      return Result.ok<UploadImageResponse, never>({
-        fileId,
-        extension: fileType,
-      });
-    } catch (error) {
-      // TODO: handele error properly (as service error)
-      // TICKET: https://brainas.atlassian.net/browse/BA-218
-      console.error('Error uploading file to Google Drive:', error);
-      return new UploadImageErrors.UploadToGoogleDriveFailed();
-    }
+    return Result.ok({ pathToFile, fileType });
   }
 }
