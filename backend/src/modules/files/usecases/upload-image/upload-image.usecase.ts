@@ -1,5 +1,5 @@
 import path from 'path';
-import fs from 'fs';
+import { promises as fsp } from 'fs';
 
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
@@ -9,58 +9,77 @@ import { User } from '../../../../shared/domain/models/user.js';
 import { UploadImageRequest } from './upload-image.request.js';
 import { UploadImageResponse } from './upload-image.response.js';
 import { config } from '../../../../config/index.js';
+import { Image } from '../../../../shared/domain/models/image.js';
+import { ImageRepo } from '../../../../shared/repo/image.repo.js';
 
 export type UploadImageResult = Result<UploadImageResponse | never, UploadImageError>;
 
 export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<UploadImageResult>> {
   private googleDriveService: GoogleDriveService;
+  private readonly imageRepo: ImageRepo;
+
   private allowedTypes = ['png', 'jpeg', 'jpg'];
 
-  constructor(googleDriveService: GoogleDriveService) {
+  constructor(googleDriveService: GoogleDriveService, imageRepo: ImageRepo) {
     this.googleDriveService = googleDriveService;
+    this.imageRepo = imageRepo;
   }
 
   public async execute(req: UploadImageRequest, user: User): Promise<UploadImageResult> {
-    const file: Express.Multer.File = req.file;
     const userId: string = user.id.toString();
-    const tempPath = file.path;
-    const originalname = req.file.originalname;
-    const userUploadDir = `${config.paths.uploadTempDir}/${userId}`;
-    const pathToFile = `${userUploadDir}/${originalname}`;
 
-    if (!fs.existsSync(userUploadDir)) {
-      fs.mkdirSync(userUploadDir, { recursive: true });
+    const pathToFileOrError = await this.prepareLocalFile(req, userId);
+    if (pathToFileOrError.isFailure) {
+      return Result.fail<never, UploadImageError>(pathToFileOrError.error);
     }
-
-    const fileType = path.extname(req.file.originalname).toLowerCase().replace('.', '');
-    if (!this.allowedTypes.includes(fileType)) {
-      return await new Promise<Result<never, UploadImageError>>((resolve, reject) => {
-        fs.unlink(tempPath, err => {
-          if (err) reject(err);
-          resolve(new UploadImageErrors.NotSupportedTypeError(fileType));
-        });
-      });
-    }
-
-    await new Promise<void>((resolve, reject) => {
-      fs.rename(tempPath, pathToFile, err => {
-        if (err) reject(err);
-        resolve();
-      });
-    });
+    const { pathToFile, extension } = pathToFileOrError.getValue();
 
     try {
       const fileId: string = await this.googleDriveService.uploadFile(user, pathToFile);
 
-      return Result.ok<UploadImageResponse, never>({
-        fileId,
-        extension: fileType,
-      });
+      await this.saveImageToDB(req.imageId, fileId);
+
+      return Result.ok<UploadImageResponse, never>();
     } catch (error) {
       // TODO: handele error properly (as service error)
       // TICKET: https://brainas.atlassian.net/browse/BA-218
       console.error('Error uploading file to Google Drive:', error);
       return new UploadImageErrors.UploadToGoogleDriveFailed();
     }
+  }
+
+  private async prepareLocalFile(
+    req: UploadImageRequest,
+    userId: string,
+  ): Promise<Result<{ pathToFile: string; extension: string }, UploadImageError>> {
+    const tempPath = req.file.path;
+    const originalname = req.file.originalname;
+    const userUploadDir = `${config.paths.uploadTempDir}/${userId}`;
+    const pathToFile = `${userUploadDir}/${originalname}`;
+
+    await fsp.mkdir(userUploadDir, { recursive: true });
+
+    const fileType = path.extname(req.file.originalname).toLowerCase().replace('.', '');
+    if (!this.allowedTypes.includes(fileType)) {
+      await fsp.unlink(tempPath);
+      return new UploadImageErrors.NotSupportedTypeError(fileType);
+    }
+
+    await fsp.rename(tempPath, pathToFile);
+
+    return Result.ok<{ pathToFile: string; extension: string }, never>({
+      pathToFile,
+      extension: fileType,
+    });
+  }
+
+  private async saveImageToDB(imageId: string, fileId: string): Promise<void> {
+    const imageOrError = Image.create({
+      imageId: imageId,
+      storageType: 'googleDrive',
+      fileId,
+    });
+
+    await this.imageRepo.create(imageOrError.getValue());
   }
 }

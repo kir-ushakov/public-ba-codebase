@@ -21,6 +21,7 @@ export class UploadImageController extends BaseController {
 
       let uploadImageRequest: UploadImageRequest = {
         file: req.file,
+        imageId: req.body.imageId,
       };
       const user = UserMapper.toDomain(authenticatedUser);
 
