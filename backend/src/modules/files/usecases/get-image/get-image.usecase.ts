@@ -6,7 +6,8 @@ import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { GoogleDriveService } from '././../../../integrations/google/services/google-drive.service.js';
 import { ImageResizeService } from '../../services/image-resize.service.js';
 import { User } from '../../../../shared/domain/models/user.js';
-import { ImageRepo } from '../../../../shared/repo/image.repo.js';
+import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
+import { GetImageErrors } from './get-image.errors.js';
 
 export type GetImageRequest = {
   imageId: string;
@@ -20,13 +21,19 @@ export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImag
   constructor(
     private readonly googleDriveService: GoogleDriveService,
     private readonly imageResizeService: ImageResizeService,
-    private readonly imageRepo: ImageRepo,
+    private readonly imageRepoService: ImageRepoService,
   ) {}
 
   public async execute(req: GetImageRequest): Promise<GetImageResult> {
-    const imageId = req.imageId;
     const user = req.user;
-    const image = await this.imageRepo.find(imageId);
+    const userId = user.id.toString();
+    const imageId = req.imageId;
+
+    const imageOrError = await this.imageRepoService.getUserImageById(userId, imageId);
+    if (imageOrError.isFailure) {
+      return new GetImageErrors.ImageNotFoundError(imageOrError.error);
+    }
+    const image = imageOrError.getValue();
     const fileId = image.fileId;
 
     let file: GaxiosResponse<Readable> = await this.googleDriveService.getImageById(user, fileId);
