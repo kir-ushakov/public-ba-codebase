@@ -10,19 +10,19 @@ import { UploadImageRequest } from './upload-image.request.js';
 import { UploadImageResponse } from './upload-image.response.js';
 import { config } from '../../../../config/index.js';
 import { Image } from '../../../../shared/domain/models/image.js';
-import { ImageRepo } from '../../../../shared/repo/image.repo.js';
+import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
 
 export type UploadImageResult = Result<UploadImageResponse | never, UploadImageError>;
 
 export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<UploadImageResult>> {
   private googleDriveService: GoogleDriveService;
-  private readonly imageRepo: ImageRepo;
+  private readonly imageRepoService: ImageRepoService;
 
   private allowedTypes = ['png', 'jpeg', 'jpg'];
 
-  constructor(googleDriveService: GoogleDriveService, imageRepo: ImageRepo) {
+  constructor(googleDriveService: GoogleDriveService, imageRepoService: ImageRepoService) {
     this.googleDriveService = googleDriveService;
-    this.imageRepo = imageRepo;
+    this.imageRepoService = imageRepoService;
   }
 
   public async execute(req: UploadImageRequest, user: User): Promise<UploadImageResult> {
@@ -37,7 +37,7 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
     try {
       const fileId: string = await this.googleDriveService.uploadFile(user, pathToFile);
 
-      await this.saveImageToDB(req.imageId, fileId);
+      await this.saveImageToDB(req.imageId, fileId, userId);
 
       return Result.ok<UploadImageResponse, never>();
     } catch (error) {
@@ -73,13 +73,14 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
     });
   }
 
-  private async saveImageToDB(imageId: string, fileId: string): Promise<void> {
+  private async saveImageToDB(imageId: string, fileId: string, userId: string): Promise<void> {
     const imageOrError = Image.create({
       imageId: imageId,
       storageType: 'googleDrive',
       fileId,
+      userId,
     });
 
-    await this.imageRepo.create(imageOrError.getValue());
+    await this.imageRepoService.create(imageOrError.getValue());
   }
 }
