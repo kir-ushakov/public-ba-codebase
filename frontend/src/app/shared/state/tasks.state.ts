@@ -12,11 +12,10 @@ import {
   TaskChanges,
 } from 'src/app/shared/models/';
 import { UserState } from './user.state';
-import { MbTaskScreenAction } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.actions';
 import { AppAction } from './app.actions';
 import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
-import { ImageUploaderService } from '../services/api/image-uploader.service';
 import { TasksAction } from './tasks.action';
+import { SyncAction } from './sync.action';
 
 interface ITasksStateModel {
   entities: Array<Task>;
@@ -31,8 +30,6 @@ interface ITasksStateModel {
 @Injectable()
 export class TasksState {
   static readonly actualStatuses: Array<ETaskStatus> = [ETaskStatus.Todo];
-
-  constructor(private imageUploaderService: ImageUploaderService) {}
 
   @Selector([TasksState, UserState.userId])
   static allTasks(state: ITasksStateModel, userId: string): Array<Task> {
@@ -61,7 +58,7 @@ export class TasksState {
       );
 
       ctx.dispatch(
-        new AppAction.ChangeForSyncOccurred({
+        new SyncAction.ChangeForSyncOccurred({
           entity: EChangedEntity.Task,
           action: EChangeAction.Created,
           object: newTask,
@@ -95,7 +92,7 @@ export class TasksState {
     const updatedTask: Task = ctx.getState().entities.find(t => t.id === taskUpdateData.taskId);
 
     ctx.dispatch(
-      new AppAction.ChangeForSyncOccurred({
+      new SyncAction.ChangeForSyncOccurred({
         entity: EChangedEntity.Task,
         action: EChangeAction.Updated,
         object: updatedTask,
@@ -115,7 +112,7 @@ export class TasksState {
     const now = this.now();
 
     ctx.dispatch(
-      new AppAction.ChangeForSyncOccurred({
+      new SyncAction.ChangeForSyncOccurred({
         entity: EChangedEntity.Task,
         action: EChangeAction.Deleted,
         object: { id: taskId, modifiedAt: now },

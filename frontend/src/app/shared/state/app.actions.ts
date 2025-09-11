@@ -32,13 +32,6 @@ export namespace AppAction {
   export class UserNotAuthenticated {
     static readonly type = '[App API] User Not Authenticated';
   }
-
-  export class ChangeForSyncOccurred {
-    static readonly type = '[App] Change Occurred';
-
-    constructor(public change: Change) {}
-  }
-
   export class ShowErrorInUI {
     static readonly type = '[App] Show Error In UI';
 
