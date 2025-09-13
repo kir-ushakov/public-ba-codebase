@@ -41,7 +41,7 @@ export class ImageService {
     await Promise.all(
       images.map(async image => {
         try {
-          const blob = await this.convertBlobUriToBlob(image.uri);
+          const blob = image.blob;
           const res: UploadImageResponseDTO = await this.imageUploaderService.uploadImageBlob(
             image.id,
             blob,
@@ -51,7 +51,6 @@ export class ImageService {
           // set upload to true + url
           await this.imageDbService.updateImage(image.id, {
             uploaded: true,
-            uri: imageUrl,
           });
         } catch (error) {
           console.error(`Failed to upload image ${image.id}:`, error);
