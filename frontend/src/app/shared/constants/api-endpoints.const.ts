@@ -16,4 +16,7 @@ export const API_ENDPOINTS = {
   INTEGRATIONS: {
     SLACK: BASE_URL + 'integrations/slack/install',
   },
+  FILES: {
+    IMAGE: BASE_URL + 'files/image',
+  },
 };
