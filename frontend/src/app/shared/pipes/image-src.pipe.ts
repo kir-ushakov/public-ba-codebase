@@ -18,7 +18,7 @@ export class ImageSrcPipe implements PipeTransform, OnDestroy {
     private cd: ChangeDetectorRef,
   ) {}
 
-  transform(id: string | null | undefined): SafeUrl | string | null {
+  transform(id: string | null | undefined, width?: number): SafeUrl | string | null {
     if (!id) {
       this.revokeUrl();
       this.latestValue = null;
@@ -27,7 +27,7 @@ export class ImageSrcPipe implements PipeTransform, OnDestroy {
 
     if (id !== this.latestId) {
       this.latestId = id;
-
+      debugger;
       this.imageDb
         .getImage(id)
         .then(record => {
@@ -37,7 +37,8 @@ export class ImageSrcPipe implements PipeTransform, OnDestroy {
             this.currentUrl = URL.createObjectURL(record.blob);
             this.latestValue = this.sanitizer.bypassSecurityTrustUrl(this.currentUrl);
           } else {
-            this.latestValue = `${API_ENDPOINTS.FILES.IMAGE}/${id}`;
+            const baseUrl = `${API_ENDPOINTS.FILES.IMAGE}/${id}`;
+            this.latestValue = width ? `${baseUrl}?width=${width}` : baseUrl;
           }
 
           this.cd.markForCheck();
