@@ -43,6 +43,7 @@ export class ImageUploaderService {
       
       const formData = new FormData();
       formData.append('file', blob, filename);
+      formData.append('imageId', imageId);
       
       return firstValueFrom(this.http.post<UploadImageResponseDTO>('/api/files/image', formData));
     } catch (error) {
