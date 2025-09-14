@@ -36,6 +36,21 @@ export class ImageUploaderService {
     }
   }
 
+  public async uploadImageBlob(imageId: string, blob: Blob): Promise<UploadImageResponseDTO> {
+    try {
+      const extension = mime.getExtension(blob.type) || 'jpg';
+      const filename = `${imageId}.${extension}`;
+      
+      const formData = new FormData();
+      formData.append('file', blob, filename);
+      
+      return firstValueFrom(this.http.post<UploadImageResponseDTO>('/api/files/image', formData));
+    } catch (error) {
+      console.error('Error uploading image blob:', error);
+      throw error;
+    }
+  }
+
   private async convertBlobUriToFormData(imageUri: string, quality: number): Promise<FormData> {
     const response = await fetch(imageUri);
     const blob = await response.blob();
