@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import mime from 'mime';
 import { environment } from 'src/environments/environment';
 import { firstValueFrom } from 'rxjs';
+import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
 
 export type UploadImageResponseDTO = {
   fileId: string;
@@ -26,7 +27,9 @@ export class ImageUploaderService {
       formData.append('file', blob, filename);
       formData.append('imageId', imageId);
 
-      return firstValueFrom(this.http.post<UploadImageResponseDTO>('/api/files/image', formData));
+      return firstValueFrom(
+        this.http.post<UploadImageResponseDTO>(API_ENDPOINTS.FILES.IMAGE, formData),
+      );
     } catch (error) {
       console.error('Error uploading image:', error);
       throw error;

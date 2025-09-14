@@ -1,6 +1,7 @@
 import { Pipe, PipeTransform, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ImageDbService } from '../services/infrastructure/image-db.service';
+import { API_ENDPOINTS } from '../constants/api-endpoints.const';
 
 @Pipe({
   name: 'imageSrc',
@@ -32,13 +33,11 @@ export class ImageSrcPipe implements PipeTransform, OnDestroy {
         .then(record => {
           this.revokeUrl();
 
-          if (record?.uploaded && record.uri) {
-            this.latestValue = record.uri;
-          } else if (record?.blob) {
+          if (record?.blob) {
             this.currentUrl = URL.createObjectURL(record.blob);
             this.latestValue = this.sanitizer.bypassSecurityTrustUrl(this.currentUrl);
           } else {
-            this.latestValue = null;
+            this.latestValue = `${API_ENDPOINTS.FILES.IMAGE}/${id}`;
           }
 
           this.cd.markForCheck();
