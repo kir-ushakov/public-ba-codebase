@@ -39,7 +39,7 @@ export class TaskTileComponent {
         map((imageRecord: ImageRecord) => {
           if (imageRecord.uploaded) {
             const width = this.calculateImageWidth();
-            return imageRecord.uri + `?width=${width}`;
+            return imageRecord.id + `?width=${width}`;
           }
           return URL.createObjectURL(imageRecord.blob);
         }),
