@@ -17,6 +17,6 @@ const ImageSchema = new Schema({
   fileId: { type: String, default: null },
 });
 
-const ImageModel = mongoose.model<ImageDocument>('Client', ImageSchema);
+const ImageModel = mongoose.model<ImageDocument>('Image', ImageSchema);
 
 export default ImageModel;
