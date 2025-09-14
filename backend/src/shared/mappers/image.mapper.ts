@@ -1,7 +1,7 @@
-import { Result } from '../core/result';
-import { Image } from '../domain/models/image';
-import { UniqueEntityID } from '../domain/UniqueEntityID';
-import { IImagePersistent } from '../infra/database/mongodb/image.model';
+import { Result } from '../core/result.js';
+import { Image } from '../domain/models/image.js';
+import { UniqueEntityID } from '../domain/UniqueEntityID.js';
+import { IImagePersistent } from '../infra/database/mongodb/image.model.js';
 
 export class ImageMapper {
   public static toDomain(raw: IImagePersistent): Result<Image, never> {
