@@ -5,7 +5,6 @@ export interface ImageRecord {
   id: string;
   blob?: Blob;
   uploaded: boolean;
-  uri?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -19,7 +18,7 @@ export class ImageDbService {
     uri?: string,
   ): Promise<void> {
     const db = await this.databaseService.getDatabase();
-    const record: ImageRecord = { id, uploaded, uri };
+    const record: ImageRecord = { id, uploaded };
     if (blob) {
       record.blob = blob;
     }
@@ -48,7 +47,6 @@ export class ImageDbService {
     const merged: ImageRecord = {
       id,
       uploaded: updates.uploaded ?? existing?.uploaded ?? false,
-      uri: updates.uri ?? existing?.uri ?? existing?.url,
       blob: updates.blob ?? existing?.blob,
     };
 
