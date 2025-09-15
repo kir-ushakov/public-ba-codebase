@@ -5,7 +5,13 @@
       @if (isLoading()) {
         <ba-spinner></ba-spinner>
       }
-      <img [src]="resizedImageUri()" (load)="isLoading.set(false)" (error)="isLoading.set(false)" />
+      @if (calculatedImageWidth()) {
+        <img
+          [src]="task.imageId | imageSrc: calculatedImageWidth()"
+          (load)="isLoading.set(false)"
+          (error)="isLoading.set(false)"
+        />
+      }
     </div>
   }
 </div>

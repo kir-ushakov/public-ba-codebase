@@ -1,18 +1,17 @@
-import { Component, Input, HostListener, signal, ViewChild, WritableSignal } from '@angular/core';
+import { Component, Input, HostListener, signal, ViewChild } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { MbTaskTileAction } from './task-tile.actions';
 import { Task } from 'src/app/shared/models/task.model';
 import { CommonModule } from '@angular/common';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
 import { ImageService } from 'src/app/shared/services/infrastructure/image.service';
-import { from, map } from 'rxjs';
-import { ImageRecord } from 'src/app/shared/services/infrastructure/image-db.service';
+import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
 
 @Component({
   selector: 'ba-task-tile',
   templateUrl: './task-tile.component.html',
   styleUrls: ['./task-tile.component.scss'],
-  imports: [CommonModule, SpinnerComponent],
+  imports: [CommonModule, SpinnerComponent, ImageSrcPipe],
 })
 export class TaskTileComponent {
   @Input() task: Task;
@@ -25,8 +24,7 @@ export class TaskTileComponent {
   DEFAULT_IMAGE_WIDTH = 50;
 
   isLoading = signal(true);
-
-  resizedImageUri: WritableSignal<null | string> = signal(null);
+  calculatedImageWidth = signal<number | null>(null);
 
   constructor(
     private store: Store,
@@ -34,31 +32,13 @@ export class TaskTileComponent {
   ) {}
 
   ngAfterViewInit() {
-    from(this.imageService.getImageRecord(this.task.imageId))
-      .pipe(
-        map((imageRecord: ImageRecord) => {
-          if (imageRecord.uploaded) {
-            const width = this.calculateImageWidth();
-            return imageRecord.id + `?width=${width}`;
-          }
-          return URL.createObjectURL(imageRecord.blob);
-        }),
-      )
-      .subscribe({
-        next: resizedImageUri => {
-          this.resizedImageUri.set(resizedImageUri);
-        },
-        error: err => {
-          console.error('Failed to load image', err);
-        },
-      });
+    this.calculateImageWidth();
   }
 
-  private calculateImageWidth(): number {
+  private calculateImageWidth(): void {
     const width =
       this.spinnerComponent?.getNativeElement()?.offsetWidth || this.DEFAULT_IMAGE_WIDTH;
-
     const dpr = window.devicePixelRatio || 1;
-    return dpr * width;
+    this.calculatedImageWidth.set(dpr * width);
   }
 }
