@@ -33,10 +33,10 @@ export class SyncState {
   private intervalId: null | ReturnType<typeof setTimeout> = null;
 
   constructor(
-    private clientIdSerivce: ClientIdService,
-    private clientChangesService: ClientChangesService,
-    private serverChangesService: ServerChangesService,
-    private imageService: ImageService,
+    private readonly clientIdSerivce: ClientIdService,
+    private readonly clientChangesService: ClientChangesService,
+    private readonly serverChangesService: ServerChangesService,
+    private readonly imageService: ImageService,
   ) {}
 
   @Selector()
