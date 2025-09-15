@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DatabaseService, AppDB, DATABASE_CONFIG } from './database.service';
+import { DatabaseService, DATABASE_CONFIG } from './database.service';
 
 export interface ImageRecord {
   id: string;
@@ -37,7 +37,8 @@ export class ImageDbService {
 
   async getAllUnuploadedImages(): Promise<ImageRecord[]> {
     const db = await this.databaseService.getDatabase();
-    return db.getAllFromIndex(DATABASE_CONFIG.STORES.IMAGES, 'uploaded', IDBKeyRange.only(false));
+    const allImages = await db.getAll(DATABASE_CONFIG.STORES.IMAGES);
+    return allImages.filter(image => image.uploaded === false);
   }
 
   async updateImage(id: string, updates: Partial<Omit<ImageRecord, 'id'>>): Promise<void> {
