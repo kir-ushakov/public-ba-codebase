@@ -27,7 +27,6 @@ export class ImageSrcPipe implements PipeTransform, OnDestroy {
 
     if (id !== this.latestId) {
       this.latestId = id;
-      debugger;
       this.imageDb
         .getImage(id)
         .then(record => {
