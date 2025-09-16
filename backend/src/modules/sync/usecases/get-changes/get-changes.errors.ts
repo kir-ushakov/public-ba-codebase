@@ -17,8 +17,8 @@ export namespace GetChangesErrors {
         false,
         new GoogleAuthError(
           GetChangesErrorCode.ClientNotFound,
-          `The client with id = "${clientId}" for user ${userId} dosn't exists`,
-          EHttpStatus.BadRequest,
+          `The clientId = "${clientId}" for user ${userId} dosn't exists`,
+          EHttpStatus.NotFound,
         ),
       );
     }
