@@ -109,7 +109,10 @@ export class SyncState {
         next: (changes: Change[]) => {
           ctx.dispatch(new SyncServiceAPIAction.ServerChangesLoaded(changes));
         },
-        error: err => {
+        error: async err => {
+          if (err instanceof HttpErrorResponse && err.status === 404) {
+            await lastValueFrom(this.getClientIdAPICall(ctx));
+          }
           ctx.dispatch(SyncServiceAPIAction.ServerChangesLoadingFailed);
           return err;
         },
