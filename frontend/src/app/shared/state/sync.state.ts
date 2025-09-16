@@ -106,6 +106,9 @@ export class SyncState {
           ctx.dispatch(new SyncServiceAPIAction.ServerChangesLoaded(changes));
         },
         error: err => {
+          if (err instanceof HttpErrorResponse && err.status === 404) {
+            this.getClientIdAPICall(ctx).subscribe();
+          }
           ctx.dispatch(SyncServiceAPIAction.ServerChangesLoadingFailed);
           return err;
         },
