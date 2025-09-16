@@ -6,6 +6,8 @@ export namespace SyncServiceAPIAction {
 
     constructor(public changes: Change[]) {}
   }
+  // TODO: Handle this case in UI - possible show icon 'sync problem'
+  // TICKET: https://brainas.atlassian.net/browse/BA-245
   export class ServerChangesLoadingFailed {
     static readonly type = '[Sync Service API] Changes Loading Failed';
   }
