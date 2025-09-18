@@ -28,7 +28,7 @@ export class TasksMapper {
       type: task.type,
       title: task.title,
       status: task.status,
-      imageUri: task.imageId,
+      imageId: task.imageId,
       createdAt: task.createdAt,
       modifiedAt: task.modifiedAt,
     } as TaskDTO;

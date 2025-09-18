@@ -4,6 +4,6 @@
 </div>
 @if (task?.imageId) {
   <div class="task-picture-holder">
-    <img class="task-picture" src="{{ (task$ | async)?.imageUri | imageSrc }}" />
+    <img class="task-picture" [src]="(task$ | async)?.imageId | imageSrc" />
   </div>
 }

@@ -9,7 +9,7 @@ const TaskSchema = new Schema({
   type: { type: String, require: true }, // #TODO need to be a special TYPE
   title: { type: String, require: true },
   status: { type: String, require: true }, // #TODO need to be a special TYPE
-  imageUri: { type: String, require: false },
+  imageId: { type: String, require: false },
   createdAt: { type: Date, require: true },
   modifiedAt: { type: Date, require: true },
 });
