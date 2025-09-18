@@ -25,7 +25,7 @@ import { ViewChild, ElementRef } from '@angular/core';
 })
 export class MbTaskEditComponent {
   formValidStatus = output<boolean>();
-  imageId$: Observable<string> = inject(Store).select(MbTaskScreenState.imageId);
+  imageUri$: Observable<string> = inject(Store).select(MbTaskScreenState.imageUri);
   voiceToTextConverting$: Observable<boolean> = inject(Store).select(
     MbTaskScreenState.voiceToTextConverting,
   );
@@ -88,8 +88,8 @@ export class MbTaskEditComponent {
         );
       });
 
-    this.imageId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(imageId => {
-      const isPictureAdded = Boolean(imageId);
+    this.imageUri$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(imageUri => {
+      const isPictureAdded = Boolean(imageUri);
       this.updateTitleValidation(!isPictureAdded);
     });
 

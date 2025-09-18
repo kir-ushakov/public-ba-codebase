@@ -33,9 +33,9 @@
 
       <mat-error *ngIf="false"> Task title is <strong>required</strong> </mat-error>
     </mat-form-field>
-    @if (imageId$ | async) {
+    @if (imageUri$ | async) {
       <div class="task-picture-holder">
-        <img class="task-picture" src="{{ imageId$ | async }}" />
+        <img class="task-picture" src="{{ imageUri$ | async }}" />
       </div>
     } @else {
       <div class="take-a-picture-icon-holder">
