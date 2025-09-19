@@ -34,6 +34,7 @@ export class ImageSrcPipe implements PipeTransform, OnDestroy {
 
           if (record?.blob) {
             this.currentUrl = URL.createObjectURL(record.blob);
+            // Safe to bypass sanitization: blob URL created from trusted image data processed through image optimizer
             this.latestValue = this.sanitizer.bypassSecurityTrustUrl(this.currentUrl);
           } else {
             const baseUrl = `${API_ENDPOINTS.FILES.IMAGE}/${id}`;
