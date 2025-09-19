@@ -45,6 +45,12 @@
   flex: 1;
   overflow: hidden;
   overflow-y: scroll;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  scrollbar-width: none;
 }
 
 .bottom-panel-holder {
