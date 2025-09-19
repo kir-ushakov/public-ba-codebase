@@ -42,11 +42,7 @@ export class ImageService {
       images.map(async image => {
         try {
           const blob = image.blob;
-          const res: UploadImageResponseDTO = await this.imageUploaderService.uploadImageBlob(
-            image.id,
-            blob,
-          );
-          const imageUrl = `${ImageUploaderService.IMAGE_API_ENDPOINT}/${res.fileId}.${res.extension}`;
+          await this.imageUploaderService.uploadImageBlob(image.id, blob);
 
           // set upload to true + url
           await this.imageDbService.updateImage(image.id, {
