@@ -9,7 +9,7 @@ export class TasksMapper {
       type: taskDto.type as ETaskType,
       title: taskDto.title,
       status: taskDto.status as ETaskStatus,
-      imageUri: taskDto.imageUri,
+      imageId: taskDto.imageId,
       createdAt: taskDto.createdAt,
       modifiedAt: taskDto.modifiedAt,
     } as Task;
@@ -28,7 +28,7 @@ export class TasksMapper {
       type: task.type,
       title: task.title,
       status: task.status,
-      imageUri: task.imageUri,
+      imageId: task.imageId,
       createdAt: task.createdAt,
       modifiedAt: task.modifiedAt,
     } as TaskDTO;

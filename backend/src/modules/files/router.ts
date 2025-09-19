@@ -10,11 +10,9 @@ const uploader: multer.Multer = multer({
 });
 
 filesRouter.post('/image', uploader.single('file'), (req, res, next) =>
-  uploadImageController.execute(req, res, next)
+  uploadImageController.execute(req, res, next),
 );
 
-filesRouter.get('/image/:file', (req, res, next) =>
-  getImageController.execute(req, res, next)
-);
+filesRouter.get('/image/:imageId', (req, res, next) => getImageController.execute(req, res, next));
 
 export { filesRouter };

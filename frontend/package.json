@@ -36,6 +36,7 @@
     "compressorjs": "^1.2.1",
     "crypto-js": "^4.0.0",
     "dotenv": "^8.2.0",
+    "idb": "^8.0.3",
     "mime": "^4.0.3",
     "ng-mocks": "^14.13.2",
     "normalize.css": "^8.0.1",

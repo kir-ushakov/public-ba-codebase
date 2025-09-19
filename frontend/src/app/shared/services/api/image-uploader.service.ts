@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { v4 as uuidv4 } from 'uuid';
 import mime from 'mime';
 import { environment } from 'src/environments/environment';
-import { ImageOptimizerService } from '../utility/image-optimizer.service';
 import { firstValueFrom } from 'rxjs';
+import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
 
 export type UploadImageResponseDTO = {
   fileId: string;
@@ -17,38 +17,22 @@ export type UploadImageResponseDTO = {
 export class ImageUploaderService {
   public static readonly IMAGE_API_ENDPOINT = `${environment.baseUrl}files/image`;
 
-  constructor(
-    private http: HttpClient,
-    private imageOptimizerService: ImageOptimizerService,
-  ) {}
+  constructor(private http: HttpClient) {}
 
-  public async uploadImageFromBlobUri(
-    imageUri: string,
-    quality: number,
-  ): Promise<UploadImageResponseDTO> {
+  public async uploadImageBlob(imageId: string, blob: Blob): Promise<UploadImageResponseDTO> {
     try {
-      const formData = await this.convertBlobUriToFormData(imageUri, quality);
+      const extension = mime.getExtension(blob.type) || 'jpg';
+      const filename = `${uuidv4()}.${extension}`;
+      const formData = new FormData();
+      formData.append('file', blob, filename);
+      formData.append('imageId', imageId);
 
-      return firstValueFrom(this.http.post<UploadImageResponseDTO>('/api/files/image', formData));
+      return firstValueFrom(
+        this.http.post<UploadImageResponseDTO>(API_ENDPOINTS.FILES.IMAGE, formData),
+      );
     } catch (error) {
       console.error('Error uploading image:', error);
       throw error;
     }
-  }
-
-  private async convertBlobUriToFormData(imageUri: string, quality: number): Promise<FormData> {
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
-
-    const reducedBlob = await this.imageOptimizerService.optimizeImage(blob, quality);
-
-    const extension = mime.getExtension(reducedBlob.type) || 'jpg';
-
-    const filename = `${uuidv4()}.${extension}`;
-
-    const formData = new FormData();
-    formData.append('file', reducedBlob, filename);
-
-    return formData;
   }
 }

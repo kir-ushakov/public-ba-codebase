@@ -5,9 +5,9 @@ import { DomainError } from '../core/domain-error.js';
 
 export class TaskMapper {
   public static toDomain(raw: TaskPresitant): Task | DomainError<Task> {
-    const { userId, type, title, status, imageUri, _id } = raw;
+    const { userId, type, title, status, imageId, _id } = raw;
 
-    const taskProps = { userId, type, title, status, imageUri };
+    const taskProps = { userId, type, title, status, imageId };
     const taskId = new UniqueEntityID(_id);
 
     const taskOrError = Task.create(taskProps, taskId);
@@ -20,7 +20,7 @@ export class TaskMapper {
   }
 
   public static toPersistence(task: Task): TaskPresitant {
-    const { id, userId, type, title, status, imageUri, createdAt, modifiedAt } = task;
+    const { id, userId, type, title, status, imageId, createdAt, modifiedAt } = task;
 
     return {
       _id: id.toString(),
@@ -28,7 +28,7 @@ export class TaskMapper {
       type,
       title,
       status,
-      imageUri,
+      imageId,
       createdAt,
       modifiedAt,
     };

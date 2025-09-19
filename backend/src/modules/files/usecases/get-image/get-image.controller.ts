@@ -26,7 +26,7 @@ export class GetImageController extends BaseController {
 
     try {
       let getImageRequest: GetImageRequest = {
-        fileId: req.params.file.split('.')[0],
+        imageId: req.params.imageId,
         user: UserMapper.toDomain(authenticatedUser),
         imageWidth,
       };

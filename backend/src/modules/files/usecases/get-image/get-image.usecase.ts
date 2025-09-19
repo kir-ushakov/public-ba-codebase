@@ -6,9 +6,11 @@ import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { GoogleDriveService } from '././../../../integrations/google/services/google-drive.service.js';
 import { ImageResizeService } from '../../services/image-resize.service.js';
 import { User } from '../../../../shared/domain/models/user.js';
+import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
+import { GetImageErrors } from './get-image.errors.js';
 
 export type GetImageRequest = {
-  fileId: string;
+  imageId: string;
   user: User;
   imageWidth?: number;
 };
@@ -17,15 +19,24 @@ export type GetImageResult = Result<GaxiosResponse<Readable> | never, UseCaseErr
 
 export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImageResult>> {
   constructor(
-    private readonly _googleDriveService: GoogleDriveService,
-    private readonly _imageResizeService: ImageResizeService,
+    private readonly googleDriveService: GoogleDriveService,
+    private readonly imageResizeService: ImageResizeService,
+    private readonly imageRepoService: ImageRepoService,
   ) {}
 
   public async execute(req: GetImageRequest): Promise<GetImageResult> {
-    const fileId: string = req.fileId;
-    const user: User = req.user;
+    const user = req.user;
+    const userId = user.id.toString();
+    const imageId = req.imageId;
 
-    let file: GaxiosResponse<Readable> = await this._googleDriveService.getImageById(user, fileId);
+    const imageOrError = await this.imageRepoService.getUserImageById(userId, imageId);
+    if (imageOrError.isFailure) {
+      return new GetImageErrors.ImageNotFoundError(imageOrError.error);
+    }
+    const image = imageOrError.getValue();
+    const fileId = image.fileId;
+
+    let file: GaxiosResponse<Readable> = await this.googleDriveService.getImageById(user, fileId);
 
     if (req.imageWidth) {
       file = await this.resize(file, req.imageWidth);
@@ -38,7 +49,7 @@ export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImag
     width: number,
   ): Promise<GaxiosResponse<Readable>> {
     const resizeResult: { resized: Readable; contentType: string } =
-      await this._imageResizeService.resizeImage(file.data, width);
+      await this.imageResizeService.resizeImage(file.data, width);
     file.data = resizeResult.resized;
     file.headers = {
       ...file.headers,

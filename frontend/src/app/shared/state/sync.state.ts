@@ -11,6 +11,7 @@ import { AuthAPIAction } from '../services/api/auth.actions';
 import { EMPTY, Observable, catchError, concat, lastValueFrom, tap } from 'rxjs';
 import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
 import { SyncAction } from './sync.action';
+import { ImageService } from '../services/infrastructure/image.service';
 
 export interface SyncStateModel {
   clientId: string;
@@ -32,9 +33,10 @@ export class SyncState {
   private intervalId: null | ReturnType<typeof setTimeout> = null;
 
   constructor(
-    private clientIdSerivce: ClientIdService,
-    private clientChangesService: ClientChangesService,
-    private serverChangesService: ServerChangesService,
+    private readonly clientIdSerivce: ClientIdService,
+    private readonly clientChangesService: ClientChangesService,
+    private readonly serverChangesService: ServerChangesService,
+    private readonly imageService: ImageService,
   ) {}
 
   @Selector()
@@ -42,7 +44,7 @@ export class SyncState {
     return new Date(state.lastTime);
   }
 
-  @Action(AppAction.ChangeForSyncOccurred)
+  @Action(SyncAction.ChangeForSyncOccurred)
   changeOccurred(ctx: StateContext<SyncStateModel>, { change }: { change: Change }): void {
     ctx.setState(
       patch({
@@ -97,6 +99,8 @@ export class SyncState {
         }),
       )
       .subscribe();
+
+    this.imageService.uploadImages();
   }
 
   private fetchServerChanges(ctx: StateContext<SyncStateModel>): Observable<Change[]> {
@@ -105,7 +109,10 @@ export class SyncState {
         next: (changes: Change[]) => {
           ctx.dispatch(new SyncServiceAPIAction.ServerChangesLoaded(changes));
         },
-        error: err => {
+        error: async err => {
+          if (err instanceof HttpErrorResponse && err.status === 404) {
+            await lastValueFrom(this.getClientIdAPICall(ctx));
+          }
           ctx.dispatch(SyncServiceAPIAction.ServerChangesLoadingFailed);
           return err;
         },

@@ -1,4 +1,1 @@
-export type UploadImageResponse = {
-  fileId: string;
-  extension: string;
-};
+export type UploadImageResponse = void;

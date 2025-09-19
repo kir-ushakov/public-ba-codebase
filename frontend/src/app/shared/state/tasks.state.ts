@@ -9,15 +9,13 @@ import {
   Change,
   EChangeAction,
   EChangedEntity,
+  TaskChanges,
 } from 'src/app/shared/models/';
 import { UserState } from './user.state';
-import { MbTaskScreenAction } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.actions';
 import { AppAction } from './app.actions';
 import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
-import {
-  UploadImageResponseDTO,
-  ImageUploaderService,
-} from '../services/api/image-uploader.service';
+import { TasksAction } from './tasks.action';
+import { SyncAction } from './sync.action';
 
 interface ITasksStateModel {
   entities: Array<Task>;
@@ -33,8 +31,6 @@ interface ITasksStateModel {
 export class TasksState {
   static readonly actualStatuses: Array<ETaskStatus> = [ETaskStatus.Todo];
 
-  constructor(private imageUploaderService: ImageUploaderService) {}
-
   @Selector([TasksState, UserState.userId])
   static allTasks(state: ITasksStateModel, userId: string): Array<Task> {
     return this.getSortedUserTasks(state, userId);
@@ -47,36 +43,25 @@ export class TasksState {
     );
   }
 
-  // TODO: This method needs to be refactored to allow asynchronous/offline loading of images.
-  // TICKET: https://brainas.atlassian.net/browse/BA-237
-  @Action(MbTaskScreenAction.CreateTask)
+  @Action(TasksAction.CreateTask)
   async createTask(
     ctx: StateContext<ITasksStateModel>,
     { taskInitData, userId }: { taskInitData: Task; userId: string },
   ): Promise<void> {
     try {
       const now = this.now();
-      const baseTask = this.createTaskEntity(taskInitData, userId, now);
-
+      const newTask = this.createTaskEntity(taskInitData, userId, now);
       ctx.setState(
         patch({
-          entities: append([baseTask]),
-        }),
-      );
-
-      const taskWithImage = await this.processImageUpload(baseTask);
-
-      ctx.setState(
-        patch({
-          entities: updateItem(task => task.id === taskWithImage.id, patch({ ...taskWithImage })),
+          entities: append([newTask]),
         }),
       );
 
       ctx.dispatch(
-        new AppAction.ChangeForSyncOccurred({
+        new SyncAction.ChangeForSyncOccurred({
           entity: EChangedEntity.Task,
           action: EChangeAction.Created,
-          object: taskWithImage,
+          object: newTask,
           modifiedAt: now,
         } as Change),
       );
@@ -85,23 +70,29 @@ export class TasksState {
     }
   }
 
-  @Action(MbTaskScreenAction.UpdateTask)
-  updateTask(ctx: StateContext<ITasksStateModel>, { taskUpdateData }: { taskUpdateData: Task }) {
+  @Action(TasksAction.UpdateTask)
+  updateTask(
+    ctx: StateContext<ITasksStateModel>,
+    { taskUpdateData }: { taskUpdateData: TaskChanges },
+  ) {
+    const now = this.now();
+
     ctx.setState(
       patch({
-        entities: updateItem(task => task.id === taskUpdateData.id, patch({ ...taskUpdateData })),
+        entities: updateItem(
+          task => task.id === taskUpdateData.taskId,
+          patch({
+            ...taskUpdateData.changes,
+            modifiedAt: now,
+          }),
+        ),
       }),
     );
 
-    const updatedTask: Task = ctx.getState().entities.find(t => t.id === taskUpdateData.id);
-
-    if (!updatedTask) {
-      console.error(`Task with id ${taskUpdateData.id} was not found after update.`);
-      return;
-    }
+    const updatedTask: Task = ctx.getState().entities.find(t => t.id === taskUpdateData.taskId);
 
     ctx.dispatch(
-      new AppAction.ChangeForSyncOccurred({
+      new SyncAction.ChangeForSyncOccurred({
         entity: EChangedEntity.Task,
         action: EChangeAction.Updated,
         object: updatedTask,
@@ -110,7 +101,7 @@ export class TasksState {
     );
   }
 
-  @Action(MbTaskScreenAction.DeleteTask)
+  @Action(TasksAction.DeleteTask)
   delete(ctx: StateContext<ITasksStateModel>, { taskId }: { taskId: string }) {
     ctx.setState(
       patch({
@@ -121,7 +112,7 @@ export class TasksState {
     const now = this.now();
 
     ctx.dispatch(
-      new AppAction.ChangeForSyncOccurred({
+      new SyncAction.ChangeForSyncOccurred({
         entity: EChangedEntity.Task,
         action: EChangeAction.Deleted,
         object: { id: taskId, modifiedAt: now },
@@ -161,31 +152,11 @@ export class TasksState {
       userId,
       id: uuidv4(),
       title: taskInitData.title,
-      imageUri: taskInitData.imageUri,
+      imageId: taskInitData.imageId,
       status: ETaskStatus.Todo,
       createdAt: timestamp,
       modifiedAt: timestamp,
     };
-  }
-
-  // TODO: I think this should be part of service
-  // TICKET:
-  private async processImageUpload(task: Task): Promise<Task> {
-    if (!task.imageUri) return task;
-
-    try {
-      const QUALITY = 0.6;
-      const res: UploadImageResponseDTO = await this.imageUploaderService.uploadImageFromBlobUri(
-        task.imageUri,
-        QUALITY,
-      );
-      const newImageUri = `${ImageUploaderService.IMAGE_API_ENDPOINT}/${res.fileId}.${res.extension}`;
-      return { ...task, imageUri: newImageUri };
-    } catch (error) {
-      console.error('Image upload failed');
-      console.error(error);
-      throw error;
-    }
   }
 
   private static getSortedUserTasks(state: ITasksStateModel, userId: string): Task[] {

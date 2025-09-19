@@ -3,5 +3,5 @@ export interface CreateTaskRequestDTO {
   type: string;
   title: string;
   status: string;
-  imageUri?: string;
+  imageId?: string;
 }

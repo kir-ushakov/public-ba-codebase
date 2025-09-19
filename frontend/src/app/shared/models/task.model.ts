@@ -14,7 +14,7 @@ export type Task = {
   userId: string;
   type: ETaskType;
   title: string;
-  imageUri?: string;
+  imageId?: string;
   status: ETaskStatus;
   createdAt: string;
   modifiedAt: string;
@@ -28,4 +28,9 @@ export const defaultTask = {
   title: '',
   createdAt: null,
   modifiedAt: null,
+};
+
+export type TaskChanges = {
+  taskId: string;
+  changes: Partial<Task>;
 };
