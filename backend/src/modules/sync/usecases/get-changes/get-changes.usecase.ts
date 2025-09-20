@@ -32,8 +32,6 @@ export class GetChangesUC implements UseCase<GetChangesRequest, Promise<GetChang
     const changes: Array<Change> = [];
     let client: Client;
 
-    // TODO: hande potential error the right way
-    // TICKET: https://brainas.atlassian.net/browse/BA-215
     try {
       client = await this.clientRepo.find(userId, clientId);
     } catch (err) {
