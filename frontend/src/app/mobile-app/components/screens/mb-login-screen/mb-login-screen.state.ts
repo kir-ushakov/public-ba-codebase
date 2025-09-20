@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { MbLoginScreenAction } from './mb-login-screen.actions';
-import { AuthAPIAction } from 'src/app/shared/services/api/auth.actions';
+import { UserAction } from 'src/app/shared/state/user.actions';
 
 interface IMbLoginScreenStateModel {
   authErrMessage: string;
@@ -18,7 +18,7 @@ export class MbLoginScreenState {
     return state.authErrMessage;
   }
 
-  @Action(AuthAPIAction.UserAuthFailed)
+  @Action(UserAction.AuthFailed)
   authFailed(ctx: StateContext<IMbLoginScreenStateModel>, { message }) {
     ctx.patchState({
       authErrMessage: message,

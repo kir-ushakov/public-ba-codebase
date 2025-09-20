@@ -7,11 +7,11 @@ import { Change, EChangeAction } from '../models/change.model';
 import { append, patch, removeItem } from '@ngxs/store/operators';
 import { ServerChangesService } from '../services/api/server-changes.service';
 import { ClientChangesService } from '../services/api/client-changes.service';
-import { AuthAPIAction } from '../services/api/auth.actions';
 import { EMPTY, Observable, catchError, concat, lastValueFrom, tap } from 'rxjs';
 import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
 import { SyncAction } from './sync.action';
 import { ImageService } from '../services/infrastructure/image.service';
+import { UserAction } from './user.actions';
 
 export interface SyncStateModel {
   clientId: string;
@@ -76,7 +76,7 @@ export class SyncState {
     }, this.SYNC_PERIOD);
   }
 
-  @Action(AuthAPIAction.UserLoggedOut)
+  @Action(UserAction.LoggedOut)
   @Action(AppAction.UserNotAuthenticated)
   clearTimer(): void {
     clearInterval(this.intervalId);

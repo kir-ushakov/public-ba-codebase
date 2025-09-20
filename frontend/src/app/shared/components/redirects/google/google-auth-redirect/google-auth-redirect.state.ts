@@ -3,7 +3,7 @@ import { Action, Selector, State, StateContext } from '@ngxs/store';
 import { AppAction } from 'src/app/shared/state/app.actions';
 import { GoogleAuthRedirectScreenAction } from './google-auth-redirect.actions';
 import { GoogleAPIService } from 'src/app/shared/services/integrations/google-api.service';
-import { GoogleAPIAction } from 'src/app/shared/services/integrations/google-api.actions';
+import { UserAction } from 'src/app/shared/state/user.actions';
 import { User } from 'src/app/shared/models';
 import { EMPTY, catchError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -68,7 +68,7 @@ export class GoogleAuthRedirectScreenState {
         ctx.patchState({
           isLogging: false,
         });
-        ctx.dispatch(new GoogleAPIAction.UserAuthenticated(userData));
+        ctx.dispatch(new UserAction.UserAuthenticatedWithGoogle(userData));
         ctx.dispatch(AppAction.NavigateToProfileScreen);
       });
   }

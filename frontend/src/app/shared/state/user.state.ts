@@ -10,9 +10,8 @@ import { SlackService } from '../services/integrations/slack.service';
 import { MbLoginScreenAction } from 'src/app/mobile-app/components/screens/mb-login-screen/mb-login-screen.actions';
 import { MbSyncScreenAction } from 'src/app/mobile-app/components/screens/mb-sync-screen/mb-sync-screen.actions';
 import { SlackAPIAction } from '../services/integrations/slack.api.actions';
-import { AuthAPIAction } from '../services/api/auth.actions';
 import { EMPTY, catchError, tap } from 'rxjs';
-import { GoogleAPIAction } from '../services/integrations/google-api.actions';
+import { UserAction } from './user.actions';
 
 interface IUserIntegrations {
   isAddedToSlack: boolean | undefined;
@@ -104,11 +103,11 @@ export class UserState {
     this.loginUser(ctx, email, password);
   }
 
-  @Action(AuthAPIAction.UserLoggedIn)
-  @Action(GoogleAPIAction.UserAuthenticated)
+  @Action(UserAction.UserLoggedInWithPassword)
+  @Action(UserAction.UserAuthenticatedWithGoogle)
   loggedIn(
     ctx: StateContext<IUserStateModel>,
-    action: AuthAPIAction.UserLoggedIn | GoogleAPIAction.UserAuthenticated,
+    action: UserAction.UserLoggedInWithPassword | UserAction.UserAuthenticatedWithGoogle,
   ): void {
     const { userData } = action;
 
@@ -116,7 +115,7 @@ export class UserState {
       userData: userData,
       authState: EUserAuthState.Authenticated,
       authType:
-        action instanceof GoogleAPIAction.UserAuthenticated
+        action instanceof UserAction.UserAuthenticatedWithGoogle
           ? EUserAuthType.Google
           : EUserAuthType.Password,
     });
@@ -130,13 +129,13 @@ export class UserState {
       .logout()
       .pipe(
         catchError(err => {
-          ctx.dispatch(AuthAPIAction.UserLogoutFailed);
+          ctx.dispatch(UserAction.LogoutFailed);
           return EMPTY;
         }),
       )
       .subscribe(() => {
         ctx.setState(patch({ userData: null }));
-        ctx.dispatch(AuthAPIAction.UserLoggedOut);
+        ctx.dispatch(UserAction.LoggedOut);
         ctx.dispatch(AppAction.NavigateToLoginScreen);
       });
   }
@@ -198,12 +197,12 @@ export class UserState {
       })
       .pipe(
         tap((user: User) => {
-          ctx.dispatch(new AuthAPIAction.UserLoggedIn(user));
+          ctx.dispatch(new UserAction.UserLoggedInWithPassword(user));
         }),
         catchError(err => {
           if (err instanceof HttpErrorResponse) {
             if (err.status === 401) {
-              ctx.dispatch(new AuthAPIAction.UserAuthFailed(err.error.message));
+              ctx.dispatch(new UserAction.AuthFailed(err.error.message));
             }
           } else {
             // TODO: Need to handle error here
