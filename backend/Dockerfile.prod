@@ -4,9 +4,9 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install --verbose
-RUN npm install -g ts-node@latest
-RUN npm install typescript -g
+RUN npm ci --verbose
+#RUN npm install -g ts-node@latest
+#RUN npm install typescript -g
 
 COPY . .
 
