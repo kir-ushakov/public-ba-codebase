@@ -13,9 +13,8 @@ import {
 } from 'src/app/shared/models/';
 import { UserState } from './user.state';
 import { AppAction } from './app.actions';
-import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
-import { TasksAction } from './tasks.action';
 import { SyncAction } from './sync.action';
+import { TasksAction } from './tasks.action';
 
 interface ITasksStateModel {
   entities: Array<Task>;
@@ -121,7 +120,7 @@ export class TasksState {
     );
   }
 
-  @Action(SyncServiceAPIAction.ServerChangesLoaded)
+  @Action(SyncAction.ServerChangesLoaded)
   synchronize(ctx: StateContext<ITasksStateModel>, { changes }: { changes: Change[] }): void {
     const taskChanges = changes.filter(c => c.entity === EChangedEntity.Task);
     for (const taskChange of taskChanges) {

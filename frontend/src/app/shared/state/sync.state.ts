@@ -8,7 +8,6 @@ import { append, patch, removeItem } from '@ngxs/store/operators';
 import { ServerChangesService } from '../services/api/server-changes.service';
 import { ClientChangesService } from '../services/api/client-changes.service';
 import { EMPTY, Observable, catchError, concat, lastValueFrom, tap } from 'rxjs';
-import { SyncServiceAPIAction } from '../services/api/server-changes.actions';
 import { SyncAction } from './sync.action';
 import { ImageService } from '../services/infrastructure/image.service';
 import { UserAction } from './user.actions';
@@ -55,7 +54,7 @@ export class SyncState {
     this.synchronizeApp(ctx);
   }
 
-  @Action(SyncServiceAPIAction.LocalChangeWasSynchronized)
+  @Action(SyncAction.LocalChangeWasSynchronized)
   @Action(SyncAction.LocalChangeWasCanceled)
   clientChangesSynchronized(
     ctx: StateContext<SyncStateModel>,
@@ -107,13 +106,13 @@ export class SyncState {
     return this.serverChangesService.fetch(ctx.getState().clientId).pipe(
       tap({
         next: (changes: Change[]) => {
-          ctx.dispatch(new SyncServiceAPIAction.ServerChangesLoaded(changes));
+          ctx.dispatch(new SyncAction.ServerChangesLoaded(changes));
         },
         error: async err => {
           if (err instanceof HttpErrorResponse && err.status === 404) {
             await lastValueFrom(this.getClientIdAPICall(ctx));
           }
-          ctx.dispatch(SyncServiceAPIAction.ServerChangesLoadingFailed);
+          ctx.dispatch(SyncAction.SyncinhriniziationWasFailed);
           return err;
         },
       }),
@@ -125,7 +124,7 @@ export class SyncState {
       this.clientChangesService.send(change).pipe(
         tap({
           next: () => {
-            ctx.dispatch(new SyncServiceAPIAction.LocalChangeWasSynchronized(change));
+            ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
           },
           error: error => {
             console.error('Sync Pending Change Error:', change, error);
@@ -170,7 +169,7 @@ export class SyncState {
         modifiedAt: new Date().toISOString(),
       },
     };
-    ctx.dispatch(new SyncServiceAPIAction.ServerChangesLoaded([deleteChange]));
+    ctx.dispatch(new SyncAction.ServerChangesLoaded([deleteChange]));
     ctx.dispatch(new SyncAction.LocalChangeWasCanceled(change));
 
     // TICKET: https://brainas.atlassian.net/browse/BA-136
