@@ -29,6 +29,9 @@ export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImag
     const userId = user.id.toString();
     const imageId = req.imageId;
 
+    // Start timing the entire operation
+    const overallStartTime = Date.now();
+
     const imageOrError = await this.imageRepoService.getUserImageById(userId, imageId);
     if (imageOrError.isFailure) {
       return new GetImageErrors.ImageNotFoundError(imageOrError.error);
@@ -36,11 +39,35 @@ export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImag
     const image = imageOrError.getValue();
     const fileId = image.fileId;
 
+    // Time the Google Drive fetch
+    const fetchStartTime = Date.now();
     let file: GaxiosResponse<Readable> = await this.googleDriveService.getImageById(user, fileId);
+    const fetchDuration = Date.now() - fetchStartTime;
+
+    // Calculate file size in MB
+    const fileSizeBytes = file.headers['content-length']
+      ? parseInt(file.headers['content-length'])
+      : null;
+    const fileSizeMB = fileSizeBytes ? (fileSizeBytes / (1024 * 1024)).toFixed(2) : 'unknown';
+
+    console.log(`[GetImageUsecase] Google Drive fetch completed:`, {
+      duration: `${fetchDuration}ms`,
+      fileId,
+      imageId,
+      sizeInMB: `${fileSizeMB} MB`,
+    });
 
     if (req.imageWidth) {
       file = await this.resize(file, req.imageWidth);
     }
+
+    // Log total operation time
+    const totalDuration = Date.now() - overallStartTime;
+    console.log(`[GetImageUsecase] Total operation completed:`, {
+      duration: `${totalDuration}ms`,
+      hadResize: !!req.imageWidth,
+    });
+
     return Result.ok<GaxiosResponse<Readable>, never>(file);
   }
 
@@ -48,8 +75,36 @@ export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImag
     file: GaxiosResponse<Readable>,
     width: number,
   ): Promise<GaxiosResponse<Readable>> {
+    // Start timing the resize operation
+    const startTime = Date.now();
+
+    // Log the original content type and requested width
+    const originalContentType = file.headers['content-type'];
+    const originalContentLength = file.headers['content-length'];
+    const originalSizeBytes = originalContentLength ? parseInt(originalContentLength) : null;
+    const originalSizeMB = originalSizeBytes
+      ? (originalSizeBytes / (1024 * 1024)).toFixed(2)
+      : 'unknown';
+
+    console.log(`[GetImageUsecase] Starting resize operation:`, {
+      requestedWidth: width,
+      originalContentType,
+      originalSizeInMB: `${originalSizeMB} MB`,
+    });
+
     const resizeResult: { resized: Readable; contentType: string } =
       await this.imageResizeService.resizeImage(file.data, width);
+
+    // Calculate resize duration
+    const duration = Date.now() - startTime;
+
+    // Log the resize results
+    console.log(`[GetImageUsecase] Resize completed:`, {
+      duration: `${duration}ms`,
+      newContentType: resizeResult.contentType,
+      originalContentType,
+    });
+
     file.data = resizeResult.resized;
     file.headers = {
       ...file.headers,
