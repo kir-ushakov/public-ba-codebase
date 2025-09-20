@@ -20,6 +20,7 @@ interface IUserIntegrations {
 export interface IUserStateModel {
   userData: User | null;
   authState: EUserAuthState;
+  authType: EUserAuthType;
   integrations: IUserIntegrations;
 }
 
@@ -28,11 +29,17 @@ export enum EUserAuthState {
   LocalAuthenticated = 'USER_AUTH_STATE_LOCAL_AUTHENTICATED',
 }
 
+export enum EUserAuthType {
+  Password = 'USER_AUTH_TYPE_PASSWORD',
+  Google = 'USER_AUTH_TYPE_GOOGLE',
+}
+
 @State<IUserStateModel>({
   name: 'user',
   defaults: {
     userData: null,
     authState: null,
+    authType: undefined,
     integrations: {
       isAddedToSlack: undefined,
     },
@@ -94,11 +101,21 @@ export class UserState {
 
   @Action(AuthAPIAction.UserLoggedIn)
   @Action(GoogleAPIAction.UserAuthenticated)
-  loggedIn(ctx: StateContext<IUserStateModel>, { userData }: { userData: User }): void {
+  loggedIn(
+    ctx: StateContext<IUserStateModel>,
+    action: AuthAPIAction.UserLoggedIn | GoogleAPIAction.UserAuthenticated,
+  ): void {
+    const { userData } = action;
+
     ctx.patchState({
       userData: userData,
       authState: EUserAuthState.Authenticated,
+      authType:
+        action instanceof GoogleAPIAction.UserAuthenticated
+          ? EUserAuthType.Google
+          : EUserAuthType.Password,
     });
+
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
 
