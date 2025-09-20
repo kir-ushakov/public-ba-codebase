@@ -91,6 +91,11 @@ export class UserState {
     return state.integrations.isAddedToSlack;
   }
 
+  @Selector()
+  static authType(state: IUserStateModel): EUserAuthType {
+    return state.authType;
+  }
+
   @Action(MbLoginScreenAction.LoginUser)
   async login(
     ctx: StateContext<IUserStateModel>,

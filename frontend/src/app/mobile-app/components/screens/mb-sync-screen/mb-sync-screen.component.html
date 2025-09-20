@@ -6,24 +6,39 @@
   </div>
 </div>
 <div class="main-panel-holder">
-  <div class="message">Please enter your password to synchronize with server</div>
-  <form [formGroup]="syncForm" class="login-form">
-    <mat-form-field class="password-field" floatLabel="never">
-      <input autofocus matInput type="password" placeholder="Password" formControlName="password" />
-      <mat-error *ngIf="syncForm.get('password').invalid">
-        Please input correct password
-      </mat-error>
-    </mat-form-field>
-    <div class="sync-button-holder">
-      <button
-        mat-button
-        color="primary"
-        type="submit"
-        class="light-gray-btn logout-btn"
-        (click)="submitPassword()"
-      >
-        Synchronize
-      </button>
+  @if (authType() === EUserAuthType.Password) {
+    <div class="password-form-holder">
+      <div class="message">Please enter your password to synchronize with server</div>
+      <form [formGroup]="syncForm" class="login-form">
+        <mat-form-field class="password-field" floatLabel="never">
+          <input
+            autofocus
+            matInput
+            type="password"
+            placeholder="Password"
+            formControlName="password"
+          />
+          <mat-error *ngIf="syncForm.get('password').invalid">
+            Please input correct password
+          </mat-error>
+        </mat-form-field>
+        <div class="sync-button-holder">
+          <button
+            mat-button
+            color="primary"
+            type="submit"
+            class="light-gray-btn logout-btn"
+            (click)="submitPassword()"
+          >
+            Synchronize
+          </button>
+        </div>
+      </form>
     </div>
-  </form>
+  }
+  @if (authType() === EUserAuthType.Google) {
+    <div class="google-btn-holder">
+      <ba-sign-in-with-google-btn></ba-sign-in-with-google-btn>
+    </div>
+  }
 </div>
