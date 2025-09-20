@@ -10,6 +10,6 @@ RUN npm ci --verbose
 
 COPY . .
 
-RUN tsc
+RUN npx tsc
 
 CMD ["node", "./dist/server.js"]
