@@ -17,11 +17,19 @@ export type GetImageRequest = {
 
 export type GetImageResult = Result<GaxiosResponse<Readable> | never, UseCaseError<string>>;
 
+/**
+ * GetImageUsecase handles image retrieval from Google Drive with optional resizing.
+ * 
+ * Performance logging output examples:
+ * - Google Drive retrieval: { imageId, fileId, retrievalTimeMs: 450, contentLength: "2.34 MB", contentType: "image/jpeg" }
+ * - Image resize: { resizeTimeMs: 120, targetWidth: 500, originalSize: "2.34 MB" }
+ */
 export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImageResult>> {
   constructor(
     private readonly googleDriveService: GoogleDriveService,
     private readonly imageResizeService: ImageResizeService,
     private readonly imageRepoService: ImageRepoService,
+    private readonly logger = console,
   ) {}
 
   public async execute(req: GetImageRequest): Promise<GetImageResult> {
@@ -36,9 +44,26 @@ export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImag
     const image = imageOrError.getValue();
     const fileId = image.fileId;
 
+    // Start timing Google Drive retrieval
+    const driveStartTime = Date.now();
     let file: GaxiosResponse<Readable> = await this.googleDriveService.getImageById(user, fileId);
+    const driveEndTime = Date.now();
+    const driveRetrievalTime = driveEndTime - driveStartTime;
+
+    // Log retrieval time and image size
+    const contentLength = file.headers['content-length'];
+    const contentType = file.headers['content-type'];
+    this.logger.log(`[GetImage] Google Drive retrieval:`, {
+      imageId,
+      fileId,
+      retrievalTimeMs: driveRetrievalTime,
+      contentLength: contentLength ? `${(parseInt(contentLength) / 1024 / 1024).toFixed(2)} MB` : 'unknown',
+      contentType,
+      userId,
+    });
 
     if (req.imageWidth) {
+      this.logger.log(`[GetImage] Starting resize to width: ${req.imageWidth}px`);
       file = await this.resize(file, req.imageWidth);
     }
     return Result.ok<GaxiosResponse<Readable>, never>(file);
@@ -48,8 +73,23 @@ export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImag
     file: GaxiosResponse<Readable>,
     width: number,
   ): Promise<GaxiosResponse<Readable>> {
+    const originalSize = file.headers['content-length'];
+    
+    // Start timing resize operation
+    const resizeStartTime = Date.now();
     const resizeResult: { resized: Readable; contentType: string } =
       await this.imageResizeService.resizeImage(file.data, width);
+    const resizeEndTime = Date.now();
+    const resizeTime = resizeEndTime - resizeStartTime;
+    
+    // Log resize timing
+    this.logger.log(`[GetImage] Image resize completed:`, {
+      resizeTimeMs: resizeTime,
+      targetWidth: width,
+      originalSize: originalSize ? `${(parseInt(originalSize) / 1024 / 1024).toFixed(2)} MB` : 'unknown',
+      contentType: resizeResult.contentType,
+    });
+    
     file.data = resizeResult.resized;
     file.headers = {
       ...file.headers,
