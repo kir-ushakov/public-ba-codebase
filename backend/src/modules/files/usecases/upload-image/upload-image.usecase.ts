@@ -1,5 +1,6 @@
 import path from 'path';
 import { promises as fsp } from 'fs';
+import sharp from 'sharp';
 
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
@@ -67,6 +68,9 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
 
     await fsp.rename(tempPath, pathToFile);
 
+    // Resize the image to maximum 1000px
+    await this.resizeImage(pathToFile);
+
     return Result.ok<{ pathToFile: string; extension: string }, never>({
       pathToFile,
       extension: fileType,
@@ -82,5 +86,24 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
     });
 
     await this.imageRepoService.create(imageOrError.getValue());
+  }
+
+  private async resizeImage(filePath: string): Promise<void> {
+    try {
+      // Resize image to a maximum of 1000px width or height (whichever is larger)
+      // while maintaining the aspect ratio
+      await sharp(filePath)
+        .resize(1000, 1000, {
+          fit: 'inside',
+          withoutEnlargement: true, // Don't enlarge images smaller than 1000px
+        })
+        .toFile(`${filePath}.tmp`);
+
+      // Replace the original file with the resized one
+      await fsp.rename(`${filePath}.tmp`, filePath);
+    } catch (error) {
+      console.error('Error resizing image:', error);
+      throw error;
+    }
   }
 }
