@@ -11,18 +11,26 @@ import { UploadImageResponse } from './upload-image.response.js';
 import { config } from '../../../../config/index.js';
 import { Image } from '../../../../shared/domain/models/image.js';
 import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
+import { ImageResizeService } from '../../services/image-resize.service.js';
 
 export type UploadImageResult = Result<UploadImageResponse | never, UploadImageError>;
+
+const MAX_IMAGE_STORE_SIZE = 1000; // TODO: move to config
 
 export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<UploadImageResult>> {
   private googleDriveService: GoogleDriveService;
   private readonly imageRepoService: ImageRepoService;
-
+  private readonly imageResizeService: ImageResizeService;
   private allowedTypes = ['png', 'jpeg', 'jpg'];
 
-  constructor(googleDriveService: GoogleDriveService, imageRepoService: ImageRepoService) {
+  constructor(
+    googleDriveService: GoogleDriveService,
+    imageRepoService: ImageRepoService,
+    imageResizeService: ImageResizeService,
+  ) {
     this.googleDriveService = googleDriveService;
     this.imageRepoService = imageRepoService;
+    this.imageResizeService = imageResizeService;
   }
 
   public async execute(req: UploadImageRequest, user: User): Promise<UploadImageResult> {
@@ -32,7 +40,7 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
     if (pathToFileOrError.isFailure) {
       return Result.fail<never, UploadImageError>(pathToFileOrError.error);
     }
-    const { pathToFile, extension } = pathToFileOrError.getValue();
+    const { pathToFile } = pathToFileOrError.getValue();
 
     try {
       const fileId: string = await this.googleDriveService.uploadFile(user, pathToFile);
@@ -66,6 +74,9 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
     }
 
     await fsp.rename(tempPath, pathToFile);
+
+    // Resize the image to allowed maximum width
+    await this.imageResizeService.resizeImageToMaxSize(pathToFile, MAX_IMAGE_STORE_SIZE);
 
     return Result.ok<{ pathToFile: string; extension: string }, never>({
       pathToFile,
