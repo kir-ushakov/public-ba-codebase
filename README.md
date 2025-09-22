@@ -14,7 +14,47 @@
 
 #### <i>This is a lean personal task manager, originally built to support my [YouTube channel](https://www.youtube.com/@kirillushakov-webmobiledev6785) with a real-world codebase. Over time, it has evolved into my personal playground for experimenting with new technologies, APIs, and development approaches.</i>
 
-## Main Tech View
+## Architecture & Tech Stack
+
+#### Frontend:
+
+- Angular 19 (SPA framework)
+
+- NGXS + NgxsStoragePlugin (state management + offline storage)
+
+- Service Workers (PWA offline support)
+
+- Angular Material (UI component library)
+
+- HTML/SCSS (UI implementation)
+
+#### Backend:
+
+- Node.js/Express.js (backend framework)
+
+- MongoDB + Mongoose.js (persistence layer)
+
+- Passport.js (authentication library)
+
+#### Client-Server Communication:
+
+- REST API (client-server interaction)
+
+- JSON over HTTPS (data exchange format)
+
+- HTTPS + JWT (secure authentication and data transfer)
+
+#### 3rd-party API
+
+- Auth & Identity → Google Auth
+
+- File Storage → Google Drive
+
+- Communication → Slack, SendGrid/Mailgun
+
+- AI Services → Text-to-Speech API
+
+## Tech Features
 
 #### This is [Mobile-First](#mobile-first-aspects) PWA
 
@@ -37,3 +77,7 @@
 
 - Lazy loading of images & modules.
 - PWA caching configured via [ngsw-config.json](./frontend/ngsw-config.json) for offline support and faster load times
+
+#### AI features
+
+- 🗣️ Use [Open AI](./backend/src/modules/ai/services/open-ai-client.service.ts) to [converting speech to text](./backend/src/modules/ai/usecases/speech-to-text)
