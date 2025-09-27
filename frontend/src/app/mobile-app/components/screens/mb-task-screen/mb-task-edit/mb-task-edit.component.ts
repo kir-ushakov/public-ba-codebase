@@ -93,6 +93,17 @@ export class MbTaskEditComponent {
       this.updateTitleValidation(!isPictureAdded);
     });
 
+    this.voiceToTextConverting$.subscribe(converting => {
+      const control = this.form.get('title');
+      if (!control) return;
+
+      if (converting && control.enabled) {
+        control.disable({ emitEvent: false });
+      } else if (!converting && control.disabled) {
+        control.enable({ emitEvent: false });
+      }
+    });
+
     this.actions$
       .pipe(
         ofActionDispatched(MbTaskScreenAction.VoiceConvertedToTextSuccessful),
