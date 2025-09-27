@@ -52,13 +52,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Trivy vulnerability scanner
+      # Scan frontend
+      - name: Trivy Scan Frontend
         uses: aquasecurity/trivy-action@0.30.0
         with:
           scan-type: 'fs'
           scan-ref: './frontend'
+          scanners: 'vuln'
           format: 'sarif'
-          output: 'trivy-results.sarif'
+          output: 'trivy-frontend.sarif'
+
+      # Scan backend
+      - name: Trivy Scan Backend
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-type: 'fs'
+          scan-ref: './backend'
+          scanners: 'vuln'
+          format: 'sarif'
+          output: 'trivy-backend.sarif'
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
