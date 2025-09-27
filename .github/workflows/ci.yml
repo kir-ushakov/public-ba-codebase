@@ -56,7 +56,7 @@ jobs:
         uses: aquasecurity/trivy-action@0.30.0
         with:
           scan-type: 'fs'
-          scan-ref: '.'
+          scan-ref: './frontend'
           format: 'sarif'
           output: 'trivy-results.sarif'
 
