@@ -94,7 +94,7 @@ export class MbTaskScreenState {
 
   @Selector()
   static isEditFormValid(state: IMbTaskScreenStateModel): boolean {
-    return state.taskViewForm.status;
+    return state.taskViewForm?.status ?? false;
   }
 
   @Selector()
