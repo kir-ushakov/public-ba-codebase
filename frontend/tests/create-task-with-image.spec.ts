@@ -19,6 +19,8 @@ import {
 import { defaultTask } from 'src/app/shared/models/task.model';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DatabaseService } from 'src/app/shared/services/infrastructure/database.service';
+import { Camera, CameraResultType } from '@capacitor/camera';
+import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 
 describe('Create Task With Image', () => {
   let fixture: ComponentFixture<MbHomeScreenComponent>;
@@ -43,8 +45,11 @@ describe('Create Task With Image', () => {
         ]),
         provideLocationMocks(),
         provideNoopAnimations(),
+        { 
+          provide: DeviceCameraService, 
+          useValue: { takePicture: jest.fn().mockResolvedValue('blob://mock-image') } 
+        },
         // TaskService,
-        // { provide: CameraService, useClass: FakeCameraService },
         // { provide: IndexedDbService, useClass: InMemoryDbService },
       ],
     }).compileComponents();
@@ -84,6 +89,7 @@ describe('Create Task With Image', () => {
   });
 
   it('should create a task with an image', async () => {
+
     // --- Step 1.1: Find New Task Btn ---
     const newTaskBtnDe = harness.fixture.debugElement.query(By.css('[data-test=new-task-btn]'));
     expect(newTaskBtnDe).toBeTruthy(); // New task button should be visible on home screen
@@ -101,8 +107,10 @@ describe('Create Task With Image', () => {
     const addImageBtnDe = harness.fixture.debugElement.query(By.css('[data-test=add-image-btn]'));
     expect(addImageBtnDe).toBeTruthy(); // Add image button should be visible on task screen
 
-    // --- Step 3: Simulate adding image (to be implemented later) ---
-    // taskDe.query(By.css('[data-test=task-submit]')).nativeElement.click();
-    // harness.detectChanges();
+    // --- Step 2.3: Click Add Image and verify camera service invoked ---
+    addImageBtnDe.nativeElement.click();
+    const cameraService = TestBed.inject(DeviceCameraService) as jest.Mocked<DeviceCameraService>;
+    expect(cameraService.takePicture).toHaveBeenCalled();
+
   });
 });
