@@ -56,7 +56,7 @@
 
 ## Tech Features
 
-#### This is [Mobile-First](#mobile-first-aspects) PWA
+#### This is [Mobile-First](#mobile-first-aspects) [PWA](#pwa-features)
 
 #### Mobile-First Aspects
 
@@ -81,3 +81,12 @@
 #### AI features
 
 - 🗣️ Use [Open AI](./backend/src/modules/ai/services/open-ai-client.service.ts) to [converting speech to text](./backend/src/modules/ai/usecases/speech-to-text)
+
+
+#### PWA features
+
+- ⚡ Offline caching & fast loading via [ngsw-config.json](./frontend/ngsw-config.json) 
+- 📱 [Installable](./frontend/src/app/shared/services/pwa/pwa-install.service.ts) as a mobile app [(Add to Home Screen)](./frontend/src/app/shared/components/ui-elements/pwa-install-dialog) 
+- 🔄 Automatic app updates: [PwaVersionUpdateService](./frontend/src/app/shared/services/pwa/pwa-version-update.service.ts) reloads the app when a new service worker version is ready, so users always get the latest build.
+- 📸 Taking pictures with device cam using [Capacitor Camera Plugin](./frontend/src/app/shared/services/pwa/device-camera.service.ts)
+- 🎙️ Voice recording with device microphone using [Web Media API](./frontend/src/app/shared/services/pwa/voice-recorder.service.ts)
