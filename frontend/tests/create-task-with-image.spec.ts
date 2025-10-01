@@ -19,8 +19,8 @@ import {
 import { defaultTask } from 'src/app/shared/models/task.model';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DatabaseService } from 'src/app/shared/services/infrastructure/database.service';
-import { Camera, CameraResultType } from '@capacitor/camera';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
+import { TINY_TRANSPARENT_PNG_DATA_URL } from './mock/images/tiny-transparent-png.data-url';
 
 describe('Create Task With Image', () => {
   let fixture: ComponentFixture<MbHomeScreenComponent>;
@@ -45,9 +45,9 @@ describe('Create Task With Image', () => {
         ]),
         provideLocationMocks(),
         provideNoopAnimations(),
-        { 
-          provide: DeviceCameraService, 
-          useValue: { takePicture: jest.fn().mockResolvedValue('blob://mock-image') } 
+        {
+          provide: DeviceCameraService,
+          useValue: { takePicture: jest.fn().mockResolvedValue(TINY_TRANSPARENT_PNG_DATA_URL) },
         },
         // TaskService,
         // { provide: IndexedDbService, useClass: InMemoryDbService },
