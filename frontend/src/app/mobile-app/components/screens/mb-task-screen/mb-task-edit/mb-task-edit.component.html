@@ -34,7 +34,7 @@
     </mat-form-field>
     @if (imageUri$ | async) {
       <div class="task-picture-holder">
-        <img class="task-picture" src="{{ imageUri$ | async }}" />
+        <img class="task-picture" src="{{ imageUri$ | async }}" data-test="task-picture"/>
       </div>
     } @else {
       <div class="take-a-picture-icon-holder">

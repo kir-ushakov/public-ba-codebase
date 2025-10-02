@@ -103,14 +103,23 @@ describe('Create Task With Image', () => {
     const taskDe = harness.fixture.debugElement.query(By.directive(MbTaskScreenComponent));
     expect(taskDe).toBeTruthy(); // Task screen component should be rendered after navigation
 
-    // --- Step 2.2: Find Add Image Button ---
+    // --- Step 2.2: Find 'Add Image Button' ---
     const addImageBtnDe = harness.fixture.debugElement.query(By.css('[data-test=add-image-btn]'));
     expect(addImageBtnDe).toBeTruthy(); // Add image button should be visible on task screen
 
-    // --- Step 2.3: Click Add Image and verify camera service invoked ---
+    // --- Step 3: Click Add Image and verify camera service invoked ---
     addImageBtnDe.nativeElement.click();
     const cameraService = TestBed.inject(DeviceCameraService) as jest.Mocked<DeviceCameraService>;
     expect(cameraService.takePicture).toHaveBeenCalled();
+
+    // Wait for async state update to complete
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    // --- Step 4: Verify added image matches mock data ---
+    const taskImageDe = harness.fixture.debugElement.query(By.css('[data-test=task-picture]'));
+    expect(taskImageDe).toBeTruthy(); // Added image should be visible
+    expect(taskImageDe.nativeElement.src).toBe(TINY_TRANSPARENT_PNG_DATA_URL); // Image source should match mock
 
   });
 });
