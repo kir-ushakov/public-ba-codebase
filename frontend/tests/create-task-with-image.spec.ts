@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
@@ -21,15 +21,24 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DatabaseService } from 'src/app/shared/services/infrastructure/database.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 import { ImageService } from 'src/app/shared/services/infrastructure/image.service';
+import { ImageDbService } from 'src/app/shared/services/infrastructure/image-db.service';
+import { FetchService } from 'src/app/shared/services/infrastructure/fetch.service';
+import { ImageOptimizerService } from 'src/app/shared/services/utility/image-optimizer.service';
+import { ImageUploaderService } from 'src/app/shared/services/api/image-uploader.service';
 import { TINY_TRANSPARENT_PNG_DATA_URL } from './mock/images/tiny-transparent-png.data-url';
+import { MbTaskScreenAction } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.actions';
+import { firstValueFrom } from 'rxjs';
+import { setupHarness } from './mock/utils/setup-harness';
 
 // Test constants
 const MOCK_IMAGE_ID = 'mock-image-id';
 const TEST_TASK_TITLE = 'Test Task with Image';
 
+jest.mock('uuid', () => ({
+  v4: jest.fn(() => 'mock-image-id'),
+}));
+
 describe('Create Task With Image', () => {
-  let fixture: ComponentFixture<MbHomeScreenComponent>;
-  let component: MbHomeScreenComponent;
   let harness: RouterTestingHarness;
   let router: Router;
 
@@ -54,14 +63,46 @@ describe('Create Task With Image', () => {
           provide: DeviceCameraService,
           useValue: { takePicture: jest.fn().mockResolvedValue(TINY_TRANSPARENT_PNG_DATA_URL) },
         },
+        // Use real ImageService with mocked dependencies below
+        ImageService,
         {
-          provide: ImageService,
-          useValue: { saveImage: jest.fn().mockResolvedValue(MOCK_IMAGE_ID) },
+          provide: FetchService,
+          useValue: {
+            fetchBlob: jest.fn().mockImplementation(async (url: string) => {
+              const base64 = TINY_TRANSPARENT_PNG_DATA_URL.split(',')[1];
+              return new Blob([Buffer.from(base64, 'base64')], { type: 'image/png' });
+            }),
+          },
+        },
+        {
+          provide: ImageDbService,
+          useValue: {
+            putImage: jest.fn().mockResolvedValue(undefined),
+            getImage: jest.fn().mockResolvedValue({ id: MOCK_IMAGE_ID, uploaded: false }),
+            getAllUnuploadedImages: jest.fn().mockResolvedValue([]),
+            updateImage: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: ImageOptimizerService,
+          useValue: {
+            optimizeImage: jest.fn().mockImplementation(async (blob: Blob) => blob),
+          },
+        },
+        {
+          provide: ImageUploaderService,
+          useValue: {
+            uploadImageBlob: jest.fn().mockResolvedValue({ url: 'https://example.com/image' }),
+          },
         },
         // TaskService,
         // { provide: IndexedDbService, useClass: InMemoryDbService },
       ],
     }).compileComponents();
+
+    // Ensure imageId is deterministic in test
+    //const imageService = TestBed.inject(ImageService);
+    //jest.spyOn(imageService, 'saveImage').mockResolvedValue(MOCK_IMAGE_ID);
 
     // --- Ensure IndexedDB is initialized before tests ---
     const dbService = TestBed.inject(DatabaseService);
@@ -98,6 +139,7 @@ describe('Create Task With Image', () => {
   });
 
   it('should create a task with an image', async () => {
+    //const { harness } = await setupHarness('/')
 
     // --- Step 1.1: Find New Task Btn ---
     const newTaskBtnDe = harness.fixture.debugElement.query(By.css('[data-test=new-task-btn]'));
@@ -141,10 +183,14 @@ describe('Create Task With Image', () => {
     const applyChangesBtnDe = harness.fixture.debugElement.query(By.css('[data-test=apply-changes-btn]'));
     expect(applyChangesBtnDe).toBeTruthy(); // 'Apply Chnages Button' should be visible
     applyChangesBtnDe.nativeElement.click();
-
+   
+    
     // Wait for async state update to complete
     await harness.fixture.whenStable();
+    await firstValueFrom(TestBed.inject(Store).dispatch(MbTaskScreenAction.ApplyButtonPressed));
     harness.detectChanges();
+
+    expect(applyChangesBtnDe.nativeElement.disabled).toBe(false);
 
     // --- Step 5.2: Task should be added in Tasks State ---
     const store = TestBed.inject(Store);

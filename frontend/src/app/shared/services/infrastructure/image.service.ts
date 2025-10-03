@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ImageDbService, ImageRecord } from './image-db.service';
 import { ImageOptimizerService } from '../utility/image-optimizer.service';
 import { ImageUploaderService, UploadImageResponseDTO } from '../api/image-uploader.service';
+import { FetchService } from './fetch.service';
 
 @Injectable({ providedIn: 'root' })
 export class ImageService {
@@ -10,6 +11,7 @@ export class ImageService {
     private readonly imageDbService: ImageDbService,
     private readonly imageOptimizerService: ImageOptimizerService,
     private readonly imageUploaderService: ImageUploaderService,
+    private readonly fetchService: FetchService,
   ) {}
 
   public async saveImage(imageUri: string): Promise<string> {
@@ -27,8 +29,7 @@ export class ImageService {
   }
 
   public async convertBlobUriToBlob(imageUri: string, quality: number = 0.6): Promise<Blob> {
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
+    const blob = await this.fetchService.fetchBlob(imageUri);
 
     const reducedBlob = await this.imageOptimizerService.optimizeImage(blob, quality);
 
