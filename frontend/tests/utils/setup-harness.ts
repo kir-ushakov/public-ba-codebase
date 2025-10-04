@@ -21,7 +21,8 @@ import { ImageOptimizerService } from "src/app/shared/services/utility/image-opt
 import { ImageUploaderService } from "src/app/shared/services/api/image-uploader.service";
 import { ImageService } from "src/app/shared/services/infrastructure/image.service";
 import { DatabaseService } from "src/app/shared/services/infrastructure/database.service";
-import { mockCameraService, mockFetchService, mockImageDbService, mockImageOptimizerService, mockImageUploaderService } from "../mock/services.mock";
+import { mockCameraService, mockFetchService, mockDatabaseService, mockImageOptimizerService, mockImageUploaderService } from "../mock/services.mock";
+import { TEST_USER_ID } from "../constants/test-constants";
 
 export async function setupHarness(startUrl = '/') {
   await TestBed.configureTestingModule({
@@ -42,21 +43,17 @@ export async function setupHarness(startUrl = '/') {
         { provide: DeviceCameraService, useValue: mockCameraService },
         ImageService,
         { provide: FetchService, useValue: mockFetchService },
-        { provide: ImageDbService, useValue: mockImageDbService },
+        { provide: DatabaseService, useValue: mockDatabaseService },
         { provide: ImageOptimizerService, useValue: mockImageOptimizerService },
         { provide: ImageUploaderService, useValue: mockImageUploaderService },
     ]
   });
 
-  // Ensure IndexedDB is initialized before tests
-  const dbService = TestBed.inject(DatabaseService);
-  await dbService.getDatabase();
-
   const store = TestBed.inject(Store);
   store.reset({
     app: {},
     tasks: { entities: [] },
-    user: { userData: { userId: 'test-user-id' } },
+    user: { userData: { userId: TEST_USER_ID } },
     mobileApp: {
       mbTaskViewState: {
         mode: ETaskViewMode.Create,

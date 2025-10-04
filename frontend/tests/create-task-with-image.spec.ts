@@ -11,13 +11,10 @@ import { firstValueFrom } from 'rxjs';
 import { setupHarness } from './utils/setup-harness';
 import { Store } from '@ngxs/store';
 import { TINY_TRANSPARENT_PNG_DATA_URL } from './mock/tiny-png-data-url.mock';
-
-// Test constants
-const MOCK_IMAGE_ID = 'mock-image-id';
-const TEST_TASK_TITLE = 'Test Task with Image';
+import { MOCK_IMAGE_ID, TEST_TASK_TITLE } from './constants/test-constants';
 
 jest.mock('uuid', () => ({
-  v4: jest.fn(() => 'mock-image-id'),
+  v4: jest.fn(() => MOCK_IMAGE_ID),
 }));
 
 describe('Create Task With Image', () => {

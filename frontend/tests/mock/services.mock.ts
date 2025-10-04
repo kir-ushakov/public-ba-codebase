@@ -1,4 +1,5 @@
 import { TINY_TRANSPARENT_PNG_DATA_URL } from './tiny-png-data-url.mock';
+import { MOCK_IMAGE_ID } from '../constants/test-constants';
 
 export const mockCameraService = {
   takePicture: jest.fn().mockResolvedValue(TINY_TRANSPARENT_PNG_DATA_URL),
@@ -11,11 +12,16 @@ export const mockFetchService = {
   }),
 };
 
-export const mockImageDbService = {
-  putImage: jest.fn().mockResolvedValue(undefined),
-  getImage: jest.fn().mockResolvedValue({ id: 'mock-image-id', uploaded: false }),
-  getAllUnuploadedImages: jest.fn().mockResolvedValue([]),
-  updateImage: jest.fn().mockResolvedValue(undefined),
+export const mockDatabaseService = {
+  getDatabase: jest.fn().mockResolvedValue({
+    put: jest.fn().mockResolvedValue(undefined),
+    get: jest.fn().mockResolvedValue({ id: MOCK_IMAGE_ID, uploaded: false }),
+    getAll: jest.fn().mockResolvedValue([]),
+    delete: jest.fn().mockResolvedValue(undefined),
+    clear: jest.fn().mockResolvedValue(undefined),
+  }),
+  getDatabaseInfo: jest.fn().mockResolvedValue({ name: 'test-db', version: 1, stores: ['images'] }),
+  clearAllData: jest.fn().mockResolvedValue(undefined),
 };
 
 export const mockImageOptimizerService = {
