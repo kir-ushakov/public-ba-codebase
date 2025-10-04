@@ -16,12 +16,12 @@ import { TasksState } from "src/app/shared/state/tasks.state";
 import { UserState } from "src/app/shared/state/user.state";
 import { DeviceCameraService } from "src/app/shared/services/pwa/device-camera.service";
 import { FetchService } from "src/app/shared/services/infrastructure/fetch.service";
-import { ImageDbService } from "src/app/shared/services/infrastructure/image-db.service";
 import { ImageOptimizerService } from "src/app/shared/services/utility/image-optimizer.service";
 import { ImageUploaderService } from "src/app/shared/services/api/image-uploader.service";
 import { ImageService } from "src/app/shared/services/application/image.service";
 import { DatabaseService } from "src/app/shared/services/infrastructure/database.service";
-import { mockCameraService, mockFetchService, mockDatabaseService, mockImageOptimizerService, mockImageUploaderService } from "../mock/services.mock";
+import { UuidGeneratorService } from "src/app/shared/services/adapters/uuid-generator.service";
+import { mockCameraService, mockFetchService, mockDatabaseService, mockImageOptimizerService, mockImageUploaderService, mockUuidGeneratorService } from "../mock/services.mock";
 import { TEST_USER_ID } from "../constants/test-constants";
 
 export async function setupHarness(startUrl = '/') {
@@ -46,6 +46,7 @@ export async function setupHarness(startUrl = '/') {
         { provide: DatabaseService, useValue: mockDatabaseService },
         { provide: ImageOptimizerService, useValue: mockImageOptimizerService },
         { provide: ImageUploaderService, useValue: mockImageUploaderService },
+        { provide: UuidGeneratorService, useValue: mockUuidGeneratorService },
     ]
   });
 

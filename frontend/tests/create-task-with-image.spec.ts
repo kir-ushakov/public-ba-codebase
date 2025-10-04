@@ -13,10 +13,6 @@ import { Store } from '@ngxs/store';
 import { TINY_TRANSPARENT_PNG_DATA_URL } from './mock/tiny-png-data-url.mock';
 import { MOCK_IMAGE_ID, TEST_TASK_TITLE } from './constants/test-constants';
 
-jest.mock('uuid', () => ({
-  v4: jest.fn(() => MOCK_IMAGE_ID),
-}));
-
 describe('Create Task With Image', () => {
 
   it('should create a task with an image', async () => {

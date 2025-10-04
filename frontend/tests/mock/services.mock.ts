@@ -31,3 +31,7 @@ export const mockImageOptimizerService = {
 export const mockImageUploaderService = {
   uploadImageBlob: jest.fn().mockResolvedValue({ url: 'https://example.com/image' }),
 };
+
+export const mockUuidGeneratorService = {
+  generate: jest.fn(() => MOCK_IMAGE_ID),
+};
