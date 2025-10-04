@@ -19,7 +19,7 @@ import { FetchService } from "src/app/shared/services/infrastructure/fetch.servi
 import { ImageDbService } from "src/app/shared/services/infrastructure/image-db.service";
 import { ImageOptimizerService } from "src/app/shared/services/utility/image-optimizer.service";
 import { ImageUploaderService } from "src/app/shared/services/api/image-uploader.service";
-import { ImageService } from "src/app/shared/services/infrastructure/image.service";
+import { ImageService } from "src/app/shared/services/application/image.service";
 import { DatabaseService } from "src/app/shared/services/infrastructure/database.service";
 import { mockCameraService, mockFetchService, mockDatabaseService, mockImageOptimizerService, mockImageUploaderService } from "../mock/services.mock";
 import { TEST_USER_ID } from "../constants/test-constants";

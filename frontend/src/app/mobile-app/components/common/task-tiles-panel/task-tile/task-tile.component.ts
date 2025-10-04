@@ -4,7 +4,7 @@ import { MbTaskTileAction } from './task-tile.actions';
 import { Task } from 'src/app/shared/models/task.model';
 import { CommonModule } from '@angular/common';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
-import { ImageService } from 'src/app/shared/services/infrastructure/image.service';
+import { ImageService } from 'src/app/shared/services/application/image.service';
 import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
 
 @Component({

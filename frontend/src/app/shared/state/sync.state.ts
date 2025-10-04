@@ -9,7 +9,7 @@ import { ServerChangesService } from '../services/api/server-changes.service';
 import { ClientChangesService } from '../services/api/client-changes.service';
 import { EMPTY, Observable, catchError, concat, lastValueFrom, tap } from 'rxjs';
 import { SyncAction } from './sync.action';
-import { ImageService } from '../services/infrastructure/image.service';
+import { ImageService } from '../services/application/image.service';
 import { UserAction } from './user.actions';
 
 export interface SyncStateModel {

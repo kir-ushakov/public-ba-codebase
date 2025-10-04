@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
-import { ImageDbService, ImageRecord } from './image-db.service';
+import { ImageDbService, ImageRecord } from '../infrastructure/image-db.service';
 import { ImageOptimizerService } from '../utility/image-optimizer.service';
 import { ImageUploaderService, UploadImageResponseDTO } from '../api/image-uploader.service';
-import { FetchService } from './fetch.service';
+import { FetchService } from '../infrastructure/fetch.service';
 
 @Injectable({ providedIn: 'root' })
 export class ImageService {
