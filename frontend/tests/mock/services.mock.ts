@@ -1,5 +1,6 @@
 import { TINY_TRANSPARENT_PNG_DATA_URL } from './tiny-png-data-url.mock';
-import { MOCK_IMAGE_ID } from '../constants/test-constants';
+import { MOCK_IMAGE_ID, TEST_CLIENT_ID } from '../constants/test-constants';
+import { of } from 'rxjs';
 
 export const mockCameraService = {
   takePicture: jest.fn().mockResolvedValue(TINY_TRANSPARENT_PNG_DATA_URL),
@@ -34,4 +35,16 @@ export const mockImageUploaderService = {
 
 export const mockUuidGeneratorService = {
   generate: jest.fn(() => MOCK_IMAGE_ID),
+};
+
+export const mockServerChangesService = {
+  fetch: jest.fn().mockReturnValue(of([])), // Return empty array by default
+};
+
+export const mockClientIdService = {
+  getClientId: jest.fn().mockReturnValue(of(TEST_CLIENT_ID)),
+};
+
+export const mockClientChangesService = {
+  send: jest.fn().mockReturnValue(of({})), // Return empty object by default
 };

@@ -14,6 +14,7 @@ import { defaultTask } from "src/app/shared/models/task.model";
 import { AppState } from "src/app/shared/state/app.state";
 import { TasksState } from "src/app/shared/state/tasks.state";
 import { UserState } from "src/app/shared/state/user.state";
+import { SyncState } from "src/app/shared/state/sync.state";
 import { DeviceCameraService } from "src/app/shared/services/pwa/device-camera.service";
 import { FetchService } from "src/app/shared/services/infrastructure/fetch.service";
 import { ImageOptimizerService } from "src/app/shared/services/utility/image-optimizer.service";
@@ -21,14 +22,17 @@ import { ImageUploaderService } from "src/app/shared/services/api/image-uploader
 import { ImageService } from "src/app/shared/services/application/image.service";
 import { DatabaseService } from "src/app/shared/services/infrastructure/database.service";
 import { UuidGeneratorService } from "src/app/shared/services/adapters/uuid-generator.service";
-import { mockCameraService, mockFetchService, mockDatabaseService, mockImageOptimizerService, mockImageUploaderService, mockUuidGeneratorService } from "../mock/services.mock";
-import { TEST_USER_ID } from "../constants/test-constants";
+import { ServerChangesService } from "src/app/shared/services/api/server-changes.service";
+import { ClientIdService } from "src/app/shared/services/api/client-id.service";
+import { ClientChangesService } from "src/app/shared/services/api/client-changes.service";
+import { mockCameraService, mockFetchService, mockDatabaseService, mockImageOptimizerService, mockImageUploaderService, mockUuidGeneratorService, mockServerChangesService, mockClientIdService, mockClientChangesService } from "../mock/services.mock";
+import { TEST_USER_ID, TEST_CLIENT_ID } from "../constants/test-constants";
 
 export async function setupHarness(startUrl = '/') {
   await TestBed.configureTestingModule({
     imports: [
       MbHomeScreenComponent,
-      NgxsModule.forRoot([AppState, TasksState, UserState, MobileAppState, MbTaskScreenState]),
+      NgxsModule.forRoot([AppState, TasksState, UserState, MobileAppState, MbTaskScreenState, SyncState]),
     ],
     providers: [
       provideHttpClient(withInterceptorsFromDi()),
@@ -47,6 +51,9 @@ export async function setupHarness(startUrl = '/') {
         { provide: ImageOptimizerService, useValue: mockImageOptimizerService },
         { provide: ImageUploaderService, useValue: mockImageUploaderService },
         { provide: UuidGeneratorService, useValue: mockUuidGeneratorService },
+        { provide: ServerChangesService, useValue: mockServerChangesService },
+        { provide: ClientIdService, useValue: mockClientIdService },
+        { provide: ClientChangesService, useValue: mockClientChangesService },
     ]
   });
 
@@ -55,6 +62,7 @@ export async function setupHarness(startUrl = '/') {
     app: {},
     tasks: { entities: [] },
     user: { userData: { userId: TEST_USER_ID } },
+    sync: { ...SyncState.defaults, clientId: TEST_CLIENT_ID },
     mobileApp: {
       mbTaskViewState: {
         mode: ETaskViewMode.Create,
