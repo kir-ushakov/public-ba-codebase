@@ -20,14 +20,16 @@ export interface SyncStateModel {
 
 @State<SyncStateModel>({
   name: 'sync',
-  defaults: {
-    clientId: null,
-    lastTime: null,
-    changes: [],
-  },
+  defaults: SyncState.defaults,
 })
 @Injectable()
 export class SyncState {
+  static readonly defaults: SyncStateModel = {
+    clientId: null,
+    lastTime: null,
+    changes: [],
+  };
+
   readonly SYNC_PERIOD = 1000 * 20; // sync interval 20 sec;
   private intervalId: null | ReturnType<typeof setTimeout> = null;
 
