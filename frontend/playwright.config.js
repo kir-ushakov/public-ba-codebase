@@ -6,6 +6,12 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:4200',
   },
+  webServer: {
+    command: 'npm start',
+    url: 'http://localhost:4200',
+    reuseExistingServer: true,
+    timeout: 120000,
+  },
   // Completely isolate Playwright from other configurations
   testMatch: '**/e2e/**/*.spec.ts',
   testIgnore: [

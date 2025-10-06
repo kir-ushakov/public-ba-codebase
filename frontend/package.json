@@ -11,7 +11,7 @@
     "lint": "ng lint --fix",
     "lint:style": "npx stylelint 'src/**/*.scss' --fix",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
-    "e2e": "ng serve & npx playwright test",
+    "e2e": "npx playwright test",
     "e2e:ui": "npx playwright test --ui",
     "e2e:debug": "npx playwright test --debug"
   },
