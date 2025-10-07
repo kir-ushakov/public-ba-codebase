@@ -71,6 +71,16 @@
               ]
             },
             "e2e": {
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                "src/manifest.webmanifest",
+                {
+                  "glob": "**/*",
+                  "input": "e2e/assets",
+                  "output": "/e2e/assets"
+                }
+              ],
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -79,6 +89,10 @@
                 {
                   "replace": "src/app/shared/components/ui-elements/sign-in-with-google-btn/sign-in-with-google-btn.component.ts",
                   "with": "e2e/stubs/sign-in-with-google-btn.component.ts"
+                },
+                {
+                  "replace": "src/app/shared/services/pwa/device-camera.service.ts",
+                  "with": "e2e/stubs/device-camera.service.ts"
                 }
               ]
             }
