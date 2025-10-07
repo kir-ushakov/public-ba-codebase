@@ -69,6 +69,18 @@
                   "maximumError": "10kb"
                 }
               ]
+            },
+            "e2e": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.e2e.ts"
+                },
+                {
+                  "replace": "src/app/shared/components/ui-elements/sign-in-with-google-btn/sign-in-with-google-btn.component.ts",
+                  "with": "e2e/stubs/sign-in-with-google-btn.component.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": ""
@@ -81,6 +93,9 @@
           "configurations": {
             "production": {
               "buildTarget": "app:build:production"
+            },
+            "e2e": {
+              "buildTarget": "app:build:e2e"
             }
           }
         },

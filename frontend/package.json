@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:e2e": "ng serve --configuration e2e",
     "build-prod": "ng build --configuration production --output-path dist/app",
     "build-dev": "ng build --output-path dist/app --poll 500 --watch",
     "test": "jest",
