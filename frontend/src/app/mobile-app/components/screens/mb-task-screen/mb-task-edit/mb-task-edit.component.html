@@ -8,6 +8,7 @@
         formControlName="title"
         [placeholder]="(voiceToTextConverting$ | async) ? '' : 'Task title here'"
         autocomplete="off"
+        data-test="task-title-input"
       />
 
       <button
