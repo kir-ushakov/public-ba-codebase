@@ -7,7 +7,7 @@ export default defineConfig({
     baseURL: 'http://localhost:4200',
   },
   webServer: {
-    command: 'npm start',
+    command: 'npm run start:e2e',
     url: 'http://localhost:4200',
     reuseExistingServer: true,
     timeout: 120000,
