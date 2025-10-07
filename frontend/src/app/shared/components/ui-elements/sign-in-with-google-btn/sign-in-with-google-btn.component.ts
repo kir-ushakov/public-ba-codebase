@@ -7,4 +7,9 @@ import { Component } from '@angular/core';
 })
 export class SignInWithGoogleBtnComponent {
   readonly pathToConsentScreen = `/api/integrations/google/oauth-consent-screen?ngsw-bypass=1`;
+
+  signIn() {
+    // Redirect to Google OAuth consent screen
+    window.location.href = this.pathToConsentScreen;
+  }
 }
