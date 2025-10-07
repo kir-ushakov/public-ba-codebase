@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Camera, CameraResultType } from '@capacitor/camera';
+import { IDeviceCameraService } from './device-camera.service.interface';
 
 @Injectable({
   providedIn: 'root',
 })
-export class DeviceCameraService {
-  public async takePicture(quality = 90): Promise<string> {
+export class DeviceCameraService implements IDeviceCameraService {
+  public async takePicture(quality = 90): Promise<string | null> {
     if (quality < 0 || quality > 100) {
       throw new Error('Quality must be between 0 and 100');
     }
