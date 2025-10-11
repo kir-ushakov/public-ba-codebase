@@ -7,7 +7,7 @@ import { Change, EChangeAction } from '../models/change.model';
 import { append, patch, removeItem } from '@ngxs/store/operators';
 import { ServerChangesService } from '../services/api/server-changes.service';
 import { ClientChangesService } from '../services/api/client-changes.service';
-import { EMPTY, Observable, catchError, concat, lastValueFrom, tap } from 'rxjs';
+import { EMPTY, Observable, catchError, concat, lastValueFrom, tap, mergeMap, throwError as rxThrowError } from 'rxjs';
 import { SyncAction } from './sync.action';
 import { ImageService } from '../services/application/image.service';
 import { UserAction } from './user.actions';
@@ -106,18 +106,28 @@ export class SyncState {
 
   private fetchServerChanges(ctx: StateContext<SyncStateModel>): Observable<Change[]> {
     return this.serverChangesService.fetch(ctx.getState().clientId).pipe(
-      tap({
-        next: (changes: Change[]) => {
-          ctx.dispatch(new SyncAction.ServerChangesLoaded(changes));
-        },
-        error: async err => {
-          if (err instanceof HttpErrorResponse && err.status === 404) {
-            await lastValueFrom(this.getClientIdAPICall(ctx));
-          }
-          ctx.dispatch(SyncAction.SyncinhriniziationWasFailed);
-          return err;
-        },
+      catchError(err => {
+        if (err instanceof HttpErrorResponse && err.status === 404) {
+          // Client ID not found, get new one and retry
+          return this.getClientIdAPICall(ctx).pipe(
+            mergeMap(() => {
+              // Retry with new client ID
+              return this.serverChangesService.fetch(ctx.getState().clientId);
+            }),
+            catchError(retryErr => {
+              // Retry also failed - dispatch failure and return empty
+              ctx.dispatch(SyncAction.SyncinhriniziationWasFailed);
+              return EMPTY;
+            })
+          );
+        }
+        // Other errors - dispatch failure and return empty
+        ctx.dispatch(SyncAction.SyncinhriniziationWasFailed);
+        return EMPTY;
       }),
+      tap((changes: Change[]) => {
+        ctx.dispatch(new SyncAction.ServerChangesLoaded(changes));
+      })
     );
   }
 
