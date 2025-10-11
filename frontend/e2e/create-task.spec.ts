@@ -1,40 +1,80 @@
 import { test, expect } from '@playwright/test';
+import { setupApiMocks } from './utils/api-mocks.util';
 
+/**
+ * E2E Test: User can create a task with title and image
+ * 
+ * Stubs used:
+ * - e2e/stubs/sign-in-with-google-btn.component.ts - Fake Google authentication
+ * - e2e/stubs/device-camera.service.ts - Returns test image from e2e/assets/test-img.jpg
+ * 
+ * Mocks:
+ * - All API endpoints (see utils/api-mocks.util.ts)
+ */
 test('user can create a task', async ({ page }) => {
+  await setupApiMocks(page);
+
+  // STEP 0: Authenticate and navigate to Home Screen
   await page.goto('/');
-  
-  // STEP 0: Pass Google Auth and go to Home Screen
   await expect(page.getByText('Sign in with Google')).toBeVisible();
+  
+  // Uses stub sign-in-with-google-btn.component.ts for fake login
   await page.click('text=Sign in with Google');
-  await page.waitForURL('/');
   await expect(page.getByText('Sign in with Google')).not.toBeVisible();
   await expect(page.locator('[data-test="new-task-btn"]')).toBeVisible();
-  await page.screenshot({ path: 'test-results/home-screen-after-login.png' });
 
-  // STEP 1: Click on 'New Task Button'
+  // STEP 1: Navigate to Task Creation Screen
   await page.click('[data-test="new-task-btn"]');
   await page.waitForURL('/task/TASK_VIEW_MODE_CREATE');
-  await page.screenshot({ path: 'test-results/task-screen-after-click-new-task-btn.png' });
 
-  // STEP 2.1: Fill in the task title 
+  // STEP 2: Fill in task details
   await page.fill('[data-test="task-title-input"]', 'My First Task');
-  await page.screenshot({ path: 'test-results/task-screen-after-fill-title.png' });
-
-  // STEP 2.2: Click on 'Add Image Button'
-  await page.click('[data-test="add-image-btn"]');
-  await page.screenshot({ path: 'test-results/task-screen-after-click-add-image-btn.png' });
   
-  // STEP 2.3 Wait for the image to appear and verify it's visible and has a valid src
+  // Uses stub device-camera.service.ts to return test image from e2e/assets/test-img.jpg
+  await page.click('[data-test="add-image-btn"]');
   const taskImage = page.locator('[data-test="task-picture"]');
-  await expect(taskImage).toBeVisible({ timeout: 5000 });
+  await expect(taskImage).toBeVisible();
+  
   const imageSrc = await taskImage.getAttribute('src');
-  console.log('[E2E Test] Image src:', imageSrc);
   expect(imageSrc).toBeTruthy();
-  expect(imageSrc).toContain('blob:'); // Should be a blob URL from our stub
-  await page.screenshot({ path: 'test-results/task-screen-after-add-image.png' });
+  expect(imageSrc).toContain('blob:');
 
-  // STEP 3: Click on 'Apply Button'
-  //await page.click('button[type="submit"]');
-  //await page.screenshot({ path: 'test-results/task-screen-after-click-apply-btn.png' });
-
+  // STEP 3: Save task and verify sync to server
+  const imageUploadPromise = page.waitForRequest(
+    request => request.url().includes('/api/files/image') && request.method() === 'POST',
+    { timeout: 30000 }
+  );
+  
+  const taskSyncPromise = page.waitForRequest(
+    request => request.url().includes('/api/sync/task') && request.method() === 'POST',
+    { timeout: 30000 }
+  );
+  
+  await page.click('[data-test="apply-changes-btn"]');
+  
+  // Verify image uploaded to server
+  const imageUploadRequest = await imageUploadPromise;
+  const imageData = imageUploadRequest.postData();
+  expect(imageData).toBeTruthy();
+  expect(imageData!.length).toBeGreaterThan(0);
+  expect(imageData).toContain('imageId');
+  
+  // Verify task data synced to server
+  const taskSyncRequest = await taskSyncPromise;
+  const taskData = taskSyncRequest.postDataJSON();
+  expect(taskData.changeableObjectDto).toBeTruthy();
+  expect(taskData.changeableObjectDto.title).toBe('My First Task');
+  expect(taskData.changeableObjectDto.imageId).toBeTruthy();
+  
+  // STEP 4: Verify task appears on home screen
+  await page.waitForURL(/\/(home)?$/);
+  
+  const taskTile = page.locator('[data-test="task-tile"]', { hasText: 'My First Task' });
+  await expect(taskTile).toBeVisible();
+  
+  const taskTileImage = taskTile.locator('img');
+  await expect(taskTileImage).toBeVisible();
+  
+  const tileImageSrc = await taskTileImage.getAttribute('src');
+  expect(tileImageSrc).toBeTruthy();
 });
