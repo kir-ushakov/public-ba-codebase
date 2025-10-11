@@ -2,7 +2,7 @@
   <div class="tiles-column">
     @for (task of column.tasks; track task.id) {
       <div class="tile-holder">
-        <ba-task-tile [task]="task"></ba-task-tile>
+        <ba-task-tile [task]="task" data-test="task-tile"></ba-task-tile>
       </div>
     }
   </div>
