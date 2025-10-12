@@ -15,10 +15,11 @@ export default defineConfig({
   ],
   
   use: {
-    baseURL: 'http://localhost:4200',
+    baseURL: process.env.CI ? 'https://localhost' : 'http://localhost:4200',
     trace: 'on-first-retry', // Collect trace on retry
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    ignoreHTTPSErrors: true, // Ignore self-signed certificate errors in CI
   },
   
   // Only start web server locally, not in CI (Docker handles it in CI)
