@@ -7,6 +7,7 @@ import { CreateTask } from './create-task.usecase.js';
 import { CreateTaskRequestDTO } from './create-task.dto.js';
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
 import { Task } from '../../../../../shared/domain/models/task.js';
+import { TaskMapper } from '../../../../../shared/mappers/task.mapper.js';
 
 export class CreateTaskController extends BaseController {
   private _useCase: CreateTask;
@@ -35,7 +36,8 @@ export class CreateTaskController extends BaseController {
 
       if (createResult.isSuccess) {
         const createdTaks = createResult.getValue() as Task;
-        BaseController.jsonResponse(res, EHttpStatus.Created, createdTaks);
+        const createTakResponseDTO = TaskMapper.toDTO(createdTaks);
+        BaseController.jsonResponse(res, EHttpStatus.Created, createTakResponseDTO);
       } else {
         const error = createResult.error;
         BaseController.jsonResponse(res, error.httpCode, {

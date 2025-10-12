@@ -1,3 +1,5 @@
+import { TaskDTO } from "../../../domain/dtos/task.dto";
+
 export interface CreateTaskRequestDTO {
   id: string;
   type: string;
@@ -5,3 +7,5 @@ export interface CreateTaskRequestDTO {
   status: string;
   imageId?: string;
 }
+
+export type CreateTaskResponseDTO = TaskDTO;
