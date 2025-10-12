@@ -104,7 +104,7 @@ jobs:
         working-directory: ./frontend
 
       - name: Start Docker services
-        run: docker-compose -f docker-compose.yml up -d --build
+        run: docker compose -f docker-compose.yml up -d --build
         
       - name: Wait for services to be ready
         run: |
@@ -147,4 +147,4 @@ jobs:
 
       - name: Shutdown Docker services
         if: always()
-        run: docker-compose -f docker-compose.yml down -v
+        run: docker compose -f docker-compose.yml down -v
