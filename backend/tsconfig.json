@@ -8,8 +8,8 @@
     "sourceMap": true,
     "outDir": "dist",
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node", "jest"]
   },
   "lib": ["es2022"],
-  "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "test/**/*.ts"]
 }
