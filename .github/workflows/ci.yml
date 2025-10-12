@@ -56,36 +56,11 @@ jobs:
           sarif_file: 'trivy-backend.sarif'
           category: 'trivy-backend'
 
-  # E2E tests with Playwright
+  # E2E tests with Playwright (Frontend only, mocked backend)
   e2e-tests:
     name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
     
-    env:
-      CI: true # Tell Playwright we're in CI mode
-      # Environment variables for docker-compose
-      NODE_ENV: development
-      DB_USER: testuser
-      DB_PASSWORD: testpassword
-      SESSION_SECRET: test-session-secret-for-ci
-      EMAIL_DOMAIN: test.com
-      HOST: localhost
-      AUTHENTICATION_STRATEGY: local
-      JWT_SECRET: test-jwt-secret-for-ci
-      SENDGRID_API_KEY: test-key
-      MAILGUN_API_KEY: test-key
-      MAIL_API: test
-      SLACK_CLIENT_ID: test
-      SLACK_CLIENT_SECRET: test
-      SLACK_SIGNING_SECRET: test
-      NGROK_AUTHTOKEN: test
-      NGROK_STATIC_DOMAIN: test
-      NGROK_FORWARD_PATH: test
-      GOOGLE_CLIENT_ID: test
-      GOOGLE_CLIENT_SECRET: test
-      GOOGLE_OAUTH_CALLBACK: http://localhost:4200/auth/google/callback
-      OPEN_AI_API_KEY: test-key
-      
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -95,6 +70,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
         run: npm ci
@@ -103,47 +79,6 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
         working-directory: ./frontend
-
-      - name: Generate SSL certificates
-        run: |
-          # Generate certificates for nginx
-          mkdir -p nginx/ssl
-          openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
-            -keyout nginx/ssl/server.key \
-            -out nginx/ssl/server.crt \
-            -subj "/C=US/ST=Test/L=Test/O=Test/CN=localhost"
-          
-          # Generate certificates for backend
-          mkdir -p backend/ssl
-          openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
-            -keyout backend/ssl/server.key \
-            -out backend/ssl/server.crt \
-            -subj "/C=US/ST=Test/L=Test/O=Test/CN=localhost"
-          
-          echo "SSL certificates generated"
-          ls -la nginx/ssl/ backend/ssl/
-
-      - name: Start Docker services
-        run: docker compose -f docker-compose.yml up -d --build
-        
-      - name: Wait for services to be ready
-        run: |
-          echo "Waiting for database to be ready..."
-          timeout 60 bash -c 'until docker logs db 2>&1 | grep -q "Waiting for connections"; do echo "Waiting for DB..."; sleep 2; done' || echo "DB may not be ready"
-          
-          echo "Waiting for backend to be ready..."
-          timeout 60 bash -c 'until docker logs backend 2>&1 | grep -q "listening"; do echo "Waiting for backend..."; sleep 2; done' || echo "Backend may not be ready"
-          
-          echo "Waiting for frontend build to complete..."
-          timeout 180 bash -c 'until docker logs frontend 2>&1 | grep -q "compiled successfully\|Application bundle generation complete"; do echo "Waiting for frontend build..."; sleep 5; done' || echo "Frontend may not be ready"
-          
-          echo "Waiting for nginx to serve the frontend..."
-          timeout 60 bash -c 'until curl -k -f https://localhost 2>/dev/null; do echo "Waiting for nginx..."; sleep 3; done' || echo "Nginx may not be ready"
-          
-          echo "All services should be ready!"
-          docker ps
-          echo "Testing nginx response:"
-          curl -k -I https://localhost || true
 
       - name: Run Playwright tests
         run: npm run e2e
@@ -164,17 +99,3 @@ jobs:
           name: playwright-results
           path: frontend/test-results/
           retention-days: 30
-
-      - name: Show Docker logs on failure
-        if: failure()
-        run: |
-          echo "=== Frontend logs ==="
-          docker logs frontend || true
-          echo "=== Backend logs ==="
-          docker logs backend || true
-          echo "=== Nginx logs ==="
-          docker logs nginx || true
-
-      - name: Shutdown Docker services
-        if: always()
-        run: docker compose -f docker-compose.yml down -v

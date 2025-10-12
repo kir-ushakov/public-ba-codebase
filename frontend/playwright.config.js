@@ -15,18 +15,17 @@ export default defineConfig({
   ],
   
   use: {
-    baseURL: process.env.CI ? 'https://localhost' : 'http://localhost:4200',
+    baseURL: 'http://localhost:4200',
     trace: 'on-first-retry', // Collect trace on retry
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    ignoreHTTPSErrors: true, // Ignore self-signed certificate errors in CI
   },
   
-  // Only start web server locally, not in CI (Docker handles it in CI)
-  webServer: process.env.CI ? undefined : {
+  // Start web server for tests (both locally and in CI)
+  webServer: {
     command: 'npm run start:e2e',
     url: 'http://localhost:4200',
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI, // Always start fresh in CI
     timeout: 120000,
   },
   
