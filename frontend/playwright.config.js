@@ -21,10 +21,11 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   
-  webServer: {
+  // Only start web server locally, not in CI (Docker handles it in CI)
+  webServer: process.env.CI ? undefined : {
     command: 'npm run start:e2e',
     url: 'http://localhost:4200',
-    reuseExistingServer: !process.env.CI, // Don't reuse in CI
+    reuseExistingServer: true,
     timeout: 120000,
   },
   
