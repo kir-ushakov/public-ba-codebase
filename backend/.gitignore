@@ -9,3 +9,7 @@
 
 #compiled ts -> js
 /dist
+
+# test files
+/test/integration/files/uploads
+/test-uploads
