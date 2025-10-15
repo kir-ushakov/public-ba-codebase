@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
 import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
-import { UploadImageRequest } from './upload-image.request.js';
-import { UploadImageResponse } from './upload-image.response.js';
-import { UploadImageResult, UploadImageUsecase } from './upload-image.usecase.js';
+import { ImageUploadContract } from '@brainassistant/contracts';
+import { UploadImageUsecase } from './upload-image.usecase.js';
 import { UserMapper } from '../../../../shared/mappers/user.mapper.js';
 
 export class UploadImageController extends BaseController {
@@ -19,13 +18,13 @@ export class UploadImageController extends BaseController {
     try {
       if (!req.file) throw new Error('File not attached to request');
 
-      let uploadImageRequest: UploadImageRequest = {
-        file: req.file,
+      const request = {
         imageId: req.body.imageId,
+        file: req.file,  
       };
       const user = UserMapper.toDomain(authenticatedUser);
 
-      const result: UploadImageResult = await this.useCase.execute(uploadImageRequest, user);
+      const result = await this.useCase.execute(request, user);
 
       if (result.isFailure) {
         const error = result.error;
@@ -35,8 +34,9 @@ export class UploadImageController extends BaseController {
           message: error.message,
         });
       } else {
-        const dto: UploadImageResponse = result.getValue() as UploadImageResponse;
-        this.ok<UploadImageResponse>(res, dto);
+        // Success response - returns contract type
+        const response = result.getValue() as ImageUploadContract.Response;
+        this.ok<ImageUploadContract.Response>(res, response);
       }
     } catch (err) {
       this.fail(res, err);

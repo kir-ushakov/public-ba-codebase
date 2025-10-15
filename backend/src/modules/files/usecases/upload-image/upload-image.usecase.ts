@@ -1,19 +1,16 @@
 import path from 'path';
 import { promises as fsp } from 'fs';
-
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
 import { UploadImageError, UploadImageErrors } from './upload-image.errors.js';
 import { GoogleDriveService } from '././../../../integrations/google/services/google-drive.service.js';
 import { User } from '../../../../shared/domain/models/user.js';
-import { UploadImageRequest } from './upload-image.request.js';
-import { UploadImageResponse } from './upload-image.response.js';
 import { config } from '../../../../config/index.js';
 import { Image } from '../../../../shared/domain/models/image.js';
 import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
 import { ImageResizeService } from '../../services/image-resize.service.js';
-
-export type UploadImageResult = Result<UploadImageResponse | never, UploadImageError>;
+import { ImageUploadContract } from '@brainassistant/contracts';
+import { UploadImageRequest, UploadImageResult } from './upload-image.contract.js';
 
 const MAX_IMAGE_STORE_SIZE = 1000; // TODO: move to config
 
@@ -21,7 +18,7 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
   private googleDriveService: GoogleDriveService;
   private readonly imageRepoService: ImageRepoService;
   private readonly imageResizeService: ImageResizeService;
-  private allowedTypes = ['png', 'jpeg', 'jpg'];
+  private allowedTypes = ['png', 'jpeg', 'jpg']; // TODO: move to responsible service
 
   constructor(
     googleDriveService: GoogleDriveService,
@@ -47,7 +44,12 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
 
       await this.saveImageToDB(req.imageId, fileId, userId);
 
-      return Result.ok<UploadImageResponse, never>();
+      // Return response with imageId confirmation
+      const response = {
+        imageId: req.imageId,
+      };
+
+      return Result.ok<ImageUploadContract.Response, never>(response);
     } catch (error) {
       // TODO: handele error properly (as service error)
       // TICKET: https://brainas.atlassian.net/browse/BA-218
