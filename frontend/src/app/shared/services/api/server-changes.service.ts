@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
-import { ChangeDTO } from '../../dto/change.dto';
+import { ChangeDTO } from '@brainassistant/contracts';
 import { HttpClient } from '@angular/common/http';
 import { convertObjectToUrlParams } from '../../helpers/convert-object-to-url-params.function';
 import { Observable, map } from 'rxjs';

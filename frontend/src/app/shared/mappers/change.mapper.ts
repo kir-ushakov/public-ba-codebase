@@ -1,4 +1,4 @@
-import { TaskDTO, TagDTO, ChangeDTO, ChangeableObjectDTO } from '../dto/';
+import { TaskDTO, TagDTO, ChangeDTO, ChangeableObjectDTO }  from '@brainassistant/contracts';
 import { Tag } from '../models';
 import { ChangeableObject, Change, EChangedEntity } from '../models/change.model';
 import { Task } from '../models/task.model';

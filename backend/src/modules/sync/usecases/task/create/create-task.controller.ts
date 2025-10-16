@@ -4,10 +4,11 @@ import {
   EHttpStatus,
 } from '../../../../../shared/infra/http/models/base-controller.js';
 import { CreateTask } from './create-task.usecase.js';
-import { CreateTaskRequestDTO } from './create-task.dto.js';
+import { TaskDTO, SendChangeContract } from '@brainassistant/contracts';
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
 import { Task } from '../../../../../shared/domain/models/task.js';
 import { TaskMapper } from '../../../../../shared/mappers/task.mapper.js';
+import { CreateTaskRequest, CreateTaskResult } from './create-task.contract.js';
 
 export class CreateTaskController extends BaseController {
   private _useCase: CreateTask;
@@ -21,23 +22,21 @@ export class CreateTaskController extends BaseController {
     const loggedUser: UserPersistent = req.user as UserPersistent;
     const userId = loggedUser._id;
 
-    const task = req.body.changeableObjectDto;
+    const requestBody: SendChangeContract.Request<TaskDTO> = req.body;
 
-    const dto: CreateTaskRequestDTO = {
-      ...task,
-      id: task.id.toString(),
+    // Build internal request by adding userId to external contract
+    const request: CreateTaskRequest = {
+      userId,
+      ...requestBody,  // Spreads: { changeableObjectDto: TaskDTO }
     };
 
     try {
-      const createResult = await this._useCase.execute({
-        userId,
-        dto,
-      });
+      const createResult: CreateTaskResult = await this._useCase.execute(request);
 
       if (createResult.isSuccess) {
-        const createdTaks = createResult.getValue() as Task;
-        const createTakResponseDTO = TaskMapper.toDTO(createdTaks);
-        BaseController.jsonResponse(res, EHttpStatus.Created, createTakResponseDTO);
+        const createdTask = createResult.getValue() as Task;
+        const response: SendChangeContract.Response<TaskDTO> = TaskMapper.toDTO(createdTask);
+        BaseController.jsonResponse(res, EHttpStatus.Created, response);
       } else {
         const error = createResult.error;
         BaseController.jsonResponse(res, error.httpCode, {
