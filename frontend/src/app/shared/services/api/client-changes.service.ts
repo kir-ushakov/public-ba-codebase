@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Change, EChangeAction, EChangedEntity } from 'src/app/shared/models/change.model';
+import { Change } from 'src/app/shared/models/change.model';
 import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
-import { ChangeDTO, SendChangeContract } from '@brainassistant/contracts';
+import { ChangeDTO, EChangeAction, EChangedEntity, SendChangeContract } from '@brainassistant/contracts';
 import { ChangeMapper } from '../../mappers/change.mapper';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -33,11 +33,13 @@ export class ClientChangesService {
             changeableObjectDto: payload,
           };
           
+          // POST/PATCH return the created/updated entity
           return change.action === EChangeAction.Created
             ? this.http.post<SendChangeContract.Response>(path, requestBody)
             : this.http.patch<SendChangeContract.Response>(path, requestBody);
             
         case EChangeAction.Deleted:
+          // DELETE returns void
           return this.http.delete<SendChangeContract.Response>(path);
       }
     } catch (err) {

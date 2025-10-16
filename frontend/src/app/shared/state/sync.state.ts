@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext } from '@ngxs/store';
+import { EChangeAction } from '@brainassistant/contracts';
 import { ClientIdService } from 'src/app/shared/services/api/client-id.service';
 import { AppAction } from './app.actions';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Change, EChangeAction } from '../models/change.model';
+import { Change } from '../models/change.model';
 import { append, patch, removeItem } from '@ngxs/store/operators';
 import { ServerChangesService } from '../services/api/server-changes.service';
 import { ClientChangesService } from '../services/api/client-changes.service';
@@ -11,6 +12,7 @@ import { EMPTY, Observable, catchError, concat, lastValueFrom, tap, mergeMap, th
 import { SyncAction } from './sync.action';
 import { ImageService } from '../services/application/image.service';
 import { UserAction } from './user.actions';
+
 
 export interface SyncStateModel {
   clientId: string;
