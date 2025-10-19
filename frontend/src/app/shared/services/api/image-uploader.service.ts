@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { v4 as uuidv4 } from 'uuid';
 import mime from 'mime';
-import { ImageUploadContract } from '@brainassistant/contracts';
+import { UploadImageContract } from '@brainassistant/contracts';
 import { firstValueFrom } from 'rxjs';
 import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
 
@@ -12,7 +12,7 @@ import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
 export class ImageUploaderService {
   constructor(private http: HttpClient) {}
 
-  public async uploadImageBlob(imageId: string, blob: Blob): Promise<ImageUploadContract.Response> {
+  public async uploadImageBlob(imageId: string, blob: Blob): Promise<UploadImageContract.Response> {
     try {
       const extension = mime.getExtension(blob.type) || 'jpg';
       const filename = `${uuidv4()}.${extension}`;
@@ -21,7 +21,7 @@ export class ImageUploaderService {
       formData.append('imageId', imageId);
 
       const response = await firstValueFrom(
-        this.http.post<ImageUploadContract.Response>(API_ENDPOINTS.FILES.IMAGE, formData),
+        this.http.post<UploadImageContract.Response>(API_ENDPOINTS.FILES.IMAGE, formData),
       );
     } catch (error) {
       console.error('Error uploading image:', error);

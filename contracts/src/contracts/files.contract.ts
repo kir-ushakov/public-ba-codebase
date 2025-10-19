@@ -8,7 +8,7 @@
  * Defines the contract for image upload API endpoint.
  * Groups Request and Response types for clear relationship.
  */
-export namespace ImageUploadContract {
+export namespace UploadImageContract {
   /**
    * Image Upload Request
    * 
@@ -50,8 +50,4 @@ export namespace ImageUploadContract {
     imageId: string;
   };
 }
-
-// Convenience exports for backward compatibility and simpler imports
-export type ImageUploadRequest = ImageUploadContract.Request;
-export type ImageUploadResponse = ImageUploadContract.Response;
 

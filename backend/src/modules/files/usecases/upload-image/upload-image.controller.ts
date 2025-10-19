@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ImageUploadContract } from '@brainassistant/contracts';
+import { UploadImageContract } from '@brainassistant/contracts';
 import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
 import { UploadImageUsecase, UploadImageParams, UploadImageResult } from './upload-image.usecase.js';
@@ -35,14 +35,14 @@ export class UploadImageController extends BaseController {
         });
       } else {
         const response = this.usecaseResultToResponse(result);
-        this.ok<ImageUploadContract.Response>(res, response);
+        this.ok<UploadImageContract.Response>(res, response);
       }
     } catch (err) {
       this.fail(res, err);
     }
   }
 
-  private requestToUsecaseParams(payload: ImageUploadContract.Request, userId: string): UploadImageParams {
+  private requestToUsecaseParams(payload: UploadImageContract.Request, userId: string): UploadImageParams {
     const imageId = payload.changeableObjectDto.imageId;
     const file = payload.file;
     return {
@@ -52,7 +52,7 @@ export class UploadImageController extends BaseController {
     };
   }
 
-  private usecaseResultToResponse(result: UploadImageResult): ImageUploadContract.Response {
-    result.getValue() as ImageUploadContract.Response;
+  private usecaseResultToResponse(result: UploadImageResult): UploadImageContract.Response {
+    result.getValue() as UploadImageContract.Response;
   }
 }
