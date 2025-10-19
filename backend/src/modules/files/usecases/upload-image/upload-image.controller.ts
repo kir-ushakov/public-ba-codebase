@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
+import { ImageUploadContract } from '@brainassistant/contracts';
 import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
-import { ImageUploadContract } from '@brainassistant/contracts';
-import { UploadImageUsecase } from './upload-image.usecase.js';
+import { UploadImageUsecase, UploadImageParams, UploadImageResult } from './upload-image.usecase.js';
 import { UserMapper } from '../../../../shared/mappers/user.mapper.js';
 
 export class UploadImageController extends BaseController {
@@ -13,18 +13,18 @@ export class UploadImageController extends BaseController {
   }
 
   protected async executeImpl(req: Request, res: Response): Promise<void> {
-    const authenticatedUser: UserPersistent = req.user as UserPersistent;
+    const loggedUser: UserPersistent = req.user as UserPersistent;
+    const userId = loggedUser._id;
 
     try {
       if (!req.file) throw new Error('File not attached to request');
 
-      const request = {
-        imageId: req.body.imageId,
-        file: req.file,  
-      };
-      const user = UserMapper.toDomain(authenticatedUser);
-
-      const result = await this.useCase.execute(request, user);
+      // TODO: This mapping has to be a part of usecase
+      // TICKET: https://brainas.atlassian.net/browse/BA-257
+      const user = UserMapper.toDomain(loggedUser);
+      const params = this.requestToUsecaseParams({...req.body, file: req.file }, userId);
+    
+      const result = await this.useCase.execute(params, user);
 
       if (result.isFailure) {
         const error = result.error;
@@ -34,12 +34,25 @@ export class UploadImageController extends BaseController {
           message: error.message,
         });
       } else {
-        // Success response - returns contract type
-        const response = result.getValue() as ImageUploadContract.Response;
+        const response = this.usecaseResultToResponse(result);
         this.ok<ImageUploadContract.Response>(res, response);
       }
     } catch (err) {
       this.fail(res, err);
     }
+  }
+
+  private requestToUsecaseParams(payload: ImageUploadContract.Request, userId: string): UploadImageParams {
+    const imageId = payload.changeableObjectDto.imageId;
+    const file = payload.file;
+    return {
+      imageId,
+      file,
+      userId,
+    };
+  }
+
+  private usecaseResultToResponse(result: UploadImageResult): ImageUploadContract.Response {
+    result.getValue() as ImageUploadContract.Response;
   }
 }
