@@ -1,14 +1,13 @@
 import { Request, Response } from 'express';
+import { TaskDTO, SendChangeContract } from '@brainassistant/contracts';
 import {
   BaseController,
   EHttpStatus,
 } from '../../../../../shared/infra/http/models/base-controller.js';
-import { CreateTask } from './create-task.usecase.js';
-import { TaskDTO, SendChangeContract } from '@brainassistant/contracts';
+import { CreateTask, CreateTaskParams, CreateTaskResult } from './create-task.usecase.js';
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
 import { Task } from '../../../../../shared/domain/models/task.js';
 import { TaskMapper } from '../../../../../shared/mappers/task.mapper.js';
-import { CreateTaskRequest, CreateTaskResult } from './create-task.contract.js';
 
 export class CreateTaskController extends BaseController {
   private _useCase: CreateTask;
@@ -19,19 +18,10 @@ export class CreateTaskController extends BaseController {
   }
 
   protected async executeImpl(req: Request, res: Response): Promise<void> {
-    const loggedUser: UserPersistent = req.user as UserPersistent;
-    const userId = loggedUser._id;
-
-    const requestBody: SendChangeContract.Request<TaskDTO> = req.body;
-
-    // Build internal request by adding userId to external contract
-    const request: CreateTaskRequest = {
-      userId,
-      ...requestBody,  // Spreads: { changeableObjectDto: TaskDTO }
-    };
+    const params: CreateTaskParams = this.requestToUsecaseParams(req);
 
     try {
-      const createResult: CreateTaskResult = await this._useCase.execute(request);
+      const createResult: CreateTaskResult = await this._useCase.execute(params);
 
       if (createResult.isSuccess) {
         const createdTask = createResult.getValue() as Task;
@@ -40,12 +30,27 @@ export class CreateTaskController extends BaseController {
       } else {
         const error = createResult.error;
         BaseController.jsonResponse(res, error.httpCode, {
-          name: error.name,
+          name: error.code,
           message: error.message,
         });
       }
     } catch (err) {
       this.fail(res, err.toString());
     }
+  }
+
+  private requestToUsecaseParams(req: Request): CreateTaskParams {
+    const loggedUser: UserPersistent = req.user as UserPersistent;
+    const userId = loggedUser._id;
+
+    const requestBody: SendChangeContract.Request<TaskDTO> = req.body;
+    const taskDto: TaskDTO = requestBody.changeableObjectDto;
+
+    return {
+      taskProps: {
+        userId,
+        ...taskDto,
+      }
+    };
   }
 }
