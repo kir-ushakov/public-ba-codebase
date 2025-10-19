@@ -18,14 +18,16 @@ export class CreateTaskController extends BaseController {
   }
 
   protected async executeImpl(req: Request, res: Response): Promise<void> {
-    const params: CreateTaskParams = this.requestToUsecaseParams(req);
+    const loggedUser: UserPersistent = req.user as UserPersistent;
+    const userId = loggedUser._id;
+
+    const params: CreateTaskParams = this.requestToUsecaseParams(req.body, userId);
 
     try {
       const createResult: CreateTaskResult = await this._useCase.execute(params);
 
       if (createResult.isSuccess) {
-        const createdTask = createResult.getValue() as Task;
-        const response: SendChangeContract.Response<TaskDTO> = TaskMapper.toDTO(createdTask);
+        const response = this.usecaseResultToResponse(createResult);
         BaseController.jsonResponse(res, EHttpStatus.Created, response);
       } else {
         const error = createResult.error;
@@ -39,18 +41,17 @@ export class CreateTaskController extends BaseController {
     }
   }
 
-  private requestToUsecaseParams(req: Request): CreateTaskParams {
-    const loggedUser: UserPersistent = req.user as UserPersistent;
-    const userId = loggedUser._id;
-
-    const requestBody: SendChangeContract.Request<TaskDTO> = req.body;
-    const taskDto: TaskDTO = requestBody.changeableObjectDto;
-
+  private requestToUsecaseParams(payload: SendChangeContract.Request<TaskDTO>, userId: string): CreateTaskParams {
+    const taskDto: TaskDTO = payload.changeableObjectDto;
     return {
       taskProps: {
         userId,
         ...taskDto,
       }
     };
+  }
+
+  private usecaseResultToResponse(result: CreateTaskResult): SendChangeContract.Response<TaskDTO> {
+    return TaskMapper.toDTO(result.getValue() as Task);
   }
 }

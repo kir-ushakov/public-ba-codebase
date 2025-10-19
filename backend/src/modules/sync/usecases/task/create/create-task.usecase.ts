@@ -13,7 +13,6 @@ export type CreateTaskParams = {
 
 export type CreateTaskResult = Result<Task, CreateTaskError>;
 
-
 export class CreateTask implements UseCase<CreateTaskParams, Promise<CreateTaskResult>> {
   constructor(
     private readonly taskRepoService: TaskRepoService,
