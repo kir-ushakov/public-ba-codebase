@@ -1,29 +1,27 @@
 import { Request, Response } from 'express';
+import { GetChangesContract } from '@brainassistant/contracts';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
 import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
-import { IGetChangesRequestDTO, IGetChangesResponseDTO } from './get-changes.dto.js';
-import { GetChangesResponse, GetChangesUC } from './get-changes.usecase.js';
+import { GetChanges, GetChangesParams, GetChangesResult } from './get-changes.usecase.js';
 import { ChangeMapper } from '../../../../shared/mappers/change.mapper.js';
 import { Change } from '../../domain/values/change.js';
 
 export class GetChnagesController extends BaseController {
-  private _useCase: GetChangesUC;
+  private _useCase: GetChanges;
 
-  constructor(useCase: GetChangesUC) {
+  constructor(useCase: GetChanges) {
     super();
     this._useCase = useCase;
   }
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     const authenticatedUser: UserPersistent = req.user as UserPersistent;
+    const userId = authenticatedUser._id;
 
-    let dto: IGetChangesRequestDTO = {
-      userId: authenticatedUser._id,
-      clientId: req.query.clientId as string,
-    };
+    const params = this.requestToUsecaseParams(req.query, userId);
 
     try {
-      const result: GetChangesResponse = await this._useCase.execute(dto);
+      const result: GetChangesResult = await this._useCase.execute(params);
 
       if (result.isFailure) {
         const error = result.error;
@@ -33,14 +31,25 @@ export class GetChnagesController extends BaseController {
           message: error.message,
         });
       } else {
-        const changes: Change[] = result.getValue() as Change[];
-        const changesDTO: IGetChangesResponseDTO = {
-          changes: changes.map(change => ChangeMapper.toDTO(change)),
-        };
-        return this.ok<IGetChangesResponseDTO>(res, changesDTO);
+        const response = this.usecaseResultToResponse(result);
+        return this.ok<GetChangesContract.Response>(res, response);
       }
     } catch (err) {
       return this.fail(res, err);
     }
+  }
+
+  private requestToUsecaseParams(payload: GetChangesContract.Request, userId: string): GetChangesParams {
+    return {
+      clientId: payload.clientId,
+      userId,
+    };
+  }
+
+  private usecaseResultToResponse(result: GetChangesResult): GetChangesContract.Response {
+    const changes: Change[] = result.getValue() as Change[];
+    return {
+      changes: changes.map(change => ChangeMapper.toDTO(change)),
+    };
   }
 }
