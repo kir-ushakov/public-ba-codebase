@@ -5,7 +5,8 @@ services:
     image: kirushakov/braias:frontend
     container_name: frontend
     build:
-      context: ./frontend
+      context: .
+      dockerfile: ./frontend/Dockerfile
     tty: true
     ports:
       - '4200:8080'
@@ -22,7 +23,8 @@ services:
     image: kirushakov/braias:backend
     container_name: backend
     build:
-      context: ./backend
+      context: .
+      dockerfile: ./backend/Dockerfile
     ports:
       - '3443:3443'
     volumes:

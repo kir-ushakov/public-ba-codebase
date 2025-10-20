@@ -2,7 +2,26 @@
 
 This guide helps you set up the shared contracts package for type-safe API contracts.
 
-## Step 1: Install Contracts Package Dependencies
+## Quick Setup (Recommended)
+
+Run the automated installation script from the project root:
+
+```powershell
+.\install-contracts.ps1
+```
+
+This will automatically:
+1. Build the contracts package
+2. Link it to backend
+3. Link it to frontend
+
+---
+
+## Manual Setup (Alternative)
+
+If you prefer to do it manually:
+
+### Step 1: Install Contracts Package Dependencies
 
 ```powershell
 cd contracts
@@ -11,7 +30,7 @@ npm run build
 cd ..
 ```
 
-## Step 2: Link Contracts to Backend
+### Step 2: Link Contracts to Backend
 
 ```powershell
 cd backend
@@ -19,7 +38,7 @@ npm install
 cd ..
 ```
 
-## Step 3: Link Contracts to Frontend
+### Step 3: Link Contracts to Frontend
 
 ```powershell
 cd frontend
@@ -27,7 +46,7 @@ npm install
 cd ..
 ```
 
-## Step 4: Verify Build
+## Verify Build
 
 Both backend and frontend package.json now reference:
 ```json
