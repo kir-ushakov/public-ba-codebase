@@ -41,4 +41,3 @@ export interface ChangeDTO {
   action: EChangeAction;
   object: ChangeableObjectDTO | DeletedEntityDTO;
 }
-
