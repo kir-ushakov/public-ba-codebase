@@ -5,6 +5,7 @@
 export interface TagDTO {
   id: string;
   userId: string;
+  isCategory: boolean;
   name: string;
   color: string;
   createdAt: string;
