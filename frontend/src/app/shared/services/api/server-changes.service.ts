@@ -15,11 +15,11 @@ export class ServerChangesService {
   constructor(private http: HttpClient) {}
 
   public fetch(clientId: string): Observable<Change[]> {
-    const queryString: string = convertObjectToUrlParams({
+    const request: GetChangesContract.Request = {
       clientId,
-    });
+    };
     return this.http
-      .get<GetChangesContract.Response>(`${API_ENDPOINTS.SYNC.CHANGES}?${queryString}`)
+      .get<GetChangesContract.Response>(`${API_ENDPOINTS.SYNC.CHANGES}`, { params: request })
       .pipe(
         map((response: GetChangesContract.Response) => {
           const changeDTOs: ChangeDTO[] = response.changes;

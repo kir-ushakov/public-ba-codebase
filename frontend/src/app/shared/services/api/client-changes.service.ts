@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Change } from 'src/app/shared/models/change.model';
 import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
-import { ChangeDTO, EChangeAction, EChangedEntity, SendChangeContract } from '@brainassistant/contracts';
+import { ChangeableObjectDTO, ChangeDTO, EChangeAction, EChangedEntity, SendChangeContract } from '@brainassistant/contracts';
 import { ChangeMapper } from '../../mappers/change.mapper';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -24,22 +24,21 @@ export class ClientChangesService {
   public send(change: Change): Observable<SendChangeContract.Response> {
     try {
       const path = this.getPath(change);
-      const payload = this.getPayLoad(change);
       
       switch (change.action) {
         case EChangeAction.Created:
         case EChangeAction.Updated:
-          const requestBody: SendChangeContract.Request = {
-            changeableObjectDto: payload,
+          const changeDto: ChangeDTO = ChangeMapper.toDto(change);
+
+          const request: SendChangeContract.Request = {
+            changeableObjectDto: changeDto.object as ChangeableObjectDTO,
           };
           
-          // POST/PATCH return the created/updated entity
           return change.action === EChangeAction.Created
-            ? this.http.post<SendChangeContract.Response>(path, requestBody)
-            : this.http.patch<SendChangeContract.Response>(path, requestBody);
+            ? this.http.post<SendChangeContract.Response>(path, request)
+            : this.http.patch<SendChangeContract.Response>(path, request);
             
         case EChangeAction.Deleted:
-          // DELETE returns void
           return this.http.delete<SendChangeContract.Response>(path);
       }
     } catch (err) {
@@ -56,11 +55,5 @@ export class ClientChangesService {
     } else {
       return ClientChangesService.SYNC_REQUESTS_MAP[change.entity].endpoint;
     }
-  }
-
-  private getPayLoad(change: Change) {
-    if (change.action === EChangeAction.Deleted) return null;
-    const changeDto: ChangeDTO = ChangeMapper.toDto(change);
-    return changeDto.object;
   }
 }
