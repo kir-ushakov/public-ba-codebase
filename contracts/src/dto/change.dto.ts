@@ -26,7 +26,7 @@ export type ChangeableModelDTO = TaskDTO | TagDTO;
 /**
  * ChangeableObjectDTO - union of all changeable objects
  */
-export type ChangeableObjectDTO = (TaskDTO | TagDTO) & IChangeableObjectDTO;
+export type ChangeableObjectDTO = ChangeableModelDTO & IChangeableObjectDTO;
 
 /**
  * For deleted entities, we only need the id
