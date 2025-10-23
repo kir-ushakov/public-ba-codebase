@@ -1,4 +1,4 @@
-import { TagDTO } from '../dto';
+import { TagDTO } from '@brainassistant/contracts';
 import { ETagType, Tag } from '../models';
 
 export class TagMapper {
@@ -12,7 +12,7 @@ export class TagMapper {
       modifiedAt: tagDto.modifiedAt,
     } as Tag;
   }
-
+  
   public static toDto(tag: Tag): TagDTO {
     return {
       id: tag.id,
