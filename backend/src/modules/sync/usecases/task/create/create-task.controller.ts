@@ -47,6 +47,8 @@ export class CreateTaskController extends BaseController {
       taskProps: {
         userId,
         ...taskDto,
+        createdAt: new Date(taskDto.createdAt),
+        modifiedAt: new Date(taskDto.modifiedAt),
       }
     };
   }
