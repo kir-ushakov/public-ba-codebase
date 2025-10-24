@@ -107,7 +107,7 @@ export class SyncState {
     const changes = await lastValueFrom(
       this.serverChangesService.fetch(ctx.getState().clientId)
     );
-    ctx.dispatch(new SyncAction.ServerChangesLoaded(changes));
+    await ctx.dispatch(new SyncAction.ServerChangesLoaded(changes));
   }
 
   private async syncPendingChanges(ctx: StateContext<SyncStateModel>): Promise<void> {
@@ -116,14 +116,14 @@ export class SyncState {
     for (const change of changes) {
       try {
         await lastValueFrom(this.clientChangesService.send(change));
-        ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
+        await ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
       } catch (error) {
         console.error('Sync Pending Change Error:', change, error);
         
         // TODO: Don't rely only on HTTP status code - check error name from backend response
         // TICKET: https://brainas.atlassian.net/browse/BA-258
         if (error instanceof HttpErrorResponse && error.status === 404) {
-          this.handleEntityNotFoundError(ctx, change);
+          await this.handleEntityNotFoundError(ctx, change);
         } else {
           // TODO: Notify user about temporary sync failure
           // TODO: Consider exponential backoff for retry
@@ -162,7 +162,7 @@ export class SyncState {
     ctx.dispatch(new SyncAction.Synchronize());
   }
 
-  private handleEntityNotFoundError(ctx: StateContext<SyncStateModel>, change: Change): void {
+  private async handleEntityNotFoundError(ctx: StateContext<SyncStateModel>, change: Change): Promise<void> {
     // Entity not found on server - create local delete change to sync state with server
     const deleteChange: Change = {
       entity: change.entity,
@@ -172,8 +172,8 @@ export class SyncState {
         modifiedAt: new Date().toISOString(),
       },
     };
-    ctx.dispatch(new SyncAction.ServerChangesLoaded([deleteChange]));
-    ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
+    await ctx.dispatch(new SyncAction.ServerChangesLoaded([deleteChange]));
+    await ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
 
     // TODO: Notify user that entity was deleted on server
     // TICKET: https://brainas.atlassian.net/browse/BA-136
