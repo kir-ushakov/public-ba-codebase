@@ -1,5 +1,5 @@
 import { Task, TaskPresitant } from '../domain/models/task.js';
-import { TaskDTO } from '../../modules/sync/domain/dtos/task.dto.js';
+import { TaskDTO } from '@brainassistant/contracts';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 import { DomainError } from '../core/domain-error.js';
 
