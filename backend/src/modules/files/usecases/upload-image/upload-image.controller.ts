@@ -22,7 +22,7 @@ export class UploadImageController extends BaseController {
       // TODO: This mapping has to be a part of usecase
       // TICKET: https://brainas.atlassian.net/browse/BA-257
       const user = UserMapper.toDomain(loggedUser);
-      const params = this.requestToUsecaseParams({...req.body, file: req.file }, userId);
+      const params = this.requestToUsecaseParams(req.body as Omit<UploadImageContract.Request, 'file'>, req.file as Express.Multer.File, userId);
     
       const result = await this.useCase.execute(params, user);
 
@@ -42,9 +42,8 @@ export class UploadImageController extends BaseController {
     }
   }
 
-  private requestToUsecaseParams(payload: UploadImageContract.Request, userId: string): UploadImageParams {
-    const imageId = payload.changeableObjectDto.imageId;
-    const file = payload.file;
+  private requestToUsecaseParams(payload: Omit<UploadImageContract.Request, 'file'>, file: Express.Multer.File, userId: string): UploadImageParams {
+    const imageId = payload.imageId;
     return {
       imageId,
       file,
@@ -53,6 +52,6 @@ export class UploadImageController extends BaseController {
   }
 
   private usecaseResultToResponse(result: UploadImageResult): UploadImageContract.Response {
-    result.getValue() as UploadImageContract.Response;
+    return result.getValue() as UploadImageContract.Response;
   }
 }
