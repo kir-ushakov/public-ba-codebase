@@ -8,6 +8,7 @@ import { CreateTask, CreateTaskParams, CreateTaskResult } from './create-task.us
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
 import { Task } from '../../../../../shared/domain/models/task.js';
 import { TaskMapper } from '../../../../../shared/mappers/task.mapper.js';
+import { UniqueEntityID } from '../../../../../shared/domain/UniqueEntityID.js';
 
 export class CreateTaskController extends BaseController {
   private _useCase: CreateTask;
@@ -43,13 +44,15 @@ export class CreateTaskController extends BaseController {
 
   private requestToUsecaseParams(payload: SendChangeContract.Request<TaskDTO>, userId: string): CreateTaskParams {
     const taskDto: TaskDTO = payload.changeableObjectDto;
+    const { id, ...taskPropsWithoutId } = taskDto;
     return {
       taskProps: {
         userId,
-        ...taskDto,
+        ...taskPropsWithoutId,
         createdAt: new Date(taskDto.createdAt),
         modifiedAt: new Date(taskDto.modifiedAt),
-      }
+      },
+      id: id ? new UniqueEntityID(id) : undefined,
     };
   }
 
