@@ -1,11 +1,4 @@
-/**
- * Send Change Contract
- * 
- * Defines the contract for sending changes (create/update/delete) to sync endpoints.
- * Groups Request and Response types for clear relationship.
- */
-
-import { ChangeableModelDTO } from '../dto/change.dto';
+import { ChangeableObjectDTO } from "../dto";
 
 /**
  * Send Change Contract
@@ -21,7 +14,7 @@ export namespace SendChangeContract {
    * Request for sending a change to the server
    * Generic type T allows specific DTO types (TaskDTO, TagDTO, etc.)
    */
-  export type Request<T extends ChangeableModelDTO = ChangeableModelDTO> = {
+  export type Request<T extends ChangeableObjectDTO = ChangeableObjectDTO> = {
     changeableObjectDto: T;
   };
 
@@ -33,6 +26,6 @@ export namespace SendChangeContract {
    * 
    * For DELETE requests, returns void.
    */
-  export type Response<T extends ChangeableModelDTO = ChangeableModelDTO> = T | void;
+  export type Response<T extends ChangeableObjectDTO = ChangeableObjectDTO> = T | void;
 }
 

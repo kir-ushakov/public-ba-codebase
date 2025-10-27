@@ -25,8 +25,7 @@ export type { TagDTO } from './tag.dto';
 export type {
   IChangeableObjectDTO,
   ChangeableObjectDTO,
-  DeletedEntityDTO,
-  ChangeableModelDTO,
+  DeletedObjectDTO,
   ChangeDTO,
 } from './change.dto';
 

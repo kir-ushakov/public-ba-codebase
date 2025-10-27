@@ -17,21 +17,13 @@ export interface IChangeableObjectDTO {
   modifiedAt: string;
 }
 
+export type DeletedObjectDTO = IChangeableObjectDTO;
+
 /**
  * Union type of all DTOs that can be synchronized
  * Add new syncable types here
  */
-export type ChangeableModelDTO = TaskDTO | TagDTO;
-
-/**
- * ChangeableObjectDTO - union of all changeable objects
- */
-export type ChangeableObjectDTO = ChangeableModelDTO & IChangeableObjectDTO;
-
-/**
- * For deleted entities, we only need the id
- */
-export type DeletedEntityDTO = Pick<IChangeableObjectDTO, 'id'>;
+export type ChangeableObjectDTO = TaskDTO | TagDTO | DeletedObjectDTO;
 
 /**
  * Change DTO - represents a single change/sync event
@@ -39,5 +31,5 @@ export type DeletedEntityDTO = Pick<IChangeableObjectDTO, 'id'>;
 export interface ChangeDTO {
   entity: EChangedEntity;
   action: EChangeAction;
-  object: ChangeableObjectDTO | DeletedEntityDTO;
+  object: ChangeableObjectDTO;
 }
