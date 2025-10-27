@@ -28,8 +28,9 @@ services:
     ports:
       - '3443:3443'
     volumes:
-      - ./backend/src:/usr/src/app/src
-      - files:/usr/src/app/files
+      - ./backend/src:/app/backend/src
+      - ./contracts:/app/contracts
+      - files:/app/backend/files
     environment:
       - NODE_ENV=${NODE_ENV}
       - PORT=3443

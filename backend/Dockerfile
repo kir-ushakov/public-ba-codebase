@@ -1,19 +1,16 @@
 FROM node:20
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy contracts package first
-COPY contracts/ ../contracts/
-WORKDIR /usr/src/contracts
-RUN npm install
-RUN npm run build
+# Copy contracts and build
+COPY contracts/ ./contracts/
+WORKDIR /app/contracts
+RUN npm install && npm run build
 
-# Build backend
-WORKDIR /usr/src/app
-COPY backend/package*.json ./
+# Copy backend and install dependencies (including linked contracts)
+WORKDIR /app/backend
+COPY backend/ .
 RUN npm install --verbose
 RUN npm install -g nodemon
-
-COPY backend/ .
 
 CMD ["npm", "run", "dev"]
