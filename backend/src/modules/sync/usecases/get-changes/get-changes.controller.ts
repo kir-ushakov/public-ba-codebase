@@ -18,7 +18,7 @@ export class GetChnagesController extends BaseController {
     const authenticatedUser: UserPersistent = req.user as UserPersistent;
     const userId = authenticatedUser._id;
 
-    const params = this.requestToUsecaseParams(req.query, userId);
+    const params = this.requestToUsecaseParams(req.query as unknown as GetChangesContract.Request, userId);
 
     try {
       const result: GetChangesResult = await this._useCase.execute(params);
