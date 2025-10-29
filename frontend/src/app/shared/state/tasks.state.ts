@@ -1,5 +1,6 @@
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { Injectable } from '@angular/core';
+import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
 import { patch, append, updateItem, iif, insertItem, removeItem } from '@ngxs/store/operators';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -7,8 +8,6 @@ import {
   ETaskStatus,
   ETaskType,
   Change,
-  EChangeAction,
-  EChangedEntity,
   TaskChanges,
 } from 'src/app/shared/models/';
 import { UserState } from './user.state';

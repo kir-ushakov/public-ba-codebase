@@ -3,7 +3,8 @@ version: '3'
 services:
   frontend:
     build:
-      context: ./frontend
+      context: .
+      dockerfile: ./frontend/Dockerfile
     volumes:
     - ./frontend/dist:/usr/src/app/dist/app/browser
     environment:
@@ -14,8 +15,8 @@ services:
     volumes:
       - ./nginx/ssl:/usr/ssl
     build:
-      context: ./backend
-      dockerfile: ./Dockerfile.prod
+      context: .
+      dockerfile: ./backend/Dockerfile.prod
     environment:
       - PORT=3443
       - CRT_PATH=/usr/ssl/brainassistant.app.crt

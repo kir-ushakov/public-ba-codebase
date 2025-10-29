@@ -40,31 +40,36 @@ test('user can create a task', async ({ page }) => {
   expect(imageSrc).toContain('blob:');
 
   // STEP 3: Save task and verify sync to server
-  const imageUploadPromise = page.waitForRequest(
-    request => request.url().includes('/api/files/image') && request.method() === 'POST',
-    { timeout: 30000 }
-  );
+  // 3.1 Set up promises to capture API responses before clicking button
+  const responsesPromise = Promise.all([
+    page.waitForResponse(
+      response => response.url().includes('/api/sync/task') && response.request().method() === 'POST',
+      { timeout: 30000 }
+    ),
+    page.waitForResponse(
+      response => response.url().includes('/api/files/image') && response.request().method() === 'POST',
+      { timeout: 30000 }
+    ),
+  ]);
   
-  const taskSyncPromise = page.waitForRequest(
-    request => request.url().includes('/api/sync/task') && request.method() === 'POST',
-    { timeout: 30000 }
-  );
+  const applyButton = page.locator('[data-test="apply-changes-btn"]');
+  await applyButton.click();
   
-  await page.click('[data-test="apply-changes-btn"]');
+  // 3.2 Wait for both sync and image upload to complete
+  const [taskSyncResponse, imageUploadResponse] = await responsesPromise;
   
-  // Verify image uploaded to server
-  const imageUploadRequest = await imageUploadPromise;
-  const imageData = imageUploadRequest.postData();
-  expect(imageData).toBeTruthy();
-  expect(imageData!.length).toBeGreaterThan(0);
-  expect(imageData).toContain('imageId');
-  
-  // Verify task data synced to server
-  const taskSyncRequest = await taskSyncPromise;
-  const taskData = taskSyncRequest.postDataJSON();
+  // 3.3 Verify task data synced to server
+  const taskData = taskSyncResponse.request().postDataJSON();
   expect(taskData.changeableObjectDto).toBeTruthy();
   expect(taskData.changeableObjectDto.title).toBe('My First Task');
   expect(taskData.changeableObjectDto.imageId).toBeTruthy();
+  
+  // 3.4 Verify image uploaded to server
+  const imageData = imageUploadResponse.request().postData();
+  expect(imageData).toBeTruthy();
+  expect(imageData!.length).toBeGreaterThan(0);
+  const formDataText = imageData!.toString();
+  expect(formDataText).toContain('imageId');
   
   // STEP 4: Verify task appears on home screen
   await page.waitForURL(/\/(home)?$/);

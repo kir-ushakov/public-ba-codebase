@@ -14,6 +14,7 @@
   },
   "author": "Kirill Ushakov",
   "dependencies": {
+    "@brainassistant/contracts": "file:../contracts",
     "@google-cloud/local-auth": "^2.1.0",
     "@ngrok/ngrok": "^0.9.1",
     "@sendgrid/mail": "^7.4.6",

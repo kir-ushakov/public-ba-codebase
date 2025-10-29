@@ -1,4 +1,4 @@
-import { ChangeDTO } from '../../modules/sync/domain/dtos/change.dto.js';
+import { ChangeDTO } from '@brainassistant/contracts';
 import { Change } from '../../modules/sync/domain/values/change.js';
 
 export class ChangeMapper {

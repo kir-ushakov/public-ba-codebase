@@ -1,22 +1,11 @@
 import { ValueObject } from '../../../../shared/domain/ValueObject.js';
-import { ChangeableModelDTO } from '../dtos/change.dto.js';
-
-export enum EChangedEntity {
-  Task = 'CHANGED_ENTITY_TASK',
-  Tag = 'CHANGED_ENTITY_TAG',
-  // more types will be here
-}
-
-export enum EChangeAction {
-  Created = 'CHANGE_ACTION_CREATED',
-  Updated = 'CHANGE_ACTION_UPDATED',
-  Deleted = 'CHANGE_ACTION_DELETED',
-}
+import { ChangeableObjectDTO } from '@brainassistant/contracts';
+import { EChangedEntity, EChangeAction } from '@brainassistant/contracts';
 
 export interface IChangeProps {
   entity: EChangedEntity;
   action: EChangeAction;
-  object?: ChangeableModelDTO;
+  object?: ChangeableObjectDTO;
   modifiedAt?: string;
 }
 

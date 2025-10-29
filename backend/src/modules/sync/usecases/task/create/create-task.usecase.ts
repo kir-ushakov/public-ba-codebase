@@ -1,44 +1,35 @@
 import { UseCase } from '../../../../../shared/core/UseCase.js';
-import { CreateTaskRequestDTO } from './create-task.dto.js';
 import { Result } from '../../../../../shared/core/result.js';
-import { ETaskError, Task } from '../../../../../shared/domain/models/task.js';
-import { TaskRepoService } from '../../../../../shared/repo/task-repo.service.js';
+import { ETaskError, ITaskProps, Task } from '../../../../../shared/domain/models/task.js';
 import { UniqueEntityID } from '../../../../../shared/domain/UniqueEntityID.js';
-import { CreateTaskError, CreateTaskErrors } from './create-task.errors.js';
+import { TaskRepoService } from '../../../../../shared/repo/task-repo.service.js';
 import { SlackService } from '../../../../../shared/infra/integrations/slack/slack.service.js';
+import { CreateTaskError, CreateTaskErrors } from './create-task.errors.js';
 import { DomainError } from '../../../../../shared/core/domain-error.js';
 
-type Request = {
-  userId: string;
-  dto: CreateTaskRequestDTO;
+
+export type CreateTaskParams = {
+  taskProps: ITaskProps;
+  id?: UniqueEntityID;
 };
 
-type Response = Promise<Result<Task | never, CreateTaskError>>;
+export type CreateTaskResult = Result<Task, CreateTaskError>;
 
-export class CreateTask implements UseCase<Request, Response> {
+export class CreateTask implements UseCase<CreateTaskParams, Promise<CreateTaskResult>> {
   constructor(
     private readonly taskRepoService: TaskRepoService,
     private readonly slackService: SlackService,
   ) {}
 
-  public async execute(req: Request): Promise<Result<Task | never, CreateTaskError>> {
-    const userId = req.userId;
-    const dto: CreateTaskRequestDTO = req.dto;
+  public async execute(params: CreateTaskParams): Promise<CreateTaskResult> {
+    const taskProps: ITaskProps = params.taskProps;  
 
-    const taskOrError: Result<Task | never, DomainError<Task, ETaskError>> = Task.create(
-      {
-        ...dto,
-        userId,
-      },
-      new UniqueEntityID(dto.id),
-    );
-
+    const taskOrError: Result<Task | never, DomainError<Task, ETaskError>> = Task.create(taskProps, params.id);
     if (taskOrError.isFailure) {
       return new CreateTaskErrors.DataInvalid(taskOrError.error);
     }
 
-    const task: Task = taskOrError.getValue();
-
+    const task: Task = taskOrError.getValue() as Task;
     await this.taskRepoService.create(task);
 
     // TODO: this._eventBus.publish(new TaskCreatedEvent(task));
@@ -46,8 +37,8 @@ export class CreateTask implements UseCase<Request, Response> {
     // TODO: We need to make slack feature available later
     // TOCKET: not created yet
     /*this._slackService.sendMessage(
-      `New task created: '${taskProps.title}'`,
-      taskProps.userId
+      `New task created: '${task.title}'`,
+      task.userId
     );*/
 
     return Result.ok(task);

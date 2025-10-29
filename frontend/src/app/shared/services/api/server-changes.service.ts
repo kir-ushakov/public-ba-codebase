@@ -1,15 +1,13 @@
 import { Injectable } from '@angular/core';
 import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
-import { ChangeDTO } from '../../dto/change.dto';
+import { ChangeDTO } from '@brainassistant/contracts';
 import { HttpClient } from '@angular/common/http';
+import { GetChangesContract } from '@brainassistant/contracts';
 import { convertObjectToUrlParams } from '../../helpers/convert-object-to-url-params.function';
 import { Observable, map } from 'rxjs';
 import { ChangeMapper } from '../../mappers';
 import { Change } from '../../models';
 
-interface GetChangesResponceDTO {
-  changes: ChangeDTO[];
-}
 @Injectable({
   providedIn: 'root',
 })
@@ -17,13 +15,13 @@ export class ServerChangesService {
   constructor(private http: HttpClient) {}
 
   public fetch(clientId: string): Observable<Change[]> {
-    const queryString: string = convertObjectToUrlParams({
+    const request: GetChangesContract.Request = {
       clientId,
-    });
+    };
     return this.http
-      .get<GetChangesResponceDTO>(`${API_ENDPOINTS.SYNC.CHANGES}?${queryString}`)
+      .get<GetChangesContract.Response>(`${API_ENDPOINTS.SYNC.CHANGES}`, { params: request })
       .pipe(
-        map(response => {
+        map((response: GetChangesContract.Response) => {
           const changeDTOs: ChangeDTO[] = response.changes;
           const changes: Array<Change> = changeDTOs.map(dto => ChangeMapper.toModel(dto));
           return changes;

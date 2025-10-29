@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { startInMemoryMongo, stopInMemoryMongo, clearDatabase } from '../_setup/mongo-memory.js';
 import { buildTestApp } from './test-app.js';
-import { CreateTaskResponseDTO } from '../../../src/modules/sync/usecases/task/create/create-task.dto.js';
+import { TaskDTO } from '@brainassistant/contracts';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 
 describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', () => {
@@ -44,7 +44,7 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(res.status).toBe(201);
     
     // Controller now returns clean DTO via TaskMapper.toDTO()
-    const responseBody: CreateTaskResponseDTO = res.body;
+    const responseBody: TaskDTO = res.body;
     expect(responseBody).toBeDefined();
     expect(responseBody.id).toBeTruthy();
     expect(responseBody.title).toBe(dto.title);

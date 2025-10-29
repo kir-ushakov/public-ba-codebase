@@ -1,5 +1,5 @@
 import { Task, TaskPresitant } from '../domain/models/task.js';
-import { TaskDTO } from '../../modules/sync/domain/dtos/task.dto.js';
+import { TaskDTO } from '@brainassistant/contracts';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 import { DomainError } from '../core/domain-error.js';
 
@@ -35,10 +35,12 @@ export class TaskMapper {
   }
 
   public static toDTO(task: Task): TaskDTO {
-    // For this moment DTO object is identical to Presistan object
-    // so we can use same method (except _id-> id)
-    const taskPresitant = TaskMapper.toPersistence(task) as TaskPresitant;
-    const taskDto = { ...taskPresitant, id: taskPresitant._id };
-    return taskDto;
+    const taskPresitant = TaskMapper.toPersistence(task);
+    return {
+      ...taskPresitant,
+      id: taskPresitant._id,
+      createdAt: taskPresitant.createdAt.toISOString(),
+      modifiedAt: taskPresitant.modifiedAt.toISOString(),
+    };
   }
 }
