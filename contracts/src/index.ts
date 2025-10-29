@@ -9,12 +9,12 @@
 export type {
   TaskDTO,
   UserDto,
+  TagDTO,
   LoginRequestDTO,
   LoginResponseDTO,
   SignUpRequestDTO,
   SignUpResponseDTO,
   VerifyEmailResponseDTO,
-  TagDTO,
   IChangeableObjectDTO,
   ChangeableObjectDTO,
   DeletedObjectDTO,

@@ -20,8 +20,7 @@ export interface IChangeableObjectDTO {
 export type DeletedObjectDTO = IChangeableObjectDTO;
 
 /**
- * Union type of all DTOs that can be synchronized
- * Add new syncable types here
+ * Union of all changeable objects including deleted
  */
 export type ChangeableObjectDTO = TaskDTO | TagDTO | DeletedObjectDTO;
 
