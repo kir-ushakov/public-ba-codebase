@@ -1,16 +1,18 @@
 import { Injectable } from '@angular/core';
-import { Action, Selector, State, StateContext } from '@ngxs/store';
+import { Action, State, StateContext } from '@ngxs/store';
+import { EChangeAction } from '@brainassistant/contracts';
 import { ClientIdService } from 'src/app/shared/services/api/client-id.service';
 import { AppAction } from './app.actions';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Change, EChangeAction } from '../models/change.model';
+import { Change } from '../models/change.model';
 import { append, patch, removeItem } from '@ngxs/store/operators';
 import { ServerChangesService } from '../services/api/server-changes.service';
 import { ClientChangesService } from '../services/api/client-changes.service';
-import { EMPTY, Observable, catchError, concat, lastValueFrom, tap } from 'rxjs';
+import { Observable, lastValueFrom, tap } from 'rxjs';
 import { SyncAction } from './sync.action';
-import { ImageService } from '../services/infrastructure/image.service';
+import { ImageService } from '../services/application/image.service';
 import { UserAction } from './user.actions';
+
 
 export interface SyncStateModel {
   clientId: string;
@@ -20,14 +22,16 @@ export interface SyncStateModel {
 
 @State<SyncStateModel>({
   name: 'sync',
-  defaults: {
-    clientId: null,
-    lastTime: null,
-    changes: [],
-  },
+  defaults: SyncState.defaults,
 })
 @Injectable()
 export class SyncState {
+  static readonly defaults: SyncStateModel = {
+    clientId: null,
+    lastTime: null,
+    changes: [],
+  };
+
   readonly SYNC_PERIOD = 1000 * 20; // sync interval 20 sec;
   private intervalId: null | ReturnType<typeof setTimeout> = null;
 
@@ -38,11 +42,6 @@ export class SyncState {
     private readonly imageService: ImageService,
   ) {}
 
-  @Selector()
-  static lastSyncTime(state: SyncStateModel): Date {
-    return new Date(state.lastTime);
-  }
-
   @Action(SyncAction.ChangeForSyncOccurred)
   changeOccurred(ctx: StateContext<SyncStateModel>, { change }: { change: Change }): void {
     ctx.setState(
@@ -51,11 +50,10 @@ export class SyncState {
       }),
     );
 
-    this.synchronizeApp(ctx);
+    ctx.dispatch(new SyncAction.Synchronize());
   }
 
   @Action(SyncAction.LocalChangeWasSynchronized)
-  @Action(SyncAction.LocalChangeWasCanceled)
   clientChangesSynchronized(
     ctx: StateContext<SyncStateModel>,
     { change }: { change: Change },
@@ -71,7 +69,7 @@ export class SyncState {
   updateSyncTimer(ctx: StateContext<SyncStateModel>): void {
     clearInterval(this.intervalId);
     this.intervalId = setInterval(() => {
-      this.synchronizeApp(ctx);
+      ctx.dispatch(new SyncAction.Synchronize());
     }, this.SYNC_PERIOD);
   }
 
@@ -81,66 +79,65 @@ export class SyncState {
     clearInterval(this.intervalId);
   }
 
-  private async synchronizeApp(ctx: StateContext<SyncStateModel>): Promise<void> {
-    const syncApiCalls: Observable<void | Change[] | string>[] = [];
+  @Action(SyncAction.Synchronize)
+  async synchronize(ctx: StateContext<SyncStateModel>): Promise<void> {
     if (!ctx.getState().clientId) {
       const clientId: string = await lastValueFrom(this.getClientIdAPICall(ctx));
       ctx.patchState({ clientId });
     }
-    syncApiCalls.push(this.fetchServerChanges(ctx));
-    syncApiCalls.push(this.syncPendingChanges(ctx));
-    concat(...syncApiCalls)
-      .pipe(
-        tap({
-          next: () => {
-            ctx.patchState({ lastTime: new Date() });
-          },
-        }),
-      )
-      .subscribe();
-
-    this.imageService.uploadImages();
+    try {
+      await this.fetchServerChanges(ctx);
+      await this.syncPendingChanges(ctx);
+  
+      ctx.patchState({ lastTime: new Date() });
+      
+      await this.imageService.uploadImages();
+    } catch (err) {
+      // TODO: Don't rely only on HTTP status code - check error name from backend response
+      // TICKET: https://brainas.atlassian.net/browse/BA-258
+      if (err instanceof HttpErrorResponse && err.status === 404) {
+        this.handleClientIdNotFoundError(ctx);
+      } else {
+        ctx.dispatch(SyncAction.SyncinhriniziationWasFailed);
+      }
+    }
   }
 
-  private fetchServerChanges(ctx: StateContext<SyncStateModel>): Observable<Change[]> {
-    return this.serverChangesService.fetch(ctx.getState().clientId).pipe(
-      tap({
-        next: (changes: Change[]) => {
-          ctx.dispatch(new SyncAction.ServerChangesLoaded(changes));
-        },
-        error: async err => {
-          if (err instanceof HttpErrorResponse && err.status === 404) {
-            await lastValueFrom(this.getClientIdAPICall(ctx));
-          }
+  private async fetchServerChanges(ctx: StateContext<SyncStateModel>): Promise<void> {
+    const changes = await lastValueFrom(
+      this.serverChangesService.fetch(ctx.getState().clientId)
+    );
+    await ctx.dispatch(new SyncAction.ServerChangesLoaded(changes));
+  }
+
+  private async syncPendingChanges(ctx: StateContext<SyncStateModel>): Promise<void> {
+    const changes = ctx.getState().changes;
+    
+    for (const change of changes) {
+      try {
+        await lastValueFrom(this.clientChangesService.send(change));
+        await ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
+      } catch (error) {
+        console.error('Sync Pending Change Error:', change, error);
+        
+        // TODO: Don't rely only on HTTP status code - check error name from backend response
+        // TICKET: https://brainas.atlassian.net/browse/BA-258
+        if (error instanceof HttpErrorResponse && error.status === 404) {
+          await this.handleEntityNotFoundError(ctx, change);
+        } else {
+          // TODO: Notify user about temporary sync failure
+          // TODO: Consider exponential backoff for retry
+          // TODO: Maybe consider adding logic to mark unsynced changes as failed and give user option to retry sync manually
+          // TICKET: https://brainas.atlassian.net/browse/BA-259
+          // For now, keep in queue - will retry on next sync interval (20 sec)
+          // This prevents data loss from temporary network issues
+          // we can not continue sync process, because we can not know if change was successfully synchronized or not
+          // so we need to stop sync process and notify user about sync failure
           ctx.dispatch(SyncAction.SyncinhriniziationWasFailed);
-          return err;
-        },
-      }),
-    );
-  }
-
-  private syncPendingChanges(ctx: StateContext<SyncStateModel>): Observable<void> {
-    const apiCalls = ctx.getState().changes.map(change =>
-      this.clientChangesService.send(change).pipe(
-        tap({
-          next: () => {
-            ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
-          },
-          error: error => {
-            console.error('Sync Pending Change Error:', change, error);
-
-            if (error instanceof HttpErrorResponse && error.status === 404) {
-              this.handleEntity404(ctx, change);
-              return;
-            }
-
-            ctx.dispatch(new SyncAction.LocalChangeWasCanceled(change));
-          },
-        }),
-        catchError(() => EMPTY),
-      ),
-    );
-    return concat(...apiCalls);
+          return;
+        }
+      }
+    }
   }
 
   private getClientIdAPICall(ctx: StateContext<SyncStateModel>): Observable<string> {
@@ -157,10 +154,16 @@ export class SyncState {
     );
   }
 
-  private handleEntity404(ctx: StateContext<SyncStateModel>, change: Change): void {
-    // The entity did not found on server
-    // so we need to dispatch Delete Change action locally
-    // to be synchronized with server
+  private handleClientIdNotFoundError(ctx: StateContext<SyncStateModel>): void {
+    ctx.patchState({ 
+      clientId: null,
+      lastTime: null 
+    });
+    ctx.dispatch(new SyncAction.Synchronize());
+  }
+
+  private async handleEntityNotFoundError(ctx: StateContext<SyncStateModel>, change: Change): Promise<void> {
+    // Entity not found on server - create local delete change to sync state with server
     const deleteChange: Change = {
       entity: change.entity,
       action: EChangeAction.Deleted,
@@ -169,10 +172,10 @@ export class SyncState {
         modifiedAt: new Date().toISOString(),
       },
     };
-    ctx.dispatch(new SyncAction.ServerChangesLoaded([deleteChange]));
-    ctx.dispatch(new SyncAction.LocalChangeWasCanceled(change));
+    await ctx.dispatch(new SyncAction.ServerChangesLoaded([deleteChange]));
+    await ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
 
+    // TODO: Notify user that entity was deleted on server
     // TICKET: https://brainas.atlassian.net/browse/BA-136
-    // TODO: Notify user about error happened and task was deleted
   }
 }

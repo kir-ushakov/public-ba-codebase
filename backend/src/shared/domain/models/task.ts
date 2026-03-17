@@ -73,7 +73,7 @@ export class Task extends AggregateRoot<ITaskProps> {
     };
 
     const validationResult = Task.isValid(fullProps);
-    if (!validationResult) return validationResult as Result<never, DomainError<Task, ETaskError>>;
+    if (validationResult.isFailure) return validationResult as Result<never, DomainError<Task, ETaskError>>;
 
     const task = new Task(fullProps, id);
 
@@ -104,31 +104,39 @@ export class Task extends AggregateRoot<ITaskProps> {
     super(props, id);
   }
 
-  private static isValid(props: ITaskProps): true | Result<never, DomainError<Task, ETaskError>> {
-    if (!Guard.notEmptyString(props.title)) {
-      return Result.fail<never, DomainError<Task, ETaskError>>(
-        new DomainError<Task, ETaskError>(ETaskError.TitleMissed, 'Title for task missed'),
-      );
-    }
+  private static isValid(props: ITaskProps): Result<void, DomainError<Task, ETaskError>> {
+ 
+    // Check if we have imageId - if yes, title validation is relaxed
+    const hasImageId = Guard.notEmptyString(props.imageId);
+    
+    if (!hasImageId) {
+      // No imageId provided - title is required and must meet length requirements
+      if (!Guard.notEmptyString(props.title)) {
+        return Result.fail<never, DomainError<Task, ETaskError>>(
+          new DomainError<Task, ETaskError>(ETaskError.TitleMissed, 'Title is required when no image is provided'),
+        );
+      }
 
-    if (!Guard.textLengthAtLeast(props.title, Task.TITLE_MIN_LENGTH)) {
+      if (!Guard.textLengthAtLeast(props.title, Task.TITLE_MIN_LENGTH)) {
+        return Result.fail<never, DomainError<Task, ETaskError>>(
+          new DomainError<Task, ETaskError>(
+            ETaskError.TitleTooShort,
+            `Title "${props.title}" too short. It has to be not less than ${Task.TITLE_MIN_LENGTH}`,
+          ),
+        );
+      }
+    }
+    
+    // Always check max length if title is provided (regardless of imageId)
+    if (props.title && !Guard.textLengthAtMost(props.title, Task.TITLE_MAX_LENGTH)) {
       return Result.fail<never, DomainError<Task, ETaskError>>(
         new DomainError<Task, ETaskError>(
-          ETaskError.TitleMissed,
-          `Title "${props.title}" too short. It has to be not less thant ${Task.TITLE_MIN_LENGTH}`,
-        ),
-      );
-    }
-
-    if (!Guard.textLengthAtMost(props.title, Task.TITLE_MAX_LENGTH)) {
-      return Result.fail<never, DomainError<Task, ETaskError>>(
-        new DomainError<Task, ETaskError>(
-          ETaskError.TitleTooShort,
+          ETaskError.TitleTooLong,
           `Title "${props.title}" too long. It has to be not longer than ${Task.TITLE_MAX_LENGTH}`,
         ),
       );
     }
 
-    return true;
+    return Result.ok<void, DomainError<Task, ETaskError>>();
   }
 }

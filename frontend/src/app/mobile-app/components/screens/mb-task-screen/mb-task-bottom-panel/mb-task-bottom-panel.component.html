@@ -5,6 +5,7 @@
     <button
       class="create-task-btn"
       id="createTaskBtn"
+      data-test="apply-changes-btn"
       [ngClass]="{ enabled: isEditFormValid }"
       [disabled]="!isEditFormValid"
       (click)="applyChanges()"

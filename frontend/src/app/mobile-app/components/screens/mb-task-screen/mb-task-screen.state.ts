@@ -13,7 +13,7 @@ import { VoiceRecorderService } from 'src/app/shared/services/pwa/voice-recorder
 import { firstValueFrom } from 'rxjs';
 import type { ITaskEditFormData } from './mb-task-edit/mb-task-edit.component.interface';
 import { TasksAction } from 'src/app/shared/state/tasks.action';
-import { ImageService } from 'src/app/shared/services/infrastructure/image.service';
+import { ImageService } from 'src/app/shared/services/application/image.service';
 
 export enum ETaskViewMode {
   Create = 'TASK_VIEW_MODE_CREATE',

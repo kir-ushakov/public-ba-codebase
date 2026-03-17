@@ -1,3 +1,4 @@
+import { EChangeAction, EChangedEntity, TaskDTO } from '@brainassistant/contracts';
 import { Result } from '../../../../shared/core/result.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Action } from '../../../../shared/domain/models/actions.js';
@@ -8,15 +9,18 @@ import { TaskMapper } from '../../../../shared/mappers/task.mapper.js';
 import { ActionRepo } from '../../../../shared/repo/action.repo.js';
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
 import { TaskRepoService } from '../../../../shared/repo/task-repo.service.js';
-import { TaskDTO } from '../../domain/dtos/task.dto.js';
-import { Change, EChangeAction, EChangedEntity } from '../../domain/values/change.js';
-import { IGetChangesRequestDTO } from './get-changes.dto.js';
-import { GetChangesErrors, GoogleAuthError } from './get-changes.errors.js';
+import { Change } from '../../domain/values/change.js';
+import { GetChangesError } from './get-changes.errors.js';
+import { GetChangesErrors } from './get-changes.errors.js';
 
-export type GetChangesRequest = IGetChangesRequestDTO;
-export type GetChangesResponse = Result<Change[] | never, GoogleAuthError>;
+export type GetChangesParams = {
+  userId: string;
+  clientId: string;
+};
 
-export class GetChangesUC implements UseCase<GetChangesRequest, Promise<GetChangesResponse>> {
+export type GetChangesResult = Result<Change[], GetChangesError>;
+
+export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesResult>> {
   private clientRepo: ClientRepo;
   private taskRepoService: TaskRepoService;
   private actionRepo: ActionRepo;
@@ -27,8 +31,8 @@ export class GetChangesUC implements UseCase<GetChangesRequest, Promise<GetChang
     this.actionRepo = actionRepo;
   }
 
-  public async execute(req: GetChangesRequest): Promise<GetChangesResponse> {
-    const { userId, clientId } = req;
+  public async execute(params: GetChangesParams): Promise<GetChangesResult> {
+    const { userId, clientId } = params;
     const changes: Array<Change> = [];
     let client: Client;
 
@@ -61,16 +65,16 @@ export class GetChangesUC implements UseCase<GetChangesRequest, Promise<GetChang
 
     for (let i = 0; i < deleteTaskActions.length; i++) {
       const deleteTaskAction: Action = deleteTaskActions[i];
-      changes.push(
-        new Change({
-          entity: EChangedEntity.Task,
-          action: EChangeAction.Deleted,
-          object: {
-            id: deleteTaskAction.entityId.toString(),
-            modifiedAt: deleteTaskAction.occurredAt.toISOString(),
-          },
-        }),
-      );
+        changes.push(
+          new Change({
+            entity: EChangedEntity.Task,
+            action: EChangeAction.Deleted,
+            object: {
+              id: deleteTaskAction.entityId.toString(),
+              modifiedAt: deleteTaskAction.occurredAt.toISOString(),
+            },
+          }),
+        );
     }
 
     // TODO: do not save time here

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { v4 as uuidv4 } from 'uuid';
-import { ImageDbService, ImageRecord } from './image-db.service';
+import { ImageDbService, ImageRecord } from '../infrastructure/image-db.service';
 import { ImageOptimizerService } from '../utility/image-optimizer.service';
-import { ImageUploaderService, UploadImageResponseDTO } from '../api/image-uploader.service';
+import { ImageUploaderService } from '../api/image-uploader.service';
+import { FetchService } from '../infrastructure/fetch.service';
+import { UuidGeneratorService } from '../adapters/uuid-generator.service';
 
 @Injectable({ providedIn: 'root' })
 export class ImageService {
@@ -10,13 +11,15 @@ export class ImageService {
     private readonly imageDbService: ImageDbService,
     private readonly imageOptimizerService: ImageOptimizerService,
     private readonly imageUploaderService: ImageUploaderService,
+    private readonly fetchService: FetchService,
+    private readonly uuidGeneratorService: UuidGeneratorService,
   ) {}
 
   public async saveImage(imageUri: string): Promise<string> {
     if (!imageUri) throw new Error('Image URI is required');
 
     const imageBlob = await this.convertBlobUriToBlob(imageUri);
-    const imageId = uuidv4();
+    const imageId = this.uuidGeneratorService.generate();
     await this.imageDbService.putImage(imageId, imageBlob);
 
     return imageId;
@@ -27,8 +30,7 @@ export class ImageService {
   }
 
   public async convertBlobUriToBlob(imageUri: string, quality: number = 0.6): Promise<Blob> {
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
+    const blob = await this.fetchService.fetchBlob(imageUri);
 
     const reducedBlob = await this.imageOptimizerService.optimizeImage(blob, quality);
 
@@ -55,3 +57,4 @@ export class ImageService {
     );
   }
 }
+

@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
+import { TaskDTO, SendChangeContract } from '@brainassistant/contracts';
 import {
   BaseController,
   EHttpStatus,
 } from '../../../../../shared/infra/http/models/base-controller.js';
-import { CreateTask } from './create-task.usecase.js';
-import { CreateTaskRequestDTO } from './create-task.dto.js';
+import { CreateTask, CreateTaskParams, CreateTaskResult } from './create-task.usecase.js';
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
 import { Task } from '../../../../../shared/domain/models/task.js';
+import { TaskMapper } from '../../../../../shared/mappers/task.mapper.js';
+import { UniqueEntityID } from '../../../../../shared/domain/UniqueEntityID.js';
 
 export class CreateTaskController extends BaseController {
   private _useCase: CreateTask;
@@ -20,31 +22,41 @@ export class CreateTaskController extends BaseController {
     const loggedUser: UserPersistent = req.user as UserPersistent;
     const userId = loggedUser._id;
 
-    const task = req.body.changeableObjectDto;
-
-    const dto: CreateTaskRequestDTO = {
-      ...task,
-      id: task.id.toString(),
-    };
+    const params: CreateTaskParams = this.requestToUsecaseParams(req.body, userId);
 
     try {
-      const createResult = await this._useCase.execute({
-        userId,
-        dto,
-      });
+      const createResult: CreateTaskResult = await this._useCase.execute(params);
 
       if (createResult.isSuccess) {
-        const createdTaks = createResult.getValue() as Task;
-        BaseController.jsonResponse(res, EHttpStatus.Created, createdTaks);
+        const response = this.usecaseResultToResponse(createResult);
+        BaseController.jsonResponse(res, EHttpStatus.Created, response);
       } else {
         const error = createResult.error;
         BaseController.jsonResponse(res, error.httpCode, {
-          name: error.name,
+          name: error.code,
           message: error.message,
         });
       }
     } catch (err) {
       this.fail(res, err.toString());
     }
+  }
+
+  private requestToUsecaseParams(payload: SendChangeContract.Request<TaskDTO>, userId: string): CreateTaskParams {
+    const taskDto: TaskDTO = payload.changeableObjectDto;
+    const { id, ...taskPropsWithoutId } = taskDto;
+    return {
+      taskProps: {
+        userId,
+        ...taskPropsWithoutId,
+        createdAt: new Date(taskDto.createdAt),
+        modifiedAt: new Date(taskDto.modifiedAt),
+      },
+      id: id ? new UniqueEntityID(id) : undefined,
+    };
+  }
+
+  private usecaseResultToResponse(result: CreateTaskResult): SendChangeContract.Response<TaskDTO> {
+    return TaskMapper.toDTO(result.getValue() as Task);
   }
 }

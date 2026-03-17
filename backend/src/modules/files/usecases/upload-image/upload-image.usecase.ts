@@ -1,27 +1,30 @@
 import path from 'path';
 import { promises as fsp } from 'fs';
-
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
 import { UploadImageError, UploadImageErrors } from './upload-image.errors.js';
 import { GoogleDriveService } from '././../../../integrations/google/services/google-drive.service.js';
 import { User } from '../../../../shared/domain/models/user.js';
-import { UploadImageRequest } from './upload-image.request.js';
-import { UploadImageResponse } from './upload-image.response.js';
 import { config } from '../../../../config/index.js';
 import { Image } from '../../../../shared/domain/models/image.js';
 import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
 import { ImageResizeService } from '../../services/image-resize.service.js';
 
-export type UploadImageResult = Result<UploadImageResponse | never, UploadImageError>;
-
 const MAX_IMAGE_STORE_SIZE = 1000; // TODO: move to config
 
-export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<UploadImageResult>> {
+export type UploadImageParams = {
+  imageId: string;
+  file: Express.Multer.File;
+  userId: string;
+};
+
+export type UploadImageResult = Result<{ imageId: string }, UploadImageError>;
+
+export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<UploadImageResult>> {
   private googleDriveService: GoogleDriveService;
   private readonly imageRepoService: ImageRepoService;
   private readonly imageResizeService: ImageResizeService;
-  private allowedTypes = ['png', 'jpeg', 'jpg'];
+  private allowedTypes = ['png', 'jpeg', 'jpg']; // TODO: move to responsible service
 
   constructor(
     googleDriveService: GoogleDriveService,
@@ -33,10 +36,10 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
     this.imageResizeService = imageResizeService;
   }
 
-  public async execute(req: UploadImageRequest, user: User): Promise<UploadImageResult> {
-    const userId: string = user.id.toString();
+  public async execute(params: UploadImageParams, user: User): Promise<UploadImageResult> {
+    const userId: string = params.userId;
 
-    const pathToFileOrError = await this.prepareLocalFile(req, userId);
+    const pathToFileOrError = await this.prepareLocalFile(params, userId);
     if (pathToFileOrError.isFailure) {
       return Result.fail<never, UploadImageError>(pathToFileOrError.error);
     }
@@ -45,9 +48,22 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
     try {
       const fileId: string = await this.googleDriveService.uploadFile(user, pathToFile);
 
-      await this.saveImageToDB(req.imageId, fileId, userId);
+      const imageOrError = Image.create({
+        imageId: params.imageId,
+        storageType: 'googleDrive',
+        fileId,
+        userId,
+      });
+  
+      // TODO: handle potential error properly (as domain error)
+      await this.imageRepoService.create(imageOrError.getValue());
 
-      return Result.ok<UploadImageResponse, never>();
+      // Return response with imageId confirmation
+      const response = {
+        imageId: params.imageId,
+      };
+
+      return Result.ok<{ imageId: string }, never>(response);
     } catch (error) {
       // TODO: handele error properly (as service error)
       // TICKET: https://brainas.atlassian.net/browse/BA-218
@@ -57,7 +73,7 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
   }
 
   private async prepareLocalFile(
-    req: UploadImageRequest,
+    req: UploadImageParams,
     userId: string,
   ): Promise<Result<{ pathToFile: string; extension: string }, UploadImageError>> {
     const tempPath = req.file.path;
@@ -84,14 +100,4 @@ export class UploadImageUsecase implements UseCase<UploadImageRequest, Promise<U
     });
   }
 
-  private async saveImageToDB(imageId: string, fileId: string, userId: string): Promise<void> {
-    const imageOrError = Image.create({
-      imageId: imageId,
-      storageType: 'googleDrive',
-      fileId,
-      userId,
-    });
-
-    await this.imageRepoService.create(imageOrError.getValue());
-  }
 }
