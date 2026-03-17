@@ -102,6 +102,7 @@ export class GoogleDriveService {
 
   private async getDriveService(user: User): Promise<drive_v3.Drive> {
     this.oAuth2Client.setCredentials({
+      access_token: user.googleAccessToken,
       refresh_token: user.googleRefreshToken,
     });
     await this.oAuth2Client.refreshAccessToken();

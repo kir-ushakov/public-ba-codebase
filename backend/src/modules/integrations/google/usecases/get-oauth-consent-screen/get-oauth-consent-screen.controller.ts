@@ -23,6 +23,7 @@ export class GetOAuthConsentScreenController extends BaseController {
           'https://www.googleapis.com/auth/drive.appdata',
         ],
         accessType: 'offline',
+        prompt: 'consent',
       })(req, res, next);
     } catch (err) {
       return this.fail(res, err.toString());
