@@ -4,6 +4,17 @@
 </div>
 @if (task?.imageId) {
   <div class="task-picture-holder">
-    <img class="task-picture" [src]="(task$ | async)?.imageId | imageSrc" />
+    @if (isImageLoading()) {
+      <div class="task-picture-spinner">
+        <ba-spinner></ba-spinner>
+      </div>
+    }
+    <img
+      class="task-picture"
+      [class.is-loading]="isImageLoading()"
+      [src]="task.imageId | imageSrc"
+      (load)="isImageLoading.set(false)"
+      (error)="isImageLoading.set(false)"
+    />
   </div>
 }

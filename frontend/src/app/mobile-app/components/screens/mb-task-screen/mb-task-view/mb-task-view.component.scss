@@ -10,4 +10,18 @@
 .task-picture-holder {
   display: flex;
   justify-content: center;
+  position: relative;
+}
+
+.task-picture-spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.task-picture.is-loading {
+  opacity: 0;
 }
