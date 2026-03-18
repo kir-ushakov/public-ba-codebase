@@ -13,8 +13,8 @@
       class="task-picture"
       [class.is-loading]="isImageLoading()"
       [src]="task.imageId | imageSrc"
-      (load)="isImageLoading.set(false)"
-      (error)="isImageLoading.set(false)"
+      (load)="onImageLoaded(task.imageId)"
+      (error)="onImageError(task.imageId)"
     />
   </div>
 }

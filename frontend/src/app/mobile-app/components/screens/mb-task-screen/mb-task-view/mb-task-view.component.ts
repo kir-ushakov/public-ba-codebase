@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
@@ -15,20 +15,39 @@ import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/
   templateUrl: './mb-task-view.component.html',
   styleUrl: './mb-task-view.component.scss',
 })
-export class MbTaskViewComponent {
-  private store = inject(Store);
-  task$: Observable<Task> = this.store.select(MbTaskScreenState.task);
+export class MbTaskViewComponent implements OnInit {
+  task$: Observable<Task>;
 
+  private currentImageId: string | null = null;
   isImageLoading = signal(true);
 
-  constructor() {
+  constructor(private store: Store, private destroyRef: DestroyRef) {
+    this.task$ = this.store.select(MbTaskScreenState.task);
+  }
+
+  ngOnInit(): void {
     this.task$
       .pipe(
         map(task => task?.imageId ?? null),
         distinctUntilChanged(),
-        tap(imageId => this.isImageLoading.set(!!imageId)),
-        takeUntilDestroyed(),
+        tap(imageId => {
+          this.currentImageId = imageId;
+          this.isImageLoading.set(!!imageId);
+        }),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
+  }
+
+  onImageLoaded(imageId: string): void {
+    if (this.currentImageId === imageId) {
+      this.isImageLoading.set(false);
+    }
+  }
+
+  onImageError(imageId: string): void {
+    if (this.currentImageId === imageId) {
+      this.isImageLoading.set(false);
+    }
   }
 }
