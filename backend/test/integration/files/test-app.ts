@@ -5,7 +5,7 @@ import { UploadImageUsecase } from '../../../src/modules/files/usecases/upload-i
 import { ImageRepoService } from '../../../src/shared/repo/image-repo.service.js';
 import { ImageResizeService } from '../../../src/modules/files/services/image-resize.service.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
-import { MAX_IMAGE_UPLOAD_FILE_BYTES } from '../../../src/modules/files/files.conf.js';
+import { MAX_IMAGE_UPLOAD_FILE_BYTES } from '../../../src/modules/files/config.js';
 
 type MockGoogleDriveService = {
   uploadFile: jest.Mock;
