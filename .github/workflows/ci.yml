@@ -19,11 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       # Scan frontend
       - name: Trivy Scan Frontend
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # master
         with:
           scan-type: 'fs'
           scan-ref: './frontend'
@@ -33,7 +33,7 @@ jobs:
 
       # Scan backend
       - name: Trivy Scan Backend
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # master
         with:
           scan-type: 'fs'
           scan-ref: './backend'
@@ -42,14 +42,14 @@ jobs:
           output: 'trivy-backend.sarif'
 
       - name: Upload Trivy scan results to GitHub Security tab (Frontend)
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@480db559a14342288b67e54bd959dd52dc3ee68f # v3
         if: always()
         with:
           sarif_file: 'trivy-frontend.sarif'
           category: 'trivy-frontend'
 
       - name: Upload Trivy scan results to GitHub Security tab (Backend)
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@480db559a14342288b67e54bd959dd52dc3ee68f # v3
         if: always()
         with:
           sarif_file: 'trivy-backend.sarif'
