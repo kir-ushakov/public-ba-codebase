@@ -1,3 +1,3 @@
-FROM mongo:latest
+FROM mongo:7.0
 
-COPY ./init-db.d/seed.js /docker-entrypoint-initdb.d
+COPY --chown=mongodb:mongodb ./init-db.d/seed.js /docker-entrypoint-initdb.d/
