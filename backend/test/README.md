@@ -11,13 +11,13 @@ test/
 ├── integration/
 │   ├── _setup/
 │   │   └── mongo-memory.ts          # In-memory MongoDB setup
+│   ├── _fixtures/
+│   │   └── test-img.jpg             # Shared binary fixtures (e.g. upload tests)
 │   ├── files/
 │   │   ├── upload-image.int.spec.ts # File upload tests
 │   │   └── test-app.ts              # Test app builder for file operations
 │   └── sync/
-│       ├── assets/
-│       │   └── test-img.jpg         # Test image fixture
-│       ├── create-task.int.spec.ts  # Task creation tests
+│       ├── task-create.int.spec.ts  # Aligns with src: sync/usecases/task/create
 │       └── test-app.ts              # Test app builder for sync operations
 └── setup-env.ts                      # Test environment configuration
 ```
@@ -54,7 +54,7 @@ npm test -- upload-image.int.spec.ts
 - Error handling: Unsupported file types
 - Error handling: External service failures
 
-**Task Sync Tests** (`test/integration/sync/create-task.int.spec.ts`):
+**Task Sync Tests** (`test/integration/sync/task-create.int.spec.ts`):
 - Happy path: Create task → persist to DB
 - Validation: Required fields
 
@@ -162,6 +162,6 @@ describe('Integration: YourFeature', () => {
 - Check timeout settings (default 30s should be enough)
 
 ### File upload tests failing
-- Verify test image exists at `test/integration/sync/assets/test-img.jpg`
+- Verify test image exists at `test/integration/_fixtures/test-img.jpg`
 - Check that upload directories are gitignored and cleaned up properly
 

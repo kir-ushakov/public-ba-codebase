@@ -9,7 +9,7 @@ import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', () => {
   let app: Express;
   let googleDriveService: { uploadFile: jest.Mock };
-  const TEST_IMAGE_PATH = path.join(process.cwd(), 'test/integration/sync/assets/test-img.jpg');
+  const TEST_IMAGE_PATH = path.join(process.cwd(), 'test/integration/_fixtures/test-img.jpg');
 
   beforeAll(async () => {
     await startInMemoryMongo();
