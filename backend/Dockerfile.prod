@@ -17,4 +17,7 @@ COPY backend/ .
 
 RUN npx tsc
 
+RUN chown -R node:node /usr/src/app /usr/src/contracts
+USER node
+
 CMD ["node", "./dist/server.js"]
