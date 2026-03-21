@@ -40,8 +40,11 @@ export function buildUploadImageTestApp(): {
 
   const app = express();
   
-  // Configure multer for file uploads
-  const upload = multer({ dest: 'test/integration/files/uploads/' });
+  // Configure multer for file uploads with a capped payload size
+  const upload = multer({
+    dest: 'test/integration/files/uploads/',
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  });
 
   // Fake auth middleware: sets req.user to a complete test user object
   app.use((req: Request, _res: Response, next) => {
