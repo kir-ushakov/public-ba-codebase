@@ -5,7 +5,14 @@ import multer from 'multer';
 
 const aIRouter: Router = Router();
 
-const upload = multer();
+const MAX_AUDIO_UPLOAD_BYTES = 25 * 1024 * 1024;
+
+const upload = multer({
+  limits: {
+    fileSize: MAX_AUDIO_UPLOAD_BYTES,
+    files: 1,
+  },
+});
 
 aIRouter.post(
   '/speech-to-text',

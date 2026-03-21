@@ -5,6 +5,7 @@ import { UploadImageUsecase } from '../../../src/modules/files/usecases/upload-i
 import { ImageRepoService } from '../../../src/shared/repo/image-repo.service.js';
 import { ImageResizeService } from '../../../src/modules/files/services/image-resize.service.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
+import { MAX_IMAGE_UPLOAD_FILE_BYTES } from '../../../src/modules/files/files.conf.js';
 
 type MockGoogleDriveService = {
   uploadFile: jest.Mock;
@@ -43,7 +44,7 @@ export function buildUploadImageTestApp(): {
   // Configure multer for file uploads with a capped payload size
   const upload = multer({
     dest: 'test/integration/files/uploads/',
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    limits: { fileSize: MAX_IMAGE_UPLOAD_FILE_BYTES },
   });
 
   // Fake auth middleware: sets req.user to a complete test user object
@@ -60,7 +61,7 @@ export function buildUploadImageTestApp(): {
     next();
   });
 
-  // Mount the controller on POST /api/files/upload-image
+  // Same multer file size cap as `files/router.ts` (MAX_IMAGE_UPLOAD_FILE_BYTES).
   app.post('/api/files/upload-image', upload.single('file'), async (req: Request, res: Response) => {
     try {
       // BaseController has a public execute method that calls executeImpl
