@@ -8,6 +8,7 @@ import { googleStrategy, jwtStrategy } from './shared/infra/auth/index.js';
 import session from 'express-session';
 
 export const app = express();
+app.disable('x-powered-by');
 
 // parse incoming request bodies as JSON
 app.use(express.json());
