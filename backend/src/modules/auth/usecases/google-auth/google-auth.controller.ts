@@ -24,6 +24,7 @@ export class GoogleAuthController extends BaseController {
         const error = result.error;
         BaseController.jsonResponse(res, error.httpCode, {
           name: error.name,
+          code: error.code,
           message: error.message,
         });
       }

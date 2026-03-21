@@ -35,7 +35,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
   public execute(request: GoogleAuthRequest): Promise<GoogleAuthResult> {
     return new Promise<GoogleAuthResult>((resolve, reject) => {
       const handleGoogleCallback = async (err: unknown, res: GoogleProfileWithTokens) => {
-        if (err) return reject(err);
+        if (err) return resolve(new GoogleAuthErrors.AuthorizationFailed());
 
         const profile = res.profile;
         const tokens = res.tokens;
@@ -78,6 +78,12 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
         user.setGoogleTokens(tokens);
         await this.userRepo.save(user);
       }
+
+      // If we have no refresh token in DB and Google didn't return one in this callback,
+      // we need to force consent again.
+      if (!tokens.refreshToken && !user.googleRefreshToken) {
+        return new GoogleAuthErrors.RefreshTokenNotReceived();
+      }
       return Result.ok(user);
     }
 
@@ -92,6 +98,10 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
     }
 
     const email: UserEmail = UserEmail.create(profile._json.email).getValue();
+
+    if (!tokens.refreshToken) {
+      return new GoogleAuthErrors.RefreshTokenNotReceived();
+    }
 
     const userModel: User = User.create({
       username: email,

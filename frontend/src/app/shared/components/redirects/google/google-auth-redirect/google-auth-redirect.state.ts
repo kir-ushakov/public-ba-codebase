@@ -23,6 +23,7 @@ const defaults = { isLogging: true, errorOccurred: false, errorMessage: null };
 @Injectable()
 export class GoogleAuthRedirectScreenState {
   constructor(private googleAPIService: GoogleAPIService) {}
+
   @Selector()
   static isLogging(state: IGoogleAuthRedirectScreenStateModel): boolean {
     return state.isLogging;
@@ -43,6 +44,9 @@ export class GoogleAuthRedirectScreenState {
     ctx: StateContext<IGoogleAuthRedirectScreenStateModel>,
     payload: GoogleAuthRedirectScreenAction.Opened,
   ) {
+    const FORCE_CONSENT_ATTEMPT_KEY =
+      'google_force_consent_attempted';
+
     ctx.patchState({
       ...defaults,
     });
@@ -53,18 +57,52 @@ export class GoogleAuthRedirectScreenState {
       .authenticateUser(code)
       .pipe(
         catchError((err: HttpErrorResponse) => {
+          const forceConsentAttempted =
+            sessionStorage.getItem(
+              FORCE_CONSENT_ATTEMPT_KEY,
+            ) === '1';
+
           ctx.patchState({
             isLogging: false,
             errorOccurred: true,
           });
 
-          if (err?.error?.name === 'GOOGLE_OAUTH_EMAIL_ALREADY_IN_USE') {
+          const errorCode = err?.error?.code ?? err?.error?.name;
+
+          if (errorCode === 'GOOGLE_OAUTH_REFRESH_TOKEN_NOT_RECEIVED') {
+            // One retry with prompt=consent to force issuing refresh_token.
+            if (!forceConsentAttempted) {
+              sessionStorage.setItem(
+                FORCE_CONSENT_ATTEMPT_KEY,
+                '1',
+              );
+              window.location.href =
+                '/api/integrations/google/oauth-consent-screen?forceConsent=1&ngsw-bypass=1';
+            } else {
+              // Avoid sticky state between attempts.
+              sessionStorage.removeItem(FORCE_CONSENT_ATTEMPT_KEY);
+            }
+
+            return EMPTY;
+          }
+
+          if (errorCode === 'GOOGLE_OAUTH_EMAIL_ALREADY_IN_USE') {
             ctx.patchState({ errorMessage: err.error.message });
+          }
+
+          if (errorCode === 'GOOGLE_OAUTH_AUTHORIZATION_FAILED') {
+            sessionStorage.removeItem(FORCE_CONSENT_ATTEMPT_KEY);
+            ctx.patchState({
+              errorMessage: 'Google code expired. Please try signing in again.',
+            });
           }
           return EMPTY;
         }),
       )
       .subscribe((userData: User) => {
+        sessionStorage.removeItem(
+          FORCE_CONSENT_ATTEMPT_KEY,
+        );
         ctx.patchState({
           isLogging: false,
         });
