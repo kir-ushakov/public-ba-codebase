@@ -1,0 +1,2 @@
+export const MAX_AUDIO_UPLOAD_FILE_BYTES = 25 * 1024 * 1024;
+export const MAX_AUDIO_UPLOAD_FILES_COUNT = 1;
