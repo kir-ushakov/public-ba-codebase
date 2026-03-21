@@ -13,4 +13,7 @@ WORKDIR /usr/src/app
 COPY frontend/ .
 RUN npm install --verbose
 
+RUN chown -R node:node /usr/src
+USER node
+
 CMD npm run $BUILD_MODE
