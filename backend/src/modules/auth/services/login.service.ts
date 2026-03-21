@@ -6,6 +6,22 @@ import { User } from '../../../shared/domain/models/user.js';
 import { UserMapper } from '../../../shared/mappers/user.mapper.js';
 
 export class LoginService {
+  /** JWT and cookie max-age: sliding renewal extends from each successful authenticated request */
+  public static readonly JWT_TTL_SECONDS = 60 * 60;
+
+  public static setJwtCookie(res: Response, loginResponseDto: LoginResponseDTO): void {
+    const expiresIn = LoginService.JWT_TTL_SECONDS;
+    const newToken = jwt.sign(loginResponseDto, process.env.JWT_SECRET, {
+      expiresIn,
+    });
+
+    res.cookie('jwt', newToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development',
+      expires: new Date(new Date().getTime() + expiresIn * 1000),
+    });
+  }
+
   public login(
     user: User,
     req: Request,
@@ -33,16 +49,7 @@ export class LoginService {
       }
 
       if (process.env.AUTHENTICATION_STRATEGY === 'JWT') {
-        const expiresIn = 60 * 60;
-        const newToken = jwt.sign(loginResponseDto, process.env.JWT_SECRET, {
-          expiresIn: expiresIn,
-        });
-
-        res.cookie('jwt', newToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV !== 'development',
-          expires: new Date(new Date().getTime() + expiresIn * 1000),
-        });
+        LoginService.setJwtCookie(res, loginResponseDto);
         return resolve(loginResponseDto);
       }
     });

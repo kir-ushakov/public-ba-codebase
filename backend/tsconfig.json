@@ -10,6 +10,5 @@
     "resolveJsonModule": true,
     "types": ["node", "jest"]
   },
-  "lib": ["es2022"],
   "include": ["src/**/*.ts", "src/**/*.d.ts", "test/**/*.ts"]
 }
