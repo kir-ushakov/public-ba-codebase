@@ -40,6 +40,7 @@ export function buildUploadImageTestApp(): {
   const uploadImageController = new UploadImageController(uploadImageUseCase);
 
   const app = express();
+  app.disable('x-powered-by');
   
   // Configure multer for file uploads with a capped payload size
   const upload = multer({

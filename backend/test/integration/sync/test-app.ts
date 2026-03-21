@@ -21,6 +21,7 @@ export function buildTestApp() {
   const createTaskController = new CreateTaskController(createTaskUseCase);
 
   const app = express();
+  app.disable('x-powered-by');
   app.use(express.json());
 
   // Fake auth middleware: sets req.user to a known user object.
