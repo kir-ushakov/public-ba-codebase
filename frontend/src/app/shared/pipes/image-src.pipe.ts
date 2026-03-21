@@ -34,8 +34,7 @@ export class ImageSrcPipe implements PipeTransform, OnDestroy {
 
           if (record?.blob) {
             this.currentUrl = URL.createObjectURL(record.blob);
-            // NOSONAR: blob URL is created locally from in-app Blob data and used only as image src
-            this.latestValue = this.sanitizer.bypassSecurityTrustUrl(this.currentUrl);
+            this.latestValue = this.sanitizer.bypassSecurityTrustUrl(this.currentUrl); // NOSONAR blob: createObjectURL from in-app Blob, img src only
           } else {
             const baseUrl = `${API_ENDPOINTS.FILES.IMAGE}/${id}`;
             this.latestValue = width ? `${baseUrl}?width=${width}` : baseUrl;
