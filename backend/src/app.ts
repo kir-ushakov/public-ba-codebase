@@ -5,12 +5,9 @@ import { apiRouters } from './shared/infra/http/api/index.js';
 import * as loaders from './loaders/index.js';
 import UserModel from './shared/infra/database/mongodb/user.model.js';
 import { googleStrategy, jwtStrategy } from './shared/infra/auth/index.js';
-import cors from 'cors';
 import session from 'express-session';
 
 export const app = express();
-
-app.use(cors());
 
 // parse incoming request bodies as JSON
 app.use(express.json());
