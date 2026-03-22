@@ -1,0 +1,3 @@
+# Shell scripts must be LF for Linux containers (avoid `sh\r` shebang errors on Windows)
+*.sh text eol=lf
+backend/docker-entrypoint.sh text eol=lf

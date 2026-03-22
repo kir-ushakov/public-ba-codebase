@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: ./frontend/Dockerfile
     volumes:
-    - ./frontend/dist:/usr/src/app/dist/app/browser
+    - ./frontend/dist:/usr/src/app/dist
     environment:
       - BUILD_MODE=build-prod
 
