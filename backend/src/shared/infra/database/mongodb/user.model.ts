@@ -11,7 +11,9 @@ import VerificationTokenModel, {
 
 import { randomBytes } from 'node:crypto';
 
-export interface UserDocument extends UserPersistent, PassportLocalDocument {
+export interface UserDocument
+  extends Omit<UserPersistent, '_id'>,
+    PassportLocalDocument {
   generateVerificationToken: () => VerificationTokenDocument;
 }
 
