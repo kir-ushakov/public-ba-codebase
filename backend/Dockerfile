@@ -25,7 +25,7 @@ COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
   && chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Entrypoint chowns /app/backend/files (bind/named volumes) then drops to node
+# Root only for entrypoint (chown bind-mounted /app/backend/files); CMD runs as node via gosu in docker-entrypoint.sh.
 USER root
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["npm", "run", "dev"]
