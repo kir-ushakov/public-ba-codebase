@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 import { ISlackOAuthAccessPresitant } from '../../../domain/models/slack-oauth-access.js';
 
 export interface ISlackOAuthAccessDocument
-  extends ISlackOAuthAccessPresitant,
+  extends Omit<ISlackOAuthAccessPresitant, '_id'>,
     Document<string> {}
 
 const SlackOAuthAccessSchema = new Schema({
