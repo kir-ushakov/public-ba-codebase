@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Observable, fromEvent, of, merge } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -19,7 +19,7 @@ import { PwaVersionUpdateService } from './shared/services/pwa/pwa-version-updat
   styleUrls: ['./app.component.scss'],
   imports: [RouterOutlet],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   onlineEvent: Observable<Event>;
   offlineEvent: Observable<Event>;
   online$: Observable<boolean>;
