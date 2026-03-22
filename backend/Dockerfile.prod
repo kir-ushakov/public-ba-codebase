@@ -15,7 +15,8 @@ RUN npm ci --verbose
 
 COPY backend/ .
 
-RUN npx tsc
+# tsc can exceed Node's default ~1.5GB heap on large projects / low-memory builders
+RUN NODE_OPTIONS="--max-old-space-size=4096" npx tsc
 
 RUN chown -R node:node /usr/src/app /usr/src/contracts
 USER node
