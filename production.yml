@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: ./frontend/Dockerfile
     volumes:
-    - ./frontend/dist:/usr/src/app/dist
+    - frontend_dist:/usr/src/app/dist
     environment:
       - BUILD_MODE=build-prod
 
@@ -28,4 +28,7 @@ services:
     volumes:
       - ./nginx/prod.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/ssl:/etc/nginx/ssl
-      - ./frontend/dist:/srv/www/static:ro
+      - frontend_dist:/srv/www/static:ro
+
+volumes:
+  frontend_dist:
