@@ -5,11 +5,13 @@ on:
     branches: [ main, develop ]
     paths:
       - 'frontend/**'
+      - 'contracts/**'
       - '.github/workflows/frontend-tests.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'frontend/**'
+      - 'contracts/**'
       - '.github/workflows/frontend-tests.yml'
 
 jobs:
