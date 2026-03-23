@@ -68,7 +68,7 @@
 
 ## Tech Features
 
-#### *This is [Mobile-First](#mobile-first-aspects), [Installable & offline PWA](#pwa-features).*
+#### *This is [Mobile-First](#mobile-first-aspects), [Installable & offline PWA](#pwa-features), and uses [AI features](#ai-features).*
 
 #### Mobile-First Aspects
 
