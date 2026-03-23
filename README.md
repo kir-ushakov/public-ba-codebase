@@ -93,49 +93,23 @@
 
 - 🗣️ Use [Open AI](./backend/src/modules/ai/services/open-ai-client.service.ts) to [converting speech to text](./backend/src/modules/ai/usecases/speech-to-text)
 
-#### Testing
+## Testing
 
 **Backend Integration Tests**
 
 The backend includes comprehensive integration tests that test the entire request-response flow with real services (in-memory MongoDB) and mocked external APIs.
+Run instructions are documented in the backend test guide.
 
-```bash
-# Run all tests
-cd backend && npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
-```
-
-**Test Structure:**
-- `backend/test/integration/sync/` - Task synchronization tests
-- `backend/test/integration/files/` - File upload & image processing tests
-- Uses in-memory MongoDB for realistic database testing
-- Mocks external services (Google Drive, Slack) to avoid network calls
+Examples: [task synchronization tests](./backend/test/integration/sync/) and [file upload and image processing tests](./backend/test/integration/files/).
 
 📚 [Backend Test Documentation](./backend/test/README.md)
 
 **Frontend E2E Tests** (Playwright)
 
-```bash
-# Run E2E tests
-cd frontend && npm run e2e
+The frontend includes browser-based integration tests with Playwright that validate key user flows through the UI. Tests run against the frontend only: backend requests are mocked, and device APIs (for example, camera) are stubbed for deterministic behavior.
+Run instructions are documented in the frontend E2E test guide.
 
-# Run in headed mode
-npx playwright test --headed
-
-# Debug mode
-npx playwright test --debug
-```
-
-**Test Coverage:**
-- `frontend/e2e/create-task.spec.ts` - Task creation user flows
-- Page Object Model for maintainable tests
-- Mocked backend responses for isolation
-- Mobile and desktop viewport testing
+Example: [task creation user flows](./frontend/e2e/create-task.spec.ts).
 
 📚 [Frontend E2E Test Documentation](./frontend/e2e/README.md)
 
