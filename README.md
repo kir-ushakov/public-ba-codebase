@@ -63,7 +63,6 @@
 - File Storage → Google Drive
 
 - Communication → Slack, SendGrid/Mailgun
-
 - AI Services → Text-to-Speech API
 
 ## Tech Features
@@ -84,6 +83,11 @@
 - 🔄 Automatic app updates: [PwaVersionUpdateService](./frontend/src/app/shared/services/pwa/pwa-version-update.service.ts) reloads the app when a new service worker version is ready, so users always get the latest build.
 - 📸 Taking pictures with device cam using [Capacitor Camera Plugin](./frontend/src/app/shared/services/pwa/device-camera.service.ts)
 - 🎙️ Voice recording with device microphone using [Web Media API](./frontend/src/app/shared/services/pwa/voice-recorder.service.ts)
+
+#### Authorization
+
+- 🔐 Classic login/password auth: [`login`](./backend/src/modules/auth/usecases/login), [`signup`](./backend/src/modules/auth/usecases/sing-up), [`logout`](./backend/src/modules/auth/usecases/logout), [`verify-email`](./backend/src/modules/auth/usecases/verify-email).
+- <img src="./.github/assets/icons/google.svg" alt="Google" width="16" style="vertical-align: text-bottom;" /> Google auth (OAuth 2.0): [Google consent screen usecase](./backend/src/modules/integrations/google/usecases/get-oauth-consent-screen) + [Google auth exchange usecase](./backend/src/modules/auth/usecases/google-auth).
 
 #### AI features
 
