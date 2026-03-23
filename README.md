@@ -68,27 +68,14 @@
 
 ## Tech Features
 
-#### This is [Mobile-First](#mobile-first-aspects) [PWA](#pwa-features)
+#### *This is [Mobile-First](#mobile-first-aspects), [Installable & offline PWA](#pwa-features).*
 
 #### Mobile-First Aspects
 
-**_CSS Layout & Breakpoints_**
-
-- Default styles optimized for small viewports.
-- Larger layouts enabled via media queries (min-width).
-- [SCSS breakpoints map and media-query mixins](./frontend/src/scss/_breakpoints.scss)
-
-**_Responsive Components_**
-
-- Angular components use flexible containers (`flex`, `grid`) instead of fixed widths. [Example of component styles](./frontend/src/app/mobile-app/components/common/task-tiles-panel/task-tiles-panel.component.scss).
-- Images and icons scale with `max-width: 100%` and `height: auto` to prevents overflow and keeps aspect ratio intact on narrow screens. [Main SCSS File](./frontend/src/styles.scss).
-- All font sizes, paddings, and margins use `rem` units.
-- The root font-size (`html { font-size: ... }`) changes with breakpoints, allowing proportional scaling. [Typography Styles](./frontend/src/scss/_typography.scss).
-
-**_Performance Optimizations for Mobile_**
-
-- Lazy loading of images & modules.
-- PWA caching configured via [ngsw-config.json](./frontend/ngsw-config.json) for offline support and faster load times
+- 📱 The UI is aimed at **phones first**, then **adapts up** for larger screens. Breakpoints and media-query mixins live in [`_breakpoints.scss`](./frontend/src/scss/_breakpoints.scss).
+- 🔤 [Typography](./frontend/src/scss/_typography.scss): `rem`-based type and spacing; `html` font-size steps up at sm/md/lg/xl/xxl so the whole UI scales proportionally.
+- 📐 Layout & media: `flex` / `grid` in mobile screens, fluid images (`max-width: 100%`, `height: auto`) in [`styles.scss`](./frontend/src/styles.scss); [example component SCSS](./frontend/src/app/mobile-app/components/common/task-tiles-panel/task-tiles-panel.component.scss).
+- ⚡ Caching configured via [ngsw-config.json](./frontend/ngsw-config.json) for offline support and faster load times.
 
 #### AI features
 
