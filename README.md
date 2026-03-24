@@ -113,7 +113,7 @@ Example: [task creation user flows](./frontend/e2e/create-task.spec.ts).
 
 📚 [Frontend E2E Test Documentation](./frontend/e2e/README.md)
 
-#### CI/CD
+## CI/CD
 
 The project uses GitHub Actions for continuous integration:
 
