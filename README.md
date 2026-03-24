@@ -4,26 +4,6 @@
   <img src="./.github/assets/logos/ba.png" alt="Brain Assistant Logo" width="120">
 </p>
 
-<p align="center">
-  <a href="https://github.com/kirillushakov/BrainAssistant/actions/workflows/backend-tests.yml">
-    <img src="https://github.com/kirillushakov/BrainAssistant/actions/workflows/backend-tests.yml/badge.svg" alt="Backend Tests">
-  </a>
-  <a href="https://github.com/kirillushakov/BrainAssistant/actions/workflows/frontend-tests.yml">
-    <img src="https://github.com/kirillushakov/BrainAssistant/actions/workflows/frontend-tests.yml/badge.svg" alt="Frontend Tests">
-  </a>
-  <a href="https://github.com/kirillushakov/BrainAssistant/actions/workflows/security.yml">
-    <img src="https://github.com/kirillushakov/BrainAssistant/actions/workflows/security.yml/badge.svg" alt="Security Scan">
-  </a>
-</p>
-
-<p align="center">
-
-  <img src="./.github/assets/icons/under-construction.jpg" alt="Under construction icon" width="24">
-  (Description Under Development)
-  <img src="./.github/assets/icons/under-construction.jpg" alt="Under construction icon" width="24">
-
-</p>
-
 #### <i>This is a lean personal task manager, originally built to support my [YouTube channel](https://www.youtube.com/@kirillushakov-webmobiledev6785) with a real-world codebase. Over time, it has evolved into my personal playground for experimenting with new technologies, APIs, and development approaches.</i>
 
 ## Architecture & Tech Stack
