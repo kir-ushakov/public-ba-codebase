@@ -36,14 +36,9 @@
 
 - HTTPS + JWT (secure authentication and data transfer)
 
-#### 3rd-party API
+#### 3rd-party API (overview)
 
-- Auth & Identity → Google Auth
-
-- File Storage → Google Drive
-
-- Communication → Slack, SendGrid/Mailgun
-- AI Services → Text-to-Speech API
+- The app integrates external APIs across the main use cases: identity/authentication, file storage, communication/notifications, and AI capabilities.
 
 ## Tech Features
 
@@ -68,6 +63,13 @@
 
 - 🔐 Classic login/password auth: [`login`](./backend/src/modules/auth/usecases/login), [`signup`](./backend/src/modules/auth/usecases/sing-up), [`logout`](./backend/src/modules/auth/usecases/logout), [`verify-email`](./backend/src/modules/auth/usecases/verify-email).
 - <img src="./.github/assets/icons/google.svg" alt="Google" width="16" style="vertical-align: text-bottom;" /> Google auth (OAuth 2.0): [Google consent screen usecase](./backend/src/modules/integrations/google/usecases/get-oauth-consent-screen) + [Google auth exchange usecase](./backend/src/modules/auth/usecases/google-auth).
+
+#### 3rd-Party API Integrations
+
+- 🔐 Auth & Identity with Google Auth: [backend auth flow](./backend/src/modules/auth/usecases/google-auth/google-auth.usecase.ts), [OAuth consent screen](./backend/src/modules/integrations/google/usecases/get-oauth-consent-screen/get-oauth-consent-screen.controller.ts), [frontend redirect](./frontend/src/app/shared/components/redirects/google/google-auth-redirect/google-auth-redirect.component.ts)
+- 📁 File Storage with Google Drive API: [Google Drive service](./backend/src/modules/integrations/google/services/google-drive.service.ts), [upload image usecase](./backend/src/modules/files/usecases/upload-image/upload-image.usecase.ts)
+- 💬 Communication with Slack API, SendGrid API, Mailgun API: [Slack service](./backend/src/shared/infra/integrations/slack/slack.service.ts), [SendGrid provider](./backend/src/modules/auth/services/email/providers/sendgrid.provider.ts), [Mailgun provider](./backend/src/modules/auth/services/email/providers/mailgun.provider.ts)
+- 🤖 AI Services with Text-to-Speech API: [OpenAI client](./backend/src/modules/ai/services/open-ai-client.service.ts), [speech-to-text usecase](./backend/src/modules/ai/usecases/speech-to-text/speech-to-text.usecase.ts)
 
 #### AI features
 
