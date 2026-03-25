@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { TaskDTO, SendChangeContract } from '@brainassistant/contracts';
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
 import { BaseController } from '../../../../../shared/infra/http/models/base-controller.js';
 import { UpdateTask } from './update-task.usecase.js';
@@ -15,12 +16,13 @@ export class UpdateTaskController extends BaseController {
     const loggedUser: UserPersistent = req.user as UserPersistent;
     const userId = loggedUser._id;
 
-    const taskDto = req.body.changeableObjectDto;
+    const body = req.body as SendChangeContract.Request<TaskDTO>;
+    const dto = body.changeableObjectDto;
 
     try {
       const result = await this._useCase.execute({
-        userId: userId,
-        dto: taskDto,
+        userId,
+        dto,
       });
 
       if (result.isSuccess) {

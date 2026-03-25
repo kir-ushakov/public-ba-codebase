@@ -1,6 +1,5 @@
 import { UseCase } from '../../../../../shared/core/UseCase.js';
 import { Result } from '../../../../../shared/core/result.js';
-import { DeleteTaskRequestDTO } from './delete-task.dto.js';
 import { TaskRepoService } from '../../../../../shared/repo/task-repo.service.js';
 import { ActionRepo } from '../../../../../shared/repo/action.repo.js';
 import { Action, IActionProps } from '../../../../../shared/domain/models/actions.js';
@@ -9,7 +8,7 @@ import { DeleteTaskError } from './delete-task.erros.js';
 
 type Request = {
   userId: string;
-  dto: DeleteTaskRequestDTO;
+  taskId: string;
 };
 
 type Response = Result<void | never, DeleteTaskError>;
@@ -25,7 +24,7 @@ export class DeleteTaskUsecase implements UseCase<Request, Promise<Response>> {
 
   public async execute(req: Request): Promise<Response> {
     const userId = req.userId;
-    const taskId: string = req.dto.id;
+    const taskId: string = req.taskId;
 
     const taskExists = await this.doesTaskExist(userId, taskId);
     if (!taskExists) {

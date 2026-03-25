@@ -1,12 +1,12 @@
 import { UseCase } from '../../../../../shared/core/UseCase.js';
 import { Result } from '../../../../../shared/core/result.js';
-import { IUpdateTaskRequestDTO } from './update-task.dto.js';
+import { TaskDTO } from '@brainassistant/contracts';
 import { TaskRepoService } from '../../../../../shared/repo/task-repo.service.js';
 import { UpdateTaskError, UpdateTaskErrors } from './update-task.errors.js';
 
 type Request = {
   userId: string;
-  dto: IUpdateTaskRequestDTO;
+  dto: TaskDTO;
 };
 
 type Response = Result<void | never, UpdateTaskError>;
@@ -15,7 +15,7 @@ export class UpdateTask implements UseCase<Request, Promise<Response>> {
   constructor(private readonly taskRepoService: TaskRepoService) {}
   public async execute(req: Request): Promise<Response> {
     const userId = req.userId;
-    const taskDto: IUpdateTaskRequestDTO = req.dto;
+    const taskDto = req.dto;
 
     const taskOrError = await this.taskRepoService.getUserTaskById(userId, taskDto.id);
 
