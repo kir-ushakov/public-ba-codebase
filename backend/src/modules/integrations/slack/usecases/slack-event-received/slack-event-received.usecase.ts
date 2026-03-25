@@ -12,13 +12,12 @@ import {
 } from './slack-event-recieved.errors.js';
 import { SlackOAuthAccessRepo } from '../../../../../shared/repo/slack-oauth-access.repo.js';
 
-export type SlackEventReceivedRequest = {
-  dto: SlackEventReceivedReqestDTO;
-};
 export type SlackEventReceivedResponse = Result<void | never, SlackEventReceivedError>;
 
+export type SlackEventReceivedParams = SlackEventReceivedReqestDTO;
+
 export class SlackEventReceivedUsecase
-  implements UseCase<SlackEventReceivedRequest, Promise<SlackEventReceivedResponse>>
+  implements UseCase<SlackEventReceivedParams, Promise<SlackEventReceivedResponse>>
 {
   private _slackOAuthAccessRepo: SlackOAuthAccessRepo;
 
@@ -26,9 +25,9 @@ export class SlackEventReceivedUsecase
     this._slackOAuthAccessRepo = slackOAuthAccessRepo;
   }
 
-  public async execute(req: SlackEventReceivedRequest): Promise<SlackEventReceivedResponse> {
-    const eventType: ESlackEventType = req.dto.event.type;
-    const teamId: string = req.dto.team_id;
+  public async execute(params: SlackEventReceivedParams): Promise<SlackEventReceivedResponse> {
+    const eventType: ESlackEventType = params.event.type;
+    const teamId: string = params.team_id;
     switch (eventType) {
       // Handel Slack Event 'app_uninstalled'
       case ESlackEventType.AppUninstalled:
@@ -38,7 +37,7 @@ export class SlackEventReceivedUsecase
 
       // Handel Slack Event 'app_home_opened'
       case ESlackEventType.AppHomeOpened:
-        const appHomeOpenedEvent: AppHomeOpenedSlackEvent = req.dto
+        const appHomeOpenedEvent: AppHomeOpenedSlackEvent = params
           .event as AppHomeOpenedSlackEvent;
 
         const datetimeOfOpening: Date = new Date(
@@ -51,7 +50,7 @@ export class SlackEventReceivedUsecase
 
       // Handel Slack Event 'member_left_channel'
       case ESlackEventType.MemberLeftChannel:
-        const memberLeftChannelEvent: MemberLeftChannelSlackEvent = req.dto
+        const memberLeftChannelEvent: MemberLeftChannelSlackEvent = params
           .event as MemberLeftChannelSlackEvent;
         console.log(
           `Member with id=${memberLeftChannelEvent.user} left channel with id=${memberLeftChannelEvent.channel}`,
