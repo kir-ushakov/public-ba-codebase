@@ -23,6 +23,7 @@ export class AppComponent implements OnInit {
   onlineEvent: Observable<Event>;
   offlineEvent: Observable<Event>;
   online$: Observable<boolean>;
+  private pwaInstallDialogOpen = false;
 
   constructor(
     private readonly _router: Router,
@@ -42,9 +43,17 @@ export class AppComponent implements OnInit {
     this.setOnOffLineHandlers();
     // Listen for PWA install prompt availability and show dialog automatically
     this.pwaInstallService.installPromptAvailable.subscribe(isAvailable => {
-      if (isAvailable) {
+      if (isAvailable && !this.pwaInstallDialogOpen && this.pwaInstallService.shouldShowInstallDialog()) {
         console.log('PWA install prompt is available, opening dialog');
-        this.dialogService.showModalDialog(PwaInstallDialogComponent);
+        this.pwaInstallService.markDialogShownThisSession();
+        this.pwaInstallDialogOpen = true;
+        const dialogRef = this.dialogService.showModalDialog(PwaInstallDialogComponent);
+        dialogRef.afterClosed().subscribe(result => {
+          this.pwaInstallDialogOpen = false;
+          if (result !== true) {
+            this.pwaInstallService.dismissInstallDialog();
+          }
+        });
       }
     });
   }
