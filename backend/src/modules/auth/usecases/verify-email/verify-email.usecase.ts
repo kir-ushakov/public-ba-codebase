@@ -3,24 +3,24 @@ import { UseCase } from '../../../../shared/core/UseCase.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { VerificationToken } from '../../../../shared/domain/values/user/verification-token.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
-import { VerifyEmailRequestDTO, IVerifyEmailResponceDTO } from './verify-email.dto.js';
+import { IVerifyEmailResponceDTO } from './verify-email.dto.js';
 import { VerifyEmailError } from './verify-email.errors.js';
 
-type UseCaseRequest = {
-  dto: VerifyEmailRequestDTO;
-};
 type UseCaseResult = Result<IVerifyEmailResponceDTO | never, VerifyEmailError>;
 
-export class VerifyEmailUseCase implements UseCase<UseCaseRequest, Promise<UseCaseResult>> {
+export type VerifyEmailParams = {
+  tokenId: string;
+};
+
+export class VerifyEmailUseCase implements UseCase<VerifyEmailParams, Promise<UseCaseResult>> {
   private userRepo: UserRepo;
 
   constructor(userRepo: UserRepo) {
     this.userRepo = userRepo;
   }
 
-  public async execute(reqest: UseCaseRequest): Promise<UseCaseResult> {
-    const dto = reqest.dto;
-    const tokenId: string = dto.token;
+  public async execute(params: VerifyEmailParams): Promise<UseCaseResult> {
+    const { tokenId } = params;
 
     const token: VerificationToken = await this.userRepo.getTokenByTokenId(tokenId);
     if (!token) {

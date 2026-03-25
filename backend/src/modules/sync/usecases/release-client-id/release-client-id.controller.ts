@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
 import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
-import { IReleaseClientIdRequestDTO } from './release-client-id.dto.js';
 import { ReleaseClientId } from './release-client-id.usecase.js';
+import { requestToUsecaseParams } from './release-client-id.mapper.js';
 
 export class ReleaseClientIdController extends BaseController {
   private _useCase: ReleaseClientId;
@@ -15,14 +15,9 @@ export class ReleaseClientIdController extends BaseController {
   protected async executeImpl(req: Request, res: Response): Promise<void> {
     const authenticatedUser: UserPersistent = req.user as UserPersistent;
 
-    // TODO: We need to take from req device identity object in future
-    // let dto: IReleaseClientIdRequestDTO = req.body as IReleaseClientIdRequestDTO;
-    let dto: IReleaseClientIdRequestDTO = {
-      userId: authenticatedUser._id,
-    };
-
     try {
-      const result = await this._useCase.execute(dto);
+      const params = requestToUsecaseParams(authenticatedUser._id);
+      const result = await this._useCase.execute(params);
 
       if (result.isFailure) {
         const error = result.error;

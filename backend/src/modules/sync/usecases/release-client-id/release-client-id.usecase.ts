@@ -1,8 +1,5 @@
 import { UseCase } from '../../../../shared/core/UseCase.js';
-import {
-  IReleaseClientIdRequestDTO,
-  IReleaseClientIdResponseDTO,
-} from './release-client-id.dto.js';
+import { IReleaseClientIdResponseDTO } from './release-client-id.dto.js';
 import { Result } from '../../../../shared/core/result.js';
 import { Client, IClientProps } from '../../../../shared/domain/models/client.js';
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
@@ -11,7 +8,11 @@ import { ReleaseClientIdError, ReleaseClientIdErrors } from './release-client-id
 
 type Response = Result<IReleaseClientIdResponseDTO | never, ReleaseClientIdError>;
 
-export class ReleaseClientId implements UseCase<IReleaseClientIdRequestDTO, Promise<Response>> {
+export type ReleaseClientIdParams = {
+  userId: string;
+};
+
+export class ReleaseClientId implements UseCase<ReleaseClientIdParams, Promise<Response>> {
   private _clientRepo: ClientRepo;
   private _userRepo: UserRepo;
 
@@ -20,8 +21,8 @@ export class ReleaseClientId implements UseCase<IReleaseClientIdRequestDTO, Prom
     this._userRepo = userRepo;
   }
 
-  public async execute(dto: IReleaseClientIdRequestDTO): Promise<Response> {
-    const { userId } = dto;
+  public async execute(params: ReleaseClientIdParams): Promise<Response> {
+    const { userId } = params;
 
     // I think (not sure) we don't need to check does user exist,
     // because we get this id from auth information
@@ -56,7 +57,7 @@ export class ReleaseClientId implements UseCase<IReleaseClientIdRequestDTO, Prom
 
     if (clientOrError.isFailure) {
       // TODO: for this moment there is no suppose that it can be failed in normal flow
-      // return new ReleaseClientId.SomeProblem(dto.email);
+      // return new ReleaseClientId.SomeProblem(userId);
     }
     const client: Client = clientOrError.getValue();
 

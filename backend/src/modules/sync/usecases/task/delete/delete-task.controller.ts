@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
 import { BaseController } from '../../../../../shared/infra/http/models/base-controller.js';
-import { DeleteTaskRequestDTO } from './delete-task.dto.js';
 import { DeleteTaskUsecase } from './delete-task.usecase.js';
 
 export class DeleteTaskController extends BaseController {
@@ -16,12 +15,10 @@ export class DeleteTaskController extends BaseController {
     const loggedUser: UserPersistent = req.user as UserPersistent;
     const userId = loggedUser._id;
 
-    const deleteTaskDto: DeleteTaskRequestDTO = { id: req.params.taskId };
-
     try {
       const result = await this._useCase.execute({
-        userId: userId,
-        dto: deleteTaskDto,
+        userId,
+        taskId: req.params.taskId,
       });
       if (result.isSuccess) {
         this.ok(res);

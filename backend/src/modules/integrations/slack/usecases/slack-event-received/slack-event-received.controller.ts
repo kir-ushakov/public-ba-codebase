@@ -7,7 +7,7 @@ import {
   SlackEventReceivedUsecase,
   SlackEventReceivedResponse,
 } from './slack-event-received.usecase.js';
-import { SlackEventReceivedReqestDTO } from './slack-event-received.dto.js';
+import { requestToUsecaseParams } from './slack-event-received.mapper.js';
 
 export class SlackEventReceivedController extends BaseController {
   private _useCase: SlackEventReceivedUsecase;
@@ -17,11 +17,9 @@ export class SlackEventReceivedController extends BaseController {
     this._useCase = useCase;
   }
   protected async executeImpl(req: Request, res: Response): Promise<void> {
-    const dto: SlackEventReceivedReqestDTO = req.body;
     try {
-      const slackEventReceivedResult: SlackEventReceivedResponse = await this._useCase.execute({
-        dto: dto,
-      });
+      const params = requestToUsecaseParams(req.body);
+      const slackEventReceivedResult: SlackEventReceivedResponse = await this._useCase.execute(params);
 
       if (slackEventReceivedResult.isSuccess) {
         BaseController.jsonResponse(res, EHttpStatus.Ok);
