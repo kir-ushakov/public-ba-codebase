@@ -7,23 +7,26 @@ import { SlackService } from '../../../../../shared/infra/integrations/slack/sla
 import { CreateTaskError, CreateTaskErrors } from './create-task.errors.js';
 import { DomainError } from '../../../../../shared/core/domain-error.js';
 
-export type CreateTaskRequest = {
+export type CreateTaskResult = Result<Task, CreateTaskError>;
+
+export type CreateTaskParams = {
   taskProps: ITaskProps;
   id?: UniqueEntityID;
 };
 
-export type CreateTaskResult = Result<Task, CreateTaskError>;
-
-export class CreateTask implements UseCase<CreateTaskRequest, Promise<CreateTaskResult>> {
+export class CreateTask implements UseCase<CreateTaskParams, Promise<CreateTaskResult>> {
   constructor(
     private readonly taskRepoService: TaskRepoService,
     private readonly slackService: SlackService,
   ) {}
 
-  public async execute(req: CreateTaskRequest): Promise<CreateTaskResult> {
-    const taskProps: ITaskProps = req.taskProps;
+  public async execute(params: CreateTaskParams): Promise<CreateTaskResult> {
+    const taskProps: ITaskProps = params.taskProps;
 
-    const taskOrError: Result<Task | never, DomainError<Task, ETaskError>> = Task.create(taskProps, req.id);
+    const taskOrError: Result<Task | never, DomainError<Task, ETaskError>> = Task.create(
+      taskProps,
+      params.id,
+    );
     if (taskOrError.isFailure) {
       return new CreateTaskErrors.DataInvalid(taskOrError.error);
     }
