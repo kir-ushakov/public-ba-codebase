@@ -1,18 +1,22 @@
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
-import { SignUpRequestDTO, SignUpResponseDTO } from './signup.dto.js';
+import { SignUpResponseDTO } from './signup.dto.js';
 import { SignUpError, SignUpErrors } from './signup.errors.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { UserEmail } from '../../../../shared/domain/values/user/user-email.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { EmailVerificationService } from '../../services/email/email-verification.service.js';
 
-export type SignUpRequest = {
-  dto: SignUpRequestDTO;
-};
 export type SignUpResult = Result<SignUpResponseDTO | never, SignUpError>;
 
-export class SignUp implements UseCase<SignUpRequest, Promise<SignUpResult>> {
+export type SignUpParams = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+};
+
+export class SignUp implements UseCase<SignUpParams, Promise<SignUpResult>> {
   private _userRepo: UserRepo;
   private _emailVerificationService: EmailVerificationService;
 
@@ -21,12 +25,11 @@ export class SignUp implements UseCase<SignUpRequest, Promise<SignUpResult>> {
     this._emailVerificationService = emailVerificationService;
   }
 
-  public async execute(reqest: SignUpRequest): Promise<SignUpResult> {
-    const dto = reqest.dto;
-    const emailOrError = UserEmail.create(dto.email);
+  public async execute(params: SignUpParams): Promise<SignUpResult> {
+    const emailOrError = UserEmail.create(params.email);
 
     if (emailOrError.isFailure) {
-      return new SignUpErrors.EmailInvalid(dto.email);
+      return new SignUpErrors.EmailInvalid(params.email);
     }
 
     const email: UserEmail = emailOrError.getValue();
@@ -39,8 +42,8 @@ export class SignUp implements UseCase<SignUpRequest, Promise<SignUpResult>> {
 
     const userOrError: Result<User> = User.create({
       username: email,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
+      firstName: params.firstName,
+      lastName: params.lastName,
     });
 
     if (userOrError.isFailure) {
@@ -49,7 +52,7 @@ export class SignUp implements UseCase<SignUpRequest, Promise<SignUpResult>> {
 
     const user: User = userOrError.getValue();
 
-    const createdUser: User = await this._userRepo.create(user, dto.password);
+    const createdUser: User = await this._userRepo.create(user, params.password);
 
     // TODO: This feature is temporarily unused
     /*try {
