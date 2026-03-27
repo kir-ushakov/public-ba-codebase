@@ -39,26 +39,37 @@ export class OpenAISpeechTranscriberService {
   async transcribeAudioFile(
     audio: Blob,
   ): Promise<Result<string, ServiceError<OpenAISpeechTranscriberError>>> {
-    const mimeType = audio.type;
+    try {
+      const mimeType = audio.type;
 
-    const mimeValidation = this.validateMimeType(mimeType);
-    if (mimeValidation.isFailure) return Result.fail(mimeValidation.error);
+      const mimeValidation = this.validateMimeType(mimeType);
+      if (mimeValidation.isFailure) return Result.fail(mimeValidation.error);
 
-    const filenameResult = this.createFilenameOrFail(mimeType);
-    if (filenameResult.isFailure) return Result.fail(filenameResult.error);
-    const filename = filenameResult.getValue();
+      const filenameResult = this.createFilenameOrFail(mimeType);
+      if (filenameResult.isFailure) return Result.fail(filenameResult.error);
+      const filename = filenameResult.getValue();
 
-    const buffer = await BufferUtilsService.convertBlobToBuffer(audio);
+      const buffer = await BufferUtilsService.convertBlobToBuffer(audio);
 
-    const fileResult = await this.convertBufferToFileOrFail(buffer, filename);
-    if (fileResult.isFailure) return Result.fail(fileResult.error);
-    const filelike = fileResult.getValue();
+      const fileResult = await this.convertBufferToFileOrFail(buffer, filename);
+      if (fileResult.isFailure) return Result.fail(fileResult.error);
+      const filelike = fileResult.getValue();
 
-    const openAIClientResult = await this.getClientOrFail();
-    if (openAIClientResult.isFailure) return Result.fail(openAIClientResult.error);
-    const openAIClient = openAIClientResult.getValue();
+      const openAIClientResult = await this.getClientOrFail();
+      if (openAIClientResult.isFailure) return Result.fail(openAIClientResult.error);
+      const openAIClient = openAIClientResult.getValue();
 
-    return await this.transcribeAudioWithOpenAI(openAIClient, filelike);
+      return await this.transcribeAudioWithOpenAI(openAIClient, filelike);
+    } catch (error) {
+      return serviceFail<OpenAISpeechTranscriberError>(
+        'Failed to prepare audio for transcription',
+        OpenAISpeechTranscriberError.FilePreparationFailed,
+        {
+          level: ServiceErrorLevel.Medium,
+          error,
+        },
+      );
+    }
   }
 
   private validateMimeType(
