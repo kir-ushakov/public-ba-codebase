@@ -61,9 +61,6 @@ export class MbTaskEditComponent {
     const recorder = dialogRef.componentInstance as VoiceRecorderComponent;
 
     if (recorder) {
-      recorder.started.subscribe(() => {
-        this.store.dispatch(MbTaskScreenAction.StartVoiceRecording);
-      });
       recorder.stopped.subscribe(() => {
         this.store.dispatch(MbTaskScreenAction.StopVoiceRecording);
         this.form.controls.title.setValue('');

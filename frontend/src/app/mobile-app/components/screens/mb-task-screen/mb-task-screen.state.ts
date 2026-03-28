@@ -231,14 +231,6 @@ export class MbTaskScreenState {
     });
   }
 
-  @Action(MbTaskScreenAction.StartVoiceRecording)
-  async startVoiceRecording(): Promise<void> {
-    if (this.voiceRecorderService.isRecording) {
-      return;
-    }
-    await this.voiceRecorderService.startRecording();
-  }
-
   @Action(MbTaskScreenAction.StopVoiceRecording)
   async stopVoiceRecording(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
     try {
@@ -256,11 +248,8 @@ export class MbTaskScreenState {
   }
 
   @Action(MbTaskScreenAction.CancelVoiceRecording)
-  async cancelVoiceRecording(): Promise<void> {
-    if (!this.voiceRecorderService.isRecording) {
-      return;
-    }
-    await this.voiceRecorderService.stopRecording();
+  cancelVoiceRecording(): void {
+    this.voiceRecorderService.cancelRecording();
   }
 
   @Action(MbTaskScreenAction.VoiceConvertedToTextSuccessful)

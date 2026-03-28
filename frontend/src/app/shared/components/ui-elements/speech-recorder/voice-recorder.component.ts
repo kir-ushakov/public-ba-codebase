@@ -5,6 +5,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MicIconComponent } from './mic-icon/mic-icon.component';
 import { CommonModule } from '@angular/common';
+import { Store } from '@ngxs/store';
+import { VoiceRecorderService } from 'src/app/shared/services/pwa/voice-recorder.service';
+import { AppAction } from 'src/app/shared/state/app.actions';
 
 const DEFAULT_MIC_COLOR = 'rgba(0, 255, 0, 0.7)';
 const CIRCLE_RADIUS = 147;
@@ -19,11 +22,12 @@ const RECORDING_DURATION = 10000;
 export class VoiceRecorderComponent {
   @ViewChild('progressCircle', { static: false }) circleRef!: ElementRef<SVGCircleElement>;
 
-  readonly started = output<void>();
   readonly stopped = output<void>();
   readonly canceled = output<void>();
 
   readonly dialogRef = inject(MatDialogRef<VoiceRecorderComponent>);
+  private readonly voiceRecorderService = inject(VoiceRecorderService);
+  private readonly store = inject(Store);
 
   radius = CIRCLE_RADIUS;
   micColor = signal(DEFAULT_MIC_COLOR);
@@ -40,11 +44,27 @@ export class VoiceRecorderComponent {
   private recordingTimeout: number | null = null;
 
   ngAfterViewInit(): void {
-    this.startRecording();
+    void this.beginSessionAfterMicReady();
   }
 
-  startRecording(duration = RECORDING_DURATION): void {
-    this.started.emit();
+  private async beginSessionAfterMicReady(): Promise<void> {
+    try {
+      await this.voiceRecorderService.startRecording();
+      this.startRecordingUi();
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return;
+      }
+      this.store.dispatch(
+        new AppAction.ShowErrorInUI(
+          'Could not access the microphone. Check permissions and try again.',
+        ),
+      );
+      this.dialogRef.close();
+    }
+  }
+
+  private startRecordingUi(duration = RECORDING_DURATION): void {
     this.animateProgress(duration);
     this.recordingTimeout = window.setTimeout(() => this.stopRecording(), duration);
   }
@@ -71,18 +91,14 @@ export class VoiceRecorderComponent {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
 
-      // Dash offset
       circle.style.strokeDashoffset = progress >= 1 ? '0' : `${totalLength * (1 - progress)}`;
 
-      // Color interpolation (green → red)
       const MAX_RGB_COLOR_VALUE = 255;
       const red = Math.round(MAX_RGB_COLOR_VALUE * progress);
       const green = Math.round(MAX_RGB_COLOR_VALUE * (1 - progress));
       circle.style.stroke = `rgb(${red}, ${green}, 0)`;
 
-      const color = `rgb(${red}, ${green}, 0)`;
-
-      this.micColor.set(color);
+      this.micColor.set(`rgb(${red}, ${green}, 0)`);
 
       if (progress < 1) {
         this.animationFrame = requestAnimationFrame(animate);
@@ -99,6 +115,7 @@ export class VoiceRecorderComponent {
     }
     if (this.recordingTimeout) {
       clearTimeout(this.recordingTimeout);
+      this.recordingTimeout = null;
     }
     this.dialogRef.close();
   }

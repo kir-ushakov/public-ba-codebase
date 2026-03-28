@@ -60,10 +60,6 @@ export namespace MbTaskScreenAction {
     ) {}
   }
 
-  export class StartVoiceRecording {
-    static readonly type = '[MbTaskScreen] Start Voice Recording';
-  }
-
   export class StopVoiceRecording {
     static readonly type = '[MbTaskScreen] Stop Voice Recording';
   }
