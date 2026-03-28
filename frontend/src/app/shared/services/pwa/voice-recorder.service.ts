@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 
+const DEFAULT_AUDIO_MIME = 'audio/webm';
+
 @Injectable({ providedIn: 'root' })
 export class VoiceRecorderService {
-  private mediaRecorder!: MediaRecorder;
+  private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
   private stream: MediaStream | undefined;
   private _isRecording = false;
   private abortController: AbortController | null = null;
+  private activeMimeType = '';
+  /** `reject` from the in-flight `stopRecording()` promise, if any */
+  private stopRecordingReject: ((reason: Error) => void) | null = null;
 
   get isRecording(): boolean {
     return this._isRecording;
@@ -21,37 +26,43 @@ export class VoiceRecorderService {
       audio: true,
       signal: abortController.signal,
     };
-    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-    if (abortController.signal.aborted) {
-      this.cleanup();
-      return;
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      if (abortController.signal.aborted) {
+        this.releaseMedia();
+        return;
+      }
+
+      this.audioChunks = [];
+      this.startMediaRecorder(this.stream);
+    } catch (e) {
+      this.releaseMedia();
+      throw e;
     }
-
-    this.audioChunks = [];
-    this.mediaRecorder = new MediaRecorder(this.stream);
-
-    this.mediaRecorder.ondataavailable = event => {
-      this.audioChunks.push(event.data);
-    };
-
-    this.mediaRecorder.start();
-    this._isRecording = true;
   }
 
   stopRecording(): Promise<Blob> {
     return new Promise((resolve, reject) => {
-      if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
+      const recorder = this.mediaRecorder;
+      if (!recorder || recorder.state === 'inactive') {
         reject(new Error('Not recording'));
         return;
       }
 
-      this.mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-        this.cleanup();
-        resolve(audioBlob);
+      this.stopRecordingReject = reject;
+
+      recorder.onstop = () => {
+        this.stopRecordingReject = null;
+        const blob = new Blob(this.audioChunks, {
+          type: this.activeMimeType || DEFAULT_AUDIO_MIME,
+        });
+        this.releaseMedia();
+        resolve(blob);
       };
-      this.mediaRecorder.stop();
+
+      recorder.stop();
       this._isRecording = false;
     });
   }
@@ -64,18 +75,75 @@ export class VoiceRecorderService {
     if (recorder && recorder.state !== 'inactive') {
       recorder.onstop = () => {
         this.audioChunks = [];
-        this.cleanup();
+        this.releaseMedia();
       };
       recorder.stop();
     } else {
-      this.cleanup();
+      this.releaseMedia();
     }
     this._isRecording = false;
   }
 
-  private cleanup(): void {
+  private static pickRecorderMimeType(): string | undefined {
+    const candidates = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/mp4',
+      'audio/ogg;codecs=opus',
+    ];
+    for (const mimeType of candidates) {
+      if (MediaRecorder.isTypeSupported(mimeType)) {
+        return mimeType;
+      }
+    }
+    return undefined;
+  }
+
+  private static recorderErrorMessage(recorder: MediaRecorder | null): string {
+    const dom = (recorder as unknown as { error?: DOMException | null })?.error;
+    return dom?.message ?? 'MediaRecorder error';
+  }
+
+  private startMediaRecorder(stream: MediaStream): void {
+    const preferredMime = VoiceRecorderService.pickRecorderMimeType();
+    const recorder = preferredMime
+      ? new MediaRecorder(stream, { mimeType: preferredMime })
+      : new MediaRecorder(stream);
+
+    this.mediaRecorder = recorder;
+    this.activeMimeType = recorder.mimeType || preferredMime || DEFAULT_AUDIO_MIME;
+
+    recorder.ondataavailable = event => {
+      this.audioChunks.push(event.data);
+    };
+
+    recorder.onerror = () => {
+      this.failPendingStop(
+        new Error(VoiceRecorderService.recorderErrorMessage(recorder)),
+      );
+      this._isRecording = false;
+      this.releaseMedia();
+    };
+
+    recorder.start();
+    this._isRecording = true;
+  }
+
+  /** Rejects the `stopRecording()` promise if `stopRecording()` was called and we are still waiting. */
+  private failPendingStop(error: Error): void {
+    const reject = this.stopRecordingReject;
+    this.stopRecordingReject = null;
+    reject?.(error);
+  }
+
+  /** Stops tracks and clears recorder state. */
+  private releaseMedia(): void {
+    this.failPendingStop(new Error('Recording was interrupted'));
+
     this.stream?.getTracks().forEach(track => track.stop());
     this.stream = undefined;
     this.abortController = null;
+    this.mediaRecorder = null;
+    this.activeMimeType = '';
   }
 }
