@@ -11,15 +11,21 @@ import type { Observable } from 'rxjs';
 import { MbTaskScreenState } from '../mb-task-screen.state';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { VoiceRecorderComponent } from 'src/app/shared/components/ui-elements/speech-recorder/voice-recorder.component';
-import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './mb-task-edit.component.interface';
 import { ViewChild, ElementRef } from '@angular/core';
+import { TaskVoiceMicButtonComponent } from './task-voice-mic-button.component';
 
 @Component({
   selector: 'ba-mb-task-edit',
-  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatIconModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    TaskVoiceMicButtonComponent,
+    ReactiveFormsModule,
+  ],
   templateUrl: './mb-task-edit.component.html',
   styleUrl: './mb-task-edit.component.scss',
 })
@@ -37,7 +43,6 @@ export class MbTaskEditComponent {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);
-  private readonly dialogService = inject(DialogService);
   private readonly fb = inject(FormBuilder);
   private readonly actions$ = inject(Actions);
 
@@ -53,27 +58,8 @@ export class MbTaskEditComponent {
     this.store.dispatch(MbTaskScreenAction.AddPictureBtnPressed);
   }
 
-  onMicClick(event: MouseEvent): void {
-    this.preventInputFocus(event);
-
-    const dialogRef = this.dialogService.showFullScreenDialog(VoiceRecorderComponent);
-
-    const recorder = dialogRef.componentInstance as VoiceRecorderComponent;
-
-    if (recorder) {
-      recorder.stopped.subscribe(() => {
-        this.store.dispatch(MbTaskScreenAction.StopVoiceRecording);
-        this.form.controls.title.setValue('');
-      });
-      recorder.canceled.subscribe(() => {
-        this.store.dispatch(MbTaskScreenAction.CancelVoiceRecording);
-      });
-    }
-  }
-
-  preventInputFocus(event: MouseEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
+  onVoiceRecordingStopped(): void {
+    this.form.controls.title.setValue('');
   }
 
   private initSubscriptions(): void {

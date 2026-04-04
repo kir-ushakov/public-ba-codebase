@@ -1,5 +1,15 @@
+$task-title-field-radius: 0.5rem;
+
 .title-input-holder {
   width: 100%;
+}
+
+// MDC filled field defaults to square bottom corners; round all four to match the shell.
+:host ::ng-deep mat-form-field.title-input-holder {
+  .mat-mdc-text-field-wrapper.mdc-text-field--filled {
+    border-radius: $task-title-field-radius;
+    overflow: hidden;
+  }
 }
 
 .take-a-picture-icon-holder {
@@ -12,36 +22,6 @@
     height: $picture-icon-size;
     width: $picture-icon-size;
   }
-}
-
-.mic-icon-button {
-  border: none;
-  background: none;
-  // Prevent keyboard from showing on mobile when mic is clicked
-  touch-action: manipulation;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  outline: none;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:active {
-    background: none;
-  }
-}
-
-.mic-icon {
-  font-size: 2rem;
-  cursor: pointer;
-  width: auto;
-  height: auto;
-  // Prevent text selection and keyboard
-  pointer-events: auto;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .dots-prefix {

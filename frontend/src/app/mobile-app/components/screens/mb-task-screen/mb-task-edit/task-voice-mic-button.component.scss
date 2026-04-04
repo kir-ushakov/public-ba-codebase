@@ -1,0 +1,35 @@
+:host {
+  display: flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.mic-icon-button {
+  border: none;
+  background: none;
+  // Prevent keyboard from showing on mobile when mic is clicked
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:active {
+    background: none;
+  }
+}
+
+.mic-icon {
+  font-size: 2rem;
+  cursor: pointer;
+  width: auto;
+  height: auto;
+  // Prevent text selection and keyboard
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
