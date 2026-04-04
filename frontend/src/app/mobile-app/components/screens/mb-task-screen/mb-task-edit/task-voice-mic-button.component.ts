@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, input, output } from '@angular/core';
+import { Component, inject, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngxs/store';
@@ -8,8 +8,6 @@ import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import { MbTaskScreenAction } from '../mb-task-screen.actions';
 import { MbTaskScreenState } from '../mb-task-screen.state';
 
-export type TaskVoiceMicButtonVariant = 'mic' | 'converting';
-
 @Component({
   selector: 'ba-task-voice-mic-button',
   imports: [CommonModule, MatButtonModule, MatIconModule],
@@ -17,8 +15,6 @@ export type TaskVoiceMicButtonVariant = 'mic' | 'converting';
   styleUrl: './task-voice-mic-button.component.scss',
 })
 export class TaskVoiceMicButtonComponent {
-  readonly variant = input<TaskVoiceMicButtonVariant>('mic');
-
   readonly recordingStopped = output<void>();
 
   readonly voiceToTextConverting$ = inject(Store).select(

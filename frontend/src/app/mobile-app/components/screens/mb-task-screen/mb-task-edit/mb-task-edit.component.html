@@ -12,15 +12,8 @@
       />
 
       <ba-task-voice-mic-button
-        *ngIf="!(voiceToTextConverting$ | async)"
         matIconSuffix
         (recordingStopped)="onVoiceRecordingStopped()"
-      />
-
-      <ba-task-voice-mic-button
-        *ngIf="voiceToTextConverting$ | async"
-        matIconSuffix
-        variant="converting"
       />
 
       <mat-error *ngIf="false"> Task title is <strong>required</strong> </mat-error>

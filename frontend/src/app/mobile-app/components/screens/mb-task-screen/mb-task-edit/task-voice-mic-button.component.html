@@ -1,4 +1,4 @@
-@if (variant() === 'mic') {
+@if (!(voiceToTextConverting$ | async)) {
   <button
     class="mic-icon-button"
     mat-icon-button
@@ -8,12 +8,10 @@
     (mousedown)="preventInputFocus($event)"
     tabindex="-1"
   >
-    @if (!(voiceToTextConverting$ | async)) {
-      <mat-icon class="mic-icon" aria-hidden="true">mic</mat-icon>
-    }
+    <mat-icon class="mic-icon" aria-hidden="true">mic</mat-icon>
   </button>
 } @else {
-  <span class="dots-suffix">
+  <span class="dots-suffix" aria-live="polite" aria-label="Converting speech to text">
     <span class="dot"></span><span class="dot"></span><span class="dot"></span>
   </span>
 }
