@@ -14,6 +14,7 @@ import { MobileAppState } from './mobile-app.state';
 import { MbLoginScreenState } from './components/screens/mb-login-screen/mb-login-screen.state';
 import { GoogleAuthRedirectScreenState } from '../shared/components/redirects/google/google-auth-redirect/google-auth-redirect.state';
 import { MbTaskScreenState } from './components/screens/mb-task-screen/mb-task-screen.state';
+import { VoiceInputState } from './components/screens/mb-task-screen/mb-task-edit/task-voice-mic-button/voice-input.state';
 import { MbSignupScreenState } from './components/screens/mb-signup-screen/mb-signup-screen.state';
 import { AddToSlackRedirectScreenState } from '../shared/components/redirects/slack/add-to-slack-redirect/add-to-slack-redirect.state';
 
@@ -36,12 +37,12 @@ export const mobileRoutes: Routes = [
       {
         path: 'task/:mode',
         component: MbTaskScreenComponent,
-        providers: [provideStates([MbTaskScreenState])],
+        providers: [provideStates([MbTaskScreenState, VoiceInputState])],
       },
       {
         path: 'task/:mode/:id',
         component: MbTaskScreenComponent,
-        providers: [provideStates([MbTaskScreenState])],
+        providers: [provideStates([MbTaskScreenState, VoiceInputState])],
       },
       {
         path: 'sync',

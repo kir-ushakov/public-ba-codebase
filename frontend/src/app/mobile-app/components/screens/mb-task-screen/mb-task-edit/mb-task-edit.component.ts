@@ -9,12 +9,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime } from 'rxjs';
 import type { Observable } from 'rxjs';
 import { MbTaskScreenState } from '../mb-task-screen.state';
+import { VoiceInputState } from './task-voice-mic-button/voice-input.state';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './mb-task-edit.component.interface';
 import { ViewChild, ElementRef } from '@angular/core';
-import { TaskVoiceMicButtonComponent } from './task-voice-mic-button.component';
+import { TaskVoiceMicButtonComponent } from './task-voice-mic-button/task-voice-mic-button.component';
 
 @Component({
   selector: 'ba-mb-task-edit',
@@ -33,7 +34,7 @@ export class MbTaskEditComponent {
   formValidStatus = output<boolean>();
   imageUri$: Observable<string> = inject(Store).select(MbTaskScreenState.imageUri);
   voiceToTextConverting$: Observable<boolean> = inject(Store).select(
-    MbTaskScreenState.voiceToTextConverting,
+    VoiceInputState.voiceToTextConverting,
   );
   form: FormGroup<FormControlsOf<ITaskEditFormData>>;
 

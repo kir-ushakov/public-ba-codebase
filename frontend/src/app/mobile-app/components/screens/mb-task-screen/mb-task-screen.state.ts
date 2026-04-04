@@ -14,6 +14,7 @@ import { firstValueFrom } from 'rxjs';
 import type { ITaskEditFormData } from './mb-task-edit/mb-task-edit.component.interface';
 import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { ImageService } from 'src/app/shared/services/application/image.service';
+import { VoiceInputAction } from './mb-task-edit/task-voice-mic-button/voice-input.actions';
 
 export enum ETaskViewMode {
   Create = 'TASK_VIEW_MODE_CREATE',
@@ -29,7 +30,6 @@ export interface IMbTaskScreenStateModel {
     status: boolean;
   };
   isSideMenuOpened: boolean;
-  voiceToTextConverting?: boolean;
   imageUrl: string | null;
 }
 
@@ -43,7 +43,6 @@ const defaults = {
   },
   taskData: defaultTask,
   isSideMenuOpened: false,
-  voiceToTextConverting: false,
   imageUrl: null,
 };
 
@@ -97,13 +96,9 @@ export class MbTaskScreenState {
     return state.taskViewForm?.status ?? false;
   }
 
-  @Selector()
-  static voiceToTextConverting(state: IMbTaskScreenStateModel): boolean {
-    return state.voiceToTextConverting ?? false;
-  }
-
   @Action(MbTaskScreenAction.Opened)
   opened(ctx: StateContext<IMbTaskScreenStateModel>, { mode, taskId }): void {
+    ctx.dispatch(new VoiceInputAction.Reset());
     ctx.patchState({ mode: mode });
     if (taskId) {
       const actualTasks: Task[] = this.store.selectSnapshot(TasksState.actualTasks);
@@ -196,6 +191,7 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.Close)
   close(ctx: StateContext<IMbTaskScreenStateModel>): void {
+    ctx.dispatch(new VoiceInputAction.Reset());
     ctx.setState(defaults);
   }
 
@@ -238,7 +234,7 @@ export class MbTaskScreenState {
         return;
       }
       const record: Blob = await this.voiceRecorderService.stopRecording();
-      ctx.patchState({ voiceToTextConverting: true });
+      ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingSet(true));
       const result = await firstValueFrom(this.speechToTextService.uploadAudio(record));
       ctx.dispatch(new MbTaskScreenAction.VoiceConvertedToTextSuccessful(result.transcript));
     } catch (error) {
@@ -254,12 +250,12 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.VoiceConvertedToTextSuccessful)
   voiceConvertedToTextSuccessful(ctx: StateContext<IMbTaskScreenStateModel>): void {
-    ctx.patchState({ voiceToTextConverting: false });
+    ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingSet(false));
   }
 
   @Action(MbTaskScreenAction.VoiceConvertedToTextFailed)
   voiceConvertedToTextFailed(ctx: StateContext<IMbTaskScreenStateModel>): void {
-    ctx.patchState({ voiceToTextConverting: false });
+    ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingSet(false));
     ctx.dispatch(new AppAction.ShowErrorInUI('Voice Conversion To Text Failed'));
   }
 
