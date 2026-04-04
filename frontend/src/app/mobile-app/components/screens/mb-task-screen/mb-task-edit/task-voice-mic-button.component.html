@@ -1,13 +1,19 @@
-<button
-  class="mic-icon-button"
-  mat-icon-button
-  aria-label="Microphone"
-  type="button"
-  (click)="onMicClick($event)"
-  (mousedown)="preventInputFocus($event)"
-  tabindex="-1"
->
-  @if (!(voiceToTextConverting$ | async)) {
-    <mat-icon class="mic-icon" aria-hidden="true">mic</mat-icon>
-  }
-</button>
+@if (variant() === 'mic') {
+  <button
+    class="mic-icon-button"
+    mat-icon-button
+    aria-label="Microphone"
+    type="button"
+    (click)="onMicClick($event)"
+    (mousedown)="preventInputFocus($event)"
+    tabindex="-1"
+  >
+    @if (!(voiceToTextConverting$ | async)) {
+      <mat-icon class="mic-icon" aria-hidden="true">mic</mat-icon>
+    }
+  </button>
+} @else {
+  <span class="dots-suffix">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  </span>
+}

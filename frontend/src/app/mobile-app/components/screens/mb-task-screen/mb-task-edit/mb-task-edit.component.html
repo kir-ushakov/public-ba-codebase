@@ -11,25 +11,17 @@
         data-test="task-title-input"
       />
 
-      <button
-        class="mic-icon-button"
-        mat-icon-button
-        matSuffix
-        aria-label="Microphone"
-        type="button"
-        (click)="onMicClick($event)"
-        (mousedown)="preventInputFocus($event)"
-        tabindex="-1"
-      >
-        @if (!(voiceToTextConverting$ | async)) {
-          <mat-icon class="mic-icon" aria-hidden="true">mic</mat-icon>
-        }
-      </button>
+      <ba-task-voice-mic-button
+        *ngIf="!(voiceToTextConverting$ | async)"
+        matIconSuffix
+        (recordingStopped)="onVoiceRecordingStopped()"
+      />
 
-      <!-- Jumping dots animation as prefix -->
-      <span class="dots-prefix" matPrefix *ngIf="voiceToTextConverting$ | async">
-        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-      </span>
+      <ba-task-voice-mic-button
+        *ngIf="voiceToTextConverting$ | async"
+        matIconSuffix
+        variant="converting"
+      />
 
       <mat-error *ngIf="false"> Task title is <strong>required</strong> </mat-error>
     </mat-form-field>
