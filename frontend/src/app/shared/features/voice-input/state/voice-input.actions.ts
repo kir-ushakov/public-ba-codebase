@@ -3,8 +3,8 @@ export namespace VoiceInputAction {
     static readonly type = '[VoiceInput] Reset';
   }
 
-  export class VoiceToTextConvertingSet {
-    static readonly type = '[VoiceInput] Voice To Text Converting Set';
+  export class VoiceToTextConvertingStatusSet {
+    static readonly type = '[VoiceInput] Voice To Text Converting Status Set';
 
     constructor(public converting: boolean) {}
   }

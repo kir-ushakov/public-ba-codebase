@@ -14,7 +14,7 @@ import { firstValueFrom } from 'rxjs';
 import type { ITaskEditFormData } from './mb-task-edit/mb-task-edit.component.interface';
 import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { ImageService } from 'src/app/shared/services/application/image.service';
-import { VoiceInputAction } from './mb-task-edit/task-voice-mic-button/voice-input.actions';
+import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
 
 export enum ETaskViewMode {
   Create = 'TASK_VIEW_MODE_CREATE',
@@ -234,7 +234,7 @@ export class MbTaskScreenState {
         return;
       }
       const record: Blob = await this.voiceRecorderService.stopRecording();
-      ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingSet(true));
+      ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingStatusSet(true));
       const result = await firstValueFrom(this.speechToTextService.uploadAudio(record));
       ctx.dispatch(new MbTaskScreenAction.VoiceConvertedToTextSuccessful(result.transcript));
     } catch (error) {
@@ -250,12 +250,12 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.VoiceConvertedToTextSuccessful)
   voiceConvertedToTextSuccessful(ctx: StateContext<IMbTaskScreenStateModel>): void {
-    ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingSet(false));
+    ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingStatusSet(false));
   }
 
   @Action(MbTaskScreenAction.VoiceConvertedToTextFailed)
   voiceConvertedToTextFailed(ctx: StateContext<IMbTaskScreenStateModel>): void {
-    ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingSet(false));
+    ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingStatusSet(false));
     ctx.dispatch(new AppAction.ShowErrorInUI('Voice Conversion To Text Failed'));
   }
 

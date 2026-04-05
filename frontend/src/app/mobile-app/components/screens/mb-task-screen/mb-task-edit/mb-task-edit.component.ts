@@ -9,7 +9,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime } from 'rxjs';
 import type { Observable } from 'rxjs';
 import { MbTaskScreenState } from '../mb-task-screen.state';
-import { VoiceInputState } from './task-voice-mic-button/voice-input.state';
+import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice-input.state';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';

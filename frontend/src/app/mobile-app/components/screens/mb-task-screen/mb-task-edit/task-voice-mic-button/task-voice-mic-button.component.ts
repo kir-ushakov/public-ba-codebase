@@ -6,7 +6,7 @@ import { Store } from '@ngxs/store';
 import { VoiceRecorderComponent } from 'src/app/shared/components/ui-elements/speech-recorder/voice-recorder.component';
 import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import { MbTaskScreenAction } from '../../mb-task-screen.actions';
-import { VoiceInputState } from './voice-input.state';
+import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice-input.state';
 
 @Component({
   selector: 'ba-task-voice-mic-button',

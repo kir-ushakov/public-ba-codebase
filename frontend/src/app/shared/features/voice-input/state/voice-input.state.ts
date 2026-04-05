@@ -27,10 +27,10 @@ export class VoiceInputState {
     ctx.setState(defaults);
   }
 
-  @Action(VoiceInputAction.VoiceToTextConvertingSet)
-  voiceToTextConvertingSet(
+  @Action(VoiceInputAction.VoiceToTextConvertingStatusSet)
+  voiceToTextConvertingStatusSet(
     ctx: StateContext<IVoiceInputStateModel>,
-    { converting }: VoiceInputAction.VoiceToTextConvertingSet,
+    { converting }: VoiceInputAction.VoiceToTextConvertingStatusSet,
   ): void {
     ctx.patchState({ voiceToTextConverting: converting });
   }
