@@ -2,25 +2,38 @@ import { Injectable } from '@angular/core';
 
 const DEFAULT_AUDIO_MIME = 'audio/webm';
 
+/** High-level lifecycle of a single recording attempt (decoupled from async `MediaRecorder` transitions). */
+export enum VoiceRecorderSessionState {
+  Idle = 'idle',
+  Starting = 'starting',
+  Recording = 'recording',
+  Stopping = 'stopping',
+}
+
 @Injectable({ providedIn: 'root' })
 export class VoiceRecorderService {
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
   private stream: MediaStream | undefined;
-  private _isRecording = false;
+  private sessionState = VoiceRecorderSessionState.Idle;
   private abortController: AbortController | null = null;
   private activeMimeType = '';
   /** `reject` from the in-flight `stopRecording()` promise, if any */
   private stopRecordingReject: ((reason: Error) => void) | null = null;
 
+  get recordingSessionState(): VoiceRecorderSessionState {
+    return this.sessionState;
+  }
+
   get isRecording(): boolean {
-    return this._isRecording;
+    return this.sessionState === VoiceRecorderSessionState.Recording;
   }
 
   async startRecording(): Promise<void> {
     this.abortController?.abort();
     const abortController = new AbortController();
     this.abortController = abortController;
+    this.sessionState = VoiceRecorderSessionState.Starting;
 
     const constraints: MediaStreamConstraints & { signal?: AbortSignal } = {
       audio: true,
@@ -45,6 +58,11 @@ export class VoiceRecorderService {
 
   stopRecording(): Promise<Blob> {
     return new Promise((resolve, reject) => {
+      if (this.sessionState !== VoiceRecorderSessionState.Recording) {
+        reject(new Error('Not recording'));
+        return;
+      }
+
       const recorder = this.mediaRecorder;
       if (!recorder || recorder.state === 'inactive') {
         reject(new Error('Not recording'));
@@ -63,7 +81,7 @@ export class VoiceRecorderService {
       };
 
       recorder.stop();
-      this._isRecording = false;
+      this.sessionState = VoiceRecorderSessionState.Stopping;
     });
   }
 
@@ -73,6 +91,7 @@ export class VoiceRecorderService {
 
     const recorder = this.mediaRecorder;
     if (recorder && recorder.state !== 'inactive') {
+      this.sessionState = VoiceRecorderSessionState.Stopping;
       recorder.onstop = () => {
         this.audioChunks = [];
         this.releaseMedia();
@@ -81,7 +100,6 @@ export class VoiceRecorderService {
     } else {
       this.releaseMedia();
     }
-    this._isRecording = false;
   }
 
   private static pickRecorderMimeType(): string | undefined {
@@ -121,12 +139,11 @@ export class VoiceRecorderService {
       this.failPendingStop(
         new Error(VoiceRecorderService.recorderErrorMessage(recorder)),
       );
-      this._isRecording = false;
       this.releaseMedia();
     };
 
     recorder.start();
-    this._isRecording = true;
+    this.sessionState = VoiceRecorderSessionState.Recording;
   }
 
   /** Rejects the `stopRecording()` promise if `stopRecording()` was called and we are still waiting. */
@@ -145,5 +162,6 @@ export class VoiceRecorderService {
     this.abortController = null;
     this.mediaRecorder = null;
     this.activeMimeType = '';
+    this.sessionState = VoiceRecorderSessionState.Idle;
   }
 }
