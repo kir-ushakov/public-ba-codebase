@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import type { StateContext } from '@ngxs/store';
 import { Action, Selector, State, Store } from '@ngxs/store';
 import { VoiceInputAction } from './voice-input.actions';
-import { VoiceRecordingService } from '../voice-recording.service';
+import { VoiceRecordingFacade } from '../voice-recording.facade';
 import { SpeechToTextService } from 'src/app/shared/services/api/speech-to-text.service';
 import { firstValueFrom } from 'rxjs';
 import { AppAction } from 'src/app/shared/state/app.actions';
@@ -22,7 +22,7 @@ const defaults: IVoiceInputStateModel = {
 @Injectable()
 export class VoiceInputState {
   private readonly store = inject(Store);
-  private readonly voiceRecordingService = inject(VoiceRecordingService);
+  private readonly voiceRecordingFacade = inject(VoiceRecordingFacade);
   private readonly speechToTextService = inject(SpeechToTextService);
 
   @Selector()
@@ -38,13 +38,13 @@ export class VoiceInputState {
   @Action(VoiceInputAction.StopRecordingAndConvertToText)
   async stopRecordingAndConvertToText(ctx: StateContext<IVoiceInputStateModel>): Promise<void> {
     try {
-      if (!this.voiceRecordingService.isRecording) {
+      if (!this.voiceRecordingFacade.isRecording) {
         return;
       }
 
       ctx.patchState({ voiceToTextConverting: true });
 
-      const record: Blob = await this.voiceRecordingService.stopRecording();
+      const record: Blob = await this.voiceRecordingFacade.stopRecording();
       const result = await firstValueFrom(this.speechToTextService.uploadAudio(record));
 
       ctx.patchState({ voiceToTextConverting: false });
@@ -59,7 +59,7 @@ export class VoiceInputState {
 
   @Action(VoiceInputAction.CancelRecording)
   cancelRecording(ctx: StateContext<IVoiceInputStateModel>): void {
-    this.voiceRecordingService.cancelRecording();
+    this.voiceRecordingFacade.cancelRecording();
     ctx.patchState({ voiceToTextConverting: false });
   }
 

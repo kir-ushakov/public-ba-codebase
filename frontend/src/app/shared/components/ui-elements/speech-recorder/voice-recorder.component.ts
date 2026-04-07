@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MicIconComponent } from './mic-icon/mic-icon.component';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngxs/store';
-import { VoiceRecorderService } from 'src/app/shared/services/pwa/voice-recorder.service';
+import { VoiceRecordingFacade } from 'src/app/shared/features/voice-input/voice-recording.facade';
 import { AppAction } from 'src/app/shared/state/app.actions';
 
 const DEFAULT_MIC_COLOR = 'rgba(0, 255, 0, 0.7)';
@@ -26,7 +26,7 @@ export class VoiceRecorderComponent {
   readonly canceled = output<void>();
 
   readonly dialogRef = inject(MatDialogRef<VoiceRecorderComponent>);
-  private readonly voiceRecorderService = inject(VoiceRecorderService);
+  private readonly voiceRecordingFacade = inject(VoiceRecordingFacade);
   private readonly store = inject(Store);
 
   radius = CIRCLE_RADIUS;
@@ -47,9 +47,19 @@ export class VoiceRecorderComponent {
     void this.beginSessionAfterMicReady();
   }
 
+  stopRecording(): void {
+    this.stopped.emit();
+    this.finalize();
+  }
+
+  cancel(): void {
+    this.canceled.emit();
+    this.finalize();
+  }
+
   private async beginSessionAfterMicReady(): Promise<void> {
     try {
-      await this.voiceRecorderService.startRecording();
+      await this.voiceRecordingFacade.startRecording();
       this.startRecordingUi();
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -67,16 +77,6 @@ export class VoiceRecorderComponent {
   private startRecordingUi(duration = RECORDING_DURATION): void {
     this.animateProgress(duration);
     this.recordingTimeout = window.setTimeout(() => this.stopRecording(), duration);
-  }
-
-  stopRecording(): void {
-    this.stopped.emit();
-    this.finalize();
-  }
-
-  cancel(): void {
-    this.canceled.emit();
-    this.finalize();
   }
 
   private animateProgress(duration: number): void {
