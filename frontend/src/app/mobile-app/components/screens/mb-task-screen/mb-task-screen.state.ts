@@ -8,9 +8,6 @@ import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
 import { AppAction } from 'src/app/shared/state/app.actions';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
-import { SpeechToTextService } from 'src/app/shared/services/api/speech-to-text.service';
-import { VoiceRecorderService } from 'src/app/shared/services/pwa/voice-recorder.service';
-import { firstValueFrom } from 'rxjs';
 import type { ITaskEditFormData } from './mb-task-edit/mb-task-edit.component.interface';
 import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { ImageService } from 'src/app/shared/services/application/image.service';
@@ -54,8 +51,6 @@ const defaults = {
 export class MbTaskScreenState {
   private readonly store = inject(Store);
   private readonly deviceCameraService = inject(DeviceCameraService);
-  private readonly voiceRecorderService = inject(VoiceRecorderService);
-  private readonly speechToTextService = inject(SpeechToTextService);
   private readonly imageService = inject(ImageService);
 
   @Selector()
@@ -225,38 +220,6 @@ export class MbTaskScreenState {
         status: valid,
       },
     });
-  }
-
-  @Action(MbTaskScreenAction.StopVoiceRecording)
-  async stopVoiceRecording(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
-    try {
-      if (!this.voiceRecorderService.isRecording) {
-        return;
-      }
-      const record: Blob = await this.voiceRecorderService.stopRecording();
-      ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingStatusSet(true));
-      const result = await firstValueFrom(this.speechToTextService.uploadAudio(record));
-      ctx.dispatch(new MbTaskScreenAction.VoiceConvertedToTextSuccessful(result.transcript));
-    } catch (error) {
-      console.error(error);
-      ctx.dispatch(MbTaskScreenAction.VoiceConvertedToTextFailed);
-    }
-  }
-
-  @Action(MbTaskScreenAction.CancelVoiceRecording)
-  cancelVoiceRecording(): void {
-    this.voiceRecorderService.cancelRecording();
-  }
-
-  @Action(MbTaskScreenAction.VoiceConvertedToTextSuccessful)
-  voiceConvertedToTextSuccessful(ctx: StateContext<IMbTaskScreenStateModel>): void {
-    ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingStatusSet(false));
-  }
-
-  @Action(MbTaskScreenAction.VoiceConvertedToTextFailed)
-  voiceConvertedToTextFailed(ctx: StateContext<IMbTaskScreenStateModel>): void {
-    ctx.dispatch(new VoiceInputAction.VoiceToTextConvertingStatusSet(false));
-    ctx.dispatch(new AppAction.ShowErrorInUI('Voice Conversion To Text Failed'));
   }
 
   private updateAndClose(

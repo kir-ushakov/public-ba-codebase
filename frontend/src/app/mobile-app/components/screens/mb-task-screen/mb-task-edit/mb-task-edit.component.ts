@@ -10,6 +10,7 @@ import { debounceTime } from 'rxjs';
 import type { Observable } from 'rxjs';
 import { MbTaskScreenState } from '../mb-task-screen.state';
 import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice-input.state';
+import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
@@ -90,7 +91,7 @@ export class MbTaskEditComponent {
 
     this.actions$
       .pipe(
-        ofActionDispatched(MbTaskScreenAction.VoiceConvertedToTextSuccessful),
+        ofActionDispatched(VoiceInputAction.VoiceToTextConvertedSuccessfully),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((payload: { text: string }) => {
