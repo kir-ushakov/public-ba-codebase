@@ -8,7 +8,6 @@
 .mic-icon-button {
   border: none;
   background: none;
-  // Prevent keyboard from showing on mobile when mic is clicked
   touch-action: manipulation;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -30,12 +29,11 @@
   cursor: pointer;
   width: auto;
   height: auto;
-  // Prevent text selection and keyboard
   pointer-events: auto;
   -webkit-tap-highlight-color: transparent;
 }
 
-// Shown while voice-to-text is converting (replaces mic in template)
+
 .dots-suffix {
   display: flex;
   align-items: center;
@@ -43,7 +41,7 @@
   padding-right: 0.5rem;
 }
 
-// Tiny circles; shared loop, staggered via nth-child delays below
+
 .dot {
   width: 0.3125rem;
   height: 0.3125rem;
@@ -60,7 +58,6 @@
   animation-delay: 0.4s;
 }
 
-// Subtle pulse: dip at rest / ends of cycle, peak mid-cycle
 @keyframes jump {
   0%,
   80%,

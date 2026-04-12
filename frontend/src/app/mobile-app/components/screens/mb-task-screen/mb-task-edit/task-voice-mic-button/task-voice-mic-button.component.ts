@@ -25,7 +25,7 @@ export class TaskVoiceMicButtonComponent {
   // emit on recording stop
   readonly recordingStopped = output<void>();
 
-  // select voice-to-text converting state from store
+  // converting flag from store — drives template (mic vs animated dots)
   readonly voiceToTextConverting$ = inject(Store).select(
     VoiceInputState.voiceToTextConverting,
   );
