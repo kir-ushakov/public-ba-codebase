@@ -7,7 +7,14 @@ import { VoiceRecorderComponent } from 'src/app/shared/components/ui-elements/sp
 import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice-input.state';
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
-
+/**
+ * #VOICE-INPUT-WITH-AI__FE__TRIGGER-BUTTON:
+ * #VIWAI_FE_TRIGGER-BUTTON:
+ *
+ * Mic trigger button component: opens the recorder dialog, wires dialog events to
+ * the voice-input state, reflects processing via UI state/animation, and emits a
+ * completion event back to the parent.
+ */
 @Component({
   selector: 'ba-task-voice-mic-button',
   imports: [CommonModule, MatButtonModule, MatIconModule],
@@ -15,8 +22,10 @@ import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voic
   styleUrl: './task-voice-mic-button.component.scss',
 })
 export class TaskVoiceMicButtonComponent {
+  // emit on recording stop
   readonly recordingStopped = output<void>();
 
+  // select voice-to-text converting state from store
   readonly voiceToTextConverting$ = inject(Store).select(
     VoiceInputState.voiceToTextConverting,
   );
@@ -24,17 +33,22 @@ export class TaskVoiceMicButtonComponent {
   private readonly store = inject(Store);
   private readonly dialogService = inject(DialogService);
 
+  // handle mic click — open recorder dialog
   onMicClick(event: MouseEvent): void {
     this.preventInputFocus(event);
 
+    // show voice recorder via dialog service
     const dialogRef = this.dialogService.showFullScreenDialog(VoiceRecorderComponent);
     const recorder = dialogRef.componentInstance as VoiceRecorderComponent;
 
+    // bridge recorder dialog → store + parent
     if (recorder) {
+      // user finished recording — convert to text, notify parent
       recorder.stopped.subscribe(() => {
         this.store.dispatch(VoiceInputAction.StopRecordingAndConvertToText);
         this.recordingStopped.emit();
       });
+      // user dismissed recorder — cancel without conversion
       recorder.canceled.subscribe(() => {
         this.store.dispatch(VoiceInputAction.CancelRecording);
       });
