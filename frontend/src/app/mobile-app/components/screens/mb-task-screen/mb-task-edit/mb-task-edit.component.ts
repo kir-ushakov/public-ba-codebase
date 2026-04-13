@@ -16,7 +16,7 @@ import { MatInputModule } from '@angular/material/input';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './mb-task-edit.component.interface';
 import { ViewChild, ElementRef } from '@angular/core';
-import { TaskVoiceMicButtonComponent } from './task-voice-mic-button/task-voice-mic-button.component';
+import { VoiceInputTriggerComponent } from './voice-input-trigger/voice-input-trigger.component';
 
 @Component({
   selector: 'ba-mb-task-edit',
@@ -25,7 +25,7 @@ import { TaskVoiceMicButtonComponent } from './task-voice-mic-button/task-voice-
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
-    TaskVoiceMicButtonComponent,
+    VoiceInputTriggerComponent,
     ReactiveFormsModule,
   ],
   templateUrl: './mb-task-edit.component.html',
