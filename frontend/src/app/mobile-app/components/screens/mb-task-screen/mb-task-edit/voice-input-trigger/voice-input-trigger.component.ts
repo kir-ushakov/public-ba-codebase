@@ -8,7 +8,6 @@ import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice-input.state';
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
 /**
- * #VOICE-INPUT-WITH-AI__FE__TRIGGER-BUTTON:
  * #VIWAI_FE_TRIGGER-BUTTON:
  *
  * Voice-input trigger: opens the recorder dialog, wires dialog events to the
