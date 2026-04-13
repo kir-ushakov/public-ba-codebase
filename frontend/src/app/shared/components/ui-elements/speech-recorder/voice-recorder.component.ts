@@ -6,8 +6,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MicIconComponent } from './mic-icon/mic-icon.component';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngxs/store';
-import { VoiceRecordingFacade } from 'src/app/shared/features/voice-input/voice-recording.facade';
 import { AppAction } from 'src/app/shared/state/app.actions';
+import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
+import { firstValueFrom } from 'rxjs';
 
 const DEFAULT_MIC_COLOR = 'rgba(0, 255, 0, 0.7)';
 const CIRCLE_RADIUS = 147;
@@ -26,7 +27,6 @@ export class VoiceRecorderComponent {
   readonly canceled = output<void>();
 
   readonly dialogRef = inject(MatDialogRef<VoiceRecorderComponent>);
-  private readonly voiceRecordingFacade = inject(VoiceRecordingFacade);
   private readonly store = inject(Store);
 
   radius = CIRCLE_RADIUS;
@@ -59,7 +59,7 @@ export class VoiceRecorderComponent {
 
   private async beginSessionAfterMicReady(): Promise<void> {
     try {
-      await this.voiceRecordingFacade.startRecording();
+      await firstValueFrom(this.store.dispatch(new VoiceInputAction.StartRecording()));
       this.startRecordingUi();
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {

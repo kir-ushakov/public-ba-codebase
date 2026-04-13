@@ -3,6 +3,10 @@ export namespace VoiceInputAction {
     static readonly type = '[VoiceInput] Reset';
   }
 
+  export class StartRecording {
+    static readonly type = '[VoiceInput] Start Recording';
+  }
+
   export class StopRecordingAndConvertToText {
     static readonly type = '[VoiceInput] Stop Recording And Convert To Text';
   }

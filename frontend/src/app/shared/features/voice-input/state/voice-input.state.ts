@@ -35,6 +35,23 @@ export class VoiceInputState {
     ctx.setState(defaults);
   }
 
+  @Action(VoiceInputAction.StartRecording)
+  async startRecording(): Promise<void> {
+    try {
+      await this.voiceRecordingFacade.startRecording();
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return;
+      }
+      this.store.dispatch(
+        new AppAction.ShowErrorInUI(
+          'Could not access the microphone. Check permissions and try again.',
+        ),
+      );
+      throw err;
+    }
+  }
+
   @Action(VoiceInputAction.StopRecordingAndConvertToText)
   async stopRecordingAndConvertToText(ctx: StateContext<IVoiceInputStateModel>): Promise<void> {
     try {
