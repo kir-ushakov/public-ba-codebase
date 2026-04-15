@@ -16,7 +16,7 @@ import { MatInputModule } from '@angular/material/input';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './mb-task-edit.component.interface';
 import { ViewChild, ElementRef } from '@angular/core';
-import { VoiceInputTriggerComponent } from './voice-input-trigger/voice-input-trigger.component';
+import { VoiceInputTriggerComponent } from 'src/app/shared/features/voice-input/components/voice-input-trigger/voice-input-trigger.component';
 
 @Component({
   selector: 'ba-mb-task-edit',
