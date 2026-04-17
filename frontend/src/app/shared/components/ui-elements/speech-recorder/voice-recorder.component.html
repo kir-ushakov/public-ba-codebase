@@ -5,23 +5,10 @@
     height: radiusCssValue,
   }"
 >
-  <svg class="progress-ring" [attr.viewBox]="'0 0 ' + 2 * radius + ' ' + 2 * radius">
-    <defs>
-      <filter id="blurFilter" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" />
-      </filter>
-    </defs>
-    <circle
-      #progressCircle
-      class="progress-ring__circle"
-      [attr.cx]="radius"
-      [attr.cy]="radius"
-      [attr.r]="radius"
-      stroke-width="3"
-      fill="none"
-      filter="url(#blurFilter)"
-    />
-  </svg>
+  <ba-progress-ring
+    [duration]="recordingDuration"
+    (colorChange)="micColor.set($event)"
+  />
   <div
     class="mic-icon-wrapper"
     [ngStyle]="{

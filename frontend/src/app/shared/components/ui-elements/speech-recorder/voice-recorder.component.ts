@@ -1,9 +1,9 @@
 import { Component, inject, output, signal, ViewChild } from '@angular/core';
-import type { ElementRef } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MicIconComponent } from './mic-icon/mic-icon.component';
+import { ProgressRingComponent } from './progress-ring/progress-ring.component';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngxs/store';
 import { AppAction } from 'src/app/shared/state/app.actions';
@@ -16,12 +16,12 @@ const RECORDING_DURATION = 10000;
 
 @Component({
   selector: 'ba-voice-recorder',
-  imports: [CommonModule, MatIconModule, MatButtonModule, MicIconComponent],
+  imports: [CommonModule, MatIconModule, MatButtonModule, MicIconComponent, ProgressRingComponent],
   templateUrl: './voice-recorder.component.html',
   styleUrl: './voice-recorder.component.scss',
 })
 export class VoiceRecorderComponent {
-  @ViewChild('progressCircle', { static: false }) circleRef!: ElementRef<SVGCircleElement>;
+  @ViewChild(ProgressRingComponent) private progressRing?: ProgressRingComponent;
 
   readonly stopped = output<void>();
   readonly canceled = output<void>();
@@ -31,6 +31,7 @@ export class VoiceRecorderComponent {
 
   radius = CIRCLE_RADIUS;
   micColor = signal(DEFAULT_MIC_COLOR);
+  readonly recordingDuration = RECORDING_DURATION;
 
   get radiusCssValue(): string {
     return `clamp(60px, 40vw, ${this.radius}px)`;
@@ -40,8 +41,8 @@ export class VoiceRecorderComponent {
     return `clamp(60px, 40vw, ${this.radius / 2}px)`;
   }
 
-  private animationFrame: number | null = null;
   private recordingTimeout: number | null = null;
+  private isFinalized = false;
 
   ngAfterViewInit(): void {
     void this.beginSessionAfterMicReady();
@@ -75,44 +76,15 @@ export class VoiceRecorderComponent {
   }
 
   private startRecordingUi(duration = RECORDING_DURATION): void {
-    this.animateProgress(duration);
+    this.progressRing?.start();
     this.recordingTimeout = window.setTimeout(() => this.stopRecording(), duration);
   }
 
-  private animateProgress(duration: number): void {
-    const circle = this.circleRef.nativeElement;
-    const totalLength = 2 * Math.PI * this.radius;
-    circle.style.strokeDasharray = `${totalLength}`;
-    circle.style.strokeDashoffset = `${totalLength}`;
-
-    const start = performance.now();
-
-    const animate = (now: number): void => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-
-      circle.style.strokeDashoffset = progress >= 1 ? '0' : `${totalLength * (1 - progress)}`;
-
-      const MAX_RGB_COLOR_VALUE = 255;
-      const red = Math.round(MAX_RGB_COLOR_VALUE * progress);
-      const green = Math.round(MAX_RGB_COLOR_VALUE * (1 - progress));
-      circle.style.stroke = `rgb(${red}, ${green}, 0)`;
-
-      this.micColor.set(`rgb(${red}, ${green}, 0)`);
-
-      if (progress < 1) {
-        this.animationFrame = requestAnimationFrame(animate);
-      }
-    };
-
-    this.animationFrame = requestAnimationFrame(animate);
-  }
-
   private finalize(): void {
-    if (this.animationFrame) {
-      cancelAnimationFrame(this.animationFrame);
-      this.animationFrame = null;
-    }
+    if (this.isFinalized) return;
+    this.isFinalized = true;
+
+    this.progressRing?.stop();
     if (this.recordingTimeout) {
       clearTimeout(this.recordingTimeout);
       this.recordingTimeout = null;
