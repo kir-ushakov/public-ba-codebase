@@ -8,6 +8,9 @@
 .voice-input-trigger-button {
   border: none;
   background: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   touch-action: manipulation;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -27,8 +30,11 @@
 .voice-input-trigger-icon {
   font-size: 2rem;
   cursor: pointer;
-  width: auto;
-  height: auto;
+  display: block;
+  line-height: 1;
+  width: 1em;
+  height: 1em;
+  transform: translateX(-0.5px);
   pointer-events: auto;
   -webkit-tap-highlight-color: transparent;
 }
