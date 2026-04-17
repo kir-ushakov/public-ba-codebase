@@ -24,6 +24,10 @@ let nextId = 0;
  *
  * Progress ring: displays a progress ring with a customizable stroke width, duration, and blur standard deviation.
  * It emits a color change event as the progress advances.
+ *
+ * I extracted the progress ring into a separate component that renders an SVG-based progress indicator.
+ * This keeps the recording logic separate from the animation, simplifies the code, and allows the component
+ * to be modified or extended without affecting the main recording flow.
  */
 
 @Component({
