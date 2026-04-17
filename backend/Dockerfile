@@ -2,6 +2,11 @@ FROM node:20
 
 WORKDIR /app
 
+# Native deps for sharp (libvips) + entrypoint helper (gosu)
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends libvips42 gosu \
+  && rm -rf /var/lib/apt/lists/*
+
 # Copy contracts and build
 COPY contracts/ ./contracts/
 WORKDIR /app/contracts
@@ -12,11 +17,6 @@ WORKDIR /app/backend
 COPY backend/ .
 RUN npm install --verbose
 RUN npm install -g nodemon
-
-# gosu: start as root to chown Docker volumes, then run CMD as node
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends gosu \
-  && rm -rf /var/lib/apt/lists/*
 
 RUN chown -R node:node /app
 
