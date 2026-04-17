@@ -14,6 +14,17 @@ const DEFAULT_MIC_COLOR = 'rgba(0, 255, 0, 0.7)';
 const CIRCLE_RADIUS = 147;
 const RECORDING_DURATION = 10000;
 
+/**
+ * #VIWAI_FE_VOICE-RECORDER:
+ *
+ * Voice recorder: provides a dedicated recording screen with a minimal set of controls:
+ * “Cancel” and “Apply”, plus a visual element that shows recording progress relative to the
+ * maximum allowed voice-message length.
+ *
+ * The UI (controls + progress visualization) is extracted into a separate screen component,
+ * while this component coordinates the recording session and emits events for apply/cancel.
+ */
+
 @Component({
   selector: 'ba-voice-recorder',
   imports: [CommonModule, MatIconModule, MatButtonModule, MicIconComponent, ProgressRingComponent],
