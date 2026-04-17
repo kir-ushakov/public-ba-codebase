@@ -11,7 +11,6 @@ import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voic
 import { firstValueFrom } from 'rxjs';
 
 const DEFAULT_MIC_COLOR = 'rgba(0, 255, 0, 0.7)';
-const CIRCLE_RADIUS = 147;
 const RECORDING_DURATION = 10000;
 
 /**
@@ -40,17 +39,8 @@ export class VoiceRecorderComponent {
   readonly dialogRef = inject(MatDialogRef<VoiceRecorderComponent>);
   private readonly store = inject(Store);
 
-  radius = CIRCLE_RADIUS;
   micColor = signal(DEFAULT_MIC_COLOR);
   readonly recordingDuration = RECORDING_DURATION;
-
-  get radiusCssValue(): string {
-    return `clamp(60px, 40vw, ${this.radius}px)`;
-  }
-
-  get micSizeCssValue(): string {
-    return `clamp(60px, 40vw, ${this.radius / 2}px)`;
-  }
 
   private recordingTimeout: number | null = null;
   private isFinalized = false;
@@ -69,6 +59,10 @@ export class VoiceRecorderComponent {
     this.finalize();
   }
 
+  /**
+   * Starts the recording session (requests mic access via `StartRecording`), then kicks off the progress UI.
+   * `AbortError` is treated as a user/system cancellation and should not surface as an error toast.
+   */
   private async beginSessionAfterMicReady(): Promise<void> {
     try {
       await firstValueFrom(this.store.dispatch(new VoiceInputAction.StartRecording()));
@@ -86,6 +80,10 @@ export class VoiceRecorderComponent {
     }
   }
 
+  /**
+   * Starts the UI side of recording: progress ring animation + auto-stop timer.
+   * The timer enforces the maximum allowed recording duration.
+   */
   private startRecordingUi(duration = RECORDING_DURATION): void {
     this.progressRing?.start();
     this.recordingTimeout = window.setTimeout(() => this.stopRecording(), duration);
