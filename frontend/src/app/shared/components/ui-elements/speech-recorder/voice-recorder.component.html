@@ -1,21 +1,9 @@
-<div
-  class="recording-indicator"
-  [ngStyle]="{
-    width: radiusCssValue,
-    height: radiusCssValue,
-  }"
->
+<div class="recording-indicator">
   <ba-progress-ring
     [duration]="recordingDuration"
     (colorChange)="micColor.set($event)"
   />
-  <div
-    class="mic-icon-wrapper"
-    [ngStyle]="{
-      width: micSizeCssValue,
-      height: micSizeCssValue,
-    }"
-  >
+  <div class="mic-icon-wrapper">
     <ba-mic-icon [color]="micColor()"></ba-mic-icon>
   </div>
 </div>
