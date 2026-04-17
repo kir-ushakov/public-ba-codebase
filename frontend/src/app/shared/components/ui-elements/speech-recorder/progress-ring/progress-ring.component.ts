@@ -43,7 +43,6 @@ export class ProgressRingComponent implements AfterViewInit, OnDestroy {
   @Input() strokeWidth = DEFAULT_STROKE_WIDTH;
   @Input() duration = DEFAULT_DURATION_MS;
   @Input() blurStdDev = DEFAULT_BLUR_STD_DEV;
-  @Input() radius?: number;
 
   @Output() readonly colorChange = new EventEmitter<string>();
 
@@ -61,28 +60,22 @@ export class ProgressRingComponent implements AfterViewInit, OnDestroy {
   ) {}
 
   get viewBox(): string {
-    const r = this.effectiveRadius;
+    const r = this.renderRadius;
     const size = r > 0 ? 2 * r : 0;
     return `0 0 ${size} ${size}`;
   }
 
-  private get effectiveRadius(): number {
-    return this.radius ?? this.autoRadius ?? 0;
-  }
-
   // used by template bindings (cx/cy/r)
   get renderRadius(): number {
-    return this.effectiveRadius;
+    return this.autoRadius ?? 0;
   }
 
   ngAfterViewInit(): void {
-    if (this.radius == null) {
-      this.setupResizeObserver();
-    }
+    this.setupResizeObserver();
   }
 
   start(): void {
-    const radius = this.effectiveRadius;
+    const radius = this.renderRadius;
     if (!radius) {
       // radius may arrive later via ResizeObserver; start then
       this.pendingStart = true;
@@ -134,6 +127,10 @@ export class ProgressRingComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  // Derive the ring radius from the host element size.
+  // ResizeObserver callbacks run outside Angular, so we re-enter the Angular zone to update state
+  // and trigger change detection. If `start()` ran before we had a non-zero radius, `pendingStart`
+  // defers the animation until the first valid measurement arrives.
   private setupResizeObserver(): void {
     this.resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
@@ -146,7 +143,7 @@ export class ProgressRingComponent implements AfterViewInit, OnDestroy {
         this.autoRadius = Math.max(size / 2 - stroke / 2, 0);
         this.cdr.markForCheck();
 
-        if (this.pendingStart && this.animationFrame === null && this.effectiveRadius > 0) {
+        if (this.pendingStart && this.animationFrame === null && this.renderRadius > 0) {
           this.start();
         }
       });
