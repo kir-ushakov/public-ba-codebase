@@ -11,8 +11,8 @@ export type VoiceRecorderEngine = 'media-recorder' | 'web-audio-wav';
  *
  * `WebVoiceRecorder` owns the stream (start/stop tracks, abort). A strategy only wires **how**
  * audio is turned into a {@link Blob}:
- * - **MediaRecorder** — container bitstream when the browser supports it (e.g. WebM/Opus).
- * - **WebAudio → WAV** — PCM capture + WAV encoding when `MediaRecorder` is missing or unusable
+ * - **MediaRecorder** — preferred when the browser can record (e.g. WebM/Opus).
+ * - **WebAudio → WAV** — fallback when `MediaRecorder` is missing or cannot be constructed.
  *   (common on some Safari/iOS setups).
  *
  * See {@link IWebRecordingStrategy.dispose} for what is released vs. what the facade owns.
