@@ -1,8 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  VoiceRecorderService,
-  VoiceRecorderSessionState,
-} from 'src/app/shared/services/pwa/voice-recorder.service';
+import { VoiceRecorderService } from 'src/app/shared/services/pwa/voice-recorder';
 
 /**
  * Facade from the voice-input feature to PWA audio capture.
@@ -16,20 +13,16 @@ export class VoiceRecordingFacade {
     return this.recorder.isRecording;
   }
 
-  get recordingSessionState(): VoiceRecorderSessionState {
-    return this.recorder.recordingSessionState;
-  }
-
   startRecording(): Promise<void> {
-    return this.recorder.startRecording();
+    return this.recorder.start();
   }
 
   stopRecording(): Promise<Blob> {
-    return this.recorder.stopRecording();
+    return this.recorder.stop();
   }
 
   cancelRecording(): void {
-    this.recorder.cancelRecording();
+    this.recorder.cancel();
   }
 }
 
