@@ -36,9 +36,12 @@ export class VoiceRecorderService implements IVoiceRecorder {
       throw new Error('Not recording');
     }
     this.state = VoiceRecorderState.Stopping;
-    const blob = await this.impl.stop();
-    this.state = VoiceRecorderState.Idle;
-    return blob;
+    try {
+      const blob = await this.impl.stop();
+      return blob;
+    } finally {
+      this.state = VoiceRecorderState.Idle;
+    }
   }
 
   cancel(): void {
