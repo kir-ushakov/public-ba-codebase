@@ -1,5 +1,4 @@
 import type { IWebRecordingStrategy, VoiceRecorderEngine } from '../impl/web-voice-recorder';
-import { logAndPreviewRecordedBlob } from '../log-and-preview-recorded-blob';
 
 /** Hard cap (~10 min mono @48kHz) — avoids unbounded RAM if the tab is left recording. */
 const MAX_PCM_SAMPLES = 48_000 * 600;
@@ -158,14 +157,6 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
     }
 
     const blob = this.encodeWavFromBuffer(this.pcmBuffer, this.pcmSampleCount, rate);
-    const audioDurationSec =
-      this.pcmSampleCount > 0 ? Math.round((this.pcmSampleCount / rate) * 1000) / 1000 : 0;
-    logAndPreviewRecordedBlob(blob, {
-      engine: 'web-audio-wav',
-      sampleRate: rate,
-      pcmSamples: this.pcmSampleCount,
-      audioDurationSec,
-    });
     this.disposeGraph();
     return blob;
   }
