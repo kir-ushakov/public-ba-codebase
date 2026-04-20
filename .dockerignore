@@ -1,0 +1,3 @@
+# Avoid copying host node_modules into images (overwrites clean installs; often incomplete vs lockfile).
+**/node_modules
+**/.angular/cache
