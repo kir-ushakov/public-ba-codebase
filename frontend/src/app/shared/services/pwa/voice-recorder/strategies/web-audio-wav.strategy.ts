@@ -1,29 +1,19 @@
 import type { IWebRecordingStrategy, VoiceRecorderEngine } from '../impl/web-voice-recorder';
+import { logAndPreviewRecordedBlob } from '../log-and-preview-recorded-blob';
 
 /** Hard cap (~10 min mono @48kHz) — avoids unbounded RAM if the tab is left recording. */
 const MAX_PCM_SAMPLES = 48_000 * 600;
 
 function createAudioContext(AudioCtx: typeof AudioContext): AudioContext {
-  try {
-    return new AudioCtx({ sampleRate: 44_100 });
-  } catch {
-    return new AudioCtx();
-  }
-}
-
-function logBlobCreated(blob: Blob, extra: Record<string, unknown>): void {
-  console.log('[voice-recorder] blob created', {
-    engine: 'web-audio-wav',
-    type: blob.type,
-    sizeBytes: blob.size,
-    sizeKB: Math.round((blob.size / 1024) * 100) / 100,
-    sizeMB: Math.round((blob.size / (1024 * 1024)) * 100) / 100,
-    ...extra,
-  });
+  // Prefer the device/browser default sample rate. Forcing a non-native rate can trigger
+  // resampling and occasionally audible glitches on some platforms.
+  return new AudioCtx();
 }
 
 export class WebAudioWavStrategy implements IWebRecordingStrategy {
   readonly engine: VoiceRecorderEngine = 'web-audio-wav';
+  /** Audio to discard at the beginning; UI countdown starts after this period. */
+  readonly warmupMs: number;
 
   private audioContext: AudioContext | null = null;
   private source: MediaStreamAudioSourceNode | null = null;
@@ -32,10 +22,23 @@ export class WebAudioWavStrategy implements IWebRecordingStrategy {
   private pcmBuffer: Float32Array | null = null;
   private pcmSampleCount = 0;
   private pcmOverflow = false;
+  /**
+   * Ignore late worklet/script callbacks after stop/dispose.
+   * WebAudio can deliver a final `onmessage`/`onaudioprocess` after we disconnect/close.
+   */
+  private active = false;
+  /** Remaining samples to drop from the beginning (derived from `warmupMs` and sampleRate). */
+  private discardRemainingSamples = 0;
 
-  constructor(private readonly stream: MediaStream) {}
+  constructor(
+    private readonly stream: MediaStream,
+    warmupMs: number,
+  ) {
+    this.warmupMs = Math.max(0, warmupMs);
+  }
 
   async start(): Promise<void> {
+    this.active = false;
     const AudioCtx =
       (window as unknown as { AudioContext?: typeof AudioContext }).AudioContext ??
       (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -45,12 +48,22 @@ export class WebAudioWavStrategy implements IWebRecordingStrategy {
     }
 
     this.audioContext = createAudioContext(AudioCtx);
+    // Best-effort: some browsers keep AudioContext suspended until a user gesture.
+    // If resume is blocked, we continue; capture may still work via the mic stream.
+    try {
+      await this.audioContext.resume();
+    } catch {
+      /* ignore */
+    }
     this.source = this.audioContext.createMediaStreamSource(this.stream);
     this.pcmBuffer = null;
     this.pcmSampleCount = 0;
     this.pcmOverflow = false;
+    this.discardRemainingSamples = 0;
 
     const ctx = this.audioContext;
+    // Convert warm-up milliseconds → samples, so we can drop exact PCM samples.
+    this.discardRemainingSamples = Math.round((ctx.sampleRate * this.warmupMs) / 1000);
 
     if (ctx.audioWorklet && typeof AudioWorkletNode !== 'undefined') {
       const workletCode = `
@@ -58,7 +71,10 @@ class PcmCaptureProcessor extends AudioWorkletProcessor {
   process(inputs) {
     const input = inputs && inputs[0] && inputs[0][0];
     if (input && input.length) {
-      this.port.postMessage(input);
+      // Copy: render quantum buffers may be reused after \`process\` returns.
+      const copy = new Float32Array(input.length);
+      copy.set(input);
+      this.port.postMessage(copy);
     }
     return true;
   }
@@ -73,13 +89,15 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
       try {
         await ctx.audioWorklet.addModule(moduleUrl);
       } finally {
-        // Revoke next tick: some Safari / older Chromium race addModule vs. blob URL teardown.
         const url = moduleUrl;
         setTimeout(() => URL.revokeObjectURL(url), 0);
       }
 
       const node = new AudioWorkletNode(ctx, 'pcm-capture');
       node.port.onmessage = (event: MessageEvent<Float32Array>) => {
+        if (!this.active) {
+          return;
+        }
         const input = event.data;
         this.appendPcmCopy(input);
       };
@@ -91,6 +109,7 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
       this.source.connect(node);
       node.connect(this.silenceGain);
       this.silenceGain.connect(ctx.destination);
+      this.active = true;
       return;
     }
 
@@ -105,19 +124,22 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
       throw new Error('No supported WebAudio capture node available');
     }
 
-    console.warn(
-      '[voice-recorder] using deprecated ScriptProcessor (main thread); prefer AudioWorklet for lower latency',
-    );
-
     (processor as unknown as { onaudioprocess?: (e: AudioProcessingEvent) => void }).onaudioprocess =
       e => {
+        if (!this.active) {
+          return;
+        }
         const input = e.inputBuffer.getChannelData(0);
         this.appendPcmCopy(input);
       };
 
     this.captureNode = processor;
+    this.silenceGain = ctx.createGain();
+    this.silenceGain.gain.value = 0;
     this.source.connect(processor);
-    processor.connect(ctx.destination);
+    processor.connect(this.silenceGain);
+    this.silenceGain.connect(ctx.destination);
+    this.active = true;
   }
 
   async stop(): Promise<Blob> {
@@ -136,7 +158,14 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
     }
 
     const blob = this.encodeWavFromBuffer(this.pcmBuffer, this.pcmSampleCount, rate);
-    logBlobCreated(blob, { sampleRate: rate, pcmSamples: this.pcmSampleCount });
+    const audioDurationSec =
+      this.pcmSampleCount > 0 ? Math.round((this.pcmSampleCount / rate) * 1000) / 1000 : 0;
+    logAndPreviewRecordedBlob(blob, {
+      engine: 'web-audio-wav',
+      sampleRate: rate,
+      pcmSamples: this.pcmSampleCount,
+      audioDurationSec,
+    });
     this.disposeGraph();
     return blob;
   }
@@ -146,6 +175,7 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
   }
 
   private disposeGraph(): void {
+    this.active = false;
     this.source?.disconnect();
     this.captureNode?.disconnect();
     this.silenceGain?.disconnect();
@@ -159,19 +189,33 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
     this.pcmBuffer = null;
     this.pcmSampleCount = 0;
     this.pcmOverflow = false;
+    this.discardRemainingSamples = 0;
   }
 
   private appendPcmCopy(chunk: Float32Array): void {
     if (this.pcmOverflow) {
       return;
     }
-    const nextCount = this.pcmSampleCount + chunk.length;
+
+    // Drop warm-up samples (do NOT include them in the final WAV).
+    let start = 0;
+    if (this.discardRemainingSamples > 0) {
+      const toDrop = Math.min(this.discardRemainingSamples, chunk.length);
+      this.discardRemainingSamples -= toDrop;
+      start = toDrop;
+      if (start >= chunk.length) {
+        return;
+      }
+    }
+    const usable = start > 0 ? chunk.subarray(start) : chunk;
+
+    const nextCount = this.pcmSampleCount + usable.length;
     if (nextCount > MAX_PCM_SAMPLES) {
       this.pcmOverflow = true;
       return;
     }
     this.ensurePcmCapacity(nextCount);
-    this.pcmBuffer!.set(chunk, this.pcmSampleCount);
+    this.pcmBuffer!.set(usable, this.pcmSampleCount);
     this.pcmSampleCount = nextCount;
   }
 
