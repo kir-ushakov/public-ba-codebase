@@ -19,6 +19,16 @@ export type VoiceRecorderEngine = 'media-recorder' | 'web-audio-wav';
  */
 export interface IWebRecordingStrategy {
   readonly engine: VoiceRecorderEngine;
+  /**
+   * Optional "warm-up" time before the capture is considered stable.
+   *
+   * On some Windows stacks (communications processing / driver DSP), the first ~1s after mic
+   * activation can have a noticeable level/quality shift. We treat that period as warm-up:
+   * - UI should not start the "max duration" countdown yet.
+   * - Some strategies may discard audio during warm-up (e.g. PCM capture), while others simply
+   *   delay starting the actual encoder (e.g. MediaRecorder).
+   */
+  readonly warmupMs: number;
   start(): Promise<void>;
   stop(): Promise<Blob>;
   dispose(): void;
@@ -29,6 +39,12 @@ export interface IWebRecordingStrategy {
  * ({@link MediaRecorderStrategy} or {@link WebAudioWavStrategy}).
  */
 export class WebVoiceRecorder implements IVoiceRecorder {
+  /**
+   * Warm-up window to avoid capturing the initial "unstable" mic second on some stacks.
+   * Implemented as delay-start: audio during this window does not enter the final blob.
+   */
+  private static readonly WARMUP_MS = 700;
+
   private stream: MediaStream | null = null;
   private abortController: AbortController | null = null;
   private strategy: IWebRecordingStrategy | null = null;
@@ -39,13 +55,27 @@ export class WebVoiceRecorder implements IVoiceRecorder {
     const abortController = new AbortController();
     this.abortController = abortController;
 
-    const constraints: MediaStreamConstraints & { signal?: AbortSignal } = {
-      audio: true,
-      signal: abortController.signal,
-    };
-
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+      // Request browser DSP for voice capture (best-effort; not guaranteed on all devices/browsers).
+      // We fall back to `audio: true` if the browser rejects advanced constraints.
+      const preferred: MediaStreamConstraints & { signal?: AbortSignal } = {
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+        },
+        signal: abortController.signal,
+      };
+      try {
+        this.stream = await navigator.mediaDevices.getUserMedia(preferred);
+      } catch {
+        const fallback: MediaStreamConstraints & { signal?: AbortSignal } = {
+          audio: true,
+          signal: abortController.signal,
+        };
+        this.stream = await navigator.mediaDevices.getUserMedia(fallback);
+      }
     } catch (e) {
       this.releaseAll();
       throw e;
@@ -56,10 +86,39 @@ export class WebVoiceRecorder implements IVoiceRecorder {
       return;
     }
 
+    // Warm-up: on some Windows audio stacks the first ~1s after mic activation can contain an audible dip.
+    // We treat it as a warm-up period: UI countdown starts after it; the captured blob excludes it.
+    const warmupMs = WebVoiceRecorder.WARMUP_MS;
+
+    // Strategy selection:
+    // - Prefer MediaRecorder when available (small, browser-native codecs like WebM/Opus).
+    // - Fall back to WebAudio→WAV when MediaRecorder is missing or cannot be constructed (common on Safari/iOS).
     this.strategy =
-      MediaRecorderStrategy.tryCreate(this.stream) ?? new WebAudioWavStrategy(this.stream);
+      MediaRecorderStrategy.tryCreate(this.stream, warmupMs) ?? new WebAudioWavStrategy(this.stream, warmupMs);
 
     try {
+      // Warm-up delay before capture starts (lets the mic "stabilize").
+      // Must be cancellable: if `cancel()` happens during warm-up we abort immediately.
+      await new Promise<void>((resolve, reject) => {
+        if (abortController.signal.aborted) {
+          reject(new DOMException('Aborted', 'AbortError'));
+          return;
+        }
+
+        const t = window.setTimeout(() => {
+          abortController.signal.removeEventListener('abort', onAbort);
+          resolve();
+        }, warmupMs);
+
+        const onAbort = () => {
+          clearTimeout(t);
+          abortController.signal.removeEventListener('abort', onAbort);
+          reject(new DOMException('Aborted', 'AbortError'));
+        };
+
+        abortController.signal.addEventListener('abort', onAbort, { once: true });
+      });
+
       await this.strategy.start();
     } catch (e) {
       this.strategy.dispose();
