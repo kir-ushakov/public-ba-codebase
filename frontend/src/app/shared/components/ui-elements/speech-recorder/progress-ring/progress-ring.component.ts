@@ -90,6 +90,10 @@ export class ProgressRingComponent implements AfterViewInit, OnDestroy {
 
     const startAt = performance.now();
 
+    /** Throttle Angular-bound color updates: full rAF for SVG, rare emits so mic capture (main thread) stays free. */
+    const colorEmitEveryMs = 120;
+    let lastColorEmitAt = 0;
+
     const animate = (now: number): void => {
       const elapsed = now - startAt;
       const progress = Math.min(elapsed / this.duration, 1);
@@ -100,7 +104,11 @@ export class ProgressRingComponent implements AfterViewInit, OnDestroy {
       const green = Math.round(MAX_RGB_COLOR_VALUE * (1 - progress));
       const color = `rgb(${red}, ${green}, 0)`;
       circle.style.stroke = color;
-      this.colorChange.emit(color);
+
+      if (now - lastColorEmitAt >= colorEmitEveryMs || progress >= 1) {
+        lastColorEmitAt = now;
+        this.zone.run(() => this.colorChange.emit(color));
+      }
 
       if (progress < 1) {
         this.animationFrame = requestAnimationFrame(animate);
@@ -109,7 +117,11 @@ export class ProgressRingComponent implements AfterViewInit, OnDestroy {
       }
     };
 
-    this.animationFrame = requestAnimationFrame(animate);
+    // Recording uses WebAudio `ScriptProcessor` on the main thread when AudioWorklet is unavailable;
+    // keep this loop outside Angular to avoid zone + CD overhead every frame.
+    this.zone.runOutsideAngular(() => {
+      this.animationFrame = requestAnimationFrame(animate);
+    });
   }
 
   stop(): void {
