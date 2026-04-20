@@ -1,4 +1,5 @@
 import { VoiceRecorder } from 'capacitor-voice-recorder';
+
 import type { IVoiceRecorder } from './voice-recorder.type';
 
 export class NativeVoiceRecorder implements IVoiceRecorder {
@@ -31,14 +32,6 @@ export class NativeVoiceRecorder implements IVoiceRecorder {
 
     const mimeType = payload.mimeType?.trim() || 'audio/mp4';
     const blob = new Blob([bytes], { type: mimeType });
-    console.log('[voice-recorder] blob created', {
-      engine: 'capacitor-native',
-      type: blob.type,
-      sizeBytes: blob.size,
-      sizeKB: Math.round((blob.size / 1024) * 100) / 100,
-      sizeMB: Math.round((blob.size / (1024 * 1024)) * 100) / 100,
-      msDuration: payload.msDuration,
-    });
     return blob;
   }
 
