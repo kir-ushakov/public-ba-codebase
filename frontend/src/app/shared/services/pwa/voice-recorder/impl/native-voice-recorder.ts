@@ -1,6 +1,6 @@
 import { VoiceRecorder } from 'capacitor-voice-recorder';
 
-import type { IVoiceRecorder } from './voice-recorder.type';
+import type { IVoiceRecorder } from '../voice-recorder.interface';
 
 export class NativeVoiceRecorder implements IVoiceRecorder {
   async start(): Promise<void> {

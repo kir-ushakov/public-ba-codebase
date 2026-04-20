@@ -1,4 +1,4 @@
-import type { IVoiceRecorder } from '../voice-recorder.type';
+import type { IVoiceRecorder } from '../voice-recorder.interface';
 import { MediaRecorderStrategy } from '../strategies/media-recorder.strategy';
 import { WebAudioWavStrategy } from '../strategies/web-audio-wav.strategy';
 

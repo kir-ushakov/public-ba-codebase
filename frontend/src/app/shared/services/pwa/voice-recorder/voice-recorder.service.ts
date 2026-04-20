@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 
-import type { IVoiceRecorder } from './voice-recorder.type';
+import type { IVoiceRecorder } from './voice-recorder.interface';
 import { WebVoiceRecorder } from './impl/web-voice-recorder';
-import { NativeVoiceRecorder } from './native-voice-recorder';
+import { NativeVoiceRecorder } from './impl/native-voice-recorder';
 
 export enum VoiceRecorderState {
   Idle = 'idle',
