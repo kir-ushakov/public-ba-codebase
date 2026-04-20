@@ -1,31 +1,25 @@
 import type { IWebRecordingStrategy } from '../impl/web-voice-recorder';
 
 const DEFAULT_WEBM_MIME = 'audio/webm';
-
-function logBlobCreated(blob: Blob): void {
-  console.log('[voice-recorder] blob created', {
-    engine: 'media-recorder',
-    type: blob.type,
-    sizeBytes: blob.size,
-    sizeKB: Math.round((blob.size / 1024) * 100) / 100,
-    sizeMB: Math.round((blob.size / (1024 * 1024)) * 100) / 100,
-  });
-}
+const MEDIARECORDER_TIMESLICE_MS = 250;
 
 export class MediaRecorderStrategy implements IWebRecordingStrategy {
   readonly engine = 'media-recorder' as const;
+  readonly warmupMs: number;
 
   private mediaRecorder: MediaRecorder | null = null;
   private chunks: Blob[] = [];
   private activeMimeType = DEFAULT_WEBM_MIME;
 
-  private constructor() {}
+  private constructor(warmupMs: number) {
+    this.warmupMs = Math.max(0, warmupMs);
+  }
 
   /**
    * Returns a strategy instance if `MediaRecorder` can be constructed for this stream;
    * otherwise `null` (caller should use `WebAudioWavStrategy`).
    */
-  static tryCreate(stream: MediaStream): MediaRecorderStrategy | null {
+  static tryCreate(stream: MediaStream, warmupMs: number): MediaRecorderStrategy | null {
     if (typeof MediaRecorder === 'undefined') return null;
 
     const candidates = [
@@ -41,11 +35,15 @@ export class MediaRecorderStrategy implements IWebRecordingStrategy {
         ? new MediaRecorder(stream, { mimeType: mime })
         : new MediaRecorder(stream);
 
-      const inst = new MediaRecorderStrategy();
+      const inst = new MediaRecorderStrategy(warmupMs);
       inst.mediaRecorder = recorder;
       inst.activeMimeType = recorder.mimeType || mime || DEFAULT_WEBM_MIME;
       inst.chunks = [];
-      recorder.ondataavailable = e => inst.chunks.push(e.data);
+      recorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) {
+          inst.chunks.push(e.data);
+        }
+      };
       return inst;
     } catch {
       return null;
@@ -53,7 +51,8 @@ export class MediaRecorderStrategy implements IWebRecordingStrategy {
   }
 
   async start(): Promise<void> {
-    this.mediaRecorder?.start();
+    // Emit data in small chunks to reduce memory pressure and avoid "single giant blob" finalization quirks.
+    this.mediaRecorder?.start(MEDIARECORDER_TIMESLICE_MS);
   }
 
   stop(): Promise<Blob> {
@@ -67,7 +66,6 @@ export class MediaRecorderStrategy implements IWebRecordingStrategy {
         const blob = new Blob(this.chunks, {
           type: this.activeMimeType || recorder.mimeType || DEFAULT_WEBM_MIME,
         });
-        logBlobCreated(blob);
         this.disposeRecorderOnly();
         resolve(blob);
       };
