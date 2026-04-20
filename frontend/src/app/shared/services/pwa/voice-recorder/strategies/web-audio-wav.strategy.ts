@@ -26,8 +26,6 @@ export class WebAudioWavStrategy implements IWebRecordingStrategy {
    * WebAudio can deliver a final `onmessage`/`onaudioprocess` after we disconnect/close.
    */
   private active = false;
-  /** Remaining samples to drop from the beginning (derived from `warmupMs` and sampleRate). */
-  private discardRemainingSamples = 0;
 
   constructor(
     private readonly stream: MediaStream,
@@ -58,11 +56,7 @@ export class WebAudioWavStrategy implements IWebRecordingStrategy {
     this.pcmBuffer = null;
     this.pcmSampleCount = 0;
     this.pcmOverflow = false;
-    this.discardRemainingSamples = 0;
-
     const ctx = this.audioContext;
-    // Convert warm-up milliseconds → samples, so we can drop exact PCM samples.
-    this.discardRemainingSamples = Math.round((ctx.sampleRate * this.warmupMs) / 1000);
 
     if (ctx.audioWorklet && typeof AudioWorkletNode !== 'undefined') {
       const workletCode = `
@@ -180,7 +174,6 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
     this.pcmBuffer = null;
     this.pcmSampleCount = 0;
     this.pcmOverflow = false;
-    this.discardRemainingSamples = 0;
   }
 
   private appendPcmCopy(chunk: Float32Array): void {
@@ -188,25 +181,13 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
       return;
     }
 
-    // Drop warm-up samples (do NOT include them in the final WAV).
-    let start = 0;
-    if (this.discardRemainingSamples > 0) {
-      const toDrop = Math.min(this.discardRemainingSamples, chunk.length);
-      this.discardRemainingSamples -= toDrop;
-      start = toDrop;
-      if (start >= chunk.length) {
-        return;
-      }
-    }
-    const usable = start > 0 ? chunk.subarray(start) : chunk;
-
-    const nextCount = this.pcmSampleCount + usable.length;
+    const nextCount = this.pcmSampleCount + chunk.length;
     if (nextCount > MAX_PCM_SAMPLES) {
       this.pcmOverflow = true;
       return;
     }
     this.ensurePcmCapacity(nextCount);
-    this.pcmBuffer!.set(usable, this.pcmSampleCount);
+    this.pcmBuffer!.set(chunk, this.pcmSampleCount);
     this.pcmSampleCount = nextCount;
   }
 
