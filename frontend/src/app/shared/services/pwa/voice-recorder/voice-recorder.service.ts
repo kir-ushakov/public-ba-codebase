@@ -12,6 +12,19 @@ export enum VoiceRecorderState {
   Stopping = 'stopping',
 }
 
+/**
+ * #VIWAI_FE_VOICE-RECORDER-SERVICE:
+ *
+ * Voice recorder service: provides a single API for starting/stopping/canceling an audio
+ * recording session across platforms.
+ *
+ * Internally, it selects the appropriate implementation (native vs web) at runtime and
+ * exposes a small state machine (`VoiceRecorderState`) so UI/components can reliably
+ * react to transitions (idle → starting → recording → stopping → idle).
+ *
+ * This service also guards invalid operations (e.g. `stop()` when not recording) and
+ * guarantees that the state is reset back to `Idle` after stop/cancel.
+ */
 @Injectable({ providedIn: 'root' })
 export class VoiceRecorderService implements IVoiceRecorder {
   private readonly impl: IVoiceRecorder;
