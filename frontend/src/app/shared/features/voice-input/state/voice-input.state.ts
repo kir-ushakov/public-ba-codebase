@@ -3,7 +3,7 @@ import type { StateContext } from '@ngxs/store';
 import { Action, Selector, State, Store } from '@ngxs/store';
 import { VoiceInputAction } from './voice-input.actions';
 import { VoiceRecordingFacade } from '../voice-recording.facade';
-import { SpeechToTextService } from 'src/app/shared/services/api/speech-to-text.service';
+import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/speech-to-text.service';
 import { firstValueFrom } from 'rxjs';
 import { AppAction } from 'src/app/shared/state/app.actions';
 

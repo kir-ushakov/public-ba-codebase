@@ -26,3 +26,4 @@ export class SpeechToTextService {
     return this.http.post<{ transcript: string }>(this.VOICE_DECODE_API_ENDPOINT, formData);
   }
 }
+
