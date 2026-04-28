@@ -1,7 +1,13 @@
 import { VoiceRecorder } from 'capacitor-voice-recorder';
 
 import type { IVoiceRecorder } from '../voice-recorder.interface';
-
+/*
+ * #VIWAI_FE_NATIVE-VOICE-RECORDER:
+ *
+ * Native voice recorder: provides a native implementation of the voice recorder service.
+ *
+ * This implementation uses the Capacitor Voice Recorder plugin to record audio.
+ */
 export class NativeVoiceRecorder implements IVoiceRecorder {
   async start(): Promise<void> {
     const device = await VoiceRecorder.canDeviceVoiceRecord();

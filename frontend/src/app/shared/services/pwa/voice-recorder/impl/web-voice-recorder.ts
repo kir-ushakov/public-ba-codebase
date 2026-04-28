@@ -5,6 +5,8 @@ import { WebAudioWavStrategy } from '../strategies/web-audio-wav.strategy';
 export type VoiceRecorderEngine = 'media-recorder' | 'web-audio-wav';
 
 /**
+ * #VIWAI_FE_WEB-VOICE-RECORDER:
+ * 
  * Pluggable **web** capture implementation used after the browser already exposed a mic
  * `MediaStream` from `navigator.mediaDevices.getUserMedia()` (the stream is opened in
  * {@link WebVoiceRecorder}).

@@ -9,6 +9,22 @@ function createAudioContext(AudioCtx: typeof AudioContext): AudioContext {
   return new AudioCtx();
 }
 
+/**
+ * #VIWAI_FE_WEB-AUDIO-WAV-STRATEGY:
+ *
+ * Web audio wav strategy: provides a web implementation of the voice recorder service.
+ *
+ * This implementation uses the Web Audio API to record audio.
+ *
+ * Conceptually:
+ * - Use this as a fallback when `MediaRecorder` is unavailable or when you need a predictable output
+ *   container/encoding (always `audio/wav`, PCM 16-bit) regardless of browser codec support.
+ * - Reliability here means data determinism: you control the exact samples and the WAV header you generate.
+ *   The trade-off is higher JS-side work (copying PCM, buffering, encoding) and therefore more CPU/RAM usage.
+ * - Performance: can be slower and more battery-hungry than `MediaRecorder`, and very long recordings may hit
+ *   in-memory limits (see `MAX_PCM_SAMPLES`) or be more sensitive to background tab throttling.
+ * - Compatibility: uses `AudioWorklet` when possible, falling back to `ScriptProcessor` (legacy) when needed.
+ */
 export class WebAudioWavStrategy implements IWebRecordingStrategy {
   readonly engine: VoiceRecorderEngine = 'web-audio-wav';
   /** Audio to discard at the beginning; UI countdown starts after this period. */
