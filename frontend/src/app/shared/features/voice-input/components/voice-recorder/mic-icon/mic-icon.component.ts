@@ -9,3 +9,4 @@ import { Component, Input } from '@angular/core';
 export class MicIconComponent {
   @Input() color!: string;
 }
+

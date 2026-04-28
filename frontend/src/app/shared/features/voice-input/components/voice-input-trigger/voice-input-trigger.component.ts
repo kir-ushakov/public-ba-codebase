@@ -3,7 +3,7 @@ import { Component, inject, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngxs/store';
-import { VoiceRecorderComponent } from 'src/app/shared/components/ui-elements/speech-recorder/voice-recorder.component';
+import { VoiceRecorderComponent } from 'src/app/shared/features/voice-input/components/voice-recorder/voice-recorder.component';
 import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice-input.state';
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';

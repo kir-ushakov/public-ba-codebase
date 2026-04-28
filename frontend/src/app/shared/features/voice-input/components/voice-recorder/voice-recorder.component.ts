@@ -101,3 +101,4 @@ export class VoiceRecorderComponent {
     this.dialogRef.close();
   }
 }
+
