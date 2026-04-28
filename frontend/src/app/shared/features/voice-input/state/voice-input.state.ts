@@ -15,6 +15,21 @@ const defaults: IVoiceInputStateModel = {
   voiceToTextConverting: false,
 };
 
+/**
+ * #VIWAI_FE_VOICE-INPUT-STATE:
+ *
+ * Voice input state for the voice-to-text workflow.
+ *
+ * The state model is intentionally minimal and only tracks the process status
+ * via a single flag: `voiceToTextConverting`.
+ *
+ * The workflow orchestration lives in action handlers: they coordinate side effects
+ * such as stopping the recording, retrieving the audio, sending it to the backend,
+ * and handling the response.
+ *
+ * The transcription itself is not stored in the state; it is forwarded through
+ * a dedicated action and handled at the component level.
+ */
 @State<IVoiceInputStateModel>({
   name: 'voiceInput',
   defaults,
