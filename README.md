@@ -57,7 +57,7 @@
 - 📱 [Installable](./frontend/src/app/shared/services/pwa/pwa-install.service.ts) as a mobile app [(Add to Home Screen)](./frontend/src/app/shared/components/ui-elements/pwa-install-dialog)
 - 🔄 Automatic app updates: [PwaVersionUpdateService](./frontend/src/app/shared/services/pwa/pwa-version-update.service.ts) reloads the app when a new service worker version is ready, so users always get the latest build.
 - 📸 Taking pictures with device cam using [Capacitor Camera Plugin](./frontend/src/app/shared/services/pwa/device-camera.service.ts)
-- 🎙️ Voice recording with device microphone using [Web Media API](./frontend/src/app/shared/services/pwa/voice-recorder.service.ts)
+- 🎙️ Voice recording with device microphone using Web Media APIs (MediaRecorder/WebAudio) + Capacitor native plugin: [voice recorder module](./frontend/src/app/shared/services/pwa/voice-recorder/index.ts)
 
 #### Authorization
 

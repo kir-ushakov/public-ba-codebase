@@ -59,26 +59,4 @@ export namespace MbTaskScreenAction {
       public formData: ITaskEditFormData,
     ) {}
   }
-
-  export class StartVoiceRecording {
-    static readonly type = '[MbTaskScreen] Start Voice Recording';
-  }
-
-  export class StopVoiceRecording {
-    static readonly type = '[MbTaskScreen] Stop Voice Recording';
-  }
-
-  export class CancelVoiceRecording {
-    static readonly type = '[MbTaskScreen] Cancel Voice Recording';
-  }
-
-  export class VoiceConvertedToTextSuccessful {
-    static readonly type = '[MbTaskScreen] Voice Converted To Text Successful';
-
-    constructor(public text: string) {}
-  }
-
-  export class VoiceConvertedToTextFailed {
-    static readonly type = '[MbTaskScreen] Voice Converted To Text Failed';
-  }
 }

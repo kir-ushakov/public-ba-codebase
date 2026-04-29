@@ -9,17 +9,25 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime } from 'rxjs';
 import type { Observable } from 'rxjs';
 import { MbTaskScreenState } from '../mb-task-screen.state';
+import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice-input.state';
+import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { VoiceRecorderComponent } from 'src/app/shared/components/ui-elements/speech-recorder/voice-recorder.component';
-import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './mb-task-edit.component.interface';
 import { ViewChild, ElementRef } from '@angular/core';
+import { VoiceInputTriggerComponent } from 'src/app/shared/features/voice-input/components/voice-input-trigger/voice-input-trigger.component';
 
 @Component({
   selector: 'ba-mb-task-edit',
-  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatIconModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    VoiceInputTriggerComponent,
+    ReactiveFormsModule,
+  ],
   templateUrl: './mb-task-edit.component.html',
   styleUrl: './mb-task-edit.component.scss',
 })
@@ -27,7 +35,7 @@ export class MbTaskEditComponent {
   formValidStatus = output<boolean>();
   imageUri$: Observable<string> = inject(Store).select(MbTaskScreenState.imageUri);
   voiceToTextConverting$: Observable<boolean> = inject(Store).select(
-    MbTaskScreenState.voiceToTextConverting,
+    VoiceInputState.voiceToTextConverting,
   );
   form: FormGroup<FormControlsOf<ITaskEditFormData>>;
 
@@ -37,7 +45,6 @@ export class MbTaskEditComponent {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);
-  private readonly dialogService = inject(DialogService);
   private readonly fb = inject(FormBuilder);
   private readonly actions$ = inject(Actions);
 
@@ -53,30 +60,8 @@ export class MbTaskEditComponent {
     this.store.dispatch(MbTaskScreenAction.AddPictureBtnPressed);
   }
 
-  onMicClick(event: MouseEvent): void {
-    this.preventInputFocus(event);
-
-    const dialogRef = this.dialogService.showFullScreenDialog(VoiceRecorderComponent);
-
-    const recorder = dialogRef.componentInstance as VoiceRecorderComponent;
-
-    if (recorder) {
-      recorder.started.subscribe(() => {
-        this.store.dispatch(MbTaskScreenAction.StartVoiceRecording);
-      });
-      recorder.stopped.subscribe(() => {
-        this.store.dispatch(MbTaskScreenAction.StopVoiceRecording);
-        this.form.controls.title.setValue('');
-      });
-      recorder.canceled.subscribe(() => {
-        this.store.dispatch(MbTaskScreenAction.CancelVoiceRecording);
-      });
-    }
-  }
-
-  preventInputFocus(event: MouseEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
+  onVoiceRecordingStopped(): void {
+    this.form.controls.title.setValue('');
   }
 
   private initSubscriptions(): void {
@@ -106,7 +91,7 @@ export class MbTaskEditComponent {
 
     this.actions$
       .pipe(
-        ofActionDispatched(MbTaskScreenAction.VoiceConvertedToTextSuccessful),
+        ofActionDispatched(VoiceInputAction.VoiceToTextConvertedSuccessfully),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((payload: { text: string }) => {

@@ -2,6 +2,11 @@ FROM node:20
 
 WORKDIR /usr/src/app
 
+# Native deps for sharp (libvips)
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends libvips42 \
+  && rm -rf /var/lib/apt/lists/*
+
 # Copy contracts package first
 COPY contracts/ ../contracts/
 WORKDIR /usr/src/contracts

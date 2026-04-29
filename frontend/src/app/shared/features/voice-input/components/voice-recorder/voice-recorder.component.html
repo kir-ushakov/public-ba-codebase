@@ -1,0 +1,18 @@
+<div class="recording-indicator">
+  <ba-progress-ring
+    [duration]="recordingDuration"
+    (colorChange)="micColor.set($event)"
+  />
+  <div class="mic-icon-wrapper">
+    <ba-mic-icon [color]="micColor()"></ba-mic-icon>
+  </div>
+</div>
+<div class="recorder-bottom">
+  <button mat-icon-button (click)="cancel()" aria-label="Close">
+    <mat-icon class="close-icon">close</mat-icon>
+  </button>
+  <button mat-icon-button (click)="stopRecording()" aria-label="OK">
+    <mat-icon class="ok-icon">check</mat-icon>
+  </button>
+</div>
+

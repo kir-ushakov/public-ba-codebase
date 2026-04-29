@@ -7,6 +7,13 @@ export interface SpeechToTextResponse {
   transcript: string;
 }
 
+/**
+ * #VIWAI_FE_SPEECH-TO-TEXT-SERVICE:
+ *
+ * Speech to text service: provides a service for transcribing audio to text.
+ *
+ * This service uses the OpenAI API to transcribe audio to text.
+ */
 @Injectable({ providedIn: 'root' })
 export class SpeechToTextService {
   private readonly VOICE_DECODE_API_ENDPOINT = `${environment.baseUrl}/ai/speech-to-text`;
@@ -19,3 +26,4 @@ export class SpeechToTextService {
     return this.http.post<{ transcript: string }>(this.VOICE_DECODE_API_ENDPOINT, formData);
   }
 }
+

@@ -1,0 +1,18 @@
+<!-- #VIWAI_FE_TRIGGER-BUTTON -->
+@if (!(voiceToTextConverting$ | async)) {
+  <button
+    class="voice-input-trigger-button"
+    mat-icon-button
+    aria-label="Voice input"
+    type="button"
+    (click)="onVoiceInputClick($event)"
+    (mousedown)="preventInputFocus($event)"
+    tabindex="-1"
+  >
+    <mat-icon class="voice-input-trigger-icon" aria-hidden="true">mic</mat-icon>
+  </button>
+} @else {
+  <span class="dots-suffix" aria-live="polite" aria-label="Converting speech to text">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  </span>
+}
