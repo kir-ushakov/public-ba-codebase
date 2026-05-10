@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { App } from '@capacitor/app';
+import type { PluginListenerHandle } from '@capacitor/core';
+import { Capacitor } from '@capacitor/core';
 import { Store } from '@ngxs/store';
 import { Observable, fromEvent, of, merge } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -19,11 +22,12 @@ import { PwaVersionUpdateService } from './shared/services/pwa/pwa-version-updat
   styleUrls: ['./app.component.scss'],
   imports: [RouterOutlet],
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   onlineEvent: Observable<Event>;
   offlineEvent: Observable<Event>;
   online$: Observable<boolean>;
   private pwaInstallDialogOpen = false;
+  private appUrlOpen?: PluginListenerHandle;
 
   constructor(
     private readonly _router: Router,
@@ -32,6 +36,7 @@ export class AppComponent implements OnInit {
     private readonly pwaInstallService: PwaInstallService,
     private readonly dialogService: DialogService,
     private readonly pwaVersionUpdateService: PwaVersionUpdateService,
+    private readonly _zone: NgZone,
   ) {
     defineCustomElements(window);
   }
@@ -42,6 +47,7 @@ export class AppComponent implements OnInit {
     //this.attachModuleDependOnDevice();
     this.setOnOffLineHandlers();
     // Listen for PWA install prompt availability and show dialog automatically
+    void this.initNativeDeepLinks();
     this.pwaInstallService.installPromptAvailable.subscribe(isAvailable => {
       if (isAvailable && !this.pwaInstallDialogOpen && this.pwaInstallService.shouldShowInstallDialog()) {
         console.log('PWA install prompt is available, opening dialog');
@@ -56,6 +62,44 @@ export class AppComponent implements OnInit {
         });
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    void this.appUrlOpen?.remove();
+  }
+
+  private async initNativeDeepLinks(): Promise<void> {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+    this.appUrlOpen = await App.addListener('appUrlOpen', ({ url }) =>
+      this._zone.run(() => this.navigateFromExternalUrl(url)),
+    );
+    try {
+      const { url } = await App.getLaunchUrl();
+      if (url != null && url !== '') {
+        this._zone.run(() => this.navigateFromExternalUrl(url));
+      }
+    } catch {
+      /* no cold-start URL */
+    }
+  }
+
+  /**
+   * Maps App Links / custom-scheme URLs into Angular routes (path + query).
+   */
+  private navigateFromExternalUrl(urlString: string): void {
+    let pathWithQuery = '/';
+    try {
+      const url = new URL(urlString);
+      pathWithQuery = `${url.pathname || '/'}${url.search}`;
+      if (!pathWithQuery.startsWith('/')) {
+        pathWithQuery = `/${pathWithQuery}`;
+      }
+    } catch {
+      return;
+    }
+    void this._router.navigateByUrl(pathWithQuery, { replaceUrl: true }).catch(() => undefined);
   }
 
   private setOnOffLineHandlers() {
