@@ -7,6 +7,7 @@ import { UserAction } from 'src/app/shared/state/user.actions';
 import { User } from 'src/app/shared/models';
 import { EMPTY, catchError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 
 export interface IGoogleAuthRedirectScreenStateModel {
   isLogging: boolean;
@@ -19,8 +20,7 @@ const defaults = { isLogging: true, errorOccurred: false, errorMessage: null };
 /** Prevents infinite redirect loops when we auto-retry OAuth with forceConsent=1. */
 const FORCE_CONSENT_ATTEMPT_STORAGE_KEY = 'google_force_consent_attempted';
 
-const GOOGLE_OAUTH_FORCE_CONSENT_URL =
-  '/api/integrations/google/oauth-consent-screen?forceConsent=1&ngsw-bypass=1';
+const GOOGLE_OAUTH_FORCE_CONSENT_URL = `${environment.baseUrl}integrations/google/oauth-consent-screen?forceConsent=1&ngsw-bypass=1`;
 
 @State<IGoogleAuthRedirectScreenStateModel>({
   name: 'googleAuthRedirectScreenState',
@@ -51,6 +51,15 @@ export class GoogleAuthRedirectScreenState {
     payload: GoogleAuthRedirectScreenAction.Opened,
   ): Promise<void> {
     ctx.patchState({ ...defaults });
+
+    if (payload.code == null || payload.code === '') {
+      ctx.patchState({
+        isLogging: false,
+        errorOccurred: true,
+        errorMessage: 'Google login failed: missing authorization code. Please try again.',
+      });
+      return;
+    }
 
     this.googleAPIService
       .authenticateUser(payload.code)

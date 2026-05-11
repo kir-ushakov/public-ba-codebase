@@ -33,6 +33,16 @@ export class GetOAuthConsentScreenController extends BaseController {
         accessType: 'offline',
       };
 
+      // On mobile (Capacitor), return to the app via custom scheme deep link.
+      // This avoids relying on Android App Links / assetlinks.json verification.
+      const platformParam = req.query.platform;
+      const platform = Array.isArray(platformParam) ? platformParam[0] : platformParam;
+      const isCapacitor = platform === 'capacitor' || platform === 'android' || platform === 'ios';
+      if (isCapacitor) {
+        authOptions.callbackURL =
+          process.env.GOOGLE_OAUTH_CALLBACK_MOBILE ?? 'brainas://app/google/oauth2callback';
+      }
+
       // Google returns refresh_token reliably only when we force consent
       // (e.g. when user already granted scopes previously).
       if (forceConsent) {
