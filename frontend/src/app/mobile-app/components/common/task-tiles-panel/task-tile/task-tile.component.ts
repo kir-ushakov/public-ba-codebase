@@ -1,4 +1,5 @@
-import { Component, Input, HostListener, signal, ViewChild } from '@angular/core';
+import { Component, HostBinding, Input, HostListener, signal, ViewChild } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { Store } from '@ngxs/store';
 import { MbTaskTileAction } from './task-tile.actions';
 import { Task } from 'src/app/shared/models/task.model';
@@ -14,6 +15,10 @@ import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
   imports: [CommonModule, SpinnerComponent, ImageSrcPipe],
 })
 export class TaskTileComponent {
+  @HostBinding('class.task-tile--android-pastel')
+  readonly androidPastelHostClass =
+    Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
+
   @Input() task: Task;
   @HostListener('click') onClick() {
     this.store.dispatch(new MbTaskTileAction.Clicked(this.task.id));

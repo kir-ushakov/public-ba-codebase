@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'ba-sign-in-with-google-btn',
@@ -15,7 +14,6 @@ export class SignInWithGoogleBtnComponent {
     // Start a fresh OAuth flow; do not keep stale retry state.
     sessionStorage.removeItem(SignInWithGoogleBtnComponent.FORCE_CONSENT_ATTEMPT_KEY);
     // Redirect to Google OAuth consent screen
-    const platform = Capacitor.isNativePlatform() ? 'capacitor' : 'web';
-    window.location.href = `${environment.baseUrl}${SignInWithGoogleBtnComponent.CONSENT_PATH}&platform=${platform}`;
+    window.location.href = `${environment.baseUrl}${SignInWithGoogleBtnComponent.CONSENT_PATH}`;
   }
 }

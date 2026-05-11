@@ -6,6 +6,14 @@
   display: flex;
   justify-content: center;
   height: auto;
+
+  &.task-tile--android-pastel {
+    background-color: map.get(colors.$colors-green, tile);
+
+    .task-tile-title {
+      color: map.get(map.get(colors.$colors-green-palette, contrast), 50);
+    }
+  }
 }
 
 .task-tile-inner {
