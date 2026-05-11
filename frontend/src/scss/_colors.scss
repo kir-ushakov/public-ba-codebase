@@ -29,10 +29,12 @@ $colors-gray: (
   dark: map.get($colors-gray-palette, 700),
 );
 $colors-green-palette: (
+  50: #b8e5d4,
   100: #439889,
   500: #00695c,
   700: #003d33,
   contrast: (
+    50: #0d332b,
     100: black,
     500: white,
     700: white,
@@ -42,6 +44,7 @@ $colors-green: (
   light: map.get($colors-green-palette, 100),
   default: map.get($colors-green-palette, 500),
   dark: map.get($colors-green-palette, 700),
+  tile: map.get($colors-green-palette, 50),
 );
 $dark-warn: #9e0000;
 $color-main-bg: map.get($colors-gray-palette, 500);
