@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Brainas</string>
+    <string name="title_activity_main">Brainas</string>
+    <string name="package_name">com.brainas.app</string>
+    <string name="custom_url_scheme">com.brainas.app</string>
+    <string name="deep_link_scheme">brainas</string>
+</resources>

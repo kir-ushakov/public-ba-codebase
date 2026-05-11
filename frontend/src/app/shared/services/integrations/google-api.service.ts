@@ -1,16 +1,16 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BASE_URL } from '../../constants/api-endpoints.const';
 import { User } from '../../models';
 import { LoginResponseDTO } from '../api/auth.service';
 import { UserMapper } from '../../mappers';
 import { map } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GoogleAPIService {
-  static readonly AUTH_API_ENDPOINT = BASE_URL + 'integrations/google/auth';
+  static readonly AUTH_API_ENDPOINT = `${environment.baseUrl}integrations/google/auth`;
 
   constructor(private http: HttpClient) {}
 
