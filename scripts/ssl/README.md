@@ -38,7 +38,7 @@ Reloads host nginx, Docker nginx, and backend **only if files actually changed**
 Run **once** on the server:
 
 - **certbot hook** — after `certbot renew` updates any certificate
-- **cron** at 03:00 and 15:00 — catches renewals done by Hysteria alone
+- **cron** (optional) — fallback when Hysteria renews without certbot; skipped if `crontab` is not installed
 
 ```bash
 ./scripts/ssl/setup-ssl-auto-sync.sh
