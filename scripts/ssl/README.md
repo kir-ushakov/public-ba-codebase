@@ -3,10 +3,10 @@
 Hysteria / certbot already renew the certificate in:
 
 ```
-/etc/letsencrypt/live/brainassistant.app/
+/etc/letsencrypt/live/www.brainassistant.app/
 ```
 
-The site only needs a copy into nginx paths. No second issuance, no port 80 setup.
+Certbot names the folder after the **Certificate Name** (`www.brainassistant.app`), not the apex domain. The sync script copies files into `brainassistant.app.{crt,key}` — paths nginx already uses.
 
 ## Architecture
 
