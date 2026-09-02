@@ -1,0 +1,55 @@
+---
+description: Backend use-case architecture, Result-based errors, Express + TypeScript ESM
+globs: backend/src/**/*.ts
+alwaysApply: false
+---
+
+# Backend architecture
+
+## ESM imports
+
+`backend` is `"type": "module"`. Every relative import needs the `.js` extension even though the source is TypeScript:
+
+```ts
+// BAD - breaks at runtime
+import { CreateTask } from './create-task.usecase';
+
+// GOOD
+import { CreateTask } from './create-task.usecase.js';
+```
+
+## Use-case folders
+
+Business flows live in `backend/src/modules/<module>/usecases/<use-case>/` and consist of:
+
+- `<name>.controller.ts` — extends `BaseController`, implements `executeImpl`
+- `<name>.usecase.ts` — implements `UseCase<Params, Promise<Result>>`, contains no Express types
+- `<name>.errors.ts` — namespaced `UseCaseError` subclasses carrying `httpCode`
+- `<name>.mapper.ts` / `<name>.dto.ts` — only when mapping is non-trivial
+- `index.ts` — composition root: instantiates repos, services, use-case and controller, exports the controller singleton
+
+Add new flows as a use-case folder matching its neighbours. Do not introduce new layers: no application-level `*.service.ts` wrapper, no `*.validation.ts`, no DI container. Match the local naming (a few folders use `_index.ts`).
+
+Routers only wire HTTP to a controller and hold no logic:
+
+```ts
+syncRouter.post('/task', (req, res) => createTaskController.execute(req, res));
+```
+
+## Errors are values, not exceptions
+
+Use-cases and repos return `Result` (`shared/core/result.ts`) and fail with a typed error from `*.errors.ts` or `serviceFail()`. There is no centralized Express error middleware — never write code that assumes one exists.
+
+Controllers branch on `result.isSuccess` and respond via `BaseController.jsonResponse(res, error.httpCode, { name, message })`, keeping the `try/catch` in `executeImpl` like neighbouring controllers.
+
+## Data access and input
+
+- Use-cases call `shared/repo/*`, never Mongoose models directly.
+- Validate external input in domain models and value objects with `Guard` + `Result` (see `shared/domain/models/task.ts`). Do not add joi, zod or express-validator.
+- Read `req.user` in the controller and pass plain values into the use-case; use-cases must not touch Express objects.
+
+## Types and secrets
+
+`backend/tsconfig.json` has no `strict` or `strictNullChecks`, so the compiler will not catch loose types. Type parameters and return values explicitly and avoid `any`.
+
+Never hard-code URLs, credentials or keys, and never log passwords, tokens or whole request bodies.

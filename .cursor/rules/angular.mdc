@@ -1,0 +1,48 @@
+---
+description: Angular 19 frontend conventions - components, NGXS state, HTTP, forms
+globs: frontend/**/*.ts,frontend/**/*.html
+alwaysApply: false
+---
+
+# Angular conventions
+
+The app is fully standalone and bootstrapped via `bootstrapApplication` — there are no NgModules. New components declare their own `imports` array; providers belong in `main.ts` or a route's `providers`.
+
+Prefer `inject()` in new code, as the newest features do. Do not convert existing constructor injection while working on something else.
+
+## State: NGXS
+
+Application state lives in NGXS, not in components or ad-hoc services:
+
+- slices are `*.state.ts` with `@State`, `@Selector`, `@Action`
+- actions live in `*.actions.ts` inside a namespace:
+  `export namespace TaskAction { export class Create { static readonly type = '[Task] Create'; } }`
+- global slices go in `shared/state/`; screen and feature slices sit next to the screen and are registered per route with `provideStates([...])`
+
+Components dispatch actions and read state through `selectSignal`, `createSelectMap` or `store.select` — use whichever the surrounding component already uses.
+
+Angular `signal()` is for local UI state of a single component. Do not move NGXS state into signals.
+
+## HTTP
+
+Components must never inject `HttpClient`. API calls live in `shared/services/api/`, `shared/services/integrations/`, or a feature's own `api/` folder as `*.service.ts`, and map responses to models via `shared/mappers/*`.
+
+Request and response types come from `@brainassistant/contracts` for the sync and file APIs.
+
+## Subscriptions
+
+Prefer the `async` pipe or NGXS signals. When subscribing manually, always tear down with `takeUntilDestroyed()`. Do not add a bare `.subscribe()` without cleanup, even though some older components still have them.
+
+## Templates
+
+- Use `@if` / `@for` / `@switch` in new and edited templates; leave untouched `*ngIf` blocks alone.
+- Keep logic out of templates: no non-trivial method calls in bindings, computation belongs in TypeScript.
+- Touch the DOM through Angular APIs, not directly.
+
+## Forms
+
+Reactive forms only, no `ngModel`. Type them with the existing helper: `FormGroup<FormControlsOf<T>>` from `shared/forms/types/form-controls-of.ts`. Do not add new `UntypedFormGroup` or `UntypedFormControl`.
+
+## Styles
+
+Component styles are SCSS and use the shared partials rather than raw values: breakpoints via `@use 'src/scss/breakpoints' as bp;` with `@include bp.up(md)`, plus the `_colors`, `_spacing`, `_typography` and `_button` partials.

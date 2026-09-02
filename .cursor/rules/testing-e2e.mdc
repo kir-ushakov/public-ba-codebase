@@ -1,0 +1,32 @@
+---
+description: Frontend E2E tests with Playwright
+globs: frontend/e2e/**/*.ts
+alwaysApply: false
+---
+
+# Frontend E2E tests
+
+Playwright specs in `frontend/e2e/*.spec.ts` drive the real UI against a mocked backend, running on the `e2e` build configuration (`npm run start:e2e`, `npm run e2e`).
+
+## Selectors
+
+Target elements with `[data-test="..."]` — this project uses `data-test`, not `data-testid`:
+
+```ts
+await page.click('[data-test="new-task-btn"]');
+```
+
+If an element has no hook, add a `data-test` attribute to the template instead of selecting by CSS class or DOM position. Text and role selectors are fine for user-visible copy, e.g. `page.getByText('Sign in with Google')`.
+
+## Mocks and stubs
+
+- HTTP is mocked centrally in `e2e/utils/api-mocks.util.ts`. Call `await setupApiMocks(page)` at the start of a spec and extend that util rather than scattering `page.route` calls across specs.
+- Auth and device APIs are swapped at build time through `fileReplacements` in the `e2e` configuration of `frontend/angular.json`, pointing at `e2e/stubs/*`. Covering a new native capability means adding a stub plus a `fileReplacements` entry — do not fake it inside the spec.
+- Binary fixtures live in `e2e/assets/`.
+
+## Waiting and assertions
+
+- Rely on auto-waiting `expect(locator).toBeVisible()` and `page.waitForURL(...)`. Never use `page.waitForTimeout()`.
+- To assert what the app sent, register `page.waitForResponse(...)` before the click that triggers the request, then inspect `request().postDataJSON()`.
+- Assert what the user can observe plus outgoing request payloads. Do not reach into NGXS state or component internals.
+- Keep specs independent and deterministic: no shared state or ordering assumptions between tests.

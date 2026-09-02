@@ -1,0 +1,40 @@
+---
+description: MongoDB data access - repos, models, mappers, query safety, indexes
+globs: backend/src/shared/repo/**/*.ts,backend/src/shared/infra/database/**/*.ts,backend/src/shared/mappers/**/*.ts
+alwaysApply: false
+---
+
+# MongoDB and data access
+
+## Structure
+
+- Schemas live in `shared/infra/database/mongodb/<entity>.model.ts` and are registered in `IDbModels` and `models` in that folder's `index.ts`.
+- Repos in `shared/repo/` receive `IDbModels` through the constructor and read models from it (`this.models.TaskModel`). Do not import a model module directly inside a repo.
+- Documents are converted at the boundary by `shared/mappers/<entity>.mapper.ts` (`toDomain`, `toPersistence`, `toDTO`). A raw Mongoose document must never escape a repo into a use-case.
+- Repos return `Result` with a `ServiceError` built by `serviceFail()`. Do not `throw new Error` for expected outcomes such as "not found".
+
+## Query safety
+
+- Every query returning a collection needs an explicit bound: a `userId` filter, a time window, or `.limit()` / pagination. The sync queries scoped by `userId` + `modifiedAt` are the pattern to follow.
+- Never load documents in order to filter, sort, count or group them in JavaScript when MongoDB can do it in the query.
+- Use `.lean()` for read-only queries whose result goes straight into a mapper.
+- Project only the fields you need when reading documents that may carry large payloads.
+- No N+1: never query inside a loop over documents — use `$in` or a single aggregation.
+- Modify many documents with `updateMany` or `bulkWrite`, and prefer atomic operators (`$set`, `$inc`, `findOneAndUpdate`) over read-modify-write sequences.
+
+## Indexes
+
+The existing schemas define no indexes at all. When adding a query that filters or sorts on a field that will grow — anything keyed by `userId`, `modifiedAt` or `occurredAt` — state whether an index is needed and add it to the schema deliberately. Do not add indexes speculatively; they cost write throughput and storage.
+
+## Identifiers
+
+Id types are not uniform here, so be explicit about which entity you are querying:
+
+- `Task` and `Client` store a **string** `_id` (an ObjectId hex string produced by `UniqueEntityID`).
+- `User` uses a real `ObjectId`; `user.repo.ts` converts `string` to `ObjectId` before querying.
+
+Reject malformed ids explicitly instead of passing them into a query.
+
+## Schema changes
+
+Documents already exist in production and offline clients sync against them. Do not change or drop a field without describing the migration and what happens to old documents and old clients.

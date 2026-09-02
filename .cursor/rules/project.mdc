@@ -1,0 +1,43 @@
+---
+description: Project map, monorepo workflow, and how to change this codebase
+alwaysApply: true
+---
+
+# Brain Assistant project rules
+
+## Repo map
+
+- `frontend/` — Angular 19 PWA, standalone components, NGXS state.
+- `backend/` — Express + Mongoose API, ESM, use-case architecture.
+- `contracts/` — `@brainassistant/contracts`, shared API types linked into both apps as `file:../contracts`.
+- `db/`, `nginx/`, `scripts/`, `docker-compose.yml` — infrastructure.
+
+`frontend`, `backend` and `contracts` are separate npm packages. Run `npm`/`ng` commands from inside the relevant folder, not from the repo root.
+
+## Shell
+
+The dev environment is Windows PowerShell. Do not chain commands with `&&` and do not use bash-only syntax; use `;` or separate commands.
+
+## Shared contracts
+
+- API request/response types belong in `contracts/`, not duplicated per app.
+- After editing `contracts/`, it must be rebuilt before either app sees the change: `cd contracts; npm run build`.
+- `frontend/src/app/shared/dto/` still holds legacy duplicated auth DTOs. Do not add new DTOs there — extend `contracts/` instead.
+- The frontend is an offline-capable PWA with a sync protocol, so users keep running cached builds for a long time. Treat contracts as a public API: prefer additive, backward-compatible changes, and state explicitly when a change is breaking.
+
+## Verify, do not invent
+
+Never invent API endpoints, database fields, env/config variable names, contract types, or existing behaviour. Read the relevant file first and reuse what is there.
+
+Before adding a service, helper, mapper, model or component, search for an existing one. Both apps already have `shared/` layers for each of these.
+
+## Scope of changes
+
+- Keep the change scoped to what was asked: no drive-by renames, unrelated refactors, or reformatting of files you did not need to touch.
+- Prefer modifying existing code over adding a parallel implementation beside it.
+- Do not add dependencies without a clear reason; both apps already carry a large dependency set.
+- Formatting and code style are handled by ESLint, Prettier, Stylelint and husky/lint-staged. Do not hand-format code.
+
+## Before finishing
+
+Check that the app you touched still compiles, that imports resolve, and whether existing tests in `backend/test/` or `frontend/e2e/` cover the changed behaviour.
