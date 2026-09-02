@@ -1,0 +1,40 @@
+---
+description: Shared API contracts package @brainassistant/contracts
+globs: contracts/**/*.ts
+alwaysApply: false
+---
+
+# Shared contracts
+
+This package is the single source of truth for the HTTP boundary between `frontend` and `backend`. Both apps consume it as `file:../contracts`.
+
+## Layout
+
+- `src/dto/<name>.dto.ts` — request and response payload shapes
+- `src/enums/<name>.enum.ts` — enums that travel over the wire
+- `src/contracts/<name>.contract.ts` — per-endpoint namespaces, e.g. `SendChangeContract.Request<TaskDTO>` and `.Response`
+- every folder has an `index.ts` barrel, and `src/index.ts` re-exports the public surface
+
+Anything new must be exported from `src/index.ts` or the apps cannot see it. DTOs are re-exported with `export type`, enums with a value `export`.
+
+## Types only
+
+Keep this package free of runtime logic: no validation, no mappers, no HTTP calls, no dependencies. Mapping belongs in `backend/src/shared/mappers/` and `frontend/src/app/shared/mappers/`.
+
+## Build step
+
+The apps consume compiled output from `dist/`, so a source change is invisible until it is rebuilt:
+
+```
+cd contracts; npm run build
+```
+
+Say this explicitly whenever a change spans contracts and an app.
+
+## Compatibility
+
+The frontend is an offline PWA with a sync protocol: clients keep running cached builds long after a deploy, and their stored data follows the old shape.
+
+- Prefer additive changes and make new fields optional.
+- Do not rename or repurpose an existing field, and do not change the meaning of an existing enum value — add a new one.
+- If a breaking change is unavoidable, state it explicitly and describe how old clients and already-persisted data are handled.

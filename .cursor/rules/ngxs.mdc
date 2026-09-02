@@ -1,0 +1,46 @@
+---
+description: NGXS state slices, actions, selectors and persistence
+globs: frontend/src/app/**/*.state.ts,frontend/src/app/**/*.actions.ts,frontend/src/app/**/*.action.ts
+alwaysApply: false
+---
+
+# NGXS conventions
+
+## Slice shape
+
+- The state model interface is `I<Name>StateModel`; related enums are `E<Name>`.
+- The class carries `@State<I<Name>StateModel>({ name, defaults })` and `@Injectable()`.
+- Selectors are `static` methods with `@Selector()` and an explicit return type.
+- Handlers take `ctx: StateContext<I<Name>StateModel>` and update through `ctx.patchState(...)` or `ctx.setState(patch({ ... }))` from `@ngxs/store/operators`. Never mutate state in place.
+- API calls inside a slice go through an injected service from `shared/services/**`, never `HttpClient` directly.
+
+## Actions
+
+Actions live in `*.actions.ts` (a few older files use `*.action.ts` — follow the neighbouring file) inside a namespace, with a `[Scope] Human readable` type string:
+
+```ts
+export namespace UserAction {
+  export class UserLoggedInWithPassword {
+    static readonly type = '[User] User Logged In With Password';
+
+    constructor(public userData: User) {}
+  }
+}
+```
+
+Slices communicate by dispatching actions, not by injecting one another. A global slice may handle a screen's action — `UserState` handles `MbLoginScreenAction.LoginUser` — which is preferred over reaching into another slice's state.
+
+Several `@Action(...)` decorators may be stacked on one handler when actions share behaviour.
+
+## Registration
+
+- Global slices live in `shared/state/` and are registered in `main.ts` with `provideStates([...])`.
+- Screen and feature slices are co-located with their screen or feature and registered on the route: `providers: [provideStates([MbTaskScreenState, VoiceInputState])]`.
+
+## Persistence
+
+`main.ts` configures `withNgxsStoragePlugin({ keys: '*' })`, so **every** slice is persisted on the device and the app is offline-first. Therefore:
+
+- Keep state serializable: no `Blob`, `File`, DOM nodes, RxJS subjects, functions or class instances with behaviour.
+- Never put passwords or access tokens into state.
+- Adding, renaming or removing a field changes the shape of state already stored on users' devices. Write defaults and selectors that tolerate previously persisted data instead of assuming the new shape.

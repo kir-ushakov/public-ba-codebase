@@ -1,0 +1,48 @@
+---
+description: Backend integration tests - Jest, supertest, in-memory MongoDB
+globs: backend/test/**/*.ts
+alwaysApply: false
+---
+
+# Backend tests
+
+Backend testing is integration-only: a real Express app wired to the real controller, use-case, repo and Mongoose models, running against an in-memory MongoDB. Do not add unit tests that mock the layers away.
+
+## Layout and naming
+
+- `test/integration/<module>/` mirrors `src/modules/<module>/usecases/`
+- specs are `<use-case>.int.spec.ts`, described as `Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)`
+- each folder has its own `test-app.ts` exporting a `buildTestApp()` builder
+- binary fixtures go in `test/integration/_fixtures/`, env vars in `test/setup-env.ts`
+
+Imports carry the `.js` extension like the rest of the backend (`../_setup/mongo-memory.js`).
+
+## Test app builder
+
+`buildTestApp()` instantiates the real repo, use-case and controller, mounts the controller on a route, and installs a fake auth middleware setting `(req as any).user = { _id: 'test-user-1' }`.
+
+Mock only external systems — Slack, Google Drive, OpenAI, email — as `jest.fn()` doubles. Repos, mappers, domain models and the database stay real.
+
+## Lifecycle
+
+```ts
+beforeAll(async () => {
+  await startInMemoryMongo();
+  app = buildTestApp().app;
+}, 30_000);
+
+afterAll(async () => {
+  await stopInMemoryMongo();
+});
+
+beforeEach(async () => {
+  await clearDatabase();
+  jest.clearAllMocks();
+});
+```
+
+## Assertions
+
+Assert observable outcomes rather than internals: the HTTP status, the response body typed against the DTO from `@brainassistant/contracts`, and the document read back through the model. Cover the happy path, the validation failure (status plus `name` and `message` in the body) and external-service failure.
+
+Specs must be deterministic: no real network, no assertions that depend on the current time or random values, no reliance on execution order. Do not leave `console.log` debugging in a spec.
