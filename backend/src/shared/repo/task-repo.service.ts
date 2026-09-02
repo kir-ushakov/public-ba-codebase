@@ -69,7 +69,7 @@ export class TaskRepoService {
   public async deleteTaskById(taskId: string): Promise<void> {
     const taskModel = this.models.TaskModel;
     await taskModel.deleteOne({
-      id: taskId,
+      _id: taskId,
     });
   }
 
