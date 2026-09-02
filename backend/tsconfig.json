@@ -1,3 +1,13 @@
 {
+  "compilerOptions": {
+    "module": "ESNext",
+    "esModuleInterop": true,
+    "target": "es2022",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "resolveJsonModule": true,
+    "types": ["node", "jest"]
+  },
   "include": ["server.ts", "jest.config.ts", "src/**/*.ts", "src/**/*.d.ts", "test/**/*.ts"]
 }

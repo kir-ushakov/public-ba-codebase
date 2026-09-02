@@ -22,3 +22,17 @@ if (caBandlePath) {
 app.set('port', port);
 const server = https.createServer(httpsOptions, app);
 server.listen(port);
+
+process.on('uncaughtException', function (error) {
+  // TODO: use special log here
+  console.log(' ===== Uncaught Exception Occurred ===== ');
+  console.log(error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', function (reason, p) {
+  // TODO: use special log here
+  console.log(' ===== Unhandled Rejection Occurred ===== ');
+  console.log(reason);
+  process.exit(1);
+});
