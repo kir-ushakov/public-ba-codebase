@@ -23,16 +23,16 @@ These live in `test/unit/`, named `<subject>.spec.ts`. They must not mock neighb
 
 - `test/integration/<module>/` mirrors `src/modules/<module>/usecases/`
 - specs are `<use-case>.int.spec.ts`, described as `Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)`
-- each folder has its own `test-app.ts` exporting a `buildTestApp()` builder
-- binary fixtures go in `test/integration/_fixtures/`, env vars in `test/setup-env.ts`
+- each folder may still have a local `test-app.ts` until migrated; new specs use `test/integration/_setup/build-test-app.ts`
+- JWT helpers live in `test/integration/_setup/auth.helper.ts`; env vars in `test/setup-env.ts`
 
 Imports carry the `.js` extension like the rest of the backend (`../_setup/mongo-memory.js`).
 
 ## Test app builder
 
-`buildTestApp()` instantiates the real repo, use-case and controller, mounts the controller on a route, and installs a fake auth middleware setting `(req as any).user = { _id: 'test-user-1' }`.
+Prefer `buildTestApp()` from `test/integration/_setup/build-test-app.ts`: it calls production `createApp()` (real routers, Passport JWT, multer). Seed a user with `seedTestUser()` and send `Cookie: jwt=...` via `authenticatedRequest()`. Do not invent a parallel mini-Express or fake `req.user` for new tests.
 
-Mock only external systems — Slack, Google Drive, OpenAI, email — as `jest.fn()` doubles. Repos, mappers, domain models and the database stay real.
+Mock only external systems — Slack, Google Drive, OpenAI, email. Repos, mappers, domain models and the database stay real. Google Drive is stubbed in Jest via `test/__mocks__/google-drive-services.ts` so the ESM `mime` package is never loaded.
 
 ## Lifecycle
 

@@ -35,6 +35,7 @@ export function createApp(): Application {
   }
 
   if (process.env.AUTHENTICATION_STRATEGY === 'JWT') {
+    app.use(passport.initialize());
     passport.use(jwtStrategy);
   }
 

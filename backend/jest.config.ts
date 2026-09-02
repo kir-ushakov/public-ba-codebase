@@ -5,6 +5,8 @@ const config: Config = {
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
+    '^.*/integrations/google/services/index\\.js$':
+      '<rootDir>/test/__mocks__/google-drive-services.ts',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
