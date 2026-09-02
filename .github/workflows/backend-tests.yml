@@ -39,7 +39,7 @@ jobs:
 
     - name: Run linter
       working-directory: ./backend
-      run: npm run lint || true
+      run: npm run lint
 
     - name: Run tests
       working-directory: ./backend
