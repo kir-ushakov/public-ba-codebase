@@ -54,11 +54,12 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
     expect(drive.uploadFile).toHaveBeenCalledTimes(1);
 
     const persistedImage = await models.ImageModel.findOne({ imageId }).lean();
-    expect(persistedImage).not.toBeNull();
-    expect(persistedImage.imageId).toBe(imageId);
-    expect(persistedImage.fileId).toBe(mockGoogleDriveFileId);
-    expect(String(persistedImage.userId)).toBe(userId);
-    expect(persistedImage.storageType).toBe('googleDrive');
+    expect(persistedImage).toMatchObject({
+      imageId,
+      fileId: mockGoogleDriveFileId,
+      userId,
+      storageType: 'googleDrive',
+    });
   });
 
   it('should reject unsupported file types', async () => {
