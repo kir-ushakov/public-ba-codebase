@@ -1,14 +1,25 @@
 ---
-description: Backend integration tests - Jest, supertest, in-memory MongoDB
+description: Backend tests — integration by default, unit only for pure domain
 globs: backend/test/**/*.ts
 alwaysApply: false
 ---
 
 # Backend tests
 
-Backend testing is integration-only: a real Express app wired to the real controller, use-case, repo and Mongoose models, running against an in-memory MongoDB. Do not add unit tests that mock the layers away.
+The default for this backend is **integration**: a real Express app wired to the real controller, use-case, repo and Mongoose models, running against in-memory MongoDB.
 
-## Layout and naming
+Do **not** unit-test a use-case or controller by mocking the repo, mapper, or domain. That is the kind of unit test this project forbids — it re-implements the stack in mocks and misses the bugs that live at the seams.
+
+## When unit tests are allowed
+
+Isolated tests **without** HTTP or Mongo are allowed for **pure** code that has no I/O:
+
+- domain entities and value objects (`Task.create` / `update`, `UserEmail`, `Guard`)
+- mappers (`TaskMapper.toDomain` / `toPersistence` / `toDTO`)
+
+These live in `test/unit/`, named `<subject>.spec.ts`. They must not mock neighbouring layers — call the real class. Do not add unit tests for routers, controllers, use-cases, or repos.
+
+## Integration layout and naming
 
 - `test/integration/<module>/` mirrors `src/modules/<module>/usecases/`
 - specs are `<use-case>.int.spec.ts`, described as `Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)`
