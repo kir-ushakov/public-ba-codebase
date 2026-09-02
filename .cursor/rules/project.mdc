@@ -31,6 +31,12 @@ Never invent API endpoints, database fields, env/config variable names, contract
 
 Before adding a service, helper, mapper, model or component, search for an existing one. Both apps already have `shared/` layers for each of these.
 
+## Git
+
+Never create a git commit unless the user explicitly asked to commit in that message. Finishing an implementation stage, “go to the next step”, or having a clean working tree is not permission to commit.
+
+If they asked to commit existing work and also to start new work, commit only what they named (or the already-unstaged changes they pointed at). Leave the new work uncommitted until they say to commit it.
+
 ## Scope of changes
 
 - Keep the change scoped to what was asked: no drive-by renames, unrelated refactors, or reformatting of files you did not need to touch.
