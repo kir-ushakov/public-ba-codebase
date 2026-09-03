@@ -3,5 +3,10 @@
 }
 
 @if (showToggleOptionsBtn$ | async) {
-  <div class="top-panel-btn options" (click)="toggleMenu()" id="toggelOptionsMenuBtn"></div>
+  <div
+    class="top-panel-btn options"
+    (click)="toggleMenu()"
+    id="toggelOptionsMenuBtn"
+    data-test="task-options-btn"
+  ></div>
 }

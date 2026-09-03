@@ -16,7 +16,7 @@
 }
 
 @if (mode() === ETaskViewMode.View) {
-  <div class="go-home-btn" (click)="goHome()">
+  <div class="go-home-btn" (click)="goHome()" data-test="go-home-btn">
     <img src="assets/ui/icons/home-icon.png" />
   </div>
 }

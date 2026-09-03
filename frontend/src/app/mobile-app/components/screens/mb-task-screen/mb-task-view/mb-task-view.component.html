@@ -1,6 +1,6 @@
 @let task = task$ | async;
 <div class="title-holder">
-  <span>{{ task.title }}</span>
+  <span data-test="task-view-title">{{ task.title }}</span>
 </div>
 @if (task?.imageId) {
   <div class="task-picture-holder">

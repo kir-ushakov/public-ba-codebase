@@ -3,6 +3,7 @@ import { promises as fsp } from 'fs';
 import { Application } from 'express';
 import request from 'supertest';
 import { googleDriveService } from '../../../src/modules/integrations/google/services/index.js';
+import { MAX_IMAGE_UPLOAD_FILE_BYTES } from '../../../src/modules/files/config.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
@@ -98,5 +99,20 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
 
     const persistedImage = await models.ImageModel.findOne({ imageId }).lean();
     expect(persistedImage).toBeNull();
+  });
+
+  it('rejects a file larger than MAX_IMAGE_UPLOAD_FILE_BYTES', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const oversized = Buffer.alloc(MAX_IMAGE_UPLOAD_FILE_BYTES + 1);
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/files/image')
+      .field('imageId', 'image-too-big')
+      .attach('file', oversized, { filename: 'huge.jpg', contentType: 'image/jpeg' });
+
+    expect(res.status).toBe(413);
+    expect(res.body).toMatchObject({ name: 'FILE_TOO_LARGE' });
+    expect(res.body).toHaveProperty('message');
+    expect(await models.ImageModel.findOne({ imageId: 'image-too-big' }).lean()).toBeNull();
   });
 });
