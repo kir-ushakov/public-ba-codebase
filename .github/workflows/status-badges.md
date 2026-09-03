@@ -16,7 +16,7 @@ Add these badges to your README.md to show the status of your GitHub Actions wor
 ### 2. Frontend Tests (`frontend-tests.yml`)
 
 - **Triggers**: Push/PR when `frontend/**` or `contracts/**` change
-- **Jobs**: Playwright E2E
+- **Jobs**: Jest unit tests, Playwright E2E
 
 ### 3. Security Scan (`security.yml`)
 

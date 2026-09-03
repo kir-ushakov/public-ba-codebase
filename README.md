@@ -86,10 +86,10 @@ Examples: [task create](./backend/test/integration/sync/task-create.int.spec.ts)
 
 📚 [Backend Test Documentation](./backend/test/README.md)
 
-**Frontend E2E Tests** (Playwright)
+**Frontend tests**
 
-The frontend includes browser-based integration tests with Playwright that validate key user flows through the UI. Tests run against the frontend only: backend requests are mocked, and device APIs (for example, camera) are stubbed for deterministic behavior.
-Run instructions are documented in the frontend E2E test guide.
+- Unit: Jest on NGXS slices (`npm test` from `frontend/`). Specs live in `frontend/tests/unit/`.
+- E2E: Playwright against the UI with a mocked backend. Run instructions are in the frontend E2E test guide.
 
 Example: [task creation user flows](./frontend/e2e/create-task.spec.ts).
 
@@ -107,6 +107,7 @@ The project uses GitHub Actions for continuous integration:
   - Triggers on backend / contracts changes
 
 - 🎭 **Frontend Tests** (`.github/workflows/frontend-tests.yml`)
+  - Jest unit tests (NGXS slices)
   - E2E tests with Playwright
   - Triggers on frontend / contracts changes
 
