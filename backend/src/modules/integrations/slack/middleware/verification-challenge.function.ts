@@ -15,39 +15,44 @@ export function verificationChallenge() {
     const xSlackRequestTimestamp = req.headers['x-slack-request-timestamp'];
     const contentType = req.headers['content-type'];
 
+    if (!xSlackSignatur || !xSlackRequestTimestamp) {
+      return res.status(400).send('Verifying requests from Slack failed');
+    }
+
     let rawBody;
-    if (
-      contentType?.toLocaleLowerCase() === 'application/x-www-form-urlencoded'
-    ) {
+    if (contentType?.toLocaleLowerCase() === 'application/x-www-form-urlencoded') {
       rawBody = formurlencoded(req.body);
     } else {
       rawBody = JSON.stringify(req.body)
         .replace(/\//g, '\\/')
         .replace(
           /[\u007f-\uffff]/g,
-          (c) => '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)
+          c => '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4),
         );
+    }
+
+    const signingSecret = process.env.SLACK_SIGNING_SECRET;
+    if (!signingSecret) {
+      return res.status(400).send('Verifying requests from Slack failed');
     }
 
     const sigBasestring = `v0:${xSlackRequestTimestamp}:${rawBody}`;
     const mySignature =
-      'v0=' +
-      crypto
-        .createHmac('sha256', process.env.SLACK_SIGNING_SECRET)
-        .update(sigBasestring)
-        .digest('hex');
+      'v0=' + crypto.createHmac('sha256', signingSecret).update(sigBasestring).digest('hex');
 
-    if (
-      crypto.timingSafeEqual(
-        Buffer.from(mySignature, 'utf8'),
-        Buffer.from(xSlackSignatur, 'utf8')
-      )
-    ) {
-      next();
-    } else {
-      return res.status(400).send('Verifying requests from Slack failed');
+    try {
+      if (
+        crypto.timingSafeEqual(
+          Buffer.from(mySignature, 'utf8'),
+          Buffer.from(xSlackSignatur, 'utf8'),
+        )
+      ) {
+        return next();
+      }
+    } catch {
+      // timingSafeEqual throws when buffer lengths differ
     }
 
-    return next();
+    return res.status(400).send('Verifying requests from Slack failed');
   };
 }
