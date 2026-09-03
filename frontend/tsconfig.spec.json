@@ -2,7 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "esModuleInterop": true,
+    "isolatedModules": true
   },
-  "include": ["tests/**/*.spec.ts", "tests/**/*.d.ts"]
+  "include": ["tests/**/*.spec.ts", "setup-jest.ts"]
 }

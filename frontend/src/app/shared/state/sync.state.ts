@@ -98,7 +98,7 @@ export class SyncState {
       if (err instanceof HttpErrorResponse && err.status === 404) {
         this.handleClientIdNotFoundError(ctx);
       } else {
-        ctx.dispatch(SyncAction.SyncinhriniziationWasFailed);
+        ctx.dispatch(new SyncAction.SyncinhriniziationWasFailed());
       }
     }
   }
@@ -133,7 +133,7 @@ export class SyncState {
           // This prevents data loss from temporary network issues
           // we can not continue sync process, because we can not know if change was successfully synchronized or not
           // so we need to stop sync process and notify user about sync failure
-          ctx.dispatch(SyncAction.SyncinhriniziationWasFailed);
+          ctx.dispatch(new SyncAction.SyncinhriniziationWasFailed());
           return;
         }
       }

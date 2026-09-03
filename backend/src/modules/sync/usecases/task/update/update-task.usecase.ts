@@ -24,9 +24,16 @@ export class UpdateTask implements UseCase<Request, Promise<Response>> {
     }
 
     const task = taskOrError.getValue();
-    task.update({
-      ...taskDto,
+    const updateResult = task.update({
+      type: taskDto.type,
+      title: taskDto.title,
+      status: taskDto.status,
+      imageId: taskDto.imageId,
     });
+
+    if (updateResult.isFailure) {
+      return new UpdateTaskErrors.DataInvalid(updateResult.error);
+    }
 
     await this.taskRepoService.save(task);
 
