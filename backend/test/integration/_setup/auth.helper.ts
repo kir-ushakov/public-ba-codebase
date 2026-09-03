@@ -76,3 +76,13 @@ export function authenticatedRequest(app: Application, jwtCookie: string): {
     delete: (url: string) => request(app).delete(url).set('Cookie', cookie),
   };
 }
+
+export function jwtCookieFromResponse(res: { headers: { [key: string]: unknown } }): string {
+  const raw = res.headers['set-cookie'];
+  const list = Array.isArray(raw) ? raw : typeof raw === 'string' ? [raw] : [];
+  const jwtSetCookie = list.find((cookie: string) => cookie.startsWith('jwt='));
+  if (!jwtSetCookie) {
+    throw new Error(`No jwt Set-Cookie in: ${JSON.stringify(list)}`);
+  }
+  return jwtSetCookie.split(';')[0];
+}
