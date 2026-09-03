@@ -1,4 +1,4 @@
-import * as passport from 'passport';
+import passport from 'passport';
 import { LoginService } from '../../../modules/auth/services/login.service.js';
 import type { UserDocument } from '../database/mongodb/user.model.js';
 import { EHttpStatus } from '../http/models/base-controller.js';

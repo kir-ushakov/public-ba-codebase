@@ -1,27 +1,37 @@
 ---
-description: Backend integration tests - Jest, supertest, in-memory MongoDB
+description: Backend tests — integration by default, unit only for pure domain
 globs: backend/test/**/*.ts
 alwaysApply: false
 ---
 
 # Backend tests
 
-Backend testing is integration-only: a real Express app wired to the real controller, use-case, repo and Mongoose models, running against an in-memory MongoDB. Do not add unit tests that mock the layers away.
+The default for this backend is **integration**: a real Express app wired to the real controller, use-case, repo and Mongoose models, running against in-memory MongoDB.
 
-## Layout and naming
+Do **not** unit-test a use-case or controller by mocking the repo, mapper, or domain. That is the kind of unit test this project forbids — it re-implements the stack in mocks and misses the bugs that live at the seams.
+
+## When unit tests are allowed
+
+Isolated tests **without** HTTP or Mongo are allowed for **pure** code that has no I/O:
+
+- domain entities and value objects (`Task.create` / `update`, `UserEmail`, `Guard`)
+- mappers (`TaskMapper.toDomain` / `toPersistence` / `toDTO`)
+
+These live in `test/unit/`, named `<subject>.spec.ts`. They must not mock neighbouring layers — call the real class. Do not add unit tests for routers, controllers, use-cases, or repos.
+
+## Integration layout and naming
 
 - `test/integration/<module>/` mirrors `src/modules/<module>/usecases/`
 - specs are `<use-case>.int.spec.ts`, described as `Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)`
-- each folder has its own `test-app.ts` exporting a `buildTestApp()` builder
-- binary fixtures go in `test/integration/_fixtures/`, env vars in `test/setup-env.ts`
+- shared app + auth live in `test/integration/_setup/`; binary fixtures in `test/integration/_fixtures/`; env vars in `test/setup-env.ts`
 
 Imports carry the `.js` extension like the rest of the backend (`../_setup/mongo-memory.js`).
 
 ## Test app builder
 
-`buildTestApp()` instantiates the real repo, use-case and controller, mounts the controller on a route, and installs a fake auth middleware setting `(req as any).user = { _id: 'test-user-1' }`.
+Prefer `buildTestApp()` from `test/integration/_setup/build-test-app.ts`: it calls production `createApp()` (real routers, Passport JWT, multer). Seed a user with `seedTestUser()` and send `Cookie: jwt=...` via `authenticatedRequest()`. Do not invent a parallel mini-Express or fake `req.user`.
 
-Mock only external systems — Slack, Google Drive, OpenAI, email — as `jest.fn()` doubles. Repos, mappers, domain models and the database stay real.
+Mock only external systems — Slack, Google Drive, OpenAI, email. Repos, mappers, domain models and the database stay real. Google Drive is stubbed in Jest via `test/__mocks__/google-drive-services.ts` so the ESM `mime` package is never loaded.
 
 ## Lifecycle
 

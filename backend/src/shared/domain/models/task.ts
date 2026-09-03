@@ -80,6 +80,16 @@ export class Task extends AggregateRoot<ITaskProps> {
     return Result.ok<Task, never>(task);
   }
 
+  public static reconstitute(
+    props: ITaskProps,
+    id: UniqueEntityID,
+  ): Result<Task | never, DomainError<Task, ETaskError>> {
+    const validationResult = Task.isValid(props);
+    if (validationResult.isFailure) return validationResult as Result<never, DomainError<Task, ETaskError>>;
+
+    return Result.ok<Task, never>(new Task(props, id));
+  }
+
   public update(
     props: Partial<Omit<ITaskProps, 'createdAt' | 'modifiedAt'>>,
   ): Result<Task | never, DomainError<Task, ETaskError>> {
@@ -90,7 +100,7 @@ export class Task extends AggregateRoot<ITaskProps> {
     };
 
     const validationResult = Task.isValid(newProps);
-    if (!validationResult) return validationResult as Result<never, DomainError<Task, ETaskError>>;
+    if (validationResult.isFailure) return validationResult as Result<never, DomainError<Task, ETaskError>>;
 
     this.props.type = newProps.type;
     this.props.title = newProps.title;

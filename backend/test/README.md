@@ -1,167 +1,89 @@
-# Backend Integration Tests
+# Backend tests
 
-## Overview
+Integration is the default: a real Express app (`createApp()`), real controllers / use-cases / repos / Mongoose models, in-memory MongoDB. External APIs (Google Drive, Slack, OpenAI, email) are mocked. Unit tests exist only for pure domain and mappers — not for use-cases or controllers with mocked repos.
 
-This directory contains integration tests that validate the entire request-response flow from controller through use cases to database persistence.
-
-## Test Structure
+## Layout
 
 ```
 test/
-├── integration/
-│   ├── _setup/
-│   │   └── mongo-memory.ts          # In-memory MongoDB setup
-│   ├── _fixtures/
-│   │   └── test-img.jpg             # Shared binary fixtures (e.g. upload tests)
-│   ├── files/
-│   │   ├── upload-image.int.spec.ts # File upload tests
-│   │   └── test-app.ts              # Test app builder for file operations
-│   └── sync/
-│       ├── task-create.int.spec.ts  # Aligns with src: sync/usecases/task/create
-│       └── test-app.ts              # Test app builder for sync operations
-└── setup-env.ts                      # Test environment configuration
+├── setup-env.ts                         # JWT, upload path, dummy third-party keys
+├── __mocks__/
+│   └── google-drive-services.ts         # Stops Jest loading ESM `mime`
+├── unit/
+│   ├── core/guard.spec.ts
+│   ├── domain/task.spec.ts
+│   ├── domain/user-email.spec.ts
+│   └── mappers/task.mapper.spec.ts
+└── integration/
+    ├── _setup/
+    │   ├── mongo-memory.ts
+    │   ├── build-test-app.ts            # production createApp(), no Mongo bootstrap
+    │   ├── auth.helper.ts               # seedTestUser + authenticatedRequest
+    │   └── harness.smoke.spec.ts
+    ├── _fixtures/
+    │   └── test-img.jpg
+    ├── files/
+    │   └── upload-image.int.spec.ts     # POST /api/files/image
+    └── sync/
+        └── task-create.int.spec.ts      # POST /api/sync/task
 ```
 
-## Running Tests
+Specs are named `<use-case>.int.spec.ts` and described as `Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)`. Folders under `integration/` follow `src/modules/<module>/usecases/`. Imports use the `.js` extension, same as production ESM.
+
+## Running tests
+
+From `backend/`:
 
 ```bash
-# Run all tests
 npm test
-
-# Run tests in watch mode
 npm run test:watch
-
-# Run tests with coverage
 npm run test:coverage
-
-# Run specific test file
 npm test -- upload-image.int.spec.ts
 ```
 
-## Test Philosophy
+`createApp()` leaves open handles, so Jest is configured with `forceExit`. Locally you can also pass `--forceExit` on the CLI.
 
-### Integration Testing Approach
+## Integration harness
 
-- ✅ **Real services**: Uses actual implementations (ImageResizeService, ImageRepoService)
-- ✅ **Real database**: In-memory MongoDB for realistic persistence testing
-- ✅ **Mocked externals**: External APIs (Google Drive, Slack) are mocked to avoid network calls
-- ✅ **Test outcomes**: Focus on behavior and results, not implementation details
+`buildTestApp()` calls production `createApp()` (real routers, Passport JWT, multer). Do not stand up a parallel mini-Express or fake `req.user`.
 
-### What We Test
+1. `startInMemoryMongo()` in `beforeAll`
+2. `buildTestApp().app`
+3. `seedTestUser()` then `authenticatedRequest(app, jwtCookie)` (`Cookie: jwt=...`)
+4. Hit production URLs (`/api/sync/task`, `/api/files/image`, …)
+5. Assert HTTP status, the DTO from `@brainassistant/contracts`, and the document read back through the model
 
-**File Upload Tests** (`test/integration/files/upload-image.int.spec.ts`):
-- Happy path: Upload image → process → save metadata to DB
-- Error handling: Unsupported file types
-- Error handling: External service failures
+```ts
+beforeAll(async () => {
+  await startInMemoryMongo();
+  app = buildTestApp().app;
+}, 30_000);
 
-**Task Sync Tests** (`test/integration/sync/task-create.int.spec.ts`):
-- Happy path: Create task → persist to DB
-- Validation: Required fields
+afterAll(async () => {
+  await stopInMemoryMongo();
+});
 
-## Environment Configuration
-
-Tests use `setup-env.ts` to configure required environment variables:
-
-```typescript
-process.env.FILES_UPLOAD_PATH = './test-uploads';
-```
-
-## CI/CD
-
-Tests run automatically on:
-- Push to `main` or `develop` branches
-- Pull requests to `main` or `develop` branches
-
-See `.github/workflows/backend-tests.yml` for the full CI configuration.
-
-## Writing New Tests
-
-### 1. Create Test App Builder
-
-```typescript
-// test/integration/your-feature/test-app.ts
-export function buildYourFeatureTestApp() {
-  const mockExternalService = {
-    someMethod: jest.fn(),
-  } as any;
-
-  const yourUseCase = new YourUseCase(realRepoService, mockExternalService);
-  const yourController = new YourController(yourUseCase);
-
-  const app = express();
-  app.use((req, res, next) => {
-    (req as any).user = { _id: 'test-user-1', username: 'test@example.com' };
-    next();
-  });
-
-  app.post('/api/your-endpoint', async (req, res) => {
-    await (yourController as any).execute(req, res);
-  });
-
-  return { app, yourController, mockExternalService };
-}
-```
-
-### 2. Write Integration Test
-
-```typescript
-// test/integration/your-feature/your-feature.int.spec.ts
-import request from 'supertest';
-import { startInMemoryMongo, stopInMemoryMongo, clearDatabase } from '../_setup/mongo-memory.js';
-import { buildYourFeatureTestApp } from './test-app.js';
-
-describe('Integration: YourFeature', () => {
-  let app: Express;
-  let mockService: any;
-
-  beforeAll(async () => {
-    await startInMemoryMongo();
-    const built = buildYourFeatureTestApp();
-    app = built.app;
-    mockService = built.mockExternalService;
-  }, 30_000);
-
-  afterAll(async () => {
-    await stopInMemoryMongo();
-  });
-
-  beforeEach(async () => {
-    await clearDatabase();
-    jest.clearAllMocks();
-  });
-
-  it('should do something', async () => {
-    mockService.someMethod.mockResolvedValue('result');
-
-    const res = await request(app)
-      .post('/api/your-endpoint')
-      .send({ data: 'test' });
-
-    expect(res.status).toBe(200);
-    // Assert on outcomes, not implementation
-  });
+beforeEach(async () => {
+  await clearDatabase();
+  jest.clearAllMocks();
 });
 ```
 
-## Best Practices
+Cover the happy path, validation failure (`name` + `message` in the body), unauthenticated `401`, and external-service failure. Specs must be deterministic: no real network, no assertions on wall-clock time.
 
-1. **Focus on outcomes** - Test what the system does, not how it does it
-2. **Use real services** - Only mock external dependencies (APIs, network calls)
-3. **Clean up** - Use `afterAll` and `beforeEach` for proper test isolation
-4. **Test fixtures** - Use committed fixtures, create temporary files in gitignored directories
-5. **Descriptive names** - Test names should describe the behavior being tested
+## Unit tests
 
-## Troubleshooting
+Allowed without HTTP or Mongo for:
 
-### Test fails with "Missing required env variable"
-- Ensure `setup-env.ts` is configured in `jest.config.ts`
-- Check that all required env vars are set in `setup-env.ts`
+- domain entities and value objects (`Task.create` / `update`, `UserEmail`, `Guard`)
+- mappers (`TaskMapper.toDomain` / `toPersistence` / `toDTO`)
 
-### MongoDB connection issues
-- Ensure MongoDB Memory Server is properly started in `beforeAll`
-- Check timeout settings (default 30s should be enough)
+They live in `test/unit/`, named `<subject>.spec.ts`, and call the real class.
 
-### File upload tests failing
-- Verify test image exists at `test/integration/_fixtures/test-img.jpg`
-- Check that upload directories are gitignored and cleaned up properly
+## Environment
 
+`setup-env.ts` (Jest `setupFiles`) sets `AUTHENTICATION_STRATEGY=JWT`, `JWT_SECRET`, `FILES_UPLOAD_PATH`, and dummy Google / SendGrid / Mailgun / OpenAI keys so `createApp()` can boot without `.env`.
+
+## CI
+
+`.github/workflows/backend-tests.yml` runs ESLint and Jest on push/PR when `backend/**` or `contracts/**` change (Node 18 and 20).

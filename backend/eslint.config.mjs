@@ -9,7 +9,7 @@ export default [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: './backend/tsconfig.json',
+        project: './tsconfig.json',
         tsconfigRootDir: process.cwd(),
       },
       ecmaVersion: 'latest',

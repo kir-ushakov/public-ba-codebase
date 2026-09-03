@@ -1,5 +1,4 @@
 {
-  "files": ["server.ts", "src/app.ts"],
   "compilerOptions": {
     "module": "ESNext",
     "esModuleInterop": true,
@@ -10,5 +9,5 @@
     "resolveJsonModule": true,
     "types": ["node", "jest"]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "test/**/*.ts"]
+  "include": ["server.ts", "jest.config.ts", "src/**/*.ts", "src/**/*.d.ts", "test/**/*.ts"]
 }

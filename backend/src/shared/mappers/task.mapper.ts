@@ -5,12 +5,12 @@ import { DomainError } from '../core/domain-error.js';
 
 export class TaskMapper {
   public static toDomain(raw: TaskPresitant): Task | DomainError<Task> {
-    const { userId, type, title, status, imageId, _id } = raw;
+    const { userId, type, title, status, imageId, _id, createdAt, modifiedAt } = raw;
 
-    const taskProps = { userId, type, title, status, imageId };
-    const taskId = new UniqueEntityID(_id);
-
-    const taskOrError = Task.create(taskProps, taskId);
+    const taskOrError = Task.reconstitute(
+      { userId, type, title, status, imageId, createdAt, modifiedAt },
+      new UniqueEntityID(_id),
+    );
 
     if (taskOrError.isFailure) {
       console.log(taskOrError.error);
@@ -35,12 +35,15 @@ export class TaskMapper {
   }
 
   public static toDTO(task: Task): TaskDTO {
-    const taskPresitant = TaskMapper.toPersistence(task);
     return {
-      ...taskPresitant,
-      id: taskPresitant._id,
-      createdAt: taskPresitant.createdAt.toISOString(),
-      modifiedAt: taskPresitant.modifiedAt.toISOString(),
+      id: task.id.toString(),
+      userId: task.userId,
+      type: task.type,
+      title: task.title,
+      status: task.status,
+      imageId: task.imageId,
+      createdAt: task.createdAt.toISOString(),
+      modifiedAt: task.modifiedAt.toISOString(),
     };
   }
 }

@@ -8,12 +8,17 @@ Add these badges to your README.md to show the status of your GitHub Actions wor
 
 ## Workflow Overview
 
-### 1. CI Pipeline (`ci.yml`)
+### 1. Backend Tests (`backend-tests.yml`)
 
-- **Triggers**: Push to main/develop, Pull Requests
-- **Jobs**:
-  - Frontend Tests (with Jest)
-  - Security Scan (Trivy)
+- **Triggers**: Push/PR when `backend/**` or `contracts/**` change
+- **Jobs**: Lint, Jest (integration + unit), Codecov upload
+
+### 2. Frontend Tests (`frontend-tests.yml`)
+
+- **Triggers**: Push/PR when `frontend/**` or `contracts/**` change
+- **Jobs**: Playwright E2E
+
+### 3. Security Scan (`security.yml`)
 
 ## Required Secrets
 
@@ -21,15 +26,19 @@ No additional secrets are required for the basic CI pipeline. The `GITHUB_TOKEN`
 
 ## Features
 
-### Frontend Tests (Jest)
+### Backend Tests (Jest)
 
-- Runs Jest tests for the Angular frontend
-- Generates test coverage reports
+- Runs backend unit and integration tests
+- Runs ESLint (must pass; no `|| true` masking)
 - Uploads coverage to Codecov (optional)
+
+### Frontend E2E (Playwright)
+
+- Runs Playwright browser tests against the Angular app
 
 ### Security Scan (Trivy)
 
-- Scans the entire codebase for vulnerabilities
+- Scans frontend and backend for vulnerabilities
 - Generates SARIF reports
 - Uploads results to GitHub Security tab
 
@@ -37,4 +46,3 @@ No additional secrets are required for the basic CI pipeline. The `GITHUB_TOKEN`
 
 1. **Add Codecov token** (optional) for coverage reporting
 2. **Configure Trivy scan paths** if you want to scan specific directories
-3. **Add more test jobs** as needed for backend or other components
