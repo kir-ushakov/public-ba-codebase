@@ -20,6 +20,7 @@ test/
     │   ├── build-test-app.ts            # production createApp(), no Mongo bootstrap
     │   ├── auth.helper.ts               # seedTestUser + authenticatedRequest
     │   ├── slack.helper.ts              # HMAC for x-slack-signature
+    │   ├── fake-google.strategy.ts      # Passport `google` stub (no real Google)
     │   └── harness.smoke.spec.ts
     ├── _fixtures/
     │   └── test-img.jpg
@@ -27,7 +28,8 @@ test/
     │   └── speech-to-text.int.spec.ts   # POST /api/ai/speech-to-text (OpenAI mocked)
     ├── auth/
     │   ├── signup.int.spec.ts
-    │   └── login.int.spec.ts
+    │   ├── login.int.spec.ts
+    │   └── google-auth.int.spec.ts     # GET /api/integrations/google/auth (FakeStrategy)
     ├── files/
     │   ├── upload-image.int.spec.ts
     │   └── get-image.int.spec.ts
