@@ -28,6 +28,8 @@ const config: Config = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   setupFiles: ['<rootDir>/test/setup-env.ts'],
+  // createApp() leaves open handles (session / Passport); exit after the suite.
+  forceExit: true,
 };
 
 export default config;

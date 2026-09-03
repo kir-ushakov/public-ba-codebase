@@ -77,12 +77,12 @@
 
 ## Testing
 
-**Backend Integration Tests**
+**Backend tests**
 
-The backend includes comprehensive integration tests that test the entire request-response flow with real services (in-memory MongoDB) and mocked external APIs.
-Run instructions are documented in the backend test guide.
+Integration specs boot the production Express app (`createApp()`) with Passport JWT, in-memory MongoDB, and mocked external APIs. Unit specs cover pure domain and mappers only.
+Run instructions are in the backend test guide.
 
-Examples: [task synchronization tests](./backend/test/integration/sync/) and [file upload and image processing tests](./backend/test/integration/files/).
+Examples: [task create](./backend/test/integration/sync/task-create.int.spec.ts) and [image upload](./backend/test/integration/files/upload-image.int.spec.ts).
 
 📚 [Backend Test Documentation](./backend/test/README.md)
 
@@ -100,15 +100,15 @@ Example: [task creation user flows](./frontend/e2e/create-task.spec.ts).
 The project uses GitHub Actions for continuous integration:
 
 **Workflows:**
-- 🧪 **Backend Tests** (`.github/workflows/backend-tests.yml`) - Runs on Node.js 18.x and 20.x
-  - Integration tests with in-memory MongoDB
+- 🧪 **Backend Tests** (`.github/workflows/backend-tests.yml`) — Node.js 18.x and 20.x
+  - ESLint (must pass; not masked with `|| true`)
+  - Jest: unit (domain/mappers) + integration (in-memory MongoDB)
   - Uploads coverage to Codecov
-  - Triggers on backend code changes
+  - Triggers on backend / contracts changes
 
 - 🎭 **Frontend Tests** (`.github/workflows/frontend-tests.yml`)
   - E2E tests with Playwright
-  - Unit tests with Jest/Karma
-  - Triggers on frontend code changes
+  - Triggers on frontend / contracts changes
 
 - 🔒 **Security Scan** (`.github/workflows/security.yml`)
   - Trivy vulnerability scanning
