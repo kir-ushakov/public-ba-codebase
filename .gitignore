@@ -1,5 +1,6 @@
 .vscode/*
 nginx/ssl/*
+scripts/smoke/certs/
 
 # evirament variables
 .env
