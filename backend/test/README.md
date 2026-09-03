@@ -19,13 +19,27 @@ test/
     │   ├── mongo-memory.ts
     │   ├── build-test-app.ts            # production createApp(), no Mongo bootstrap
     │   ├── auth.helper.ts               # seedTestUser + authenticatedRequest
+    │   ├── slack.helper.ts              # HMAC for x-slack-signature
+    │   ├── fake-google.strategy.ts      # Passport `google` stub (no real Google)
     │   └── harness.smoke.spec.ts
     ├── _fixtures/
     │   └── test-img.jpg
+    ├── ai/
+    │   └── speech-to-text.int.spec.ts   # POST /api/ai/speech-to-text (OpenAI mocked)
+    ├── auth/
+    │   ├── signup.int.spec.ts
+    │   ├── login.int.spec.ts
+    │   └── google-auth.int.spec.ts     # GET /api/integrations/google/auth (FakeStrategy)
     ├── files/
-    │   └── upload-image.int.spec.ts     # POST /api/files/image
+    │   ├── upload-image.int.spec.ts
+    │   └── get-image.int.spec.ts
+    ├── integrations/
+    │   └── slack-event-received.int.spec.ts  # POST /api/integrations/slack/event-recived
     └── sync/
-        └── task-create.int.spec.ts      # POST /api/sync/task
+        ├── task-create.int.spec.ts
+        ├── task-update.int.spec.ts
+        ├── task-delete.int.spec.ts
+        └── get-changes.int.spec.ts
 ```
 
 Specs are named `<use-case>.int.spec.ts` and described as `Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)`. Folders under `integration/` follow `src/modules/<module>/usecases/`. Imports use the `.js` extension, same as production ESM.
@@ -82,7 +96,7 @@ They live in `test/unit/`, named `<subject>.spec.ts`, and call the real class.
 
 ## Environment
 
-`setup-env.ts` (Jest `setupFiles`) sets `AUTHENTICATION_STRATEGY=JWT`, `JWT_SECRET`, `FILES_UPLOAD_PATH`, and dummy Google / SendGrid / Mailgun / OpenAI keys so `createApp()` can boot without `.env`.
+`setup-env.ts` (Jest `setupFiles`) sets `AUTHENTICATION_STRATEGY=JWT`, `JWT_SECRET`, `FILES_UPLOAD_PATH`, `SLACK_SIGNING_SECRET`, and dummy Google / SendGrid / Mailgun / OpenAI keys so `createApp()` can boot without `.env`.
 
 ## CI
 

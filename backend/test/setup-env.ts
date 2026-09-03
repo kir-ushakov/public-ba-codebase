@@ -13,3 +13,4 @@ process.env.GOOGLE_OAUTH_CALLBACK = 'http://localhost/callback';
 process.env.SENDGRID_API_KEY = 'SG.test-sendgrid-api-key';
 process.env.MAILGUN_API_KEY = 'test-mailgun-api-key';
 process.env.OPEN_AI_API_KEY = 'test-openai-api-key';
+process.env.SLACK_SIGNING_SECRET = 'test-slack-signing-secret';

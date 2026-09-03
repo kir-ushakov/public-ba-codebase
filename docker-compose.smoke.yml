@@ -1,0 +1,89 @@
+# Lightweight stack for API smoke: real Mongo + HTTPS backend (no frontend/nginx).
+# Usage: see scripts/smoke/README.md
+
+services:
+  db:
+    image: kirushakov/braias:db
+    build: ./db
+    container_name: ba-smoke-db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: smoke
+      MONGO_INITDB_ROOT_PASSWORD: smoke-password
+      MONGO_INITDB_DATABASE: ba
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mongosh',
+          '--quiet',
+          '-u',
+          'smoke',
+          '-p',
+          'smoke-password',
+          '--authenticationDatabase',
+          'admin',
+          '--eval',
+          "db.adminCommand('ping').ok",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    image: kirushakov/braias:backend
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: ba-smoke-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '3443:3443'
+    volumes:
+      - ./scripts/smoke/certs:/app/backend/ssl:ro
+      - smoke_files:/app/backend/files
+    entrypoint:
+      - sh
+      - -c
+      - mkdir -p /app/backend/files/tmp /app/backend/files/uploads /tmp/ssl && chown -R node:node /app/backend/files && cp /app/backend/ssl/server.crt /app/backend/ssl/server.key /tmp/ssl/ && chmod 644 /tmp/ssl/server.crt /tmp/ssl/server.key && chown node:node /tmp/ssl/server.crt /tmp/ssl/server.key && exec gosu node npm run dev
+    environment:
+      NODE_ENV: development
+      PORT: 3443
+      DB_PORT: 27017
+      DB_CONTAINER: db
+      DB_USER: smoke
+      DB_PASSWORD: smoke-password
+      CRT_PATH: /tmp/ssl/server.crt
+      KEY_PATH: /tmp/ssl/server.key
+      FILES_UPLOAD_PATH: /app/backend/files
+      SESSION_SECRET: smoke-session-secret
+      JWT_SECRET: smoke-jwt-secret-min-32-chars-long!!
+      AUTHENTICATION_STRATEGY: JWT
+      EMAIL_DOMAIN: example.com
+      HOST: localhost
+      SENDGRID_API_KEY: SG.smoke
+      MAILGUN_API_KEY: smoke-mailgun
+      MAIL_API: sendgrid
+      SLACK_CLIENT_ID: smoke
+      SLACK_CLIENT_SECRET: smoke
+      SLACK_SIGNING_SECRET: smoke-slack-signing-secret
+      GOOGLE_CLIENT_ID: smoke-google-client-id
+      GOOGLE_CLIENT_SECRET: smoke-google-client-secret
+      GOOGLE_OAUTH_CALLBACK: http://localhost/callback
+      OPEN_AI_API_KEY: smoke-openai-key
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "process.exit(require('https').get('https://127.0.0.1:3443/',{rejectUnauthorized:false},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))||1)",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+
+volumes:
+  smoke_files:
