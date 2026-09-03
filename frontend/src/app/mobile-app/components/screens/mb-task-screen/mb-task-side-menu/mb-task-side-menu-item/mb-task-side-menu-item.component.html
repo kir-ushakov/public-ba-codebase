@@ -1,4 +1,8 @@
-<div class="sidemenu-item sidemenu-cancel-btn" (click)="optionItem().callback()">
+<div
+  class="sidemenu-item sidemenu-cancel-btn"
+  (click)="optionItem().callback()"
+  [attr.data-test]="'task-menu-' + optionItem().label.toLowerCase()"
+>
   <img class="sidemenu-item-icon" src="{{ optionItem().icon }}" />
   <span>{{ optionItem().label }}</span>
 </div>
