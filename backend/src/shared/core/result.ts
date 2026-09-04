@@ -41,8 +41,8 @@ export class Result<T, E = string> {
     return new Result<U, E>(false, error);
   }
 
-  public static combine(results: Result<any>[]): Result<any> {
-    for (let result of results) {
+  public static combine(results: Result<unknown>[]): Result<unknown> {
+    for (const result of results) {
       if (result.isFailure) return result;
     }
     return Result.ok();

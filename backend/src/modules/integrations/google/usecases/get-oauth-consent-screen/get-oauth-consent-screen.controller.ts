@@ -14,7 +14,7 @@ export class GetOAuthConsentScreenController extends BaseController {
     req: Request,
     res: Response,
     next?: NextFunction
-  ): Promise<void | any> {
+  ): Promise<void | Response> {
     try {
       const forceConsentParam = req.query.forceConsent;
       const forceConsentString = Array.isArray(forceConsentParam)

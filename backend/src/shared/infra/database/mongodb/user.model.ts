@@ -34,7 +34,7 @@ const UserSchema = new Schema({
  **/
 UserSchema.plugin(passportLocalMongoose);
 
-UserSchema.methods.generateVerificationToken = function () {
+UserSchema.methods.generateVerificationToken = function (): VerificationTokenDocument {
   let payload = {
     userId: this._id,
     // 👇 token just a random hex string

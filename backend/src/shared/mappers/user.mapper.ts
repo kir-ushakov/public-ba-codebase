@@ -1,7 +1,7 @@
 import { User, UserPersistent } from '../domain/models/user.js';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 import { UserEmail } from '../domain/values/user/user-email.js';
-import UserModel from '../infra/database/mongodb/user.model.js';
+import UserModel, { UserDocument } from '../infra/database/mongodb/user.model.js';
 
 export class UserMapper {
   public static toDomain(raw: UserPersistent): User {
@@ -18,7 +18,7 @@ export class UserMapper {
         googleRefreshToken: raw.googleRefreshToken,
         googleAccessToken: raw.googleAccessToken,
       },
-      new UniqueEntityID(raw._id)
+      new UniqueEntityID(raw._id),
     );
 
     if (userOrError.isFailure) {
@@ -41,10 +41,10 @@ export class UserMapper {
     };
   }
 
-  public static toDatabaseEntity(user: User): Record<string, any> {
+  public static toDatabaseEntity(user: User): UserDocument {
     // TODO: pass DBModel as dependency to make method db agnostic
     const DBModel = UserModel;
-    return new DBModel ({
+    return new DBModel({
       id: user.id.toValue(),
       username: user.username.value,
       firstName: user.firstname,

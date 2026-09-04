@@ -1,6 +1,6 @@
 import { UniqueEntityID } from './UniqueEntityID.js';
 
-const isEntity = (v: any): v is Entity<any> => {
+const isEntity = (v: unknown): v is Entity<unknown> => {
   return v instanceof Entity;
 };
 

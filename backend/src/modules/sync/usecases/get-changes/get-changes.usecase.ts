@@ -63,18 +63,17 @@ export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesR
       EActionType.TaskDeleted,
     );
 
-    for (let i = 0; i < deleteTaskActions.length; i++) {
-      const deleteTaskAction: Action = deleteTaskActions[i];
-        changes.push(
-          new Change({
-            entity: EChangedEntity.Task,
-            action: EChangeAction.Deleted,
-            object: {
-              id: deleteTaskAction.entityId.toString(),
-              modifiedAt: deleteTaskAction.occurredAt.toISOString(),
-            },
-          }),
-        );
+    for (const deleteTaskAction of deleteTaskActions) {
+      changes.push(
+        new Change({
+          entity: EChangedEntity.Task,
+          action: EChangeAction.Deleted,
+          object: {
+            id: deleteTaskAction.entityId.toString(),
+            modifiedAt: deleteTaskAction.occurredAt.toISOString(),
+          },
+        }),
+      );
     }
 
     // TODO: do not save time here

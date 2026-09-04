@@ -1,5 +1,5 @@
 export class Guard {
-  public static notNullOrUndefined(argument: any): boolean {
+  public static notNullOrUndefined(argument: unknown): boolean {
     if (argument === null || argument === undefined) {
       return false;
     } else {
@@ -15,14 +15,12 @@ export class Guard {
     }
   }
 
-  public static textLengthAtLeast(text: string, minLength: number) {
-    if (typeof text === 'string' && text.trim().length >= minLength)
-      return true;
+  public static textLengthAtLeast(text: string, minLength: number): boolean {
+    if (typeof text === 'string' && text.trim().length >= minLength) return true;
     return false;
   }
-  public static textLengthAtMost(text: string, maxLength: number) {
-    if (typeof text === 'string' && text.trim().length <= maxLength)
-      return true;
+  public static textLengthAtMost(text: string, maxLength: number): boolean {
+    if (typeof text === 'string' && text.trim().length <= maxLength) return true;
     return false;
   }
 }

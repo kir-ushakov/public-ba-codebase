@@ -2,8 +2,8 @@ import express from 'express';
 import crypto from 'crypto';
 import formurlencoded from 'form-urlencoded';
 
-export function verificationChallenge() {
-  return async (req: express.Request, res: express.Response, next) => {
+export function verificationChallenge(): express.RequestHandler {
+  return (req: express.Request, res: express.Response, next: express.NextFunction) => {
     // the verification challenge to validate the endpoint (only used once)
     if (req.body.type === 'url_verification') {
       res.setHeader('Content-Type', 'text/plain');

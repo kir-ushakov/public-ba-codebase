@@ -115,14 +115,17 @@ async function seedOAuthAccess(teamId: string): Promise<void> {
   });
 }
 
-function appUninstalledBody(teamId: string) {
+function appUninstalledBody(teamId: string): {
+  team_id: string;
+  event: { type: ESlackEventType };
+} {
   return {
     team_id: teamId,
     event: { type: ESlackEventType.AppUninstalled },
   };
 }
 
-async function signedPost(app: Application, body: object) {
+async function signedPost(app: Application, body: object): Promise<request.Response> {
   const timestamp = '1700000000';
   return request(app)
     .post(EVENT_PATH)

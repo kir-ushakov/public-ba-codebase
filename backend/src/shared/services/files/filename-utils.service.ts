@@ -14,7 +14,10 @@ export class FilenameUtilsService {
     baseName: string,
     options?: { includeRandom?: boolean; overrides?: Record<string, string> },
   ): Result<string, ServiceError<EFilenameUtilsError>> {
-    const ext = options?.overrides?.[mimeType] ?? extension(mimeType);
+    const overrideExt = options?.overrides
+      ? Object.entries(options.overrides).find(([key]) => key === mimeType)?.[1]
+      : undefined;
+    const ext = overrideExt ?? extension(mimeType);
 
     if (!ext) {
       return serviceFail(

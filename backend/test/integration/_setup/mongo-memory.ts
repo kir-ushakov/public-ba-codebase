@@ -7,10 +7,7 @@ let mongoServer: MongoMemoryServer | null = null;
 export async function startInMemoryMongo(): Promise<string> {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
-  // connect mongoose
-  await mongoose.connect(uri, {
-    // you can add options if your mongoose version requires it
-  } as any);
+  await mongoose.connect(uri);
   return uri;
 }
 
@@ -27,6 +24,5 @@ export async function stopInMemoryMongo(): Promise<void> {
 
 export async function clearDatabase(): Promise<void> {
   const collections = mongoose.connection.collections;
-  const promises = Object.keys(collections).map(key => collections[key].deleteMany({}));
-  await Promise.all(promises);
+  await Promise.all(Object.values(collections).map(col => col.deleteMany({})));
 }

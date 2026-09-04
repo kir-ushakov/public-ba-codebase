@@ -1,6 +1,6 @@
 import ngrok, { Listener } from '@ngrok/ngrok';
 
-export function establishIngress() {
+export function establishIngress(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     // Establish connectivity
     ngrok

@@ -30,6 +30,7 @@ describe('Integration: GetImage (Controller -> UseCase -> Repo -> MongoDB)', () 
     jest.clearAllMocks();
     drive.uploadFile.mockResolvedValue('google-drive-file-id');
     drive.getImageById.mockImplementation(async () => ({
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed test fixture path
       data: createReadStream(TEST_IMAGE_PATH),
       headers: { 'content-type': 'image/jpeg' },
       status: 200,

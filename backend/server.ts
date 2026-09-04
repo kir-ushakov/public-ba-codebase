@@ -11,11 +11,15 @@ const keyPath = process.env.KEY_PATH;
 const caBandlePath = process.env.CA_BANDLE_PATH;
 
 const httpsOptions: https.ServerOptions = {
+  // Cert paths come from trusted server env, not request input.
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   cert: fs.readFileSync(crtPath),
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   key: fs.readFileSync(keyPath),
 };
 
 if (caBandlePath) {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   httpsOptions.ca = fs.readFileSync(caBandlePath);
 }
 
@@ -30,7 +34,7 @@ process.on('uncaughtException', function (error) {
   process.exit(1);
 });
 
-process.on('unhandledRejection', function (reason, p) {
+process.on('unhandledRejection', function (reason, _promise) {
   // TODO: use special log here
   console.log(' ===== Unhandled Rejection Occurred ===== ');
   console.log(reason);

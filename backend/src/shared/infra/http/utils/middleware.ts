@@ -1,8 +1,5 @@
-export function serialize(obj) {
-  var str = [];
-  for (var p in obj)
-    if (obj.hasOwnProperty(p)) {
-      str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]));
-    }
-  return str.join('&');
+export function serialize(obj: Record<string, string>): string {
+  return Object.entries(obj)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
 }

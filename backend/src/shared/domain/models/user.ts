@@ -61,7 +61,7 @@ export class User extends AggregateRoot<UserProps> {
   }
 
   // TDOD: setGoogleTokens has not to be a part of domain logic
-  setGoogleTokens(googleTokens: GoogleAuthTokens) {
+  setGoogleTokens(googleTokens: GoogleAuthTokens): void {
     this.props.googleAccessToken = googleTokens.accessToken;
     this.props.googleRefreshToken = googleTokens.refreshToken;
   }

@@ -34,7 +34,10 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
 
   public execute(request: GoogleAuthRequest): Promise<GoogleAuthResult> {
     return new Promise<GoogleAuthResult>((resolve, reject) => {
-      const handleGoogleCallback = async (err: unknown, res: GoogleProfileWithTokens) => {
+      const handleGoogleCallback = async (
+        err: unknown,
+        res: GoogleProfileWithTokens,
+      ): Promise<void> => {
         if (err) return resolve(new GoogleAuthErrors.AuthorizationFailed());
 
         const profile = res.profile;
