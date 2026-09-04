@@ -55,6 +55,7 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       .set('Accept', 'application/json');
 
     expect(res.status).toBe(200);
+    expect(res.body).toEqual({});
 
     const persisted = await models.TaskModel.findById(created.id).lean();
     expect(persisted).toMatchObject({

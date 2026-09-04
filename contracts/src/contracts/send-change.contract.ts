@@ -6,7 +6,7 @@ import { ChangeableObjectDTO } from "../dto";
  * 
  * Examples:
  * - POST /api/sync/task { changeableObjectDto: TaskDTO } → Returns TaskDTO
- * - PATCH /api/sync/task { changeableObjectDto: TaskDTO } → Returns TaskDTO
+ * - PATCH /api/sync/task { changeableObjectDto: TaskDTO } → Returns void
  * - DELETE /api/sync/task/:id → Returns void
  */
 export namespace SendChangeContract {
@@ -21,10 +21,10 @@ export namespace SendChangeContract {
   /**
    * Response for sending a change to the server
    * 
-   * Returns the created/updated entity for POST/PATCH requests.
+   * Returns the created entity for POST requests.
    * This confirms what the server actually saved (server is source of truth).
    * 
-   * For DELETE requests, returns void.
+   * PATCH and DELETE answer 200 with no payload.
    */
   export type Response<T extends ChangeableObjectDTO = ChangeableObjectDTO> = T | void;
 }

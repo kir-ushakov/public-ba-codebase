@@ -36,6 +36,10 @@ function parseSendChangeTask(postData: string | null): TaskDTO | null {
 
 /**
  * Mocks backend API routes so E2E specs run without a live server.
+ *
+ * Statuses and response bodies must mirror the real backend, which is pinned by the
+ * integration specs in `backend/test/integration/`. Only `POST /api/sync/task` returns
+ * an entity; update and delete answer 200 with no payload.
  */
 export async function setupApiMocks(
   page: Page,
@@ -71,8 +75,7 @@ export async function setupApiMocks(
     }
 
     if (url.includes('/api/sync/task') && method === 'PATCH') {
-      const task = parseSendChangeTask(request.postData());
-      await route.fulfill(json(200, task ?? {}));
+      await route.fulfill(json(200, {}));
       return;
     }
 
@@ -83,7 +86,7 @@ export async function setupApiMocks(
 
     if (url.includes('/api/files/image') && method === 'POST') {
       const body: UploadImageContract.Response = { imageId: 'mock-uploaded-image-id' };
-      await route.fulfill(json(201, body));
+      await route.fulfill(json(200, body));
       return;
     }
 
