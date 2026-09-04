@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "start:e2e": "ng serve --configuration e2e",
+    "start:live-e2e": "ng serve --proxy-config proxy.live.conf.json",
+    "e2e:live": "npx playwright test -c playwright.live.config.js",
     "build-prod": "ng build --configuration production --output-path dist/app",
     "build-dev": "ng build --output-path dist/app --poll 500 --watch",
     "build:cap": "ng build --configuration capacitor && npx cap sync",

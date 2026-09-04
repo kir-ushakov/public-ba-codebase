@@ -9,7 +9,7 @@ module.exports = {
   ...presetConfig,
   setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
   testMatch: ['<rootDir>/tests/**/*.spec.ts'],
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/dist/', '<rootDir>/e2e/'],
+  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/dist/', '<rootDir>/e2e/', '<rootDir>/e2e-live/'],
   transformIgnorePatterns: [
     'node_modules/(?!(.*\\.mjs$|@angular/common/locales/.*\\.js$|uuid|mime))',
   ],
