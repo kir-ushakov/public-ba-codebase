@@ -1,0 +1,152 @@
+{
+  "enums": {
+    "ETaskType": [
+      "TASK_TYPE_BASIC"
+    ],
+    "ETaskStatus": [
+      "TASK_STATUS_TODO",
+      "TASK_STATUS_DONE",
+      "TASK_STATUS_CANCEL"
+    ],
+    "EChangedEntity": [
+      "CHANGED_ENTITY_TASK",
+      "CHANGED_ENTITY_TAG"
+    ],
+    "EChangeAction": [
+      "CHANGE_ACTION_CREATED",
+      "CHANGE_ACTION_UPDATED",
+      "CHANGE_ACTION_DELETED"
+    ]
+  },
+  "dto": {
+    "TaskDTO": {
+      "keys": [
+        "id",
+        "userId",
+        "type",
+        "title",
+        "status",
+        "imageId",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "optional": [
+        "imageId"
+      ]
+    },
+    "UserDto": {
+      "keys": [
+        "firstName",
+        "lastName",
+        "email",
+        "userId"
+      ],
+      "optional": []
+    },
+    "TagDTO": {
+      "keys": [
+        "id",
+        "userId",
+        "isCategory",
+        "name",
+        "color",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "optional": []
+    },
+    "IChangeableObjectDTO": {
+      "keys": [
+        "id",
+        "modifiedAt"
+      ],
+      "optional": []
+    },
+    "ChangeDTO": {
+      "keys": [
+        "entity",
+        "action",
+        "object"
+      ],
+      "optional": []
+    },
+    "LoginRequestDTO": {
+      "keys": [
+        "username",
+        "password"
+      ],
+      "optional": []
+    },
+    "LoginResponseDTO": {
+      "keys": [
+        "user",
+        "expireAt"
+      ],
+      "optional": [
+        "expireAt"
+      ]
+    },
+    "SignUpRequestDTO": {
+      "keys": [
+        "email",
+        "firstName",
+        "lastName",
+        "password"
+      ],
+      "optional": []
+    },
+    "SignUpResponseDTO": {
+      "keys": [
+        "email",
+        "firstName",
+        "lastName"
+      ],
+      "optional": []
+    },
+    "VerifyEmailResponseDTO": {
+      "keys": [
+        "email",
+        "verified"
+      ],
+      "optional": []
+    },
+    "ApiErrorDto": {
+      "keys": [
+        "name",
+        "message"
+      ],
+      "optional": []
+    },
+    "ApiSuccessDto": {
+      "keys": [
+        "data"
+      ],
+      "optional": []
+    }
+  },
+  "contracts": {
+    "UploadImageContract": {
+      "request": [
+        "imageId",
+        "file"
+      ],
+      "response": [
+        "imageId"
+      ]
+    },
+    "GetChangesContract": {
+      "request": [
+        "clientId"
+      ],
+      "response": [
+        "changes"
+      ]
+    },
+    "SendChangeContract": {
+      "request": [
+        "changeableObjectDto"
+      ],
+      "response": "entity-or-void"
+    }
+  }
+}

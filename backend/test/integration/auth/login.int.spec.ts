@@ -1,6 +1,6 @@
 import { Application } from 'express';
 import request from 'supertest';
-import { TaskDTO } from '@brainassistant/contracts';
+import { TaskDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import UserModel from '../../../src/shared/infra/database/mongodb/user.model.js';
 import {
   authenticatedRequest,
@@ -82,9 +82,9 @@ describe('Integration: Login (Controller -> UseCase -> Repo -> MongoDB)', () => 
       .send({
         changeableObjectDto: {
           id: 'task-from-login',
-          type: 'TASK',
+          type: ETaskType.Basic,
           title: 'Created after login',
-          status: 'OPEN',
+          status: ETaskStatus.Todo,
         },
       })
       .set('Accept', 'application/json');

@@ -37,6 +37,10 @@ jobs:
       working-directory: ./backend
       run: npm ci
 
+    - name: Run contracts tests
+      working-directory: ./contracts
+      run: npm test
+
     - name: Run linter
       working-directory: ./backend
       run: npm run lint

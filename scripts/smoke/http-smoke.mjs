@@ -177,9 +177,9 @@ async function main() {
     body: {
       changeableObjectDto: {
         id: TASK_ID,
-        type: 'TASK',
+        type: 'TASK_TYPE_BASIC',
         title: TASK_TITLE,
-        status: 'OPEN',
+        status: 'TASK_STATUS_TODO',
       },
     },
   });

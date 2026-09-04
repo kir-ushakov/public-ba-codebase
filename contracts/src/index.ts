@@ -24,7 +24,7 @@ export type {
 } from './dto';
 
 // Enums
-export { EChangedEntity, EChangeAction } from './enums';
+export { EChangedEntity, EChangeAction, ETaskStatus, ETaskType } from './enums';
 
 // Contracts
 export { UploadImageContract, SendChangeContract, GetChangesContract } from './contracts';

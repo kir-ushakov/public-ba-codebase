@@ -1,4 +1,2 @@
-import { TaskDTO } from './task.dto';
-import { UserDto } from './user.dto';
-
-export { TaskDTO, UserDto };
+export type { TaskDTO } from './task.dto';
+export type { UserDto } from './user.dto';

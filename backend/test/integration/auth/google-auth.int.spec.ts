@@ -1,5 +1,6 @@
 import { Application } from 'express';
 import request from 'supertest';
+import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import UserModel from '../../../src/shared/infra/database/mongodb/user.model.js';
 import {
   authenticatedRequest,
@@ -62,9 +63,9 @@ describe('Integration: GoogleAuth (Controller -> UseCase -> Repo -> MongoDB)', (
       .send({
         changeableObjectDto: {
           id: 'task-from-google',
-          type: 'TASK',
+          type: ETaskType.Basic,
           title: 'Created after Google auth',
-          status: 'OPEN',
+          status: ETaskStatus.Todo,
         },
       });
 

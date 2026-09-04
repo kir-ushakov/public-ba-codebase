@@ -1,18 +1,18 @@
-import { TaskDTO } from '../dto/task.dto';
-import { Task, ETaskStatus, ETaskType } from '../models/task.model';
+import { TaskDTO } from '@brainassistant/contracts';
+import { Task } from '../models/task.model';
 
 export class TasksMapper {
   public static toModel(taskDto: TaskDTO): Task {
     return {
       id: taskDto.id,
       userId: taskDto.userId,
-      type: taskDto.type as ETaskType,
+      type: taskDto.type,
       title: taskDto.title,
-      status: taskDto.status as ETaskStatus,
+      status: taskDto.status,
       imageId: taskDto.imageId,
       createdAt: taskDto.createdAt,
       modifiedAt: taskDto.modifiedAt,
-    } as Task;
+    };
   }
 
   public static toDto(task: Task): TaskDTO {
@@ -31,6 +31,6 @@ export class TasksMapper {
       imageId: task.imageId,
       createdAt: task.createdAt,
       modifiedAt: task.modifiedAt,
-    } as TaskDTO;
+    };
   }
 }

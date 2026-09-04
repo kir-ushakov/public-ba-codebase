@@ -1,6 +1,7 @@
 import { Task, TaskPresitant } from '../../../src/shared/domain/models/task.js';
 import { UniqueEntityID } from '../../../src/shared/domain/UniqueEntityID.js';
 import { TaskMapper } from '../../../src/shared/mappers/task.mapper.js';
+import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 
 describe('TaskMapper', () => {
   beforeEach(() => {
@@ -17,9 +18,9 @@ describe('TaskMapper', () => {
       const task = Task.create(
         {
           userId: 'user-1',
-          type: 'TASK',
+          type: ETaskType.Basic,
           title: 'Valid task title',
-          status: 'OPEN',
+          status: ETaskStatus.Todo,
         },
         new UniqueEntityID('task-123'),
       ).getValue();
@@ -40,9 +41,9 @@ describe('TaskMapper', () => {
       const raw: TaskPresitant = {
         _id: 'task-1',
         userId: 'user-1',
-        type: 'TASK',
+        type: ETaskType.Basic,
         title: 'Persisted task title',
-        status: 'OPEN',
+        status: ETaskStatus.Todo,
         createdAt,
         modifiedAt,
       };
@@ -59,9 +60,9 @@ describe('TaskMapper', () => {
       const task = Task.create(
         {
           userId: 'user-1',
-          type: 'TASK',
+          type: ETaskType.Basic,
           title: 'Valid task title',
-          status: 'OPEN',
+          status: ETaskStatus.Todo,
         },
         new UniqueEntityID('task-123'),
       ).getValue();
@@ -81,9 +82,9 @@ describe('TaskMapper', () => {
       const original = Task.create(
         {
           userId: 'user-1',
-          type: 'TASK',
+          type: ETaskType.Basic,
           title: 'Valid task title',
-          status: 'OPEN',
+          status: ETaskStatus.Todo,
           imageId: 'image-1',
         },
         new UniqueEntityID('task-123'),

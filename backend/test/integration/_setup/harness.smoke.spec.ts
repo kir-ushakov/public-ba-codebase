@@ -1,5 +1,6 @@
 import request from 'supertest';
 import { Application } from 'express';
+import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { startInMemoryMongo, stopInMemoryMongo, clearDatabase } from './mongo-memory.js';
 import { buildTestApp } from './build-test-app.js';
 import { authenticatedRequest, seedTestUser } from './auth.helper.js';
@@ -24,9 +25,9 @@ describe('Integration: test harness (createApp + JWT)', () => {
     const res = await request(app).post('/api/sync/task').send({
       changeableObjectDto: {
         id: 'task-unauth',
-        type: 'TASK',
+        type: ETaskType.Basic,
         title: 'Should not be created',
-        status: 'OPEN',
+        status: ETaskStatus.Todo,
       },
     });
 
@@ -45,9 +46,9 @@ describe('Integration: test harness (createApp + JWT)', () => {
       .send({
         changeableObjectDto: {
           id: 'task-smoke-1',
-          type: 'TASK',
+          type: ETaskType.Basic,
           title: 'Harness smoke task',
-          status: 'OPEN',
+          status: ETaskStatus.Todo,
         },
       })
       .set('Accept', 'application/json');
