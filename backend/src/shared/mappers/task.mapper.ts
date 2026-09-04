@@ -8,7 +8,15 @@ export class TaskMapper {
     const { userId, type, title, status, imageId, _id, createdAt, modifiedAt } = raw;
 
     const taskOrError = Task.reconstitute(
-      { userId, type, title, status, imageId, createdAt, modifiedAt },
+      {
+        userId,
+        type: type as ETaskType,
+        title,
+        status: status as ETaskStatus,
+        imageId,
+        createdAt,
+        modifiedAt,
+      },
       new UniqueEntityID(_id),
     );
 
@@ -38,9 +46,9 @@ export class TaskMapper {
     return {
       id: task.id.toString(),
       userId: task.userId,
-      type: task.type as ETaskType,
+      type: task.type,
       title: task.title,
-      status: task.status as ETaskStatus,
+      status: task.status,
       imageId: task.imageId,
       createdAt: task.createdAt.toISOString(),
       modifiedAt: task.modifiedAt.toISOString(),

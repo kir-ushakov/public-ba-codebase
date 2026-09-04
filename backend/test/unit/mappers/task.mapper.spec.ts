@@ -71,6 +71,8 @@ describe('TaskMapper', () => {
 
       expect(dto.id).toBe('task-123');
       expect(dto.userId).toBe('user-1');
+      expect(dto.type).toBe(ETaskType.Basic);
+      expect(dto.status).toBe(ETaskStatus.Todo);
       expect(dto.createdAt).toBe('2025-01-15T12:00:00.000Z');
       expect(dto.modifiedAt).toBe('2025-01-15T12:00:00.000Z');
       expect('_id' in dto).toBe(false);

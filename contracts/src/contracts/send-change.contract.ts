@@ -3,10 +3,10 @@ import { ChangeableObjectDTO } from "../dto";
 /**
  * Send Change Contract
  * Used for POST/PATCH/DELETE requests to sync endpoints
- * 
+ *
  * Examples:
  * - POST /api/sync/task { changeableObjectDto: TaskDTO } → Returns TaskDTO
- * - PATCH /api/sync/task { changeableObjectDto: TaskDTO } → Returns void
+ * - PATCH /api/sync/task { changeableObjectDto: TaskDTO } → Returns TaskDTO
  * - DELETE /api/sync/task/:id → Returns void
  */
 export namespace SendChangeContract {
@@ -20,11 +20,11 @@ export namespace SendChangeContract {
 
   /**
    * Response for sending a change to the server
-   * 
-   * Returns the created entity for POST requests.
-   * This confirms what the server actually saved (server is source of truth).
-   * 
-   * PATCH and DELETE answer 200 with no payload.
+   *
+   * POST and PATCH return the saved entity (server is source of truth).
+   * Cached PWAs that ignore the PATCH body stay compatible.
+   *
+   * DELETE answers 200 with no payload.
    */
   export type Response<T extends ChangeableObjectDTO = ChangeableObjectDTO> = T | void;
 }

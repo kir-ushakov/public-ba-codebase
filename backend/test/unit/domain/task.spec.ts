@@ -28,6 +28,8 @@ describe('Task', () => {
       expect(result.isSuccess).toBe(true);
       const task = result.getValue();
       expect(task.title).toBe('Valid task title');
+      expect(task.type).toBe(ETaskType.Basic);
+      expect(task.status).toBe(ETaskStatus.Todo);
       expect(task.createdAt).toEqual(new Date('2025-01-15T12:00:00.000Z'));
       expect(task.modifiedAt).toEqual(new Date('2025-01-15T12:00:00.000Z'));
     });
