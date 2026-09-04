@@ -39,6 +39,7 @@ describe('Integration: DeleteTask (Controller -> UseCase -> Repo -> MongoDB)', (
     const res = await authenticatedRequest(app, jwtCookie).delete(`/api/sync/task/${created.id}`);
 
     expect(res.status).toBe(200);
+    expect(res.body).toEqual({});
     expect(await models.TaskModel.findById(created.id).lean()).toBeNull();
 
     const action = await models.ActionModel.findOne({
