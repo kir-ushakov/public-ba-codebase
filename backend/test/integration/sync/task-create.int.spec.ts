@@ -1,6 +1,6 @@
 import { Application } from 'express';
 import request from 'supertest';
-import { TaskDTO } from '@brainassistant/contracts';
+import { TaskDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
@@ -28,9 +28,9 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       .send({
         changeableObjectDto: {
           id: 'task-unauth',
-          type: 'TASK',
+          type: ETaskType.Basic,
           title: 'Should not be created',
-          status: 'OPEN',
+          status: ETaskStatus.Todo,
         },
       });
 
@@ -42,9 +42,9 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
 
     const dto = {
       id: 'task-123',
-      type: 'TASK',
+      type: ETaskType.Basic,
       title: 'Integration Test Task',
-      status: 'OPEN',
+      status: ETaskStatus.Todo,
       imageId: 'image-456',
     };
 
@@ -78,9 +78,9 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
 
     const badDto = {
       id: 'task-err-1',
-      type: 'TASK',
+      type: ETaskType.Basic,
       title: '',
-      status: 'OPEN',
+      status: ETaskStatus.Todo,
     };
 
     const res = await authenticatedRequest(app, jwtCookie)

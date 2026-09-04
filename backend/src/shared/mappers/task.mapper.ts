@@ -1,5 +1,5 @@
 import { Task, TaskPresitant } from '../domain/models/task.js';
-import { TaskDTO } from '@brainassistant/contracts';
+import { TaskDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 import { DomainError } from '../core/domain-error.js';
 
@@ -38,9 +38,9 @@ export class TaskMapper {
     return {
       id: task.id.toString(),
       userId: task.userId,
-      type: task.type,
+      type: task.type as ETaskType,
       title: task.title,
-      status: task.status,
+      status: task.status as ETaskStatus,
       imageId: task.imageId,
       createdAt: task.createdAt.toISOString(),
       modifiedAt: task.modifiedAt.toISOString(),

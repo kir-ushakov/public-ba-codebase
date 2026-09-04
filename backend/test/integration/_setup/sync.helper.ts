@@ -1,12 +1,12 @@
 import { Application } from 'express';
-import { TaskDTO } from '@brainassistant/contracts';
+import { TaskDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { authenticatedRequest } from './auth.helper.js';
 
 export type TaskSeed = {
   id: string;
-  type?: string;
+  type?: ETaskType;
   title?: string;
-  status?: string;
+  status?: ETaskStatus;
   imageId?: string;
 };
 
@@ -29,9 +29,9 @@ export async function createTaskViaApi(
 ): Promise<TaskDTO> {
   const dto = {
     id: seed.id,
-    type: seed.type ?? 'TASK',
+    type: seed.type ?? ETaskType.Basic,
     title: seed.title ?? 'Integration Test Task',
-    status: seed.status ?? 'OPEN',
+    status: seed.status ?? ETaskStatus.Todo,
     ...(seed.imageId !== undefined ? { imageId: seed.imageId } : {}),
   };
 

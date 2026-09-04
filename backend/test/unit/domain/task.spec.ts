@@ -1,10 +1,11 @@
 import { ETaskError, Task } from '../../../src/shared/domain/models/task.js';
 import { UniqueEntityID } from '../../../src/shared/domain/UniqueEntityID.js';
+import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 
 const baseTaskProps = {
   userId: 'user-1',
-  type: 'TASK',
-  status: 'OPEN',
+  type: ETaskType.Basic,
+  status: ETaskStatus.Todo,
 } as const;
 
 describe('Task', () => {

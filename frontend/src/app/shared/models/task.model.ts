@@ -1,13 +1,5 @@
-export enum ETaskStatus {
-  Todo = 'TASK_STATUS_TODO',
-  Done = 'TASK_STATUS_DONE',
-  Cancel = 'TASK_STATUS_CANCEL',
-}
-
-export enum ETaskType {
-  Basic = 'TASK_TYPE_BASIC',
-  // TODO: More statuses will be here
-}
+import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+export { ETaskStatus, ETaskType };
 
 export type Task = {
   id: string;

@@ -1,5 +1,6 @@
 import { Application } from 'express';
 import request from 'supertest';
+import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
@@ -28,9 +29,9 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       .send({
         changeableObjectDto: {
           id: 'task-unauth',
-          type: 'TASK',
+          type: ETaskType.Basic,
           title: 'Should not update',
-          status: 'OPEN',
+          status: ETaskStatus.Todo,
         },
       });
 
@@ -74,9 +75,9 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       .send({
         changeableObjectDto: {
           id: 'task-missing',
-          type: 'TASK',
+          type: ETaskType.Basic,
           title: 'Missing task title',
-          status: 'OPEN',
+          status: ETaskStatus.Todo,
         },
       })
       .set('Accept', 'application/json');
