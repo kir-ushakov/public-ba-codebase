@@ -56,7 +56,16 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       .set('Accept', 'application/json');
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({});
+    expect(res.body).toMatchObject({
+      id: created.id,
+      userId: created.userId,
+      type: created.type,
+      title: 'Updated task title',
+      status: created.status,
+    });
+    expect(res.body.createdAt).toBe(created.createdAt);
+    expect(typeof res.body.modifiedAt).toBe('string');
+    expect(res.body.modifiedAt).not.toBe(created.modifiedAt);
 
     const persisted = await models.TaskModel.findById(created.id).lean();
     expect(persisted).toMatchObject({

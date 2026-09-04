@@ -1,3 +1,4 @@
+import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 import { Result } from '../../core/result.js';
@@ -12,16 +13,24 @@ export enum ETaskError {
 
 export interface ITaskProps {
   userId: string;
-  type: string; // #TODO need to be special TYPE
+  type: ETaskType;
   title: string;
-  status: string; // #TODO need to be special TYPE
+  status: ETaskStatus;
   imageId?: string;
   createdAt: Date;
   modifiedAt: Date;
 }
 
-export interface TaskPresitant extends ITaskProps {
+/** Mongo document shape: type/status are stored as strings (ETaskType / ETaskStatus wire values). */
+export interface TaskPresitant {
   _id?: string;
+  userId: string;
+  type: string;
+  title: string;
+  status: string;
+  imageId?: string;
+  createdAt: Date;
+  modifiedAt: Date;
 }
 
 export class Task extends AggregateRoot<ITaskProps> {
@@ -36,7 +45,7 @@ export class Task extends AggregateRoot<ITaskProps> {
     return this.props.userId;
   }
 
-  get type(): string {
+  get type(): ETaskType {
     return this.props.type;
   }
 
@@ -44,7 +53,7 @@ export class Task extends AggregateRoot<ITaskProps> {
     return this.props.title;
   }
 
-  get status(): string {
+  get status(): ETaskStatus {
     return this.props.status;
   }
 

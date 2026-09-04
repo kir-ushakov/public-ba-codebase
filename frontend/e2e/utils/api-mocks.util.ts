@@ -38,8 +38,8 @@ function parseSendChangeTask(postData: string | null): TaskDTO | null {
  * Mocks backend API routes so E2E specs run without a live server.
  *
  * Statuses and response bodies must mirror the real backend, which is pinned by the
- * integration specs in `backend/test/integration/`. Only `POST /api/sync/task` returns
- * an entity; update and delete answer 200 with no payload.
+ * integration specs in `backend/test/integration/`. POST and PATCH `/api/sync/task`
+ * return the saved TaskDTO; DELETE answers 200 with no payload.
  */
 export async function setupApiMocks(
   page: Page,
@@ -75,7 +75,9 @@ export async function setupApiMocks(
     }
 
     if (url.includes('/api/sync/task') && method === 'PATCH') {
-      await route.fulfill(json(200, {}));
+      const task = parseSendChangeTask(request.postData());
+      const body: SendChangeContract.Response<TaskDTO> = task ?? undefined;
+      await route.fulfill(json(200, body ?? {}));
       return;
     }
 

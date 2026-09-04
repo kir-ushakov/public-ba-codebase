@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { TaskDTO, SendChangeContract } from '@brainassistant/contracts';
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
 import { BaseController } from '../../../../../shared/infra/http/models/base-controller.js';
+import { TaskMapper } from '../../../../../shared/mappers/task.mapper.js';
 import { UpdateTask } from './update-task.usecase.js';
 
 export class UpdateTaskController extends BaseController {
@@ -26,7 +27,7 @@ export class UpdateTaskController extends BaseController {
       });
 
       if (result.isSuccess) {
-        this.ok(res);
+        this.ok(res, TaskMapper.toDTO(result.getValue()));
       } else {
         const error = result.error;
 
