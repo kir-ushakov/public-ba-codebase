@@ -24,7 +24,10 @@ export class LoginUsecase implements UseCase<LoginRequest, Promise<LoginResult>>
 
   public execute(request: LoginRequest): Promise<LoginResult> {
     return new Promise<LoginResult>((resolve, reject) => {
-      const handleLocalCallback = async (err: unknown, userPersistent: UserPersistent | false) => {
+      const handleLocalCallback = async (
+        err: unknown,
+        userPersistent: UserPersistent | false,
+      ): Promise<void> => {
         if (err) return reject(err);
 
         if (!userPersistent) {

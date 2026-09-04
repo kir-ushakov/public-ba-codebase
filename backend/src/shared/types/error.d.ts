@@ -7,6 +7,6 @@ declare global {
      * @param target The object on which to assign the .stack property.
      * @param constructorOpt The constructor to omit from the stack trace.
      */
-    captureStackTrace(target: object, constructorOpt?: { new (...args: any[]): any }): void;
+    captureStackTrace(target: object, constructorOpt?: new (...args: unknown[]) => object): void;
   }
 }

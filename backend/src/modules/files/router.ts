@@ -4,6 +4,7 @@ import { uploadImageController } from './usecases/upload-image/_index.js';
 import { getImageController } from './usecases/get-image/_index.js';
 import { MAX_IMAGE_UPLOAD_FILE_BYTES } from './config.js';
 import { BaseController } from '../../shared/infra/http/models/base-controller.js';
+import { asyncHandler } from '../../shared/core/async-handler.function.js';
 
 const filesRouter: Router = Router();
 
@@ -12,11 +13,16 @@ const uploader: multer.Multer = multer({
   limits: { fileSize: MAX_IMAGE_UPLOAD_FILE_BYTES },
 });
 
-filesRouter.post('/image', uploader.single('file'), (req, res, next) =>
-  uploadImageController.execute(req, res, next),
+filesRouter.post(
+  '/image',
+  uploader.single('file'),
+  asyncHandler(uploadImageController.execute.bind(uploadImageController)),
 );
 
-filesRouter.get('/image/:imageId', (req, res, next) => getImageController.execute(req, res, next));
+filesRouter.get(
+  '/image/:imageId',
+  asyncHandler(getImageController.execute.bind(getImageController)),
+);
 
 filesRouter.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {

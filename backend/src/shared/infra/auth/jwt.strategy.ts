@@ -1,4 +1,5 @@
 import { Strategy as JwtStrategy } from 'passport-jwt';
+import type { Request } from 'express';
 import UserModel from '../database/mongodb/user.model.js';
 
 interface IJwtTokenPayload {
@@ -15,8 +16,8 @@ interface IJwtTokenPayload {
 /**
  * Custom extractor to get jwt from cookies
  **/
-const cookieExtractor = function (req) {
-  var token = null;
+const cookieExtractor = function (req: Request): string | null {
+  let token: string | null = null;
   if (req && req.cookies) {
     token = req.cookies['jwt'];
   }

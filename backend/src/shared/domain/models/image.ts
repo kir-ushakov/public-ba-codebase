@@ -1,7 +1,6 @@
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 import { Result } from '../../core/result.js';
-import { DomainError } from '../../core/domain-error.js';
 
 export interface IImageProps {
   imageId: string;

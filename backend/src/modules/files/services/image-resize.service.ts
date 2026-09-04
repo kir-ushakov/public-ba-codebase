@@ -39,6 +39,7 @@ export class ImageResizeService {
         .toFile(`${filePath}.tmp`);
 
       // Replace the original file with the resized one
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- upload pipeline path under controlled temp dir
       await fsp.rename(`${filePath}.tmp`, filePath);
     } catch (error) {
       console.error('Error resizing image:', error);

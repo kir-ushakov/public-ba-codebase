@@ -18,6 +18,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
 
   beforeAll(async () => {
     await startInMemoryMongo();
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- local test upload fixture dir
     await fsp.mkdir(path.join(process.cwd(), 'test-uploads/tmp'), { recursive: true });
     app = buildTestApp().app;
   }, 30_000);
@@ -67,6 +68,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
     const { jwtCookie } = await seedTestUser();
     const imageId = 'image-invalid';
     const invalidFilePath = path.join(process.cwd(), 'test-uploads/tmp/test-file.txt');
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- local test fixture write
     await fsp.writeFile(invalidFilePath, 'This is a text file');
 
     const res = await authenticatedRequest(app, jwtCookie)

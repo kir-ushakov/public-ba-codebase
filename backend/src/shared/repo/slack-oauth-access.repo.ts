@@ -27,7 +27,7 @@ export class SlackOAuthAccessRepo {
     return slackOAuthAccessDocument;
   }
 
-  public async deletedSlackOAuthAccessById(slackOAuthAccessId: string) {
+  public async deletedSlackOAuthAccessById(slackOAuthAccessId: string): Promise<void> {
     const slackOAuthAccessModel = this._models.SlackOAuthAccessModel;
     await slackOAuthAccessModel.deleteMany({
       _id: slackOAuthAccessId,
@@ -51,7 +51,7 @@ export class SlackOAuthAccessRepo {
     return slackOAuthAccess;
   }
 
-  public async deletedSlackOAuthAccessByTeamId(teamId: string) {
+  public async deletedSlackOAuthAccessByTeamId(teamId: string): Promise<void> {
     const slackOAuthAccessModel = this._models.SlackOAuthAccessModel;
     await slackOAuthAccessModel.deleteMany({
       teamId: teamId,

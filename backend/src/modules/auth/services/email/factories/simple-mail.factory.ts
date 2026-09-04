@@ -4,7 +4,7 @@ import { IAbstractMailFactory } from '../abstract-mail-factory.interface.js';
 export class SimpleMailFactory implements IAbstractMailFactory {
   constructor() {}
 
-  verificationEmail(user, link: string): string {
+  verificationEmail(user: UserDocument, link: string): string {
     const html = `  
       <p>Hi ${user.firstName} ${user.lastName},</p>
       <br>
@@ -15,14 +15,13 @@ export class SimpleMailFactory implements IAbstractMailFactory {
     return html;
   }
 
-  restorePasswordEmail(user, link: string): string {
+  restorePasswordEmail(_user: UserDocument, _link: string): string {
     // TODO
     const html = '';
     return html;
   }
 
-  // 'any' type has to be replaced on INotificationData type in future
-  notificationEmail(user: UserDocument, notification: any): string {
+  notificationEmail(_user: UserDocument, _notification: unknown): string {
     // TODO
     const html = '';
     return html;

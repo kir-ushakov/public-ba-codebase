@@ -5,12 +5,12 @@ export class LogoutController extends BaseController {
   protected async executeImpl(
     req: Request,
     res: Response,
-    next?: NextFunction
-  ): Promise<void | any> {
+    _next?: NextFunction,
+  ): Promise<void> {
     try {
       if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
         if (req.isAuthenticated()) {
-          req.logout((err: any) => {
+          req.logout((err: Error) => {
             console.log(err);
           });
         }
@@ -19,9 +19,9 @@ export class LogoutController extends BaseController {
       if (process.env.AUTHENTICATION_STRATEGY === 'JWT') {
         res.clearCookie('jwt');
       }
-      return this.ok(res);
+      this.ok(res);
     } catch (err) {
-      return this.fail(res, err.toString());
+      this.fail(res, err.toString());
     }
   }
 }

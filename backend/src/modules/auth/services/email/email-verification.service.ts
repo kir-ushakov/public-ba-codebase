@@ -18,7 +18,7 @@ export class EmailVerificationService {
     this._mailFactory = mailFactory;
   }
 
-  public async sendVerificationEmail(user: UserDocument) {
+  public async sendVerificationEmail(user: UserDocument): Promise<void> {
     try {
       // 👇 generate and save in DB unique verification token
       const token: VerificationTokenDocument = user.generateVerificationToken();

@@ -12,7 +12,9 @@ export class ClientMapper {
       new UniqueEntityID(raw._id)
     );
 
-    clientOrError.isFailure ? console.log(clientOrError.error) : '';
+    if (clientOrError.isFailure) {
+      console.log(clientOrError.error);
+    }
 
     return clientOrError.isSuccess ? clientOrError.getValue() : null;
   }

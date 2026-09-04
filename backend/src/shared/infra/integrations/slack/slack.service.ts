@@ -18,7 +18,7 @@ export class SlackService {
     this._slackOAuthAccessRepo = slackOAuthAccessRepo;
   }
 
-  public async sendMessage(msg: string, userId: string) {
+  public async sendMessage(msg: string, userId: string): Promise<void> {
     try {
       // need to initialize Slack API Web Client
       await this.initWebClient(userId);

@@ -10,21 +10,21 @@ export const googleStrategy = new GoogleStrategy(
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_OAUTH_CALLBACK,
   },
-  async function (
+  function (
     accessToken: string,
     refreshToken: string,
     profile: Profile,
-    done: VerifyCallback
-  ) {
+    done: VerifyCallback,
+  ): void {
     try {
       if (profile) {
         const tokens = { accessToken, refreshToken };
-        return done(null, { profile, tokens });
+        done(null, { profile, tokens });
       } else {
-        return done(null, false);
+        done(null, false);
       }
     } catch (err) {
-      return done(err, false);
+      done(err, false);
     }
   }
 );

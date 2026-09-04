@@ -81,14 +81,17 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
     const userUploadDir = `${config.paths.uploadTempDir}/${userId}`;
     const pathToFile = `${userUploadDir}/${originalname}`;
 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- user upload dir under configured temp root
     await fsp.mkdir(userUploadDir, { recursive: true });
 
     const fileType = path.extname(req.file.originalname).toLowerCase().replace('.', '');
     if (!this.allowedTypes.includes(fileType)) {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- multer temp path
       await fsp.unlink(tempPath);
       return new UploadImageErrors.NotSupportedTypeError(fileType);
     }
 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- move from multer temp into user upload dir
     await fsp.rename(tempPath, pathToFile);
 
     // Resize the image to allowed maximum width

@@ -21,7 +21,7 @@ export abstract class BaseController {
     req: express.Request,
     res: express.Response,
     next?: express.NextFunction,
-  ): Promise<void | any>;
+  ): Promise<void | express.Response>;
 
   public async execute(
     req: express.Request,
@@ -37,26 +37,34 @@ export abstract class BaseController {
     }
   }
 
-  public static jsonResponse<T>(res: express.Response, code: number, payload: T | any = null) {
+  public static jsonResponse<T>(
+    res: express.Response,
+    code: number,
+    payload: T | null = null,
+  ): express.Response {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     return res.status(code).json(payload);
   }
 
-  public static redirect(res: express.Response, path: string, queryParams) {
+  public static redirect(
+    res: express.Response,
+    path: string,
+    queryParams: Record<string, string>,
+  ): void {
     const queryString = serialize(queryParams);
-    return res.redirect(`${path}?${queryString}`);
+    res.redirect(`${path}?${queryString}`);
   }
 
-  public ok<T>(res: express.Response, dto: T | {} = {}) {
+  public ok<T>(res: express.Response, dto?: T): express.Response {
     res.type('application/json');
-    return res.status(200).json(dto);
+    return res.status(200).json(dto ?? {});
   }
 
-  public created(res: express.Response, payload: any = null) {
+  public created(res: express.Response, payload: unknown = null): express.Response {
     return BaseController.jsonResponse(res, 201, payload);
   }
 
-  public fail(res: express.Response, error: Error | string) {
+  public fail(res: express.Response, error: Error | string): express.Response {
     // Log errors here
     console.log(error);
     const UNEXPECTED_ERROR = 'UNEXPECTED_ERROR';

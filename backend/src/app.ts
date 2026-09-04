@@ -3,4 +3,4 @@ import * as loaders from './loaders/index.js';
 
 export const app = createApp();
 
-loaders.bootstrap('Node Backend App');
+void loaders.bootstrap('Node Backend App');

@@ -1,17 +1,13 @@
-interface IValueObjectProps {
-  [index: string]: any;
-}
-
-export abstract class ValueObject<T extends IValueObjectProps> {
+export abstract class ValueObject<T extends object> {
   public props: T;
 
-  constructor (props: T) {
+  constructor(props: T) {
     this.props = {
-      ...props
+      ...props,
     };
   }
 
-  public equals (vObj?: ValueObject<T>) : boolean {
+  public equals(vObj?: ValueObject<T>): boolean {
     if (vObj === null || vObj === undefined) {
       return false;
     }

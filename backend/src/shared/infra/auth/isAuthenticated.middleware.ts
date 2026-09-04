@@ -1,10 +1,11 @@
 import passport from 'passport';
+import type { NextFunction, Request, Response } from 'express';
 import { LoginService } from '../../../modules/auth/services/login.service.js';
 import type { UserDocument } from '../database/mongodb/user.model.js';
 import { EHttpStatus } from '../http/models/base-controller.js';
 import { IApiErrorDto } from '../http/dtos/api-errors.dto.js';
 
-export function isAuthenticated(req, res, next) {
+export function isAuthenticated(req: Request, res: Response, next: NextFunction): void {
   const NOT_AUTHENTICATED_ERROR = 'USER_NOT_AUTHENTICATED';
 
   switch (process.env.AUTHENTICATION_STRATEGY) {
@@ -37,14 +38,15 @@ export function isAuthenticated(req, res, next) {
 
     case 'SESSION':
       if (req.isAuthenticated()) {
-        return next();
+        next();
       } else {
         const errorDto: IApiErrorDto = {
           name: NOT_AUTHENTICATED_ERROR,
           message: 'User not authenticated',
         };
-        return res.status(401).send(errorDto);
+        res.status(401).send(errorDto);
       }
+      break;
     default:
       throw new Error(`Not Supported Auth Strategy: ${process.env.AUTHENTICATION_STRATEGY}`);
   }

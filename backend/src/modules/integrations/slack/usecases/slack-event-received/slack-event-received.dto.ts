@@ -8,7 +8,7 @@ export interface SlackEvent {
   type: ESlackEventType;
 }
 
-export interface AppUninstalledSlackEvent extends SlackEvent {}
+export type AppUninstalledSlackEvent = SlackEvent;
 
 export interface MemberLeftChannelSlackEvent extends SlackEvent {
   channel: string;

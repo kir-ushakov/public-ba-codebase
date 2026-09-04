@@ -16,7 +16,7 @@ export class GoogleDriveService {
     this.oAuth2Client = oAuth2Client;
   }
 
-  public async listFiles(user: User) {
+  public async listFiles(user: User): Promise<void> {
     const driveService: drive_v3.Drive = await this.getDriveService(user);
 
     const res = await driveService.files.list({
@@ -39,7 +39,7 @@ export class GoogleDriveService {
     });
   }
 
-  public async uploadFile(user: User, filePath: string) {
+  public async uploadFile(user: User, filePath: string): Promise<string | null | undefined> {
     try {
       const safeBaseDir = this.config.paths.uploadTempDir;
       const resolvedFilePath = path.resolve(filePath);
@@ -66,7 +66,7 @@ export class GoogleDriveService {
 
       const media = {
         mimeType: mimeType,
-        body: fs.createReadStream(resolvedFilePath),
+        body: fs.createReadStream(resolvedFilePath), // eslint-disable-line security/detect-non-literal-fs-filename -- path checked against uploadTempDir
       };
 
       const file = await service.files.create({
