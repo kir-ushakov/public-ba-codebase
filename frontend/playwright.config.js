@@ -54,5 +54,6 @@ export default defineConfig({
   testIgnore: [
     '**/tests/**',
     '**/src/**',
+    '**/e2e-live/**',
   ],
 });

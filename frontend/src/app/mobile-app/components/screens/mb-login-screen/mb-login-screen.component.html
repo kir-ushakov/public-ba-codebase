@@ -6,6 +6,7 @@
     <mat-form-field class="login-form__email" floatLabel="never">
       <input
         id="emailInput"
+        data-test="login-email"
         autofocus
         matInput
         placeholder="Email"
@@ -18,6 +19,7 @@
     <mat-form-field class="login-form__password" floatLabel="never">
       <input
         id="passwordInput"
+        data-test="login-password"
         type="password"
         matInput
         placeholder="Password"
@@ -30,6 +32,7 @@
     </mat-form-field>
     <button
       id="submitBtn"
+      data-test="login-submit"
       class="login-form__btn green-btn"
       type="submit"
       [disabled]="form.invalid"

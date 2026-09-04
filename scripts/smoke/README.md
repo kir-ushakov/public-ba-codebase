@@ -25,6 +25,18 @@ Leave the stack up after a pass:
 $env:SMOKE_KEEP_UP='1'; node scripts/smoke/run.mjs
 ```
 
+Boot the stack without HTTP checks (for live Playwright e2e):
+
+```bash
+node scripts/smoke/up.mjs
+```
+
+Tear it down:
+
+```bash
+node scripts/smoke/down.mjs
+```
+
 Re-run only the HTTP checks against an already-up stack:
 
 ```bash
@@ -34,6 +46,8 @@ node scripts/smoke/http-smoke.mjs
 ## CI
 
 `.github/workflows/compose-smoke.yml` runs on a nightly schedule and `workflow_dispatch`. It is intentionally not on every PR — image builds are slow.
+
+Live two-client Playwright (UI, two browser contexts) uses the same stack: `node scripts/smoke/up.mjs` then `npm run e2e:live` in `frontend/`. See `frontend/e2e-live/README.md` and `.github/workflows/live-e2e.yml`.
 
 ## Notes
 
