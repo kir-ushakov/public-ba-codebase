@@ -70,6 +70,8 @@
     "@angular-eslint/template-parser": "^19.1.0",
     "@angular/cli": "^19.2.27",
     "@angular/compiler-cli": "^19.2.25",
+    "@emnapi/core": "1.11.3",
+    "@emnapi/runtime": "1.11.3",
     "@playwright/test": "^1.55.1",
     "@types/jasmine": "~3.6.0",
     "@types/jasminewd2": "~2.0.3",
@@ -96,6 +98,11 @@
     "yaml": "^2.4.2"
   },
   "overrides": {
-    "vite": ">=6.4.3"
+    "vite": "6.4.3",
+    "http-proxy-middleware": ">=3.0.7",
+    "esbuild": ">=0.28.1",
+    "fast-uri": ">=3.1.6",
+    "@xmldom/xmldom": ">=0.8.15",
+    "@humanfs/node": ">=0.16.8"
   }
 }
