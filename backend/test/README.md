@@ -100,4 +100,4 @@ They live in `test/unit/`, named `<subject>.spec.ts`, and call the real class.
 
 ## CI
 
-`.github/workflows/backend-tests.yml` runs ESLint and Jest on push/PR when `backend/**` or `contracts/**` change (Node 18 and 20).
+`.github/workflows/backend-tests.yml` runs ESLint and Jest on push/PR when `backend/**` or `contracts/**` change (Node 24).
