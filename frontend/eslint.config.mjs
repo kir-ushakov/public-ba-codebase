@@ -1,16 +1,27 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 const tsParser = (await import('@typescript-eslint/parser')).default;
 const tsPlugin = (await import('@typescript-eslint/eslint-plugin')).default;
 const angularPlugin = (await import('@angular-eslint/eslint-plugin')).default;
 const angularTemplate = (await import('@angular-eslint/eslint-plugin-template')).default;
 const prettierPlugin = (await import('eslint-plugin-prettier')).default;
+const prettierConfig = (await import('eslint-config-prettier')).default;
+const angularTemplateParser = (await import('@angular-eslint/template-parser')).default;
+
+const tsconfigRootDir = path.dirname(fileURLToPath(import.meta.url));
 
 export default [
   {
-    files: ['frontend/src/app/**/*.ts'],
+    ignores: ['dist/**', 'node_modules/**', 'coverage/**'],
+  },
+  {
+    files: ['src/**/*.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: ['frontend/tsconfig.json', 'frontend/e2e/tsconfig.json'],
+        project: ['./tsconfig.json'],
+        tsconfigRootDir,
         sourceType: 'module',
       },
     },
@@ -91,11 +102,15 @@ export default [
       '@angular-eslint/prefer-standalone': 'error',
       '@angular-eslint/use-pipe-transform-interface': 'error',
 
+      ...prettierConfig.rules,
       'prettier/prettier': ['error', { endOfLine: 'auto', printWidth: 100 }],
     },
   },
   {
-    files: ['frontend/src/app/**/*.html'],
+    files: ['src/**/*.html'],
+    languageOptions: {
+      parser: angularTemplateParser,
+    },
     plugins: {
       '@angular-eslint/template': angularTemplate,
       prettier: prettierPlugin,
@@ -104,6 +119,7 @@ export default [
       '@angular-eslint/template/banana-in-box': 'error',
       '@angular-eslint/template/eqeqeq': 'error',
       '@angular-eslint/template/no-negated-async': 'error',
+      ...prettierConfig.rules,
       'prettier/prettier': ['error'],
     },
   },

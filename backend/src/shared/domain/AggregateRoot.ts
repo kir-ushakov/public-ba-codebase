@@ -35,7 +35,7 @@ export abstract class AggregateRoot<T> extends Entity<T> {
       `[Domain Event Created]:`,
       thisClass.constructor.name,
       '==>',
-      domainEventClass.constructor.name
+      domainEventClass.constructor.name,
     );
   }
 }

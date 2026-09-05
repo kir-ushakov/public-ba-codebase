@@ -10,8 +10,7 @@ import { ActionRepo } from '../../../../shared/repo/action.repo.js';
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
 import { TaskRepoService } from '../../../../shared/repo/task-repo.service.js';
 import { Change } from '../../domain/values/change.js';
-import { GetChangesError } from './get-changes.errors.js';
-import { GetChangesErrors } from './get-changes.errors.js';
+import { GetChangesError, GetChangesErrors } from './get-changes.errors.js';
 
 export type GetChangesParams = {
   userId: string;
@@ -33,7 +32,7 @@ export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesR
 
   public async execute(params: GetChangesParams): Promise<GetChangesResult> {
     const { userId, clientId } = params;
-    const changes: Array<Change> = [];
+    const changes: Change[] = [];
     let client: Client;
 
     try {
@@ -46,7 +45,7 @@ export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesR
     const lastSyncTime: Date = client.syncTime;
     const changedTasks: Task[] = await this.taskRepoService.getChanges(userId, lastSyncTime);
 
-    for (let changedTask of changedTasks) {
+    for (const changedTask of changedTasks) {
       const taskDto: TaskDTO = TaskMapper.toDTO(changedTask);
       changes.push(
         new Change({

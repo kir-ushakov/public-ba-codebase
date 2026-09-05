@@ -56,7 +56,8 @@ export function fakeGoogleSuccess(options?: {
     profile,
     tokens: {
       accessToken: options?.accessToken ?? 'google-access-token',
-      refreshToken: options?.refreshToken === undefined ? 'google-refresh-token' : options.refreshToken,
+      refreshToken:
+        options?.refreshToken === undefined ? 'google-refresh-token' : options.refreshToken,
     },
   };
 }

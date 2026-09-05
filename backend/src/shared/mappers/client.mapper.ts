@@ -9,7 +9,7 @@ export class ClientMapper {
         userId: raw.userId,
         syncTime: raw.syncTime,
       },
-      new UniqueEntityID(raw._id)
+      new UniqueEntityID(raw._id),
     );
 
     if (clientOrError.isFailure) {

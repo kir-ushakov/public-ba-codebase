@@ -39,7 +39,7 @@ export class DeleteTaskUsecase implements UseCase<Request, Promise<Response>> {
       occurredAt: new Date(),
       entityId: taskId,
     };
-    const action: Action = await Action.create(actionProps);
+    const action: Action = Action.create(actionProps);
     await this.actionRepo.create(action);
 
     return Result.ok<void, never>();

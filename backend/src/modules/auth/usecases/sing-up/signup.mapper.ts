@@ -9,4 +9,3 @@ export function requestToUsecaseParams(payload: SignUpRequestDTO): SignUpParams 
     password: payload.password,
   };
 }
-

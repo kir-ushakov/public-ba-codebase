@@ -28,7 +28,9 @@ export class LoginUsecase implements UseCase<LoginRequest, Promise<LoginResult>>
         err: unknown,
         userPersistent: UserPersistent | false,
       ): Promise<void> => {
-        if (err) return reject(err);
+        if (err) {
+          return reject(err instanceof Error ? err : new Error('Unknown local auth error'));
+        }
 
         if (!userPersistent) {
           return resolve(new LoginError.LoginFailed());
@@ -50,10 +52,16 @@ export class LoginUsecase implements UseCase<LoginRequest, Promise<LoginResult>>
 
       try {
         this.passport.authenticate('local', (err, userPersistent) => {
-          handleLocalCallback(err, userPersistent).catch(reject);
+          handleLocalCallback(err, userPersistent).catch((callbackErr: unknown) => {
+            reject(
+              callbackErr instanceof Error
+                ? callbackErr
+                : new Error('Unknown local auth callback error'),
+            );
+          });
         })(request.context.req, request.context.res, request.context.next);
-      } catch (err) {
-        reject(err);
+      } catch (err: unknown) {
+        reject(err instanceof Error ? err : new Error('Unknown local auth error'));
       }
     });
   }

@@ -5,7 +5,7 @@ const mailgun = new Mailgun(FormData);
 
 const mailgunProvider = mailgun.client({
   username: 'api',
-  key: process.env.MAILGUN_API_KEY as string,
+  key: process.env.MAILGUN_API_KEY,
 });
 
 export { mailgunProvider };

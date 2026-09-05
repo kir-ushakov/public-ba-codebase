@@ -1,0 +1,35 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/app/**/*.ts!", "e2e/**/*.ts!", "e2e-live/**/*.ts!", "tests/**/*.ts!"],
+  "project": ["src/**/*.ts", "e2e/**/*.ts", "e2e-live/**/*.ts", "tests/**/*.ts"],
+  "ignoreDependencies": [
+    "ts-node",
+    "@capacitor/angular",
+    "@angular-eslint/schematics",
+    "@angular-eslint/template-parser",
+    "normalize.css",
+    "crypto-js",
+    "dotenv",
+    "ng-mocks",
+    "@types/jasmine",
+    "@types/jasminewd2",
+    "stylelint-config-prettier",
+    "stylelint-config-standard",
+    "yaml"
+  ],
+  "ignoreBinaries": ["playwright.live.config.js"],
+  "rules": {
+    "files": "error",
+    "dependencies": "error",
+    "devDependencies": "error",
+    "unlisted": "error",
+    "binaries": "error",
+    "unresolved": "error",
+    "exports": "off",
+    "types": "off",
+    "nsExports": "off",
+    "nsTypes": "off",
+    "duplicates": "warn",
+    "enumMembers": "off"
+  }
+}

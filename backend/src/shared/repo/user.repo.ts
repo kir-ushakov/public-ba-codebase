@@ -23,7 +23,7 @@ export class UserRepo {
     const existingEmail = await UserModel.findOne({
       username: userEmail.value,
     });
-    const found: boolean = !!existingEmail === true;
+    const found = !!existingEmail;
     return found;
   }
 
@@ -42,8 +42,8 @@ export class UserRepo {
     // TODO: Do we need to convert string -> ObjectId ? or we can use string directly?
     userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
     const userDocument: UserDocument = await UserModel.findOne({ _id: userId });
-    const found = !!userDocument === true;
-    if (!found) throw new Error(`User with id ${userId} not found`);
+    const found = !!userDocument;
+    if (!found) throw new Error(`User with id ${String(userId)} not found`);
     const user: User = UserMapper.toDomain(userDocument);
     return user;
   }

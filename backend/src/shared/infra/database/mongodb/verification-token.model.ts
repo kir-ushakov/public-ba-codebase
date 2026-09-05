@@ -24,12 +24,12 @@ const verificationTokenSchema = new Schema(
       expires: 30 * 24 * 60, // 30 days
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const VerificationTokenModel = mongoose.model<VerificationTokenDocument>(
   'VerificationToken',
-  verificationTokenSchema
+  verificationTokenSchema,
 );
 
 export default VerificationTokenModel;

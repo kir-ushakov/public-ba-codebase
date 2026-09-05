@@ -5,7 +5,9 @@ import { SlackOAuthAccessRepo } from '../../../../../shared/repo/slack-oauth-acc
 import { SlackOAuthAccess } from '../../../../../shared/domain/models/slack-oauth-access.js';
 import { RemoveFromSlackError, RemoveFromSlackErrors } from './remove-from-slack.errors.js';
 
-export type RemoveFromSlackRequest = { userId: string };
+export type RemoveFromSlackRequest = {
+  userId: string;
+};
 export type RemoveFromSlackResponse = Result<void | never, RemoveFromSlackError>;
 
 export class RemoveFromSlackUsecase

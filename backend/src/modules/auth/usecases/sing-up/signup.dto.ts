@@ -1,12 +1,12 @@
-export interface SignUpRequestDTO {
+export type SignUpRequestDTO = {
   email: string;
   firstName: string;
   lastName: string;
   password: string;
-}
+};
 
-export interface SignUpResponseDTO {
+export type SignUpResponseDTO = {
   email: string;
   firstName: string;
   lastName: string;
-}
+};

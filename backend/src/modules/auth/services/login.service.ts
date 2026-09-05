@@ -22,13 +22,8 @@ export class LoginService {
     });
   }
 
-  public login(
-    user: User,
-    req: Request,
-    res: Response
-  ): Promise<LoginResponseDTO> {
+  public login(user: User, req: Request, res: Response): Promise<LoginResponseDTO> {
     return new Promise((resolve, reject) => {
-
       const userDto: UserDto = {
         firstName: user.firstname,
         lastName: user.lastname,
@@ -38,11 +33,11 @@ export class LoginService {
 
       const loginResponseDto: LoginResponseDTO = { user: userDto };
 
-      if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') { 
+      if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
         const userDBEnity = UserMapper.toDatabaseEntity(user);
-        req.logIn(userDBEnity, (err) => {
+        req.logIn(userDBEnity, err => {
           if (err) {
-            return reject(err);
+            return reject(err instanceof Error ? err : new Error('Unknown login error'));
           }
           return resolve(loginResponseDto);
         });

@@ -19,7 +19,8 @@ export class SlackEventReceivedController extends BaseController {
   protected async executeImpl(req: Request, res: Response): Promise<void> {
     try {
       const params = requestToUsecaseParams(req.body);
-      const slackEventReceivedResult: SlackEventReceivedResponse = await this._useCase.execute(params);
+      const slackEventReceivedResult: SlackEventReceivedResponse =
+        await this._useCase.execute(params);
 
       if (slackEventReceivedResult.isSuccess) {
         BaseController.jsonResponse(res, EHttpStatus.Ok);

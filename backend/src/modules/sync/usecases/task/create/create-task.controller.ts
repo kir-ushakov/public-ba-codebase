@@ -6,7 +6,6 @@ import {
 } from '../../../../../shared/infra/http/models/base-controller.js';
 import { CreateTask, CreateTaskResult } from './create-task.usecase.js';
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
-import { Task } from '../../../../../shared/domain/models/task.js';
 import { TaskMapper } from '../../../../../shared/mappers/task.mapper.js';
 import { requestToUsecaseParams } from './create-task.mapper.js';
 
@@ -44,6 +43,6 @@ export class CreateTaskController extends BaseController {
   }
 
   private usecaseResultToResponse(result: CreateTaskResult): SendChangeContract.Response<TaskDTO> {
-    return TaskMapper.toDTO(result.getValue() as Task);
+    return TaskMapper.toDTO(result.getValue());
   }
 }

@@ -3,10 +3,10 @@ import { UseCase } from '../../../../shared/core/UseCase.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { VerificationToken } from '../../../../shared/domain/values/user/verification-token.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
-import { IVerifyEmailResponceDTO } from './verify-email.dto.js';
+import { VerifyEmailResponseDTO } from './verify-email.dto.js';
 import { VerifyEmailError } from './verify-email.errors.js';
 
-type UseCaseResult = Result<IVerifyEmailResponceDTO | never, VerifyEmailError>;
+type UseCaseResult = Result<VerifyEmailResponseDTO | never, VerifyEmailError>;
 
 export type VerifyEmailParams = {
   tokenId: string;
@@ -40,7 +40,7 @@ export class VerifyEmailUseCase implements UseCase<VerifyEmailParams, Promise<Us
 
     await this.userRepo.save(user);
 
-    const response: IVerifyEmailResponceDTO = {
+    const response: VerifyEmailResponseDTO = {
       email: user.username.value,
       firstName: user.firstname,
       lastName: user.lastname,

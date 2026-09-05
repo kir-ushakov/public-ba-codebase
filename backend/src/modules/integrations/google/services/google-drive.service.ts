@@ -26,13 +26,13 @@ export class GoogleDriveService {
     });
 
     const files = res.data.files;
-    if (files!.length === 0) {
+    if (files.length === 0) {
       this.logger.log('No files found.');
       return;
     }
 
     this.logger.log('Files:');
-    files!.forEach(file => {
+    files.forEach(file => {
       this.logger.log(
         `${file.name} (${file.id}), thumb ${file.thumbnailLink}, webViewLink ${file.webViewLink}`,
       );

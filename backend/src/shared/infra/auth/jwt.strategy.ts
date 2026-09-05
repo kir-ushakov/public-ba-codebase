@@ -18,8 +18,8 @@ interface IJwtTokenPayload {
  **/
 const cookieExtractor = function (req: Request): string | null {
   let token: string | null = null;
-  if (req && req.cookies) {
-    token = req.cookies['jwt'];
+  if (req.cookies) {
+    token = req.cookies.jwt;
   }
   return token;
 };
@@ -31,7 +31,7 @@ const opts = {
 
 export const jwtStrategy = new JwtStrategy(opts, async function (
   jwtPayload: IJwtTokenPayload,
-  done
+  done,
 ) {
   try {
     const user = await UserModel.findOne({ _id: jwtPayload.user.userId });

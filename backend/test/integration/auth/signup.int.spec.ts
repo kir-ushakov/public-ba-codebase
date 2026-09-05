@@ -47,10 +47,12 @@ describe('Integration: SignUp (Controller -> UseCase -> Repo -> MongoDB)', () =>
   });
 
   it('invalid email -> 400 and no user persisted', async () => {
-    const res = await request(app).post('/api/auth/signup').send({
-      ...validSignup,
-      email: 'not-an-email',
-    });
+    const res = await request(app)
+      .post('/api/auth/signup')
+      .send({
+        ...validSignup,
+        email: 'not-an-email',
+      });
 
     expect(res.status).toBe(400);
     expect(res.body).toHaveProperty('name');

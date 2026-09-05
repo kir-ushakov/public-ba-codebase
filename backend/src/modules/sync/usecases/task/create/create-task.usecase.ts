@@ -31,7 +31,7 @@ export class CreateTask implements UseCase<CreateTaskParams, Promise<CreateTaskR
       return new CreateTaskErrors.DataInvalid(taskOrError.error);
     }
 
-    const task: Task = taskOrError.getValue() as Task;
+    const task: Task = taskOrError.getValue();
     await this.taskRepoService.create(task);
 
     // TODO: this._eventBus.publish(new TaskCreatedEvent(task));

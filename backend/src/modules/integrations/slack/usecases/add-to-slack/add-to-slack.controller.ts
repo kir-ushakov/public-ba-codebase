@@ -6,7 +6,6 @@ import {
 
 import { AddToSlackUsecase, AddToSlackResponse } from './add-to-slack.usecase.js';
 import { UserPersistent } from '../../../../../shared/domain/models/user.js';
-import { AddToSlackError } from './add-to-slack.errors.js';
 
 export class AddToSlackController extends BaseController {
   private _useCase: AddToSlackUsecase;
@@ -33,7 +32,7 @@ export class AddToSlackController extends BaseController {
       if (addToSlackResult.isSuccess) {
         BaseController.jsonResponse(res, EHttpStatus.Created);
       } else {
-        const error = addToSlackResult.error as AddToSlackError;
+        const error = addToSlackResult.error;
         BaseController.jsonResponse(res, error.code, {
           name: error.name,
           message: error.message,

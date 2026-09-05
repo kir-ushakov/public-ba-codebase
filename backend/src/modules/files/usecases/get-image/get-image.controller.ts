@@ -25,7 +25,7 @@ export class GetImageController extends BaseController {
     }
 
     try {
-      let getImageRequest: GetImageRequest = {
+      const getImageRequest: GetImageRequest = {
         imageId: req.params.imageId,
         user: UserMapper.toDomain(authenticatedUser),
         imageWidth,
@@ -41,7 +41,7 @@ export class GetImageController extends BaseController {
           message: error.message,
         });
       } else {
-        const file: GaxiosResponse<Readable> = result.getValue() as GaxiosResponse<Readable>;
+        const file: GaxiosResponse<Readable> = result.getValue();
 
         res.writeHead(200, file.headers);
 

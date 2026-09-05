@@ -1,5 +1,5 @@
 import { UserDto } from '../../dto/user.dto.js';
 
-export interface LoginResponseDTO {
+export type LoginResponseDTO = {
   user: UserDto;
-}
+};

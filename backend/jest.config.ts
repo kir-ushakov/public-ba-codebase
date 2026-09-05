@@ -17,14 +17,8 @@ const config: Config = {
       },
     ],
   },
-  testMatch: [
-    '**/__tests__/**/*.ts',
-    '**/?(*.)+(spec|test).ts',
-  ],
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.d.ts',
-  ],
+  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   setupFiles: ['<rootDir>/test/setup-env.ts'],
@@ -33,4 +27,3 @@ const config: Config = {
 };
 
 export default config;
-

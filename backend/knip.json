@@ -1,0 +1,42 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "server.ts!",
+    "src/app.ts!",
+    "src/create-app.ts!",
+    "src/loaders/ngrok.ts!",
+    "src/modules/**/index.ts!",
+    "src/modules/**/_index.ts!",
+    "src/**/*.usecase.ts!",
+    "src/**/*.controller.ts!",
+    "test/**/*.ts!"
+  ],
+  "project": ["src/**/*.ts", "test/**/*.ts"],
+  "ignore": ["src/shared/types/guards/is-error-with-code.ts"],
+  "ignoreDependencies": [
+    "ts-node",
+    "@types/chai-as-promised",
+    "chai-as-promised",
+    "@google-cloud/local-auth",
+    "cors",
+    "crypto-js",
+    "fluent-ffmpeg",
+    "@types/passport-local",
+    "googleapis-common"
+  ],
+  "ignoreBinaries": ["nodemon"],
+  "rules": {
+    "files": "error",
+    "dependencies": "error",
+    "devDependencies": "error",
+    "unlisted": "error",
+    "binaries": "error",
+    "unresolved": "error",
+    "exports": "off",
+    "types": "off",
+    "nsExports": "off",
+    "nsTypes": "off",
+    "duplicates": "warn",
+    "enumMembers": "off"
+  }
+}

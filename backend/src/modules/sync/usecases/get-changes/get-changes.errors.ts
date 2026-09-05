@@ -2,7 +2,6 @@ import { Result } from '../../../../shared/core/result.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { EHttpStatus } from '../../../../shared/infra/http/models/base-controller.js';
 
-
 export class GetChangesError extends UseCaseError<GetChangesErrorCodes> {}
 
 export enum GetChangesErrorCode {

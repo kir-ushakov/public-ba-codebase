@@ -1,0 +1,38 @@
+---
+description: type vs interface — object shapes vs class contracts
+globs: "**/*.ts"
+alwaysApply: true
+---
+
+# `type` vs `interface`
+
+House style (not the TS handbook default):
+
+| Use | For |
+|-----|-----|
+| `type` | Object **shapes**: DTO, JSON, HTTP/Passport payload, use-case params, test fixtures (`SignUpParams`, `SeededTestUser`, `GoogleOAuthTokenPayload`, `TaskDTO`) |
+| `interface` | **Contracts** a class `implements` (`IMailAdapter`, `IAbstractMailFactory`, `UseCase`) |
+| `class` | Runtime domain objects (`ValueObject`, entities). Never a `type`/`interface` in `domain/values/` |
+
+`type Foo` is erased at compile time. It does **not** mean class instances of `Foo`. It only describes the shape of a plain object.
+
+```ts
+// BAD — payload / DTO as interface
+export interface SeededTestUser {
+  userId: string;
+}
+
+// GOOD
+export type SeededTestUser = {
+  userId: string;
+};
+
+// GOOD — class contract
+export interface IMailAdapter {
+  sendEmail(...): Promise<void>;
+}
+```
+
+Do not convert `type` → `interface` "for consistency". Do not convert `interface` → `type` when something is `implements`'d.
+
+`@typescript-eslint/consistent-type-definitions` is **off** in backend ESLint. Its stylistic default prefers `interface` and would `--fix` payloads into interfaces.

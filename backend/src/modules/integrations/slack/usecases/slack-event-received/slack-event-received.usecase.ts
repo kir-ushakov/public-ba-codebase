@@ -37,21 +37,20 @@ export class SlackEventReceivedUsecase
 
       // Handel Slack Event 'app_home_opened'
       case ESlackEventType.AppHomeOpened:
-        const appHomeOpenedEvent: AppHomeOpenedSlackEvent = params
-          .event as AppHomeOpenedSlackEvent;
+        const appHomeOpenedEvent: AppHomeOpenedSlackEvent = params.event as AppHomeOpenedSlackEvent;
 
         const datetimeOfOpening: Date = new Date(
           parseInt(appHomeOpenedEvent.event_ts.toString().split('.').join('').slice(0, -3)),
         );
         console.log(
-          `User with id=${appHomeOpenedEvent.user} app opened home page at ${datetimeOfOpening}!`,
+          `User with id=${appHomeOpenedEvent.user} app opened home page at ${datetimeOfOpening.toISOString()}!`,
         );
         return Result.ok();
 
       // Handel Slack Event 'member_left_channel'
       case ESlackEventType.MemberLeftChannel:
-        const memberLeftChannelEvent: MemberLeftChannelSlackEvent = params
-          .event as MemberLeftChannelSlackEvent;
+        const memberLeftChannelEvent: MemberLeftChannelSlackEvent =
+          params.event as MemberLeftChannelSlackEvent;
         console.log(
           `Member with id=${memberLeftChannelEvent.user} left channel with id=${memberLeftChannelEvent.channel}`,
         );

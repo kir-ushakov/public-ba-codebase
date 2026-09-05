@@ -10,26 +10,17 @@ export class GetOAuthConsentScreenController extends BaseController {
     this._passport = passport;
   }
 
-  protected async executeImpl(
-    req: Request,
-    res: Response,
-    next?: NextFunction
-  ): Promise<void | Response> {
+  protected executeImpl(req: Request, res: Response, next?: NextFunction): Promise<void> {
     try {
       const forceConsentParam = req.query.forceConsent;
       const forceConsentString = Array.isArray(forceConsentParam)
         ? forceConsentParam[0]
         : forceConsentParam;
 
-      const forceConsent =
-        forceConsentString === '1' || forceConsentString === 'true';
+      const forceConsent = forceConsentString === '1' || forceConsentString === 'true';
 
       const authOptions: Record<string, unknown> = {
-        scope: [
-          'profile',
-          'email',
-          'https://www.googleapis.com/auth/drive.appdata',
-        ],
+        scope: ['profile', 'email', 'https://www.googleapis.com/auth/drive.appdata'],
         accessType: 'offline',
       };
 
@@ -41,7 +32,8 @@ export class GetOAuthConsentScreenController extends BaseController {
         ...authOptions,
       })(req, res, next);
     } catch (err) {
-      return this.fail(res, err.toString());
+      this.fail(res, err.toString());
     }
+    return Promise.resolve();
   }
 }

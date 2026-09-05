@@ -1,19 +1,11 @@
-import mongoose, {
-  PassportLocalDocument,
-  PassportLocalModel,
-  Schema,
-} from 'mongoose';
+import mongoose, { PassportLocalDocument, PassportLocalModel, Schema } from 'mongoose';
 import passportLocalMongoose from 'passport-local-mongoose';
 import { UserPersistent } from '../../../domain/models/user.js';
-import VerificationTokenModel, {
-  VerificationTokenDocument,
-} from './verification-token.model.js';
+import VerificationTokenModel, { VerificationTokenDocument } from './verification-token.model.js';
 
 import { randomBytes } from 'node:crypto';
 
-export interface UserDocument
-  extends Omit<UserPersistent, '_id'>,
-    PassportLocalDocument {
+export interface UserDocument extends Omit<UserPersistent, '_id'>, PassportLocalDocument {
   generateVerificationToken: () => VerificationTokenDocument;
 }
 
@@ -35,7 +27,7 @@ const UserSchema = new Schema({
 UserSchema.plugin(passportLocalMongoose);
 
 UserSchema.methods.generateVerificationToken = function (): VerificationTokenDocument {
-  let payload = {
+  const payload = {
     userId: this._id,
     // 👇 token just a random hex string
     token: randomBytes(20).toString('hex'),
@@ -44,7 +36,9 @@ UserSchema.methods.generateVerificationToken = function (): VerificationTokenDoc
   return new VerificationTokenModel(payload);
 };
 
-const UserModel: PassportLocalModel<UserDocument> =
-  mongoose.model<UserDocument>('User', UserSchema);
+const UserModel: PassportLocalModel<UserDocument> = mongoose.model<UserDocument>(
+  'User',
+  UserSchema,
+);
 
 export default UserModel;

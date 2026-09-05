@@ -92,11 +92,7 @@ describe('Integration: GetChanges (Controller -> UseCase -> Repo -> MongoDB)', (
   });
 });
 
-function fetchChanges(
-  app: Application,
-  jwtCookie: string,
-  clientId: string,
-): request.Test {
+function fetchChanges(app: Application, jwtCookie: string, clientId: string): request.Test {
   return authenticatedRequest(app, jwtCookie).get('/api/sync/changes').query({ clientId });
 }
 

@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
 import { SpeechToText } from './speech-to-text.usecase.js';
-import { SpeechToTextResponseDTO } from './speech-to-text.dto.js';
 import { LoggerService } from '../../../../shared/services/logger/logger.service.js';
 
 export class SpeechToTextController extends BaseController {
@@ -34,7 +33,7 @@ export class SpeechToTextController extends BaseController {
           message: error.message,
         });
       } else {
-        this.ok<SpeechToTextResponseDTO>(res, result.getValue());
+        this.ok(res, result.getValue());
       }
     } catch (err) {
       this.logger.logUnexpectedError(err);

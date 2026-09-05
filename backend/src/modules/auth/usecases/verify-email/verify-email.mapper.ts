@@ -4,4 +4,3 @@ import type { VerifyEmailRequestDTO } from './verify-email.dto.js';
 export function requestToUsecaseParams(dto: VerifyEmailRequestDTO): VerifyEmailParams {
   return { tokenId: dto.token };
 }
-

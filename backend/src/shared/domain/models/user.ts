@@ -1,5 +1,5 @@
 import { Result } from '../../core/result.js';
-import { GoogleAuthTokens } from '../../infra/auth/google.strategy.js';
+import { GoogleAuthTokens } from '../values/user/google-auth-tokens.js';
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 import { UserEmail } from '../values/user/user-email.js';
@@ -69,7 +69,7 @@ export class User extends AggregateRoot<UserProps> {
   public static create(props: UserProps, id?: UniqueEntityID): Result<User> {
     // TODO: check null or undefined here
 
-    const isNewUser = !!id === false;
+    const isNewUser = !!!id;
 
     const defaultProps: UserProps = {
       username: null,

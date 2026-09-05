@@ -28,9 +28,7 @@ const DEFAULTS = {
  * Creates a user in the current Mongo connection and returns a jwt cookie
  * matching LoginService.setJwtCookie (cookie name `jwt`, payload `{ user }`).
  */
-export async function seedTestUser(
-  options: SeedTestUserOptions = {},
-): Promise<SeededTestUser> {
+export async function seedTestUser(options: SeedTestUserOptions = {}): Promise<SeededTestUser> {
   const email = options.email ?? DEFAULTS.email;
   const firstName = options.firstName ?? DEFAULTS.firstName;
   const lastName = options.lastName ?? DEFAULTS.lastName;
@@ -62,7 +60,10 @@ export async function seedTestUser(
   };
 }
 
-export function authenticatedRequest(app: Application, jwtCookie: string): {
+export function authenticatedRequest(
+  app: Application,
+  jwtCookie: string,
+): {
   get: (url: string) => Test;
   post: (url: string) => Test;
   patch: (url: string) => Test;
@@ -77,7 +78,7 @@ export function authenticatedRequest(app: Application, jwtCookie: string): {
   };
 }
 
-export function jwtCookieFromResponse(res: { headers: { [key: string]: unknown } }): string {
+export function jwtCookieFromResponse(res: { headers: Record<string, unknown> }): string {
   const raw = res.headers['set-cookie'];
   const list = Array.isArray(raw) ? raw : typeof raw === 'string' ? [raw] : [];
   const jwtSetCookie = list.find((cookie: string) => cookie.startsWith('jwt='));

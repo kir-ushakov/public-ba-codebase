@@ -2,10 +2,7 @@ import { Application } from 'express';
 import request from 'supertest';
 import { TaskDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import UserModel from '../../../src/shared/infra/database/mongodb/user.model.js';
-import {
-  authenticatedRequest,
-  jwtCookieFromResponse,
-} from '../_setup/auth.helper.js';
+import { authenticatedRequest, jwtCookieFromResponse } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
 

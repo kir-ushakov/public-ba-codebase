@@ -42,7 +42,7 @@ export class TaskRepoService {
     taskId: string,
   ): Promise<Result<Task, ServiceError<ETaskRepoServiceError>>> {
     const TaskModel = this.models.TaskModel;
-    let params = {
+    const params = {
       _id: taskId,
       userId: userId,
     };
@@ -75,12 +75,12 @@ export class TaskRepoService {
 
   public async exists(taskId: string, userId: string = null): Promise<boolean> {
     const TaskModel = this.models.TaskModel;
-    let params = { _id: taskId };
+    const params: { _id: string; userId?: string } = { _id: taskId };
     if (userId) {
-      params['userId'] = userId;
+      params.userId = userId;
     }
     const existingTask: TaskDocument = await TaskModel.findOne(params);
-    const found: boolean = !!existingTask === true;
+    const found = !!existingTask;
     return found;
   }
 }

@@ -16,11 +16,9 @@ export function establishIngress(): Promise<void> {
         ngrok.consoleLog();
         resolve();
       })
-      .catch((err) => {
-        console.log(
-          `An error occurred while establishing of the ngrok ingress.`
-        );
-        reject(err);
+      .catch((err: unknown) => {
+        console.log(`An error occurred while establishing of the ngrok ingress.`);
+        reject(err instanceof Error ? err : new Error('Unknown ngrok ingress error'));
       });
   });
 }

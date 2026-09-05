@@ -55,7 +55,7 @@ export class OpenAISpeechTranscriberService {
       if (fileResult.isFailure) return Result.fail(fileResult.error);
       const filelike = fileResult.getValue();
 
-      const openAIClientResult = await this.getClientOrFail();
+      const openAIClientResult = this.getClientOrFail();
       if (openAIClientResult.isFailure) return Result.fail(openAIClientResult.error);
       const openAIClient = openAIClientResult.getValue();
 
@@ -123,9 +123,7 @@ export class OpenAISpeechTranscriberService {
     return Result.ok(result.getValue());
   }
 
-  private async getClientOrFail(): Promise<
-    Result<OpenAI, ServiceError<OpenAISpeechTranscriberError>>
-  > {
+  private getClientOrFail(): Result<OpenAI, ServiceError<OpenAISpeechTranscriberError>> {
     const openAIClientResult = this.openAIClientService.getClientOrFail();
     if (openAIClientResult.isFailure) {
       return wrapServiceError<OpenAISpeechTranscriberError>(

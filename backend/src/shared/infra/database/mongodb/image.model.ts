@@ -8,9 +8,7 @@ export interface IImagePersistent {
   fileId: string;
 }
 
-export interface ImageDocument
-  extends Omit<IImagePersistent, '_id'>,
-    Document<string> {}
+export interface ImageDocument extends Omit<IImagePersistent, '_id'>, Document<string> {}
 
 const ImageSchema = new Schema({
   imageId: { type: String, require: true },

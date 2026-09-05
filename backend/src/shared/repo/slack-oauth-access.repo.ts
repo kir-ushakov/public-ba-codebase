@@ -13,9 +13,7 @@ export class SlackOAuthAccessRepo {
     this._models = models;
   }
 
-  public async create(
-    slackOAuthAccess: SlackOAuthAccess
-  ): Promise<ISlackOAuthAccessDocument> {
+  public async create(slackOAuthAccess: SlackOAuthAccess): Promise<ISlackOAuthAccessDocument> {
     const slackOAuthAccessData: ISlackOAuthAccessPresitant =
       SlackOAuthAccessMapper.toPersistence(slackOAuthAccess);
 
@@ -34,18 +32,17 @@ export class SlackOAuthAccessRepo {
     });
   }
 
-  public async getSlackOAuthAccessByUserId(
-    userId: string
-  ): Promise<SlackOAuthAccess | null> {
+  public async getSlackOAuthAccessByUserId(userId: string): Promise<SlackOAuthAccess | null> {
     const SlackOAuthAccessModel = this._models.SlackOAuthAccessModel;
-    const slackOAuthAccessDocument: ISlackOAuthAccessDocument =
-      await SlackOAuthAccessModel.findOne({ userId });
+    const slackOAuthAccessDocument: ISlackOAuthAccessDocument = await SlackOAuthAccessModel.findOne(
+      { userId },
+    );
 
-    const found = !!slackOAuthAccessDocument === true;
+    const found = !!slackOAuthAccessDocument;
     if (!found) return null;
 
     const slackOAuthAccess: SlackOAuthAccess = SlackOAuthAccessMapper.toDomain(
-      slackOAuthAccessDocument
+      slackOAuthAccessDocument,
     ) as SlackOAuthAccess;
 
     return slackOAuthAccess;

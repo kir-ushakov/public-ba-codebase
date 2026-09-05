@@ -2,8 +2,6 @@ import { UserDocument } from '../../../../../shared/infra/database/mongodb/user.
 import { IAbstractMailFactory } from '../abstract-mail-factory.interface.js';
 
 export class HalloweenMailFactory implements IAbstractMailFactory {
-  constructor() {}
-
   verificationEmail(user: UserDocument, link: string): string {
     const html = `  
       <p>Eat, drink and be scary, ${user.firstName} ${user.lastName},</p>
