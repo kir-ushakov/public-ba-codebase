@@ -115,6 +115,7 @@
     "webpack-dev-server": ">=5.2.6",
     "sigstore": ">=4.1.1",
     "@sigstore/core": ">=3.2.1",
-    "piscina": ">=4.9.3"
+    "piscina": ">=4.9.3",
+    "form-data@4": ">=4.0.6"
   }
 }
