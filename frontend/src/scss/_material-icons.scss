@@ -1,0 +1,13 @@
+// Ligature icon fonts render the glyph name (e.g. "arrow_back") until the font
+// file is ready. .mat-icon is 24×24 with overflow:hidden, so that name is
+// truncated to a flash of "arrow". A 0%-size fallback keeps the letters invisible.
+@font-face {
+  font-family: 'Material Icons Fallback';
+  src: local('Roboto'), local('Arial'), local('Helvetica Neue'), local('Helvetica');
+  size-adjust: 0%;
+}
+
+.material-icons,
+.mat-icon {
+  font-family: 'Material Icons', 'Material Icons Fallback', sans-serif;
+}
