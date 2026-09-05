@@ -7,8 +7,6 @@ import { UserRepo } from '../../../../shared/repo/user.repo.js';
 const clientRepo: ClientRepo = new ClientRepo(models);
 const userRepo: UserRepo = new UserRepo(models);
 const releaseClientId = new ReleaseClientId(clientRepo, userRepo);
-const releaseClientIdController = new ReleaseClientIdController(
-  releaseClientId
-);
+const releaseClientIdController = new ReleaseClientIdController(releaseClientId);
 
 export { releaseClientIdController };

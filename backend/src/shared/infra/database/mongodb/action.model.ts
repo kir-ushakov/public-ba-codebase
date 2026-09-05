@@ -1,8 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { EActionType } from '../../../domain/models/action-type.enum.js';
 
-export enum EActionType {
-  TaskDeleted = 'ACTION_TYPE_TASK_DELETED',
-}
+export { EActionType };
 
 export interface IActionPersistent {
   userId: string;

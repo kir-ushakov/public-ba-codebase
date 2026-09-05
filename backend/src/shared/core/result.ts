@@ -30,7 +30,7 @@ export class Result<T, E = string> {
   }
 
   get error(): E {
-    return this._error as E;
+    return this._error;
   }
 
   public static ok<U, E = string>(value?: U): Result<U, E> {

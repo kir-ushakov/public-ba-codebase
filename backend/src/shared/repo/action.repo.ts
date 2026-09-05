@@ -27,20 +27,21 @@ export class ActionRepo {
   public async getActionsOccurredSince(
     userId: string,
     time: Date = null,
-    actionType: EActionType = null
+    actionType: EActionType = null,
   ): Promise<Action[]> {
     const actionModel = this._models.ActionModel;
-    let actionDocuments: ActionDocument[];
 
-    const filter = { userId: userId };
+    const filter: { userId: string; occurredAt?: { $gte: Date }; type?: EActionType } = {
+      userId: userId,
+    };
     if (time) {
-      filter['occurredAt'] = { $gte: time };
+      filter.occurredAt = { $gte: time };
     }
     if (actionType) {
-      filter['type'] = actionType;
+      filter.type = actionType;
     }
 
-    actionDocuments = await actionModel.find(filter);
-    return actionDocuments.map((a) => ActionMapper.toDomain(a));
+    const actionDocuments: ActionDocument[] = await actionModel.find(filter);
+    return actionDocuments.map(a => ActionMapper.toDomain(a));
   }
 }

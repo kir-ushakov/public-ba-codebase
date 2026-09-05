@@ -24,6 +24,11 @@ The dev environment is Windows PowerShell. Do not chain commands with `&&` and d
 - After editing `contracts/`, it must be rebuilt before either app sees the change: `cd contracts; npm run build`.
 - `frontend/src/app/shared/dto/` still holds legacy duplicated auth DTOs. Do not add new DTOs there — extend `contracts/` instead.
 - The frontend is an offline-capable PWA with a sync protocol, so users keep running cached builds for a long time. Treat contracts as a public API: prefer additive, backward-compatible changes, and state explicitly when a change is breaking.
+- In backend controllers, keep explicit `FooContract.Request` / `FooContract.Response` on the HTTP boundary (`ok()`, request mapping) even when inference would work. Do not strip them as redundant. See `.cursor/rules/backend-architecture.mdc`.
+
+## `type` vs `interface`
+
+House style, not the TypeScript handbook: `type` is an object **shape** (DTO, JSON, HTTP/Passport payload, test fixture). `interface` is a **contract** a class `implements`. A `type` is erased at compile time; it is not a class and does not imply instances. Do not convert `type` → `interface` for “consistency”. See `.cursor/rules/typescript-type-vs-interface.mdc`.
 
 ## Verify, do not invent
 

@@ -54,7 +54,7 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
         fileId,
         userId,
       });
-  
+
       // TODO: handle potential error properly (as domain error)
       await this.imageRepoService.create(imageOrError.getValue());
 
@@ -102,5 +102,4 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
       extension: fileType,
     });
   }
-
 }

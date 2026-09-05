@@ -55,9 +55,8 @@ export class SlackService {
     let channel: Channel;
 
     // trying to find a channel with 'brainasapp' name
-    const result: ConversationsListResponse =
-      await this._webClient.conversations.list();
-    channel = result.channels.find((c) => c.name === this.CHANNEL_NAME);
+    const result: ConversationsListResponse = await this._webClient.conversations.list();
+    channel = result.channels.find(c => c.name === this.CHANNEL_NAME);
     if (!channel) {
       // if not found - create it
       const createChannelResp: ConversationsCreateResponse =
@@ -77,11 +76,10 @@ export class SlackService {
 
   private async addUserIfNotInChannel(channelId: string): Promise<void> {
     // Make sure the user is a member of the channel
-    const membersResp: ConversationsMembersResponse =
-      await this._webClient.conversations.members({ channel: channelId });
-    const isMemberOfChannel = membersResp.members.includes(
-      this._slackAuthedUserId
-    );
+    const membersResp: ConversationsMembersResponse = await this._webClient.conversations.members({
+      channel: channelId,
+    });
+    const isMemberOfChannel = membersResp.members.includes(this._slackAuthedUserId);
 
     // and add if not.
     if (!isMemberOfChannel) {

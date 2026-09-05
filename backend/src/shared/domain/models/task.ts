@@ -82,7 +82,8 @@ export class Task extends AggregateRoot<ITaskProps> {
     };
 
     const validationResult = Task.isValid(fullProps);
-    if (validationResult.isFailure) return validationResult as Result<never, DomainError<Task, ETaskError>>;
+    if (validationResult.isFailure)
+      return validationResult as Result<never, DomainError<Task, ETaskError>>;
 
     const task = new Task(fullProps, id);
 
@@ -94,7 +95,8 @@ export class Task extends AggregateRoot<ITaskProps> {
     id: UniqueEntityID,
   ): Result<Task | never, DomainError<Task, ETaskError>> {
     const validationResult = Task.isValid(props);
-    if (validationResult.isFailure) return validationResult as Result<never, DomainError<Task, ETaskError>>;
+    if (validationResult.isFailure)
+      return validationResult as Result<never, DomainError<Task, ETaskError>>;
 
     return Result.ok<Task, never>(new Task(props, id));
   }
@@ -109,7 +111,8 @@ export class Task extends AggregateRoot<ITaskProps> {
     };
 
     const validationResult = Task.isValid(newProps);
-    if (validationResult.isFailure) return validationResult as Result<never, DomainError<Task, ETaskError>>;
+    if (validationResult.isFailure)
+      return validationResult as Result<never, DomainError<Task, ETaskError>>;
 
     this.props.type = newProps.type;
     this.props.title = newProps.title;
@@ -124,15 +127,17 @@ export class Task extends AggregateRoot<ITaskProps> {
   }
 
   private static isValid(props: ITaskProps): Result<void, DomainError<Task, ETaskError>> {
- 
     // Check if we have imageId - if yes, title validation is relaxed
     const hasImageId = Guard.notEmptyString(props.imageId);
-    
+
     if (!hasImageId) {
       // No imageId provided - title is required and must meet length requirements
       if (!Guard.notEmptyString(props.title)) {
         return Result.fail<never, DomainError<Task, ETaskError>>(
-          new DomainError<Task, ETaskError>(ETaskError.TitleMissed, 'Title is required when no image is provided'),
+          new DomainError<Task, ETaskError>(
+            ETaskError.TitleMissed,
+            'Title is required when no image is provided',
+          ),
         );
       }
 
@@ -145,7 +150,7 @@ export class Task extends AggregateRoot<ITaskProps> {
         );
       }
     }
-    
+
     // Always check max length if title is provided (regardless of imageId)
     if (props.title && !Guard.textLengthAtMost(props.title, Task.TITLE_MAX_LENGTH)) {
       return Result.fail<never, DomainError<Task, ETaskError>>(

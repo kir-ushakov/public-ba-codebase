@@ -1,0 +1,34 @@
+---
+description: Domain value objects are classes, not interfaces
+globs: backend/src/shared/domain/values/**/*.ts
+alwaysApply: false
+---
+
+# Domain value objects
+
+Files under `backend/src/shared/domain/values/` are DDD **value objects**, not DTO shapes.
+
+Follow `user-email.ts`:
+
+- `export class Foo extends ValueObject<FooProps>`
+- props interface is a private construction shape, not the public type
+- `private constructor` + `public static create(...): Result<Foo>`
+- getters for fields; equality via `ValueObject.equals`
+
+```ts
+// BAD — interface in values/ is a DTO, not a value object
+export interface GoogleAuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+// GOOD
+export class GoogleAuthTokens extends ValueObject<GoogleAuthTokensProps> {
+  private constructor(props: GoogleAuthTokensProps) {
+    super(props);
+  }
+  public static create(props: GoogleAuthTokensProps): Result<GoogleAuthTokens> { /* Guard + Result */ }
+}
+```
+
+Passport/HTTP payloads stay in infra (e.g. `GoogleOAuthTokenPayload`). Map them to the value object in the use-case with `Foo.create(...)`.

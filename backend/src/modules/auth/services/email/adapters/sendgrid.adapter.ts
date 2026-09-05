@@ -8,13 +8,8 @@ export class SendgridMailAdapter implements IMailAdapter {
     this._provider = sendgridMailProvider;
   }
 
-  public async sendEmail(
-    to: string,
-    from: string,
-    subject: string,
-    html: string
-  ): Promise<void> {
-    let mail: MailDataRequired = {
+  public async sendEmail(to: string, from: string, subject: string, html: string): Promise<void> {
+    const mail: MailDataRequired = {
       from,
       subject,
       to,
@@ -25,8 +20,8 @@ export class SendgridMailAdapter implements IMailAdapter {
       await this._provider.send(mail);
     } catch (error) {
       // TODO: log error here
-      const response = (error as { response?: { body?: unknown } })?.response;
-      if (response?.body !== undefined) {
+      const response = (error as { response?: { body?: unknown } }).response;
+      if (response.body !== undefined) {
         console.error(response.body);
       }
     }

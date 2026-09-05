@@ -2,11 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
 
 export class LogoutController extends BaseController {
-  protected async executeImpl(
-    req: Request,
-    res: Response,
-    _next?: NextFunction,
-  ): Promise<void> {
+  protected executeImpl(req: Request, res: Response, _next?: NextFunction): Promise<void> {
     try {
       if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
         if (req.isAuthenticated()) {
@@ -23,5 +19,6 @@ export class LogoutController extends BaseController {
     } catch (err) {
       this.fail(res, err.toString());
     }
+    return Promise.resolve();
   }
 }

@@ -8,23 +8,15 @@ export class MailgunAdapter implements IMailAdapter {
     this.provider = mailgunProvider;
   }
 
-  public async sendEmail(
-    to: string,
-    from: string,
-    subject: string,
-    html: string
-  ): Promise<void> {
+  public async sendEmail(to: string, from: string, subject: string, html: string): Promise<void> {
     try {
       // 👇 Create email with MailGun API (provider is  MailgunClient)
-      const result = await this.provider.messages.create(
-        process.env.EMAIL_DOMAIN,
-        {
-          from: from,
-          to: [to],
-          subject: subject,
-          html: html,
-        }
-      );
+      const result = await this.provider.messages.create(process.env.EMAIL_DOMAIN, {
+        from: from,
+        to: [to],
+        subject: subject,
+        html: html,
+      });
       console.log(result);
     } catch (err) {
       console.error(err);

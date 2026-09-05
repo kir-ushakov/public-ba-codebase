@@ -6,9 +6,7 @@ export interface IClientPersistent {
   syncTime: Date;
 }
 
-export interface ClientDocument
-  extends Omit<IClientPersistent, '_id'>,
-    Document<string> {}
+export interface ClientDocument extends Omit<IClientPersistent, '_id'>, Document<string> {}
 
 const ClientSchema = new Schema({
   userId: { type: String, require: true },

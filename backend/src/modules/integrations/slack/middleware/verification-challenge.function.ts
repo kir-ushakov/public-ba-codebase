@@ -20,7 +20,8 @@ export function verificationChallenge(): express.RequestHandler {
     }
 
     let rawBody;
-    if (contentType?.toLocaleLowerCase() === 'application/x-www-form-urlencoded') {
+    const contentTypeHeader = Array.isArray(contentType) ? contentType[0] : contentType;
+    if (contentTypeHeader?.toLocaleLowerCase() === 'application/x-www-form-urlencoded') {
       rawBody = formurlencoded(req.body);
     } else {
       rawBody = JSON.stringify(req.body)
@@ -36,7 +37,10 @@ export function verificationChallenge(): express.RequestHandler {
       return res.status(400).send('Verifying requests from Slack failed');
     }
 
-    const sigBasestring = `v0:${xSlackRequestTimestamp}:${rawBody}`;
+    const timestamp = Array.isArray(xSlackRequestTimestamp)
+      ? xSlackRequestTimestamp[0]
+      : xSlackRequestTimestamp;
+    const sigBasestring = `v0:${String(timestamp)}:${rawBody}`;
     const mySignature =
       'v0=' + crypto.createHmac('sha256', signingSecret).update(sigBasestring).digest('hex');
 

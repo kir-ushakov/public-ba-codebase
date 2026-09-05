@@ -10,7 +10,7 @@ export function isAuthenticated(req: Request, res: Response, next: NextFunction)
 
   switch (process.env.AUTHENTICATION_STRATEGY) {
     case 'JWT':
-      passport.authenticate('jwt', { session: false }, async (error, user) => {
+      passport.authenticate('jwt', { session: false }, (error, user) => {
         if (error || !user) {
           const RESPONSE_CODE = EHttpStatus.Unauthorized;
           const RESPONSE_ERROR_MESSAGE = 'User not authenticated';

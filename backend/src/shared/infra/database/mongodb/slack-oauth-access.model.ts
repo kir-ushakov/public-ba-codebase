@@ -16,7 +16,7 @@ const SlackOAuthAccessSchema = new Schema({
 
 const SlackOAuthAccessModel = mongoose.model<ISlackOAuthAccessDocument>(
   'SlackOAuthAccess',
-  SlackOAuthAccessSchema
+  SlackOAuthAccessSchema,
 );
 
 export default SlackOAuthAccessModel;

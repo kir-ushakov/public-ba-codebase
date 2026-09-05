@@ -4,11 +4,7 @@ import { SlackOAuthAccessRepo } from '../../../../../shared/repo/slack-oauth-acc
 import { SlackEventReceivedUsecase } from './slack-event-received.usecase.js';
 
 const slackOAuthAccessRepo = new SlackOAuthAccessRepo(models);
-const slackEventReceivedUsecase = new SlackEventReceivedUsecase(
-  slackOAuthAccessRepo
-);
-const slackEventRecivedController = new SlackEventReceivedController(
-  slackEventReceivedUsecase
-);
+const slackEventReceivedUsecase = new SlackEventReceivedUsecase(slackOAuthAccessRepo);
+const slackEventRecivedController = new SlackEventReceivedController(slackEventReceivedUsecase);
 
 export { slackEventRecivedController };

@@ -1,4 +1,4 @@
-import { EActionType } from '../../infra/database/mongodb/action.model.js';
+import { EActionType } from './action-type.enum.js';
 import { ValueObject } from '../ValueObject.js';
 
 export interface IActionProps {

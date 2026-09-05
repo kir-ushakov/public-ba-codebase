@@ -18,7 +18,10 @@ export class GetChnagesController extends BaseController {
     const authenticatedUser: UserPersistent = req.user as UserPersistent;
     const userId = authenticatedUser._id;
 
-    const params = this.requestToUsecaseParams(req.query as unknown as GetChangesContract.Request, userId);
+    const params = this.requestToUsecaseParams(
+      req.query as unknown as GetChangesContract.Request,
+      userId,
+    );
 
     try {
       const result: GetChangesResult = await this._useCase.execute(params);
@@ -31,15 +34,18 @@ export class GetChnagesController extends BaseController {
           message: error.message,
         });
       } else {
-        const response = this.usecaseResultToResponse(result);
-        return this.ok<GetChangesContract.Response>(res, response);
+        const response: GetChangesContract.Response = this.usecaseResultToResponse(result);
+        return this.ok(res, response);
       }
     } catch (err) {
       return this.fail(res, err);
     }
   }
 
-  private requestToUsecaseParams(payload: GetChangesContract.Request, userId: string): GetChangesParams {
+  private requestToUsecaseParams(
+    payload: GetChangesContract.Request,
+    userId: string,
+  ): GetChangesParams {
     return {
       clientId: payload.clientId,
       userId,
@@ -47,7 +53,7 @@ export class GetChnagesController extends BaseController {
   }
 
   private usecaseResultToResponse(result: GetChangesResult): GetChangesContract.Response {
-    const changes: Change[] = result.getValue() as Change[];
+    const changes: Change[] = result.getValue();
     return {
       changes: changes.map(change => ChangeMapper.toDTO(change)),
     };

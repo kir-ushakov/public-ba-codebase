@@ -1,8 +1,10 @@
-import {
-  Strategy as GoogleStrategy,
-  Profile,
-  VerifyCallback,
-} from 'passport-google-oauth20';
+import { Strategy as GoogleStrategy, Profile, VerifyCallback } from 'passport-google-oauth20';
+
+/** Passport payload — not a domain value object. Map to GoogleAuthTokens in the use-case. */
+export type GoogleOAuthTokenPayload = {
+  accessToken: string;
+  refreshToken?: string;
+};
 
 export const googleStrategy = new GoogleStrategy(
   {
@@ -18,7 +20,7 @@ export const googleStrategy = new GoogleStrategy(
   ): void {
     try {
       if (profile) {
-        const tokens = { accessToken, refreshToken };
+        const tokens: GoogleOAuthTokenPayload = { accessToken, refreshToken };
         done(null, { profile, tokens });
       } else {
         done(null, false);
@@ -26,15 +28,10 @@ export const googleStrategy = new GoogleStrategy(
     } catch (err) {
       done(err, false);
     }
-  }
+  },
 );
-
-export type GoogleAuthTokens = {
-  accessToken: string;
-  refreshToken: string;
-};
 
 export type GoogleProfileWithTokens = {
   profile: Profile;
-  tokens: GoogleAuthTokens;
+  tokens: GoogleOAuthTokenPayload;
 };

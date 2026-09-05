@@ -8,13 +8,8 @@ const webClient = new WebClient();
 
 const slackOAuthAccessRepo = new SlackOAuthAccessRepo(models);
 
-const removeFromSlackUsecase = new RemoveFromSlackUsecase(
-  webClient,
-  slackOAuthAccessRepo
-);
+const removeFromSlackUsecase = new RemoveFromSlackUsecase(webClient, slackOAuthAccessRepo);
 
-const removeFromSlackController = new RemoveFromSlackController(
-  removeFromSlackUsecase
-);
+const removeFromSlackController = new RemoveFromSlackController(removeFromSlackUsecase);
 
 export { removeFromSlackController };

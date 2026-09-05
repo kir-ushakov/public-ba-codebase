@@ -42,10 +42,23 @@ Use-cases and repos return `Result` (`shared/core/result.ts`) and fail with a ty
 
 Controllers branch on `result.isSuccess` and respond via `BaseController.jsonResponse(res, error.httpCode, { name, message })`, keeping the `try/catch` in `executeImpl` like neighbouring controllers.
 
+HTTP request/response shapes come from `@brainassistant/contracts`. Keep explicit `FooContract.Request` / `FooContract.Response` annotations at the controller boundary even when TypeScript could infer them — they document the public API, they are not noise. Do not delete them as “redundant”.
+
+```ts
+// GOOD — contract visible at ok()
+const response: GetChangesContract.Response = this.usecaseResultToResponse(result);
+return this.ok(res, response);
+
+// BAD — inference-only; hides the contract at the HTTP boundary
+const response = this.usecaseResultToResponse(result);
+return this.ok(res, response);
+```
+
 ## Data access and input
 
 - Use-cases call `shared/repo/*`, never Mongoose models directly.
 - Validate external input in domain models and value objects with `Guard` + `Result` (see `shared/domain/models/task.ts`). Do not add joi, zod or express-validator.
+- Anything under `shared/domain/values/` is a `ValueObject` class (`create()` + getters), never a public interface/type alias. Infra payloads stay in infra; map them in the use-case. See `user-email.ts`.
 - Read `req.user` in the controller and pass plain values into the use-case; use-cases must not touch Express objects.
 
 ## Types and secrets

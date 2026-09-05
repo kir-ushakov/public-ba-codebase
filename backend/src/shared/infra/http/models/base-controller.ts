@@ -37,10 +37,10 @@ export abstract class BaseController {
     }
   }
 
-  public static jsonResponse<T>(
+  public static jsonResponse(
     res: express.Response,
     code: number,
-    payload: T | null = null,
+    payload: unknown = null,
   ): express.Response {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     return res.status(code).json(payload);
@@ -55,7 +55,7 @@ export abstract class BaseController {
     res.redirect(`${path}?${queryString}`);
   }
 
-  public ok<T>(res: express.Response, dto?: T): express.Response {
+  public ok(res: express.Response, dto?: unknown): express.Response {
     res.type('application/json');
     return res.status(200).json(dto ?? {});
   }

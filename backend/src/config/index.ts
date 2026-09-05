@@ -13,7 +13,7 @@ REQUIRED_ENV_VARS.forEach(name => {
   }
 });
 
-const baseUploadPath = process.env.FILES_UPLOAD_PATH!;
+const baseUploadPath = process.env.FILES_UPLOAD_PATH;
 
 export const config = {
   paths: {

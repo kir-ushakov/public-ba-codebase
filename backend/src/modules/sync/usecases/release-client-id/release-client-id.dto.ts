@@ -1,3 +1,3 @@
-export interface IReleaseClientIdResponseDTO {
- clientId: string;
-}
+export type ReleaseClientIdResponseDTO = {
+  clientId: string;
+};

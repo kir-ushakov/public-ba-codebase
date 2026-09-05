@@ -1,9 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { TaskPresitant } from '../../../domain/models/task.js';
 
-export interface TaskDocument
-  extends Omit<TaskPresitant, '_id'>,
-    Document<string> {}
+export interface TaskDocument extends Omit<TaskPresitant, '_id'>, Document<string> {}
 
 const TaskSchema = new Schema({
   _id: { type: String, require: true },

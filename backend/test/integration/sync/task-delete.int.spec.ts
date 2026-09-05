@@ -58,7 +58,9 @@ describe('Integration: DeleteTask (Controller -> UseCase -> Repo -> MongoDB)', (
   it('is idempotent: deleting a missing task still returns 200 and writes no action', async () => {
     const { jwtCookie } = await seedTestUser();
 
-    const res = await authenticatedRequest(app, jwtCookie).delete('/api/sync/task/task-already-gone');
+    const res = await authenticatedRequest(app, jwtCookie).delete(
+      '/api/sync/task/task-already-gone',
+    );
 
     expect(res.status).toBe(200);
     expect(await models.ActionModel.countDocuments()).toBe(0);

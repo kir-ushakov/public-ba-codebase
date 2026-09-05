@@ -22,14 +22,16 @@ describe('Integration: test harness (createApp + JWT)', () => {
   });
 
   it('returns 401 without auth cookie', async () => {
-    const res = await request(app).post('/api/sync/task').send({
-      changeableObjectDto: {
-        id: 'task-unauth',
-        type: ETaskType.Basic,
-        title: 'Should not be created',
-        status: ETaskStatus.Todo,
-      },
-    });
+    const res = await request(app)
+      .post('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          id: 'task-unauth',
+          type: ETaskType.Basic,
+          title: 'Should not be created',
+          status: ETaskStatus.Todo,
+        },
+      });
 
     expect(res.status).toBe(401);
     expect(res.body).toEqual({

@@ -8,10 +8,7 @@ import {
   seedTestUser,
 } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
-import {
-  fakeGoogleSuccess,
-  installFakeGoogleStrategy,
-} from '../_setup/fake-google.strategy.js';
+import { fakeGoogleSuccess, installFakeGoogleStrategy } from '../_setup/fake-google.strategy.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
 
 const AUTH_PATH = '/api/integrations/google/auth';
@@ -53,9 +50,9 @@ describe('Integration: GoogleAuth (Controller -> UseCase -> Repo -> MongoDB)', (
 
     const stored = await UserModel.findOne({ username: 'new.google@example.com' });
     expect(stored).toBeTruthy();
-    expect(stored!.verified).toBe(true);
-    expect(stored!.googleId).toBe('g-new-1');
-    expect(stored!.googleRefreshToken).toBe('google-refresh-token');
+    expect(stored.verified).toBe(true);
+    expect(stored.googleId).toBe('g-new-1');
+    expect(stored.googleRefreshToken).toBe('google-refresh-token');
 
     const jwtCookie = jwtCookieFromResponse(res);
     const taskRes = await authenticatedRequest(app, jwtCookie)
@@ -99,8 +96,8 @@ describe('Integration: GoogleAuth (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(res.body.user.email).toBe('existing.google@example.com');
 
     const stored = await UserModel.findOne({ googleId: 'g-existing' });
-    expect(stored!.googleAccessToken).toBe('second-access');
-    expect(stored!.googleRefreshToken).toBe('second-refresh');
+    expect(stored.googleAccessToken).toBe('second-access');
+    expect(stored.googleRefreshToken).toBe('second-refresh');
     expect(await UserModel.countDocuments({ googleId: 'g-existing' })).toBe(1);
   });
 

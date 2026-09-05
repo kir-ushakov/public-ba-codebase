@@ -1,7 +1,7 @@
 import { Client } from '../domain/models/client.js';
-import { IClientPersistent } from '../infra/database/mongodb/client.model.js';
+import { IClientPersistent, ClientDocument } from '../infra/database/mongodb/client.model.js';
 import { IDbModels } from '../infra/database/mongodb/index.js';
-import { ClientDocument } from '../infra/database/mongodb/client.model.js';
+
 import { ClientMapper } from '../mappers/client.mapper.js';
 
 export class ClientRepo {
@@ -23,17 +23,13 @@ export class ClientRepo {
 
   public async find(userId: string, clientId: string): Promise<Client> {
     const clientModel = this._models.ClientModel;
-    let clientDocument: ClientDocument;
 
-    clientDocument = await clientModel.findOne({
+    const clientDocument: ClientDocument = await clientModel.findOne({
       userId: userId,
       _id: clientId,
     });
-    const found = !!clientDocument === true;
-    if (!found)
-      throw new Error(
-        `Client not found for userId=${userId} and clientId=${clientId}`
-      );
+    const found = !!clientDocument;
+    if (!found) throw new Error(`Client not found for userId=${userId} and clientId=${clientId}`);
 
     const client: Client = ClientMapper.toDomain(clientDocument);
     return client;
@@ -42,18 +38,15 @@ export class ClientRepo {
   public async save(client: Client): Promise<ClientDocument> {
     const clientModel = this._models.ClientModel;
 
-    const clientPersistent: IClientPersistent =
-      ClientMapper.toPersistence(client);
+    const clientPersistent: IClientPersistent = ClientMapper.toPersistence(client);
     const clientId = client.id.toString();
 
     const filter = { _id: clientId };
     const update = { ...clientPersistent };
 
-    const updatedClient: ClientDocument = await clientModel.findOneAndUpdate(
-      filter,
-      update,
-      { useFindAndModify: false }
-    );
+    const updatedClient: ClientDocument = await clientModel.findOneAndUpdate(filter, update, {
+      useFindAndModify: false,
+    });
 
     return updatedClient;
   }

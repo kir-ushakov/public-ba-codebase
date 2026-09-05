@@ -6,10 +6,7 @@ import { SlackOAuthAccessRepo } from '../../../../../shared/repo/slack-oauth-acc
 
 const webClient = new WebClient();
 const slackOAuthAccessRepo = new SlackOAuthAccessRepo(models);
-const addToSlackUsecase = new AddToSlackUsecase(
-  webClient,
-  slackOAuthAccessRepo
-);
+const addToSlackUsecase = new AddToSlackUsecase(webClient, slackOAuthAccessRepo);
 
 const addToSlackController = new AddToSlackController(addToSlackUsecase);
 

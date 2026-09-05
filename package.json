@@ -1,8 +1,4 @@
 {
-  "lint-staged": {
-    "frontend/**/*.{ts,js,json}": "npx eslint --config frontend/eslint.config.mjs --fix --no-warn-ignored",
-    "backend/**/*.{ts,js,json}": "npx eslint --config backend/eslint.config.mjs --fix --no-warn-ignored"
-  },
   "devDependencies": {
     "husky": "^8.0.0",
     "lint-staged": "^15.5.1"

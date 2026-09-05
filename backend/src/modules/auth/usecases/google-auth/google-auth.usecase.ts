@@ -9,10 +9,11 @@ import { LoginResponseDTO } from '../login/login.dto.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { UserEmail } from '../../../../shared/domain/values/user/user-email.js';
+import { GoogleAuthTokens } from '../../../../shared/domain/values/user/google-auth-tokens.js';
 import { UserDocument } from '../../../../shared/infra/database/mongodb/user.model.js';
 import { LoginService } from '../../services/login.service.js';
 import {
-  GoogleAuthTokens,
+  GoogleOAuthTokenPayload,
   GoogleProfileWithTokens,
 } from '../../../../shared/infra/auth/google.strategy.js';
 
@@ -61,30 +62,42 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
 
       try {
         this.passport.authenticate('google', (err, res: GoogleProfileWithTokens) => {
-          handleGoogleCallback(err, res).catch(reject);
+          handleGoogleCallback(err, res).catch((callbackErr: unknown) => {
+            reject(
+              callbackErr instanceof Error
+                ? callbackErr
+                : new Error('Unknown Google auth callback error'),
+            );
+          });
         })(request.context.req, request.context.res, request.context.next);
-      } catch (err) {
-        reject(err);
+      } catch (err: unknown) {
+        reject(err instanceof Error ? err : new Error('Unknown Google auth error'));
       }
     });
   }
 
   private async findOrCreateUser(
     profile: Profile,
-    tokens: GoogleAuthTokens,
+    tokenPayload: GoogleOAuthTokenPayload,
   ): Promise<Result<User | never, GoogleAuthError>> {
     let user: User;
     user = await this.userRepo.getUserByGoogleId(profile.id);
 
+    const tokensOrError = GoogleAuthTokens.create({
+      accessToken: tokenPayload.accessToken ?? '',
+      refreshToken: tokenPayload.refreshToken,
+    });
+    const tokens = tokensOrError.isSuccess ? tokensOrError.getValue() : null;
+
     if (user) {
-      if (tokens.accessToken && tokens.refreshToken) {
+      if (tokens?.refreshToken) {
         user.setGoogleTokens(tokens);
         await this.userRepo.save(user);
       }
 
       // If we have no refresh token in DB and Google didn't return one in this callback,
       // we need to force consent again.
-      if (!tokens.refreshToken && !user.googleRefreshToken) {
+      if (!tokenPayload.refreshToken && !user.googleRefreshToken) {
         return new GoogleAuthErrors.RefreshTokenNotReceived();
       }
       return Result.ok(user);
@@ -102,7 +115,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
 
     const email: UserEmail = UserEmail.create(profile._json.email).getValue();
 
-    if (!tokens.refreshToken) {
+    if (!tokens?.refreshToken) {
       return new GoogleAuthErrors.RefreshTokenNotReceived();
     }
 

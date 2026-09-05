@@ -1,7 +1,7 @@
-export interface SpeechToTextRequestDTO {
+export type SpeechToTextRequestDTO = {
   audio: Blob;
-}
+};
 
-export interface SpeechToTextResponseDTO {
+export type SpeechToTextResponseDTO = {
   transcript: string;
-}
+};

@@ -1,12 +1,12 @@
 import { UseCase } from '../../../../shared/core/UseCase.js';
-import { IReleaseClientIdResponseDTO } from './release-client-id.dto.js';
+import { ReleaseClientIdResponseDTO } from './release-client-id.dto.js';
 import { Result } from '../../../../shared/core/result.js';
 import { Client, IClientProps } from '../../../../shared/domain/models/client.js';
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { ReleaseClientIdError, ReleaseClientIdErrors } from './release-client-id.errors.js';
 
-type Response = Result<IReleaseClientIdResponseDTO | never, ReleaseClientIdError>;
+type Response = Result<ReleaseClientIdResponseDTO | never, ReleaseClientIdError>;
 
 export type ReleaseClientIdParams = {
   userId: string;
@@ -43,7 +43,7 @@ export class ReleaseClientId implements UseCase<ReleaseClientIdParams, Promise<R
       // TICKET: https://brainas.atlassian.net/browse/BA-217
       //return Result.fail('Cannot get ClientId for sync');
     }
-    const client: Client = clientOrError.getValue() as Client;
+    const client: Client = clientOrError.getValue();
     return Result.ok({ clientId: client.id.toString() });
   }
 
@@ -53,7 +53,7 @@ export class ReleaseClientId implements UseCase<ReleaseClientIdParams, Promise<R
       syncTime: null,
     };
 
-    const clientOrError: Result<Client> = await Client.create(clientProps);
+    const clientOrError: Result<Client> = Client.create(clientProps);
 
     if (clientOrError.isFailure) {
       // TODO: for this moment there is no suppose that it can be failed in normal flow

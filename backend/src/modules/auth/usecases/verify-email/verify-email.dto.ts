@@ -1,10 +1,10 @@
-export interface VerifyEmailRequestDTO {
+export type VerifyEmailRequestDTO = {
   token: string;
-}
+};
 
-export interface IVerifyEmailResponceDTO {
+export type VerifyEmailResponseDTO = {
   email: string;
   firstName: string;
   lastName: string;
   verified: boolean;
-}
+};
