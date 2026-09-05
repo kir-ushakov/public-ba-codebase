@@ -94,7 +94,10 @@ export class MbTaskScreenState {
   @Action(MbTaskScreenAction.Opened)
   opened(ctx: StateContext<IMbTaskScreenStateModel>, { mode, taskId }): void {
     ctx.dispatch(new VoiceInputAction.Reset());
-    ctx.patchState({ mode: mode });
+    ctx.setState({
+      ...defaults,
+      mode,
+    });
     if (taskId) {
       const actualTasks: Task[] = this.store.selectSnapshot(TasksState.actualTasks);
       const selectedTask = actualTasks.find(t => t.id === taskId) ?? defaultTask;
@@ -120,13 +123,13 @@ export class MbTaskScreenState {
   }
 
   private async handleCreateTask(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
-    const taskData = ctx.getState().taskData;
+    const { taskData, imageUrl } = ctx.getState();
     const userId: string = this.store.selectSnapshot(UserState.userId);
 
-    let finalTaskData = { ...taskData };
+    let finalTaskData: Task = { ...taskData, imageId: undefined };
 
-    if (ctx.getState().imageUrl) {
-      const imageId = await this.imageService.saveImage(ctx.getState().imageUrl);
+    if (imageUrl) {
+      const imageId = await this.imageService.saveImage(imageUrl);
       finalTaskData = { ...finalTaskData, imageId };
     }
 
@@ -197,7 +200,10 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.AddPictureBtnPressed)
   async selectPictureFromDevice(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
-    const imageUri: string = await this.deviceCameraService.takePicture();
+    const imageUri = await this.deviceCameraService.takePicture();
+    if (!imageUri) {
+      return;
+    }
     ctx.patchState({ imageUrl: imageUri });
   }
 
