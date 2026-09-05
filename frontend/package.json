@@ -94,5 +94,8 @@
     "ts-node": "~8.3.0",
     "typescript": "^5.7.3",
     "yaml": "^2.4.2"
+  },
+  "overrides": {
+    "vite": ">=6.4.3"
   }
 }
