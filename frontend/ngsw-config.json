@@ -6,13 +6,7 @@
       "name": "app",
       "installMode": "prefetch",
       "resources": {
-        "files": [
-          "/favicon.ico",
-          "/index.html",
-          "/manifest.webmanifest",
-          "/*.css",
-          "/*.js"
-        ]
+        "files": ["/favicon.ico", "/index.html", "/manifest.webmanifest", "/*.css", "/*.js"]
       }
     },
     {
@@ -35,9 +29,14 @@
       "name": "material-icons",
       "installMode": "prefetch",
       "resources": {
-        "urls": [
-          "https://fonts.googleapis.com/icon?family=Material+Icons"
-        ]
+        "urls": ["https://fonts.googleapis.com/icon?family=Material+Icons&display=block"]
+      }
+    },
+    {
+      "name": "material-icon-files",
+      "installMode": "lazy",
+      "resources": {
+        "urls": ["https://fonts.gstatic.com/s/materialicons/**"]
       }
     }
   ]
