@@ -105,6 +105,7 @@
     "@xmldom/xmldom": ">=0.8.15",
     "@humanfs/node": ">=0.16.8",
     "js-yaml@3": "3.15.2",
-    "js-yaml@4": "4.3.2"
+    "js-yaml@4": "4.3.2",
+    "ip-address": ">=10.3.1"
   }
 }
