@@ -117,6 +117,7 @@
     "@sigstore/core": ">=3.2.1",
     "piscina": ">=4.9.3",
     "form-data@4": ">=4.0.6",
-    "@babel/core": ">=7.29.6"
+    "@babel/core": ">=7.29.6",
+    "serialize-javascript": ">=7.0.5"
   }
 }
