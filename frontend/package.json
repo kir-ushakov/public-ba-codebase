@@ -96,6 +96,11 @@
     "yaml": "^2.4.2"
   },
   "overrides": {
-    "vite": ">=6.4.3"
+    "vite": ">=6.4.3",
+    "http-proxy-middleware": ">=3.0.7",
+    "esbuild": ">=0.28.1",
+    "fast-uri": ">=3.1.6",
+    "@xmldom/xmldom": ">=0.8.15",
+    "@humanfs/node": ">=0.16.8"
   }
 }
