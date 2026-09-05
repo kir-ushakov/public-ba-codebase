@@ -49,7 +49,7 @@
     "passport-jwt": "^4.0.1",
     "passport-local-mongoose": "^8.0.0",
     "probe-image-size": "^7.2.3",
-    "sharp": "^0.33.5",
+    "sharp": "^0.35.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
