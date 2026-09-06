@@ -1,9 +1,11 @@
 import { Readable } from 'stream';
-import { GaxiosResponse } from 'googleapis-common';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
-import { GoogleDriveService } from '././../../../integrations/google/services/google-drive.service.js';
+import {
+  GoogleDriveImageFile,
+  GoogleDriveService,
+} from '././../../../integrations/google/services/google-drive.service.js';
 import { ImageResizeService } from '../../services/image-resize.service.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
@@ -15,7 +17,7 @@ export type GetImageRequest = {
   imageWidth?: number;
 };
 
-export type GetImageResult = Result<GaxiosResponse<Readable> | never, UseCaseError<string>>;
+export type GetImageResult = Result<GoogleDriveImageFile | never, UseCaseError<string>>;
 
 export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImageResult>> {
   constructor(
@@ -36,19 +38,16 @@ export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImag
     const image = imageOrError.getValue();
     const fileId = image.fileId;
 
-    let file: GaxiosResponse<Readable> = await this.googleDriveService.getImageById(user, fileId);
+    let file: GoogleDriveImageFile = await this.googleDriveService.getImageById(user, fileId);
 
     if (req.imageWidth) {
       file = await this.resize(file, req.imageWidth);
     }
 
-    return Result.ok<GaxiosResponse<Readable>, never>(file);
+    return Result.ok<GoogleDriveImageFile, never>(file);
   }
 
-  private async resize(
-    file: GaxiosResponse<Readable>,
-    width: number,
-  ): Promise<GaxiosResponse<Readable>> {
+  private async resize(file: GoogleDriveImageFile, width: number): Promise<GoogleDriveImageFile> {
     // Start timing the resize operation
     const startTime = Date.now();
 

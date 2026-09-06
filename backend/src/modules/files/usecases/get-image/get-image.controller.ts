@@ -1,6 +1,4 @@
 import { Request, Response } from 'express';
-import { Readable } from 'stream';
-import { GaxiosResponse } from 'googleapis-common';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
 import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
 import { GetImageRequest, GetImageResult, GetImageUsecase } from './get-image.usecase.js';
@@ -41,7 +39,7 @@ export class GetImageController extends BaseController {
           message: error.message,
         });
       } else {
-        const file: GaxiosResponse<Readable> = result.getValue();
+        const file = result.getValue();
 
         res.writeHead(200, file.headers);
 

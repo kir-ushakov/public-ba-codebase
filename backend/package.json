@@ -8,6 +8,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "compile": "tsc && node dist/server.js",
+    "typecheck": "tsc --noEmit",
     "dev": "nodemon -L -e ts  --exec \"npm run compile\"",
     "start": "npm run compile",
     "lint": "npx eslint ./**/**.ts --fix",
