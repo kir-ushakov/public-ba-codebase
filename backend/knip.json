@@ -22,7 +22,9 @@
     "crypto-js",
     "fluent-ffmpeg",
     "@types/passport-local",
-    "googleapis-common"
+    "googleapis-common",
+    "@emnapi/core",
+    "@emnapi/runtime"
   ],
   "ignoreBinaries": ["nodemon"],
   "rules": {

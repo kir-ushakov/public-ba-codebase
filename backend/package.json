@@ -8,6 +8,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "compile": "tsc && node dist/server.js",
+    "typecheck": "tsc --noEmit",
     "dev": "nodemon -L -e ts  --exec \"npm run compile\"",
     "start": "npm run compile",
     "lint": "npx eslint ./**/**.ts --fix",
@@ -53,6 +54,8 @@
     "uuid": "^14.0.2"
   },
   "devDependencies": {
+    "@emnapi/core": "1.11.3",
+    "@emnapi/runtime": "1.11.3",
     "@types/jest": "^29.5.12",
     "@types/mime-types": "^3.0.1",
     "@types/node": "^22.15.21",

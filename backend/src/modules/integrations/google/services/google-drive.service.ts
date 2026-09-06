@@ -1,11 +1,16 @@
 import path from 'path';
 import fs from 'fs';
 import { drive_v3, google } from 'googleapis';
-import { OAuth2Client, GaxiosResponse } from 'googleapis-common';
+import { OAuth2Client } from 'googleapis-common';
 import { Readable } from 'stream';
 import mime from 'mime';
 import { User } from '../../../../shared/domain/models/user.js';
 import { config as defaultConfig } from '../../../../config/index.js';
+
+export type GoogleDriveImageFile = {
+  data: Readable;
+  headers: Record<string, string | undefined>;
+};
 
 export class GoogleDriveService {
   constructor(
@@ -82,10 +87,10 @@ export class GoogleDriveService {
     }
   }
 
-  public async getImageById(user: User, imageId: string): Promise<GaxiosResponse<Readable>> {
+  public async getImageById(user: User, imageId: string): Promise<GoogleDriveImageFile> {
     try {
       const driveService: drive_v3.Drive = await this.getDriveService(user);
-      const file: GaxiosResponse<Readable> = await driveService.files.get(
+      const file = await driveService.files.get(
         {
           fileId: imageId,
           alt: 'media',
@@ -93,7 +98,10 @@ export class GoogleDriveService {
         { responseType: 'stream' },
       );
 
-      return file;
+      return {
+        data: file.data as Readable,
+        headers: gaxiosHeadersToRecord(file.headers),
+      };
     } catch (error) {
       this.logger.error(error);
       throw error;
@@ -114,4 +122,39 @@ export class GoogleDriveService {
     const driveService = google.drive(options);
     return driveService;
   }
+}
+
+function gaxiosHeadersToRecord(headers: unknown): Record<string, string | undefined> {
+  const record: Record<string, string | undefined> = {};
+  if (headers == null || typeof headers !== 'object') {
+    return record;
+  }
+
+  if (isFetchHeaders(headers)) {
+    headers.forEach((value, key) => {
+      record[key] = value;
+    });
+    return record;
+  }
+
+  for (const [key, value] of Object.entries(headers as Record<string, unknown>)) {
+    if (key === 'statusCode') {
+      continue;
+    }
+    if (typeof value === 'string') {
+      record[key] = value;
+    } else if (typeof value === 'number') {
+      record[key] = String(value);
+    } else if (Array.isArray(value)) {
+      record[key] = value.map(String).join(', ');
+    }
+  }
+  return record;
+}
+
+function isFetchHeaders(headers: object): headers is Headers {
+  return (
+    typeof (headers as Headers).forEach === 'function' &&
+    typeof (headers as Headers).get === 'function'
+  );
 }

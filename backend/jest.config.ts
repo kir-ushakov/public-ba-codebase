@@ -9,11 +9,23 @@ const config: Config = {
       '<rootDir>/test/__mocks__/google-drive-services.ts',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
+  // uuid ships ESM-only; Jest must transform it (same idea as frontend jest.config).
+  transformIgnorePatterns: ['node_modules/(?!(uuid)/)'],
   transform: {
     '^.+\\.ts$': [
       'ts-jest',
       {
         useESM: true,
+      },
+    ],
+    'node_modules[/\\\\]uuid[/\\\\].+\\.js$': [
+      'ts-jest',
+      {
+        useESM: true,
+        tsconfig: {
+          allowJs: true,
+          esModuleInterop: true,
+        },
       },
     ],
   },

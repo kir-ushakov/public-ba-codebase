@@ -37,6 +37,10 @@ jobs:
       working-directory: ./contracts
       run: npm test
 
+    - name: Typecheck
+      working-directory: ./backend
+      run: npm run typecheck
+
     - name: Run linter
       working-directory: ./backend
       run: npm run lint:check
