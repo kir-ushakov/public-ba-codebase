@@ -5,7 +5,7 @@ description: Workflow for editing the shared @brainassistant/contracts package -
 
 # Change a shared contract
 
-Process only. Layout and compatibility rules are in `.cursor/rules/contracts.mdc` — follow them, do not restate them.
+Process only. Layout and compatibility rules are in `.cursor/rules/contracts.mdc` — follow them, do not restate them. `contracts/AGENTS.md` maps the package and names the contract namespace to imitate.
 
 `contracts/` is a separate npm package linked into both apps as `file:../contracts`, and **the apps import compiled `dist/`**. A source-only edit changes nothing until it is rebuilt. This is the step that gets forgotten and produces confusing "the type is right there" errors.
 

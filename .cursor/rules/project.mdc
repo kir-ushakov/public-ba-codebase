@@ -14,6 +14,8 @@ alwaysApply: true
 
 `frontend`, `backend` and `contracts` are separate npm packages. Run `npm`/`ng` commands from inside the relevant folder, not from the repo root.
 
+Each of the three has an `AGENTS.md` describing its layout, the canonical code to imitate for each kind of task, and the code that must not be copied. Read the one for the package you are touching before writing code in it.
+
 ## Shell
 
 The dev environment is Windows PowerShell. Do not chain commands with `&&` and do not use bash-only syntax; use `;` or separate commands.

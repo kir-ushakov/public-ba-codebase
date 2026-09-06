@@ -24,7 +24,7 @@ Run every command from `backend/`. The shell is PowerShell: separate commands wi
 
 ## 1. Read a neighbouring use case first
 
-Open `backend/src/modules/sync/usecases/task/create/` and read all five files. It is the reference shape: `create-task.controller.ts`, `create-task.usecase.ts`, `create-task.errors.ts`, `create-task.mapper.ts`, `index.ts`.
+`backend/AGENTS.md` names the canonical reference for each kind of endpoint — write, read, external service, binary response — and the modules that must not be used as a template. Open the one that matches what you are building and read every file in that folder before writing any code.
 
 If the feature is close to an existing flow, mirror that flow instead of the reference. Naming varies slightly between modules (a few use `_index.ts`) — match the neighbours you are joining, not this document.
 
