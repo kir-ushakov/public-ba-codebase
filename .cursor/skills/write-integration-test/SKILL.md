@@ -5,7 +5,7 @@ description: Workflow for writing a backend integration spec against the real Ex
 
 # Write a backend integration test
 
-Process only. Testing policy is in `.cursor/rules/testing-backend.mdc` — follow it, do not restate it.
+Process only. Testing policy is in `.cursor/rules/testing-backend.mdc` — follow it, do not restate it. The spec to imitate is named in `backend/AGENTS.md`; every helper is mapped in `backend/test/README.md`.
 
 Integration is the default here: the real `createApp()`, real routers, real Passport JWT, real repos, real mappers, real Mongoose, against `mongodb-memory-server`. Only external systems get mocked. Do not unit-test a controller or use case with a mocked repo.
 

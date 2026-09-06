@@ -24,7 +24,7 @@ Run every command from `frontend/`. The shell is PowerShell: separate commands w
 
 ## 1. Read a neighbouring screen
 
-`frontend/src/app/mobile-app/components/screens/mb-task-screen/` is the fullest example: component, template, SCSS and a screen-scoped state in one folder.
+`frontend/AGENTS.md` names the canonical reference for each kind of work — a screen with its own state, a self-contained feature, a synced entity, an API service, a device abstraction — plus the code that must not be copied. Open the matching one and read the whole folder first.
 
 `mobile-app/` is the live shell. `desktop-app/` exists but is not routed from `main.ts` — do not add features there unless asked explicitly.
 

@@ -21,7 +21,7 @@ Specs drive the real UI on the `e2e` build configuration against a fully mocked 
 
 ## 1. Read the existing specs
 
-`frontend/e2e/create-task.spec.ts` is the fullest flow; `edit-task`, `delete-task` and `sync-error` cover the variants. `frontend/e2e/README.md` describes the setup.
+`frontend/AGENTS.md` names the spec to imitate and what to take from it; `frontend/e2e/README.md` describes the setup and what each existing spec covers.
 
 Reuse `e2e/utils/task-flow.util.ts` before writing new navigation: `signIn(page)` and `createTaskWithTitle(page, title)` already handle the sign-in and create flows including their waits. Most specs need a task to exist but are not testing creation.
 
