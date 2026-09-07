@@ -12,6 +12,8 @@ services:
 
   backend:
     restart: always
+    # Root at start so docker-entrypoint.sh can chown the files volume; it then gosu's to node.
+    user: "0"
     volumes:
       - ./nginx/ssl:/usr/ssl
     build:

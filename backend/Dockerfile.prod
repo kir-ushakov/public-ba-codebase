@@ -2,9 +2,9 @@ FROM node:24
 
 WORKDIR /usr/src/app
 
-# Native deps for sharp (libvips)
+# Native deps for sharp (libvips) + entrypoint helper (gosu)
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends libvips42 \
+  && apt-get install -y --no-install-recommends libvips42 gosu \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy contracts package first
@@ -24,6 +24,14 @@ COPY backend/ .
 RUN NODE_OPTIONS="--max-old-space-size=4096" npx tsc
 
 RUN chown -R node:node /usr/src/app /usr/src/contracts
-USER node
 
+COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+# Strip CRLF if the file was saved on Windows (fixes: /usr/bin/env: 'sh\r': No such file)
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+  && chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+# Image default is node (docker:S6471). production.yml sets user: "0" so the
+# entrypoint can chown the files volume, then gosu drops back to node.
+USER node
 CMD ["node", "./dist/server.js"]
