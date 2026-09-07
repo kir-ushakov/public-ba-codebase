@@ -117,4 +117,32 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
     expect(res.body).toHaveProperty('message');
     expect(await models.ImageModel.findOne({ imageId: 'image-too-big' }).lean()).toBeNull();
   });
+
+  it('returns UNEXPECTED_ERROR when multer cannot write the upload temp dir', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const tmpDir = path.join(process.cwd(), 'test-uploads/tmp');
+    await fsp.rm(tmpDir, { recursive: true, force: true });
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- local test fixture
+    await fsp.writeFile(tmpDir, 'not-a-directory');
+
+    try {
+      const res = await authenticatedRequest(app, jwtCookie)
+        .post('/api/files/image')
+        .field('imageId', 'image-unwritable-tmp')
+        .attach('file', TEST_IMAGE_PATH);
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({
+        name: 'UNEXPECTED_ERROR',
+        message: 'Some unexpected error occurred',
+      });
+      expect(
+        await models.ImageModel.findOne({ imageId: 'image-unwritable-tmp' }).lean(),
+      ).toBeNull();
+    } finally {
+      await fsp.rm(tmpDir, { force: true });
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- local test upload fixture dir
+      await fsp.mkdir(tmpDir, { recursive: true });
+    }
+  });
 });
