@@ -1,4 +1,4 @@
-export class AppError<U = string> extends Error {
+export abstract class AppError<U = string> extends Error {
   public readonly code: U;
 
   constructor(message: string, code: U, options?: ErrorOptions) {

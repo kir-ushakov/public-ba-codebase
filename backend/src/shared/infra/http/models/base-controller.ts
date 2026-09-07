@@ -1,6 +1,11 @@
 import express from 'express';
 import { serialize } from '../utils/middleware.js';
 
+export const UNEXPECTED_ERROR_RESPONSE = {
+  name: 'UNEXPECTED_ERROR',
+  message: 'Some unexpected error occurred',
+} as const;
+
 export enum EHttpStatus {
   Ok = 200,
   Created = 201,
@@ -67,10 +72,10 @@ export abstract class BaseController {
   public fail(res: express.Response, error: Error | string): express.Response {
     // Log errors here
     console.log(error);
-    const UNEXPECTED_ERROR = 'UNEXPECTED_ERROR';
-    return res.status(EHttpStatus.InternalServerError).json({
-      name: UNEXPECTED_ERROR,
-      message: 'Some unexpected error occurred',
-    });
+    return BaseController.jsonResponse(
+      res,
+      EHttpStatus.InternalServerError,
+      UNEXPECTED_ERROR_RESPONSE,
+    );
   }
 }
