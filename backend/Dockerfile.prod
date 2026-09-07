@@ -30,7 +30,8 @@ COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
   && chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Root only for entrypoint (chown named volume at FILES_UPLOAD_PATH); CMD runs as node via gosu.
-USER root
 ENTRYPOINT ["docker-entrypoint.sh"]
+# Image default is node (docker:S6471). production.yml sets user: "0" so the
+# entrypoint can chown the files volume, then gosu drops back to node.
+USER node
 CMD ["node", "./dist/server.js"]
