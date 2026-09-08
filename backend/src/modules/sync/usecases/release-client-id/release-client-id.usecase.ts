@@ -40,7 +40,7 @@ export class ReleaseClientId implements UseCase<ReleaseClientIdParams, Promise<R
       return ReleaseClientIdErrors.UserDoesNotExist(userId);
     }
 
-    const clientOrError: Result<Client> = await this.createNewCleintInDB(userId);
+    const clientOrError: Result<Client, never> = await this.createNewCleintInDB(userId);
 
     if (clientOrError.isFailure) {
       // TODO: Need to handle this case
@@ -51,13 +51,13 @@ export class ReleaseClientId implements UseCase<ReleaseClientIdParams, Promise<R
     return Result.ok({ clientId: client.id.toString() });
   }
 
-  private async createNewCleintInDB(userId: string): Promise<Result<Client>> {
+  private async createNewCleintInDB(userId: string): Promise<Result<Client, never>> {
     const clientProps: IClientProps = {
       userId: userId,
       syncTime: null,
     };
 
-    const clientOrError: Result<Client> = Client.create(clientProps);
+    const clientOrError: Result<Client, never> = Client.create(clientProps);
 
     if (clientOrError.isFailure) {
       // TODO: for this moment there is no suppose that it can be failed in normal flow

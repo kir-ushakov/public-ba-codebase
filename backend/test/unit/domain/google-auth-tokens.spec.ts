@@ -1,4 +1,7 @@
-import { GoogleAuthTokens } from '../../../src/shared/domain/values/user/google-auth-tokens.js';
+import {
+  EGoogleAuthTokensError,
+  GoogleAuthTokens,
+} from '../../../src/shared/domain/values/user/google-auth-tokens.js';
 
 describe('GoogleAuthTokens', () => {
   describe('create', () => {
@@ -25,6 +28,7 @@ describe('GoogleAuthTokens', () => {
       const result = GoogleAuthTokens.create({ accessToken: '' });
 
       expect(result.isFailure).toBe(true);
+      expect(result.error.code).toBe(EGoogleAuthTokensError.AccessTokenRequired);
     });
 
     it('compares two token pairs by value', () => {

@@ -1,5 +1,10 @@
 import { Result } from '../../../core/result.js';
+import { DomainError } from '../../../core/domain-error.js';
 import { ValueObject } from '../../ValueObject.js';
+
+export enum EUserEmailError {
+  Invalid = 'USER_EMAIL_ERROR__INVALID',
+}
 
 export interface UserEmailProps {
   value: string;
@@ -23,11 +28,15 @@ export class UserEmail extends ValueObject<UserEmailProps> {
     return email.trim().toLowerCase();
   }
 
-  public static create(email: string): Result<UserEmail> {
+  public static create(email: string): Result<UserEmail, DomainError<UserEmail, EUserEmailError>> {
     if (!this.isValidEmail(email)) {
-      return Result.fail<UserEmail>('Email address not valid');
-    } else {
-      return Result.ok<UserEmail>(new UserEmail({ value: this.format(email) }));
+      return Result.fail(
+        new DomainError<UserEmail, EUserEmailError>(
+          EUserEmailError.Invalid,
+          'Email address not valid',
+        ),
+      );
     }
+    return Result.ok(new UserEmail({ value: this.format(email) }));
   }
 }

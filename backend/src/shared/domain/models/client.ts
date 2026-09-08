@@ -20,10 +20,10 @@ export class Client extends AggregateRoot<IClientProps> {
     return this.props.syncTime;
   }
 
-  public static create(props: IClientProps, id?: UniqueEntityID): Result<Client> {
+  public static create(props: IClientProps, id?: UniqueEntityID): Result<Client, never> {
     const client = new Client(props, id);
 
-    return Result.ok<Client>(client);
+    return Result.ok<Client, never>(client);
   }
 
   public updateSyncTime(time: Date): void {

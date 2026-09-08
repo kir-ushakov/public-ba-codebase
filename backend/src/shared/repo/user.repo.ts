@@ -62,7 +62,7 @@ export class UserRepo {
       createdAt: tokenDocument.createdAt,
     };
 
-    const tokenOrError: Result<VerificationToken> = VerificationToken.create(props);
+    const tokenOrError: Result<VerificationToken, never> = VerificationToken.create(props);
     return tokenOrError.isSuccess ? tokenOrError.getValue() : null;
   }
 

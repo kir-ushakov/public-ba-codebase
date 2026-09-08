@@ -41,7 +41,7 @@ export class SignUp implements UseCase<SignUpParams, Promise<SignUpResult>> {
       return SignUpErrors.EmailAlreadyInUse(email.value);
     }
 
-    const userOrError: Result<User> = User.create({
+    const userOrError: Result<User, never> = User.create({
       username: email,
       firstName: params.firstName,
       lastName: params.lastName,

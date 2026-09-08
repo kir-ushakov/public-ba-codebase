@@ -1,10 +1,11 @@
 import { Result } from '../../../../shared/core/result.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
-import { User } from '../../../../shared/domain/models/user.js';
+import { EUserError, User } from '../../../../shared/domain/models/user.js';
 import { VerificationToken } from '../../../../shared/domain/values/user/verification-token.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { VerifyEmailResponseDTO } from './verify-email.dto.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { DomainError } from '../../../../shared/core/domain-error.js';
 import { EVerifyEmailUsecaseError } from './verify-email.errors.js';
 
 type UseCaseResult = Result<VerifyEmailResponseDTO | never, UseCaseError<EVerifyEmailUsecaseError>>;
@@ -32,7 +33,7 @@ export class VerifyEmailUseCase implements UseCase<VerifyEmailParams, Promise<Us
     const user: User = await this.userRepo.findUserById(token.userId);
     // TODO: verify that token not expired (throw usecase error)
 
-    const verified: Result<void> = user.verify();
+    const verified: Result<void, DomainError<User, EUserError>> = user.verify();
 
     if (verified.isFailure) {
       // TODO: handle case when user was not verified

@@ -12,7 +12,7 @@ Follow `user-email.ts`:
 
 - `export class Foo extends ValueObject<FooProps>`
 - props interface is a private construction shape, not the public type
-- `private constructor` + `public static create(...): Result<Foo>`
+- `public static create(...): Result<Foo, DomainError<Foo, EFooError>>` when `create` can fail; `Result<Foo, never>` when it cannot
 - getters for fields; equality via `ValueObject.equals`
 
 ```ts
@@ -27,8 +27,12 @@ export class GoogleAuthTokens extends ValueObject<GoogleAuthTokensProps> {
   private constructor(props: GoogleAuthTokensProps) {
     super(props);
   }
-  public static create(props: GoogleAuthTokensProps): Result<GoogleAuthTokens> { /* Guard + Result */ }
-}
+  public static create(props: GoogleAuthTokensProps): Result<
+    GoogleAuthTokens,
+    DomainError<GoogleAuthTokens, EGoogleAuthTokensError>
+  > {
+    /* Guard + Result */
+  }
 ```
 
 Passport/HTTP payloads stay in infra (e.g. `GoogleOAuthTokenPayload`). Map them to the value object in the use-case with `Foo.create(...)`.
