@@ -6,9 +6,9 @@ import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { VerifyEmailResponseDTO } from './verify-email.dto.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { DomainError } from '../../../../shared/core/domain-error.js';
-import { EVerifyEmailUsecaseError } from './verify-email.errors.js';
+import { EVerifyEmailUseCaseError } from './verify-email.errors.js';
 
-type UseCaseResult = Result<VerifyEmailResponseDTO | never, UseCaseError<EVerifyEmailUsecaseError>>;
+type UseCaseResult = Result<VerifyEmailResponseDTO | never, UseCaseError<EVerifyEmailUseCaseError>>;
 
 export type VerifyEmailParams = {
   tokenId: string;

@@ -5,14 +5,14 @@ import { LoginResponseDTO } from './login.dto.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
-import { ELoginUsecaseError, LoginErrors } from './login.errors.js';
+import { ELoginUseCaseError, LoginErrors } from './login.errors.js';
 import { LoginService } from '../../services/login.service.js';
 import { UserMapper } from '../../../../shared/mappers/user.mapper.js';
 
 export type LoginRequest = {
   context: { req: Request; res: Response; next: NextFunction };
 };
-export type LoginResult = Result<LoginResponseDTO, never | UseCaseError<ELoginUsecaseError>>;
+export type LoginResult = Result<LoginResponseDTO, never | UseCaseError<ELoginUseCaseError>>;
 
 export class LoginUsecase implements UseCase<LoginRequest, Promise<LoginResult>> {
   private passport: PassportStatic;

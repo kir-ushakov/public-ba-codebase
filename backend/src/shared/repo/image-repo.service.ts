@@ -1,3 +1,4 @@
+import { EImageRepoServiceError } from '@brainassistant/contracts';
 import { Result } from '../core/result.js';
 import { ServiceError } from '../core/service-error.js';
 import { serviceFail } from '../core/service-fail.factory.js';
@@ -6,9 +7,7 @@ import { IImagePersistent, ImageDocument } from '../infra/database/mongodb/image
 import { IDbModels } from '../infra/database/mongodb/index.js';
 import { ImageMapper } from '../mappers/image.mapper.js';
 
-export enum EImageRepoServiceError {
-  UserImageNotFound = 'IMAGE_REPO_SERVICE_ERROR__USER_IMAGE_NOT_FOUND',
-}
+export { EImageRepoServiceError };
 
 export class ImageRepoService {
   private _models: IDbModels;

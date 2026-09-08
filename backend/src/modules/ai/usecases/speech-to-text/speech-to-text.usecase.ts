@@ -6,12 +6,12 @@ import {
   OpenAISpeechTranscriberService,
 } from '../../services/open-ai-speech-transcriber.service.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
-import { SpeechToTextErrorCode, SpeechToTextErrors } from './speech-to-text.errors.js';
+import { ESpeechToTextUseCaseError, SpeechToTextErrors } from './speech-to-text.errors.js';
 
 type SpeechToTextRequest = SpeechToTextRequestDTO;
 type SpeechToTextResponse = Result<
   SpeechToTextResponseDTO | never,
-  UseCaseError<SpeechToTextErrorCode>
+  UseCaseError<ESpeechToTextUseCaseError>
 >;
 
 export class SpeechToText implements UseCase<SpeechToTextRequest, Promise<SpeechToTextResponse>> {

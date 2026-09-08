@@ -23,7 +23,26 @@ import type {
   VerifyEmailResponseDTO,
 } from './dto';
 import { GetChangesContract, SendChangeContract, UploadImageContract } from './contracts';
-import { EChangeAction, EChangedEntity, ETaskStatus, ETaskType } from './enums';
+import {
+  EApiError,
+  EChangeAction,
+  EChangedEntity,
+  EGetChangesUseCaseError,
+  EGoogleAuthUseCaseError,
+  EImageRepoServiceError,
+  ELoginUseCaseError,
+  EReleaseClientIdUseCaseError,
+  ERemoveFromSlackUseCaseError,
+  ESignUpUseCaseError,
+  ESlackEventReceivedUseCaseError,
+  ESpeechToTextUseCaseError,
+  ETaskError,
+  ETaskRepoServiceError,
+  ETaskStatus,
+  ETaskType,
+  EUploadImageUseCaseError,
+  EVerifyEmailUseCaseError,
+} from './enums';
 
 type ExactKeys<T, K extends readonly (keyof T)[]> = Exclude<keyof T, K[number]> extends never
   ? Exclude<K[number], keyof T> extends never
@@ -132,6 +151,20 @@ export const PUBLIC_API_SHAPE = {
     ETaskStatus: Object.values(ETaskStatus),
     EChangedEntity: Object.values(EChangedEntity),
     EChangeAction: Object.values(EChangeAction),
+    EApiError: Object.values(EApiError),
+    EUploadImageUseCaseError: Object.values(EUploadImageUseCaseError),
+    EGetChangesUseCaseError: Object.values(EGetChangesUseCaseError),
+    ELoginUseCaseError: Object.values(ELoginUseCaseError),
+    ESignUpUseCaseError: Object.values(ESignUpUseCaseError),
+    EGoogleAuthUseCaseError: Object.values(EGoogleAuthUseCaseError),
+    ESpeechToTextUseCaseError: Object.values(ESpeechToTextUseCaseError),
+    EVerifyEmailUseCaseError: Object.values(EVerifyEmailUseCaseError),
+    EReleaseClientIdUseCaseError: Object.values(EReleaseClientIdUseCaseError),
+    ERemoveFromSlackUseCaseError: Object.values(ERemoveFromSlackUseCaseError),
+    ESlackEventReceivedUseCaseError: Object.values(ESlackEventReceivedUseCaseError),
+    ETaskError: Object.values(ETaskError),
+    ETaskRepoServiceError: Object.values(ETaskRepoServiceError),
+    EImageRepoServiceError: Object.values(EImageRepoServiceError),
   },
   dto: {
     TaskDTO: {

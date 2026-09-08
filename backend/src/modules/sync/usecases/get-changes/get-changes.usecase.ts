@@ -11,14 +11,14 @@ import { ClientRepo } from '../../../../shared/repo/client.repo.js';
 import { TaskRepoService } from '../../../../shared/repo/task-repo.service.js';
 import { Change } from '../../domain/values/change.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
-import { GetChangesErrorCode, GetChangesErrors } from './get-changes.errors.js';
+import { EGetChangesUseCaseError, GetChangesErrors } from './get-changes.errors.js';
 
 export type GetChangesParams = {
   userId: string;
   clientId: string;
 };
 
-export type GetChangesResult = Result<Change[], UseCaseError<GetChangesErrorCode>>;
+export type GetChangesResult = Result<Change[], UseCaseError<EGetChangesUseCaseError>>;
 
 export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesResult>> {
   private clientRepo: ClientRepo;

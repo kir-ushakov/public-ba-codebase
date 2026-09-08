@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
-import { EGoogleAuthUsecaseError, GoogleAuthErrors } from './google-auth.errors.js';
+import { EGoogleAuthUseCaseError, GoogleAuthErrors } from './google-auth.errors.js';
 import { LoginResponseDTO } from '../login/login.dto.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { User } from '../../../../shared/domain/models/user.js';
@@ -23,7 +23,7 @@ export type GoogleAuthRequest = {
 };
 export type GoogleAuthResult = Result<
   LoginResponseDTO | never,
-  UseCaseError<EGoogleAuthUsecaseError>
+  UseCaseError<EGoogleAuthUseCaseError>
 >;
 
 export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<GoogleAuthResult>> {
@@ -50,7 +50,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
 
         const userOrError = await this.findOrCreateUser(profile, tokens);
         if (userOrError.isFailure) {
-          return resolve(userOrError as Result<never, UseCaseError<EGoogleAuthUsecaseError>>);
+          return resolve(userOrError as Result<never, UseCaseError<EGoogleAuthUseCaseError>>);
         }
 
         const user = userOrError.getValue();
@@ -83,7 +83,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
   private async findOrCreateUser(
     profile: Profile,
     tokenPayload: GoogleOAuthTokenPayload,
-  ): Promise<Result<User | never, UseCaseError<EGoogleAuthUsecaseError>>> {
+  ): Promise<Result<User | never, UseCaseError<EGoogleAuthUseCaseError>>> {
     let user: User;
     user = await this.userRepo.getUserByGoogleId(profile.id);
 

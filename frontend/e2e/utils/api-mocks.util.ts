@@ -1,10 +1,11 @@
 import { Page } from '@playwright/test';
-import type {
-  ApiErrorDto,
-  GetChangesContract,
-  SendChangeContract,
-  TaskDTO,
-  UploadImageContract,
+import {
+  EApiError,
+  type ApiErrorDto,
+  type GetChangesContract,
+  type SendChangeContract,
+  type TaskDTO,
+  type UploadImageContract,
 } from '@brainassistant/contracts';
 
 export type SetupApiMocksOptions = {
@@ -41,10 +42,7 @@ function parseSendChangeTask(postData: string | null): TaskDTO | null {
  * integration specs in `backend/test/integration/`. POST and PATCH `/api/sync/task`
  * return the saved TaskDTO; DELETE answers 200 with no payload.
  */
-export async function setupApiMocks(
-  page: Page,
-  options: SetupApiMocksOptions = {},
-): Promise<void> {
+export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = {}): Promise<void> {
   await page.route('**/api/**', async route => {
     const request = route.request();
     const url = request.url();
@@ -64,7 +62,7 @@ export async function setupApiMocks(
 
     if (url.includes('/api/sync/task') && method === 'POST') {
       if (options.failTaskSync) {
-        const body: ApiErrorDto = { name: 'InternalError', message: 'sync failed' };
+        const body: ApiErrorDto = { name: EApiError.Unexpected, message: 'sync failed' };
         await route.fulfill(json(500, body));
         return;
       }

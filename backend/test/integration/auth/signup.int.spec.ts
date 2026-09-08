@@ -1,7 +1,7 @@
 import { Application } from 'express';
 import request from 'supertest';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
-import { ESignUpUsecaseError } from '../../../src/modules/auth/usecases/sing-up/signup.errors.js';
+import { ESignUpUseCaseError } from '../../../src/modules/auth/usecases/sing-up/signup.errors.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
 
@@ -56,7 +56,7 @@ describe('Integration: SignUp (Controller -> UseCase -> Repo -> MongoDB)', () =>
       });
 
     expect(res.status).toBe(400);
-    expect(res.body.name).toBe(ESignUpUsecaseError.EmailInvalid);
+    expect(res.body.name).toBe(ESignUpUseCaseError.EmailInvalid);
     expect(res.body).toHaveProperty('message');
     expect(await models.UserModel.countDocuments()).toBe(0);
   });
@@ -67,7 +67,7 @@ describe('Integration: SignUp (Controller -> UseCase -> Repo -> MongoDB)', () =>
     const res = await request(app).post('/api/auth/signup').send(validSignup);
 
     expect(res.status).toBe(409);
-    expect(res.body.name).toBe(ESignUpUsecaseError.EmailAlreadyInUse);
+    expect(res.body.name).toBe(ESignUpUseCaseError.EmailAlreadyInUse);
     expect(res.body).toHaveProperty('message');
     expect(await models.UserModel.countDocuments()).toBe(1);
   });

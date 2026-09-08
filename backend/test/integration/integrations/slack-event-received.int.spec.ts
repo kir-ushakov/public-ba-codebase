@@ -2,7 +2,7 @@ import { Application } from 'express';
 import request from 'supertest';
 import SlackOAuthAccessModel from '../../../src/shared/infra/database/mongodb/slack-oauth-access.model.js';
 import { ESlackEventType } from '../../../src/modules/integrations/slack/enums/slack-event.enum.js';
-import { SlackEventReceivedErrorCode } from '../../../src/modules/integrations/slack/usecases/slack-event-received/slack-event-recieved.errors.js';
+import { ESlackEventReceivedUseCaseError } from '../../../src/modules/integrations/slack/usecases/slack-event-received/slack-event-recieved.errors.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
 import { slackSignatureForBody } from '../_setup/slack.helper.js';
@@ -83,7 +83,7 @@ describe('Integration: SlackEventReceived (Controller -> UseCase -> Repo -> Mong
     const res = await signedPost(app, body);
 
     expect(res.status).toBe(400);
-    expect(res.body.name).toBe(SlackEventReceivedErrorCode.SlackEventTypeNotSupported);
+    expect(res.body.name).toBe(ESlackEventReceivedUseCaseError.SlackEventTypeNotSupported);
     expect(res.body.message).toContain('Is Not Supported');
   });
 

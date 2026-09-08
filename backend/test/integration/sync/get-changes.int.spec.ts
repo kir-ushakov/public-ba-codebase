@@ -1,7 +1,7 @@
 import { Application } from 'express';
 import request from 'supertest';
 import { EChangeAction, EChangedEntity, GetChangesContract } from '@brainassistant/contracts';
-import { GetChangesErrorCode } from '../../../src/modules/sync/usecases/get-changes/get-changes.errors.js';
+import { EGetChangesUseCaseError } from '../../../src/modules/sync/usecases/get-changes/get-changes.errors.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
@@ -38,7 +38,7 @@ describe('Integration: GetChanges (Controller -> UseCase -> Repo -> MongoDB)', (
 
     expect(res.status).toBe(404);
     expect(res.body).toMatchObject({
-      name: GetChangesErrorCode.ClientNotFound,
+      name: EGetChangesUseCaseError.ClientNotFound,
     });
     expect(res.body).toHaveProperty('message');
   });

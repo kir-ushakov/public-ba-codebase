@@ -3,7 +3,7 @@ import { promises as fsp } from 'fs';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
-import { UploadImageErrorCode, UploadImageErrors } from './upload-image.errors.js';
+import { EUploadImageUseCaseError, UploadImageErrors } from './upload-image.errors.js';
 import { GoogleDriveService } from '././../../../integrations/google/services/google-drive.service.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { config } from '../../../../config/index.js';
@@ -19,7 +19,7 @@ export type UploadImageParams = {
   userId: string;
 };
 
-export type UploadImageResult = Result<{ imageId: string }, UseCaseError<UploadImageErrorCode>>;
+export type UploadImageResult = Result<{ imageId: string }, UseCaseError<EUploadImageUseCaseError>>;
 
 export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<UploadImageResult>> {
   private googleDriveService: GoogleDriveService;
@@ -42,7 +42,7 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
 
     const pathToFileOrError = await this.prepareLocalFile(params, userId);
     if (pathToFileOrError.isFailure) {
-      return Result.fail<never, UseCaseError<UploadImageErrorCode>>(pathToFileOrError.error);
+      return Result.fail<never, UseCaseError<EUploadImageUseCaseError>>(pathToFileOrError.error);
     }
     const { pathToFile } = pathToFileOrError.getValue();
 
@@ -77,7 +77,7 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
     req: UploadImageParams,
     userId: string,
   ): Promise<
-    Result<{ pathToFile: string; extension: string }, UseCaseError<UploadImageErrorCode>>
+    Result<{ pathToFile: string; extension: string }, UseCaseError<EUploadImageUseCaseError>>
   > {
     const tempPath = req.file.path;
     const originalname = req.file.originalname;

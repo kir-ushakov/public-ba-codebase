@@ -8,14 +8,14 @@ import {
 import { ESlackEventType } from '../../enums/slack-event.enum.js';
 import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
 import {
-  SlackEventReceivedErrorCode,
+  ESlackEventReceivedUseCaseError,
   SlackEventReceivedErrors,
 } from './slack-event-recieved.errors.js';
 import { SlackOAuthAccessRepo } from '../../../../../shared/repo/slack-oauth-access.repo.js';
 
 export type SlackEventReceivedResponse = Result<
   void | never,
-  UseCaseError<SlackEventReceivedErrorCode>
+  UseCaseError<ESlackEventReceivedUseCaseError>
 >;
 
 export type SlackEventReceivedParams = SlackEventReceivedReqestDTO;

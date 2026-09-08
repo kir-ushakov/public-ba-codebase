@@ -5,11 +5,11 @@ import { Client, IClientProps } from '../../../../shared/domain/models/client.js
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
-import { EReleaseClientIdUsecaseError, ReleaseClientIdErrors } from './release-client-id.errors.js';
+import { EReleaseClientIdUseCaseError, ReleaseClientIdErrors } from './release-client-id.errors.js';
 
 type Response = Result<
   ReleaseClientIdResponseDTO | never,
-  UseCaseError<EReleaseClientIdUsecaseError>
+  UseCaseError<EReleaseClientIdUseCaseError>
 >;
 
 export type ReleaseClientIdParams = {

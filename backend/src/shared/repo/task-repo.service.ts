@@ -1,3 +1,4 @@
+import { ETaskRepoServiceError } from '@brainassistant/contracts';
 import { Task, TaskPresitant } from '../domain/models/task.js';
 import { IDbModels } from '../infra/database/mongodb/index.js';
 import { TaskDocument } from '../infra/database/mongodb/task.model.js';
@@ -6,9 +7,7 @@ import { ServiceError } from '../core/service-error.js';
 import { Result } from '../core/result.js';
 import { serviceFail } from '../core/service-fail.factory.js';
 
-export enum ETaskRepoServiceError {
-  UserTaskNotFound = 'TASK_REPO_SERVICE_ERROR__USER_TASK_NOT_FOUND',
-}
+export { ETaskRepoServiceError };
 
 export class TaskRepoService {
   constructor(private readonly models: IDbModels) {}

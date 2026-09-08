@@ -24,7 +24,26 @@ export type {
 } from './dto';
 
 // Enums
-export { EChangedEntity, EChangeAction, ETaskStatus, ETaskType } from './enums';
+export {
+  EChangedEntity,
+  EChangeAction,
+  ETaskStatus,
+  ETaskType,
+  EApiError,
+  EUploadImageUseCaseError,
+  EGetChangesUseCaseError,
+  ELoginUseCaseError,
+  ESignUpUseCaseError,
+  EGoogleAuthUseCaseError,
+  ESpeechToTextUseCaseError,
+  EVerifyEmailUseCaseError,
+  EReleaseClientIdUseCaseError,
+  ERemoveFromSlackUseCaseError,
+  ESlackEventReceivedUseCaseError,
+  ETaskError,
+  ETaskRepoServiceError,
+  EImageRepoServiceError,
+} from './enums';
 
 // Contracts
 export { UploadImageContract, SendChangeContract, GetChangesContract } from './contracts';

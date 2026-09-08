@@ -20,7 +20,7 @@ npm test               # rebuilds, then diffs the public API against test/public
 ```
 src/
 ├── dto/        api-response, auth, change, tag, task, user  (+ index barrel)
-├── enums/      change-action, changed-entity, task-status, task-type  (+ index barrel)
+├── enums/      change-action, changed-entity, task-status, task-type, api-error  (+ index barrel)
 ├── contracts/  send-change, get-changes, files  (+ index barrel)
 ├── public-api.shape.ts   compile-time key lists + the snapshot payload
 └── index.ts    the public surface — anything missing here does not exist for the apps
@@ -47,6 +47,11 @@ is the habit worth copying: this package is a public API, so the reasoning belon
 
 A small enum with explicit string values. Values are part of the wire format and of already-persisted
 client state: add members, never repurpose or renumber existing ones.
+
+HTTP `ApiErrorDto.name` strings live in `src/enums/api-error.enum.ts`. The `E` prefix is required.
+The suffix marks the layer: `E<UseCase>UseCaseError`, domain `E<Entity>Error`, repo
+`E<Repo>ServiceError`, app catch-all `EApiError`. Do not use `ErrorCode`. Add members, do not rename
+wire values (`FILE_TOO_LARGE` stays `FILE_TOO_LARGE`). Internal-only codes stay in the backend.
 
 ### Guarding the public API → `src/public-api.shape.ts` + `test/public-api.shape.json`
 

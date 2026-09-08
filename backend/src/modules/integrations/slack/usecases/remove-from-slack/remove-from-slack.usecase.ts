@@ -4,12 +4,15 @@ import { UseCase } from '../../../../../shared/core/UseCase.js';
 import { SlackOAuthAccessRepo } from '../../../../../shared/repo/slack-oauth-access.repo.js';
 import { SlackOAuthAccess } from '../../../../../shared/domain/models/slack-oauth-access.js';
 import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
-import { RemoveFromSlackErrorCode, RemoveFromSlackErrors } from './remove-from-slack.errors.js';
+import { ERemoveFromSlackUseCaseError, RemoveFromSlackErrors } from './remove-from-slack.errors.js';
 
 export type RemoveFromSlackRequest = {
   userId: string;
 };
-export type RemoveFromSlackResponse = Result<void | never, UseCaseError<RemoveFromSlackErrorCode>>;
+export type RemoveFromSlackResponse = Result<
+  void | never,
+  UseCaseError<ERemoveFromSlackUseCaseError>
+>;
 
 export class RemoveFromSlackUsecase
   implements UseCase<RemoveFromSlackRequest, Promise<RemoveFromSlackResponse>>

@@ -1,8 +1,9 @@
+import { EApiError } from '@brainassistant/contracts';
 import express from 'express';
 import { serialize } from '../utils/middleware.js';
 
 export const UNEXPECTED_ERROR_RESPONSE = {
-  name: 'UNEXPECTED_ERROR',
+  name: EApiError.Unexpected,
   message: 'Some unexpected error occurred',
 } as const;
 
