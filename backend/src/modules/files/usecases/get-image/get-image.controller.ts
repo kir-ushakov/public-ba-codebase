@@ -35,7 +35,7 @@ export class GetImageController extends BaseController {
         const error = result.error;
 
         BaseController.jsonResponse(res, error.httpCode, {
-          name: error.name,
+          name: error.code,
           message: error.message,
         });
       } else {

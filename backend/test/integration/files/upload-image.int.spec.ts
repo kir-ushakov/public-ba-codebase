@@ -4,7 +4,10 @@ import { Application } from 'express';
 import request from 'supertest';
 import { googleDriveService } from '../../../src/modules/integrations/google/services/index.js';
 import { MAX_IMAGE_UPLOAD_FILE_BYTES } from '../../../src/modules/files/config.js';
-import { UploadImageErrors } from '../../../src/modules/files/usecases/upload-image/upload-image.errors.js';
+import {
+  UploadImageErrorCode,
+  UploadImageErrors,
+} from '../../../src/modules/files/usecases/upload-image/upload-image.errors.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
@@ -79,6 +82,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       .set('Accept', 'application/json');
 
     expect(res.status).toBe(400);
+    expect(res.body.name).toBe(UploadImageErrorCode.NotSupportedType);
     expect(res.body).toHaveProperty('message');
 
     const persistedImage = await models.ImageModel.findOne({ imageId }).lean();
@@ -98,6 +102,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       .set('Accept', 'application/json');
 
     expect(res.status).toBe(502);
+    expect(res.body.name).toBe(UploadImageErrorCode.UploadToGoogleDriveFailed);
     expect(res.body).toHaveProperty('message');
 
     const persistedImage = await models.ImageModel.findOne({ imageId }).lean();

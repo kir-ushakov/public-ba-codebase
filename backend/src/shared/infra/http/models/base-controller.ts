@@ -45,7 +45,7 @@ export abstract class BaseController {
 
   public static jsonResponse(
     res: express.Response,
-    code: number,
+    code: EHttpStatus,
     payload: unknown = null,
   ): express.Response {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -67,7 +67,7 @@ export abstract class BaseController {
   }
 
   public created(res: express.Response, payload: unknown = null): express.Response {
-    return BaseController.jsonResponse(res, 201, payload);
+    return BaseController.jsonResponse(res, EHttpStatus.Created, payload);
   }
 
   public fail(res: express.Response, error: Error | string): express.Response {

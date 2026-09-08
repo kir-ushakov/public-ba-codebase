@@ -2,7 +2,7 @@ import { Result } from '../../../../shared/core/result.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { EHttpStatus } from '../../../../shared/infra/http/models/base-controller.js';
 
-enum EGoogleAuthUsecaseError {
+export enum EGoogleAuthUsecaseError {
   EmailAlreadyInUse = 'GOOGLE_OAUTH_EMAIL_ALREADY_IN_USE',
   RefreshTokenNotReceived = 'GOOGLE_OAUTH_REFRESH_TOKEN_NOT_RECEIVED',
   AuthorizationFailed = 'GOOGLE_OAUTH_AUTHORIZATION_FAILED',

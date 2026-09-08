@@ -5,7 +5,7 @@ import { MAX_IMAGE_UPLOAD_FILE_BYTES } from '../../config.js';
 
 export class UploadImageError extends UseCaseError<UploadImageErrorCodes> {}
 
-enum UploadImageErrorCode {
+export enum UploadImageErrorCode {
   NotSupportedType = 'UPLOAD_IMAGE_ERROR_CODE__NOT_SUPPORTED_TYPE',
   UploadToGoogleDriveFailed = 'UPLOAD_IMAGE_ERROR_CODE__UPLOAD_TO_GOOGLE_DRIVE_FAILED',
   FileTooLarge = 'FILE_TOO_LARGE',
@@ -31,7 +31,7 @@ export namespace UploadImageErrors {
     constructor() {
       super(
         false,
-        new UseCaseError(
+        new UploadImageError(
           UploadImageErrorCode.UploadToGoogleDriveFailed,
           `Uploading file to Google Drive failed`,
           EHttpStatus.BadGateway,

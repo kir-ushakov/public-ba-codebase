@@ -28,7 +28,7 @@ export namespace SignUpErrors {
     constructor(email: string) {
       super(
         false,
-        new UseCaseError(
+        new SignUpError(
           ESignUpUsecaseError.EmailInvalid,
           `The email ${email} is invalid`,
           EHttpStatus.BadRequest,

@@ -4,7 +4,7 @@ import { EHttpStatus } from '../../../../../shared/infra/http/models/base-contro
 
 export class SlackEventReceivedError extends UseCaseError<SlackEventReceivedErrorCodes> {}
 
-enum SlackEventReceivedErrorCode {
+export enum SlackEventReceivedErrorCode {
   SlackEventTypeNotSupported = 'SLACK_EVENT_TYPE_NOT_SUPPORTED',
   SlackOAuthAccessNotFound = 'SLACK_OAUTH_ACCESS_NOT_FOUND',
 }

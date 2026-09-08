@@ -1,7 +1,9 @@
 import { Application } from 'express';
 import request from 'supertest';
 import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { ETaskError } from '../../../src/shared/domain/models/task.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
+import { ETaskRepoServiceError } from '../../../src/shared/repo/task-repo.service.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
@@ -92,7 +94,7 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       .set('Accept', 'application/json');
 
     expect(res.status).toBe(404);
-    expect(res.body).toHaveProperty('name');
+    expect(res.body.name).toBe(ETaskRepoServiceError.UserTaskNotFound);
     expect(res.body).toHaveProperty('message');
   });
 
@@ -114,7 +116,7 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       .set('Accept', 'application/json');
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('name');
+    expect(res.body.name).toBe(ETaskError.TitleMissed);
     expect(res.body).toHaveProperty('message');
 
     const persisted = await models.TaskModel.findById(created.id).lean();
