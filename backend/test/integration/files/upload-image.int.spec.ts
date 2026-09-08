@@ -4,6 +4,7 @@ import { Application } from 'express';
 import request from 'supertest';
 import { googleDriveService } from '../../../src/modules/integrations/google/services/index.js';
 import { MAX_IMAGE_UPLOAD_FILE_BYTES } from '../../../src/modules/files/config.js';
+import { UploadImageErrors } from '../../../src/modules/files/usecases/upload-image/upload-image.errors.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
@@ -112,9 +113,9 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       .field('imageId', 'image-too-big')
       .attach('file', oversized, { filename: 'huge.jpg', contentType: 'image/jpeg' });
 
-    expect(res.status).toBe(413);
-    expect(res.body).toMatchObject({ name: 'FILE_TOO_LARGE' });
-    expect(res.body).toHaveProperty('message');
+    const error = new UploadImageErrors.FileTooLarge();
+    expect(res.status).toBe(error.httpCode);
+    expect(res.body).toEqual({ name: error.code, message: error.message });
     expect(await models.ImageModel.findOne({ imageId: 'image-too-big' }).lean()).toBeNull();
   });
 

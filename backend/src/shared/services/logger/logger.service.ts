@@ -1,3 +1,4 @@
+import { AppError } from '../../core/app-error.js';
 import { ServiceError } from '../../core/service-error.js';
 
 // TODO: need to use real logger
@@ -8,6 +9,13 @@ export class LoggerService {
       level: error.level,
       metadata: error.metadata,
       cause: error.error,
+    });
+  }
+
+  logAppError(error: AppError): void {
+    console.error(`[APP ERROR] ${error.code}: ${error.message}`, {
+      cause: error.error,
+      metadata: error.metadata,
     });
   }
 

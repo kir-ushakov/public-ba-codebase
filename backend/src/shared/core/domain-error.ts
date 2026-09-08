@@ -1,6 +1,6 @@
-import { AppError } from './app-error.js';
+import { BaseError } from './base-error.js';
 
-export class DomainError<T, U = string> extends AppError<U> {
+export class DomainError<T, U = string> extends BaseError<U> {
   constructor(
     code: U,
     message: string,

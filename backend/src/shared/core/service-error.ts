@@ -1,7 +1,7 @@
-import { AppError } from './app-error.js';
+import { BaseError } from './base-error.js';
 import { ServiceErrorLevel } from './service-error-level.enum.js';
 
-export class ServiceError<U = string> extends AppError<U> {
+export class ServiceError<U = string> extends BaseError<U> {
   constructor(
     message: string,
     code: U,

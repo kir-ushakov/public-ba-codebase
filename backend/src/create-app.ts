@@ -5,7 +5,7 @@ import session from 'express-session';
 import { apiRouters } from './shared/infra/http/api/index.js';
 import UserModel from './shared/infra/database/mongodb/user.model.js';
 import { googleStrategy, jwtStrategy } from './shared/infra/auth/index.js';
-import { unexpectedErrorHandler } from './shared/infra/http/unexpected-error.middleware.js';
+import { unexpectedErrorHandler } from './shared/infra/http/utils/unexpected-error.middleware.js';
 import { LoggerService } from './shared/services/logger/logger.service.js';
 
 /**

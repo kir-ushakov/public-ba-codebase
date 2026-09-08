@@ -5,6 +5,7 @@ import { getImageController } from './usecases/get-image/_index.js';
 import { MAX_IMAGE_UPLOAD_FILE_BYTES } from './config.js';
 import { BaseController } from '../../shared/infra/http/models/base-controller.js';
 import { asyncHandler } from '../../shared/core/async-handler.function.js';
+import { UploadImageErrors } from './usecases/upload-image/upload-image.errors.js';
 
 const filesRouter: Router = Router();
 
@@ -25,10 +26,13 @@ filesRouter.get(
 );
 
 filesRouter.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+  // User sent too much: this endpoint's contract, not infra. Multer enforces the
+  // byte limit on the stream before execute(); we only attach FileTooLarge's description.
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
-    return BaseController.jsonResponse(res, 413, {
-      name: 'FILE_TOO_LARGE',
-      message: `File exceeds the maximum size of ${MAX_IMAGE_UPLOAD_FILE_BYTES} bytes`,
+    const error = new UploadImageErrors.FileTooLarge();
+    return BaseController.jsonResponse(res, error.httpCode, {
+      name: error.code,
+      message: error.message,
     });
   }
   return next(err);

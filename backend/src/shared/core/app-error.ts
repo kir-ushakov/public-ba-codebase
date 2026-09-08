@@ -1,18 +1,23 @@
-export abstract class AppError<U = string> extends Error {
-  public readonly code: U;
+import { BaseError } from './base-error.js';
 
-  constructor(message: string, code: U, options?: ErrorOptions) {
-    super(message, options);
-    this.code = code;
+export enum AppErrorCode {
+  FilesStorageUnwritable = 'APP_ERROR__FILES_STORAGE_UNWRITABLE',
+}
 
-    // Fix the prototype chain (important if you compile to ES5)
-    Object.setPrototypeOf(this, new.target.prototype);
-
-    this.name = this.constructor.name;
-
-    // V8-only: capture a cleaner stack trace
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, new.target);
-    }
+/**
+ * The running app cannot do its job (storage permissions, dead credentials, …).
+ * No `level`: these are always critical — unlike ServiceError, which varies by call.
+ */
+export class AppError<U = string> extends BaseError<U> {
+  constructor(
+    message: string,
+    code: U,
+    public readonly error?: unknown,
+    public readonly metadata?: Record<string, unknown>,
+  ) {
+    super(message, code, {
+      cause: error instanceof Error ? error : undefined,
+    });
+    this.metadata = metadata ? Object.freeze(metadata) : undefined;
   }
 }
