@@ -6,13 +6,17 @@ import {
   SlackEventReceivedReqestDTO,
 } from './slack-event-received.dto.js';
 import { ESlackEventType } from '../../enums/slack-event.enum.js';
+import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
 import {
-  SlackEventReceivedError,
+  ESlackEventReceivedUseCaseError,
   SlackEventReceivedErrors,
 } from './slack-event-recieved.errors.js';
 import { SlackOAuthAccessRepo } from '../../../../../shared/repo/slack-oauth-access.repo.js';
 
-export type SlackEventReceivedResponse = Result<void | never, SlackEventReceivedError>;
+export type SlackEventReceivedResponse = Result<
+  void | never,
+  UseCaseError<ESlackEventReceivedUseCaseError>
+>;
 
 export type SlackEventReceivedParams = SlackEventReceivedReqestDTO;
 
@@ -57,7 +61,7 @@ export class SlackEventReceivedUsecase
         return Result.ok();
 
       default:
-        return new SlackEventReceivedErrors.SlackEventTypeNotSupported(eventType);
+        return SlackEventReceivedErrors.SlackEventTypeNotSupported(eventType);
     }
   }
 }

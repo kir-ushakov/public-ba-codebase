@@ -26,10 +26,8 @@ export class SpeechToTextController extends BaseController {
       if (result.isFailure) {
         const error = result.error;
 
-        this.logger.logServiceError(error);
-
         BaseController.jsonResponse(res, error.httpCode, {
-          name: error.name,
+          name: error.code,
           message: error.message,
         });
       } else {

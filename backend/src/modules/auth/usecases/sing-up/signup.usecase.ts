@@ -1,13 +1,14 @@
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
 import { SignUpResponseDTO } from './signup.dto.js';
-import { SignUpError, SignUpErrors } from './signup.errors.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { ESignUpUseCaseError, SignUpErrors } from './signup.errors.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { UserEmail } from '../../../../shared/domain/values/user/user-email.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { EmailVerificationService } from '../../services/email/email-verification.service.js';
 
-export type SignUpResult = Result<SignUpResponseDTO | never, SignUpError>;
+export type SignUpResult = Result<SignUpResponseDTO | never, UseCaseError<ESignUpUseCaseError>>;
 
 export type SignUpParams = {
   email: string;
@@ -29,7 +30,7 @@ export class SignUp implements UseCase<SignUpParams, Promise<SignUpResult>> {
     const emailOrError = UserEmail.create(params.email);
 
     if (emailOrError.isFailure) {
-      return new SignUpErrors.EmailInvalid(params.email);
+      return SignUpErrors.EmailInvalid(params.email);
     }
 
     const email: UserEmail = emailOrError.getValue();
@@ -37,10 +38,10 @@ export class SignUp implements UseCase<SignUpParams, Promise<SignUpResult>> {
     const emailAlreadyInUse = await this.emailInUse(email);
 
     if (emailAlreadyInUse) {
-      return new SignUpErrors.EmailAlreadyInUse(email.value);
+      return SignUpErrors.EmailAlreadyInUse(email.value);
     }
 
-    const userOrError: Result<User> = User.create({
+    const userOrError: Result<User, never> = User.create({
       username: email,
       firstName: params.firstName,
       lastName: params.lastName,

@@ -2,6 +2,7 @@ import { Application } from 'express';
 import request from 'supertest';
 import { Result } from '../../../src/shared/core/result.js';
 import { OpenAIClientService } from '../../../src/modules/ai/services/open-ai-client.service.js';
+import { ESpeechToTextUseCaseError } from '../../../src/modules/ai/usecases/speech-to-text/speech-to-text.errors.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
@@ -71,7 +72,7 @@ describe('Integration: SpeechToText (Controller -> UseCase -> OpenAI mock)', () 
       });
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('name');
+    expect(res.body.name).toBe(ESpeechToTextUseCaseError.UnsupportedMimeType);
     expect(res.body.message).toContain('Unsupported media type');
     expect(createTranscription).not.toHaveBeenCalled();
   });
@@ -88,7 +89,7 @@ describe('Integration: SpeechToText (Controller -> UseCase -> OpenAI mock)', () 
       });
 
     expect(res.status).toBe(502);
-    expect(res.body).toHaveProperty('name');
+    expect(res.body.name).toBe(ESpeechToTextUseCaseError.TranscribeAudioFileFailed);
     expect(res.body.message).toContain('OpenAI transcription API Request Failed');
   });
 });

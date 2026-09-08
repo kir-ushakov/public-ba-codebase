@@ -2,6 +2,7 @@ import { Application } from 'express';
 import request from 'supertest';
 import { TaskDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import UserModel from '../../../src/shared/infra/database/mongodb/user.model.js';
+import { ELoginUseCaseError } from '../../../src/modules/auth/usecases/login/login.errors.js';
 import { authenticatedRequest, jwtCookieFromResponse } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
@@ -38,7 +39,7 @@ describe('Integration: Login (Controller -> UseCase -> Repo -> MongoDB)', () => 
     });
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('name');
+    expect(res.body.name).toBe(ELoginUseCaseError.UserAccountNotVerified);
     expect(res.body.message).toBe('User account not verified!');
   });
 
@@ -52,7 +53,7 @@ describe('Integration: Login (Controller -> UseCase -> Repo -> MongoDB)', () => 
     });
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('name');
+    expect(res.body.name).toBe(ELoginUseCaseError.LoginFailed);
     expect(res.body.message).toBe('Authorization failed!');
   });
 

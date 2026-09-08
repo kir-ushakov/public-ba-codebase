@@ -4,6 +4,7 @@ import { Application } from 'express';
 import request from 'supertest';
 import sharp from 'sharp';
 import { googleDriveService } from '../../../src/modules/integrations/google/services/index.js';
+import { EImageRepoServiceError } from '../../../src/shared/repo/image-repo.service.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
@@ -51,7 +52,7 @@ describe('Integration: GetImage (Controller -> UseCase -> Repo -> MongoDB)', () 
     const res = await authenticatedRequest(app, jwtCookie).get('/api/files/image/missing-image');
 
     expect(res.status).toBe(404);
-    expect(res.body).toHaveProperty('name');
+    expect(res.body.name).toBe(EImageRepoServiceError.UserImageNotFound);
     expect(res.body).toHaveProperty('message');
     expect(drive.getImageById).not.toHaveBeenCalled();
   });

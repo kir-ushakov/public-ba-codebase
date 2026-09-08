@@ -16,6 +16,59 @@
       "CHANGE_ACTION_CREATED",
       "CHANGE_ACTION_UPDATED",
       "CHANGE_ACTION_DELETED"
+    ],
+    "EApiError": [
+      "UNEXPECTED_ERROR"
+    ],
+    "EUploadImageUseCaseError": [
+      "UPLOAD_IMAGE_ERROR_CODE__NOT_SUPPORTED_TYPE",
+      "UPLOAD_IMAGE_ERROR_CODE__UPLOAD_TO_GOOGLE_DRIVE_FAILED",
+      "FILE_TOO_LARGE"
+    ],
+    "EGetChangesUseCaseError": [
+      "GET_CHANGES_ERROR_CODE__CLIENT_NOT_FOUND"
+    ],
+    "ELoginUseCaseError": [
+      "LOGIN_USECASE_ERROR__AUTHENTICATION_FAILED",
+      "LOGIN_USECASE_ERROR__ACCOUNT_NOT_VERIFIED"
+    ],
+    "ESignUpUseCaseError": [
+      "SING_UP_ERROR_EMAIL_ALREADY_IN_USE",
+      "EMAIL_INVALID_ERROR_EMAIL_ALREADY_IN_USE"
+    ],
+    "EGoogleAuthUseCaseError": [
+      "GOOGLE_OAUTH_EMAIL_ALREADY_IN_USE",
+      "GOOGLE_OAUTH_REFRESH_TOKEN_NOT_RECEIVED",
+      "GOOGLE_OAUTH_AUTHORIZATION_FAILED"
+    ],
+    "ESpeechToTextUseCaseError": [
+      "SPEECH_TO_TEXT_ERROR__UNSUPPORTED_MIME_TYPE",
+      "SPEECH_TO_TEXT_ERROR__TRANSCRIBE_FAILED"
+    ],
+    "EVerifyEmailUseCaseError": [
+      "VERIFY_EMAIL_ERROR__GIVEN_TOKEN_DOES_NOT_EXIST",
+      "VERIFY_EMAIL_ERROR__VERIFICATION_FAILED"
+    ],
+    "EReleaseClientIdUseCaseError": [
+      "RELEASE_CLIENT_ID_USECASE_ERROR__USER_DOES_NOT_EXIST"
+    ],
+    "ERemoveFromSlackUseCaseError": [
+      "REMOVE_FROM_SLACK_ERROR_CODE__SLACK_OAUTH_ACCESS_NOT_FOUND"
+    ],
+    "ESlackEventReceivedUseCaseError": [
+      "SLACK_EVENT_TYPE_NOT_SUPPORTED",
+      "SLACK_OAUTH_ACCESS_NOT_FOUND"
+    ],
+    "ETaskError": [
+      "TASK_ERROR__TITLE_MISSED",
+      "TASK_ERROR__TITLE_TOO_SHORT",
+      "TASK_ERROR__TITLE_TOO_LONG"
+    ],
+    "ETaskRepoServiceError": [
+      "TASK_REPO_SERVICE_ERROR__USER_TASK_NOT_FOUND"
+    ],
+    "EImageRepoServiceError": [
+      "IMAGE_REPO_SERVICE_ERROR__USER_IMAGE_NOT_FOUND"
     ]
   },
   "dto": {

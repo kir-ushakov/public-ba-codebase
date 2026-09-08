@@ -1,9 +1,14 @@
+import { EApiError } from '@brainassistant/contracts';
 import path from 'path';
 import { promises as fsp } from 'fs';
 import { Application } from 'express';
 import request from 'supertest';
 import { googleDriveService } from '../../../src/modules/integrations/google/services/index.js';
 import { MAX_IMAGE_UPLOAD_FILE_BYTES } from '../../../src/modules/files/config.js';
+import {
+  EUploadImageUseCaseError,
+  UploadImageErrors,
+} from '../../../src/modules/files/usecases/upload-image/upload-image.errors.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
@@ -78,6 +83,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       .set('Accept', 'application/json');
 
     expect(res.status).toBe(400);
+    expect(res.body.name).toBe(EUploadImageUseCaseError.NotSupportedType);
     expect(res.body).toHaveProperty('message');
 
     const persistedImage = await models.ImageModel.findOne({ imageId }).lean();
@@ -97,6 +103,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       .set('Accept', 'application/json');
 
     expect(res.status).toBe(502);
+    expect(res.body.name).toBe(EUploadImageUseCaseError.UploadToGoogleDriveFailed);
     expect(res.body).toHaveProperty('message');
 
     const persistedImage = await models.ImageModel.findOne({ imageId }).lean();
@@ -112,9 +119,9 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       .field('imageId', 'image-too-big')
       .attach('file', oversized, { filename: 'huge.jpg', contentType: 'image/jpeg' });
 
-    expect(res.status).toBe(413);
-    expect(res.body).toMatchObject({ name: 'FILE_TOO_LARGE' });
-    expect(res.body).toHaveProperty('message');
+    const error = UploadImageErrors.FileTooLarge();
+    expect(res.status).toBe(error.httpCode);
+    expect(res.body).toEqual({ name: error.code, message: error.message });
     expect(await models.ImageModel.findOne({ imageId: 'image-too-big' }).lean()).toBeNull();
   });
 
@@ -133,7 +140,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
 
       expect(res.status).toBe(500);
       expect(res.body).toEqual({
-        name: 'UNEXPECTED_ERROR',
+        name: EApiError.Unexpected,
         message: 'Some unexpected error occurred',
       });
       expect(

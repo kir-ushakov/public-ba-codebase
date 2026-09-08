@@ -4,13 +4,7 @@ import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
 import { ETaskError, Task } from '../../../../../shared/domain/models/task.js';
 import { EHttpStatus } from '../../../../../shared/infra/http/models/base-controller.js';
 
-type ECreateTaskError = ETaskError;
-export class CreateTaskError extends UseCaseError<ECreateTaskError> {}
-
-export namespace CreateTaskErrors {
-  export class DataInvalid extends Result<never, CreateTaskError> {
-    constructor(error: DomainError<Task, ETaskError>) {
-      super(false, new CreateTaskError(error.code, error.message, EHttpStatus.BadRequest));
-    }
-  }
-}
+export const CreateTaskErrors = {
+  DataInvalid: (error: DomainError<Task, ETaskError>): Result<never, UseCaseError<ETaskError>> =>
+    Result.fail(new UseCaseError<ETaskError>(error.code, error.message, EHttpStatus.BadRequest)),
+};

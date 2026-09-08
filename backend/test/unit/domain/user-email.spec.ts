@@ -1,4 +1,4 @@
-import { UserEmail } from '../../../src/shared/domain/values/user/user-email.js';
+import { EUserEmailError, UserEmail } from '../../../src/shared/domain/values/user/user-email.js';
 
 describe('UserEmail', () => {
   describe('create', () => {
@@ -13,18 +13,21 @@ describe('UserEmail', () => {
       const result = UserEmail.create('  Test@Example.COM  ');
 
       expect(result.isFailure).toBe(true);
+      expect(result.error.code).toBe(EUserEmailError.Invalid);
     });
 
     it('rejects invalid email', () => {
       const result = UserEmail.create('not-an-email');
 
       expect(result.isFailure).toBe(true);
+      expect(result.error.code).toBe(EUserEmailError.Invalid);
     });
 
     it('rejects empty string', () => {
       const result = UserEmail.create('');
 
       expect(result.isFailure).toBe(true);
+      expect(result.error.code).toBe(EUserEmailError.Invalid);
     });
   });
 });

@@ -33,8 +33,8 @@ export class AddToSlackController extends BaseController {
         BaseController.jsonResponse(res, EHttpStatus.Created);
       } else {
         const error = addToSlackResult.error;
-        BaseController.jsonResponse(res, error.code, {
-          name: error.name,
+        BaseController.jsonResponse(res, error.httpCode, {
+          name: error.code,
           message: error.message,
         });
       }

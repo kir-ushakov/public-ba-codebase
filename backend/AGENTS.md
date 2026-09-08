@@ -45,9 +45,10 @@ shape, not of business logic — copy the structure, never the domain rules.
 
 The complete five-file use-case folder, and the default template for a new endpoint. Shows the
 contract type at the HTTP boundary (`SendChangeContract.Request<TaskDTO>`), request mapping split
-into `create-task.mapper.ts`, validation delegated to `Task.create` returning a `Result`, an error
-namespace whose members carry `httpCode`, repos injected through the constructor, and `index.ts` as
-the single composition root that instantiates everything and exports the controller.
+into `create-task.mapper.ts`, validation delegated to `Task.create` returning a `Result`, error
+factories in `create-task.errors.ts` that return `Result.fail` with `httpCode`, repos injected
+through the constructor, and `index.ts` as the single composition root that instantiates everything
+and exports the controller.
 
 Do not copy the commented-out Slack block and its `TODO` / `TICKET` comments at the end of
 `create-task.usecase.ts`.
@@ -107,7 +108,7 @@ Existing code that works but must not be used as a template.
 - **`src/modules/auth/usecases/`** — the oldest module. It predates `@brainassistant/contracts` and
   still carries local `*.dto.ts` files, and one folder is named `sing-up`. Extending an auth flow in
   place is fine; starting a new module from it is not.
-- **Misspelled names already in the tree** — `delete-task.erros.ts`,
+- **Misspelled names already in the tree** —
   `slack-event-recieved.errors.ts`, `GetChnagesController`, `sing-up/`, and the live route
   `/api/integrations/slack/event-recived`. They stay as they are: renaming touches imports, and the
   Slack path is registered with a third party. Never reproduce the spellings in new files.

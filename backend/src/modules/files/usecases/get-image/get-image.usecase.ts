@@ -8,7 +8,10 @@ import {
 } from '././../../../integrations/google/services/google-drive.service.js';
 import { ImageResizeService } from '../../services/image-resize.service.js';
 import { User } from '../../../../shared/domain/models/user.js';
-import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
+import {
+  EImageRepoServiceError,
+  ImageRepoService,
+} from '../../../../shared/repo/image-repo.service.js';
 import { GetImageErrors } from './get-image.errors.js';
 
 export type GetImageRequest = {
@@ -17,7 +20,10 @@ export type GetImageRequest = {
   imageWidth?: number;
 };
 
-export type GetImageResult = Result<GoogleDriveImageFile | never, UseCaseError<string>>;
+export type GetImageResult = Result<
+  GoogleDriveImageFile | never,
+  UseCaseError<EImageRepoServiceError>
+>;
 
 export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImageResult>> {
   constructor(
@@ -33,7 +39,7 @@ export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImag
 
     const imageOrError = await this.imageRepoService.getUserImageById(userId, imageId);
     if (imageOrError.isFailure) {
-      return new GetImageErrors.ImageNotFoundError(imageOrError.error);
+      return GetImageErrors.ImageNotFoundError(imageOrError.error);
     }
     const image = imageOrError.getValue();
     const fileId = image.fileId;

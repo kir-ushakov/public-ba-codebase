@@ -1,4 +1,4 @@
-export class Result<T, E = string> {
+export class Result<T, E = never> {
   public isSuccess: boolean;
   public isFailure: boolean;
   public _error: E;
@@ -33,15 +33,15 @@ export class Result<T, E = string> {
     return this._error;
   }
 
-  public static ok<U, E = string>(value?: U): Result<U, E> {
+  public static ok<U, E = never>(value?: U): Result<U, E> {
     return new Result<U, E>(true, null, value);
   }
 
-  public static fail<U = never, E = string>(error: E): Result<U, E> {
+  public static fail<U = never, E = never>(error: E): Result<U, E> {
     return new Result<U, E>(false, error);
   }
 
-  public static combine(results: Result<unknown>[]): Result<unknown> {
+  public static combine(results: Result<unknown, unknown>[]): Result<unknown, unknown> {
     for (const result of results) {
       if (result.isFailure) return result;
     }

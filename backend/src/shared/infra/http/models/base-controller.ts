@@ -1,8 +1,9 @@
+import { EApiError } from '@brainassistant/contracts';
 import express from 'express';
 import { serialize } from '../utils/middleware.js';
 
 export const UNEXPECTED_ERROR_RESPONSE = {
-  name: 'UNEXPECTED_ERROR',
+  name: EApiError.Unexpected,
   message: 'Some unexpected error occurred',
 } as const;
 
@@ -15,6 +16,7 @@ export enum EHttpStatus {
   Forbidden = 403,
   NotFound = 404,
   Conflict = 409,
+  PayloadTooLarge = 413,
   InternalServerError = 500,
   BadGateway = 502,
 }
@@ -44,7 +46,7 @@ export abstract class BaseController {
 
   public static jsonResponse(
     res: express.Response,
-    code: number,
+    code: EHttpStatus,
     payload: unknown = null,
   ): express.Response {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -66,7 +68,7 @@ export abstract class BaseController {
   }
 
   public created(res: express.Response, payload: unknown = null): express.Response {
-    return BaseController.jsonResponse(res, 201, payload);
+    return BaseController.jsonResponse(res, EHttpStatus.Created, payload);
   }
 
   public fail(res: express.Response, error: Error | string): express.Response {

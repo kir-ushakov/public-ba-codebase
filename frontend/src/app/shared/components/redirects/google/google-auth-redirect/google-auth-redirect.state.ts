@@ -7,6 +7,7 @@ import { UserAction } from 'src/app/shared/state/user.actions';
 import { User } from 'src/app/shared/models';
 import { EMPTY, catchError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
+import { EGoogleAuthUseCaseError } from '@brainassistant/contracts';
 import { environment } from 'src/environments/environment';
 
 export interface IGoogleAuthRedirectScreenStateModel {
@@ -83,7 +84,7 @@ export class GoogleAuthRedirectScreenState {
   }
 
   /**
-   * Backend returns stable `code` (and legacy `name`) for machine-readable errors.
+   * Backend JSON uses `name` = error code. Cached clients may still send `code`.
    * UX branches: missing refresh token → one automatic consent retry; bad/expired code → message.
    */
   private onGoogleAuthHttpError(
@@ -94,12 +95,12 @@ export class GoogleAuthRedirectScreenState {
 
     const errorCode = GoogleAuthRedirectScreenState.readApiErrorCode(err);
 
-    if (errorCode === 'GOOGLE_OAUTH_REFRESH_TOKEN_NOT_RECEIVED') {
+    if (errorCode === EGoogleAuthUseCaseError.RefreshTokenNotReceived) {
       this.retryOnceWithForcedGoogleConsent();
       return;
     }
 
-    if (errorCode === 'GOOGLE_OAUTH_AUTHORIZATION_FAILED') {
+    if (errorCode === EGoogleAuthUseCaseError.AuthorizationFailed) {
       sessionStorage.removeItem(FORCE_CONSENT_ATTEMPT_STORAGE_KEY);
       ctx.patchState({
         errorMessage: 'Google code expired. Please try signing in again.',
@@ -107,7 +108,7 @@ export class GoogleAuthRedirectScreenState {
       return;
     }
 
-    if (errorCode === 'GOOGLE_OAUTH_EMAIL_ALREADY_IN_USE') {
+    if (errorCode === EGoogleAuthUseCaseError.EmailAlreadyInUse) {
       ctx.patchState({ errorMessage: err.error?.message });
     }
   }
@@ -117,8 +118,7 @@ export class GoogleAuthRedirectScreenState {
    * We redirect once; flag avoids an endless loop if consent still yields no token.
    */
   private retryOnceWithForcedGoogleConsent(): void {
-    const alreadyRetried =
-      sessionStorage.getItem(FORCE_CONSENT_ATTEMPT_STORAGE_KEY) === '1';
+    const alreadyRetried = sessionStorage.getItem(FORCE_CONSENT_ATTEMPT_STORAGE_KEY) === '1';
 
     if (!alreadyRetried) {
       sessionStorage.setItem(FORCE_CONSENT_ATTEMPT_STORAGE_KEY, '1');

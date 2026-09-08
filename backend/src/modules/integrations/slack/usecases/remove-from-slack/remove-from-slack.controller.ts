@@ -29,7 +29,7 @@ export class RemoveFromSlackController extends BaseController {
       } else {
         const error = addToSlackResult.error;
         BaseController.jsonResponse(res, error.httpCode, {
-          name: error.name,
+          name: error.code,
           message: error.message,
         });
       }

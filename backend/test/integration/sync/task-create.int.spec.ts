@@ -1,6 +1,7 @@
 import { Application } from 'express';
 import request from 'supertest';
 import { TaskDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { ETaskError } from '../../../src/shared/domain/models/task.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
@@ -89,7 +90,7 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       .set('Accept', 'application/json');
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('name');
+    expect(res.body.name).toBe(ETaskError.TitleMissed);
     expect(res.body).toHaveProperty('message');
   });
 });

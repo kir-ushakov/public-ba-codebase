@@ -16,7 +16,7 @@ export type AddToSlackRequest = {
   code: string;
   userId: string;
 };
-export type AddToSlackResponse = Result<void | never, AddToSlackError>;
+export type AddToSlackResponse = Result<void, AddToSlackError>;
 
 export class AddToSlackUsecase implements UseCase<AddToSlackRequest, Promise<AddToSlackResponse>> {
   private _webClient: WebClient;
@@ -59,6 +59,6 @@ export class AddToSlackUsecase implements UseCase<AddToSlackRequest, Promise<Add
 
     await this._slackOAuthAccessRepo.create(slackOAuthAccess);
 
-    return Result.ok();
+    return Result.ok<void, AddToSlackError>();
   }
 }

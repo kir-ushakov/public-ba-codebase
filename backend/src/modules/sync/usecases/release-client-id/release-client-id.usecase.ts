@@ -4,9 +4,13 @@ import { Result } from '../../../../shared/core/result.js';
 import { Client, IClientProps } from '../../../../shared/domain/models/client.js';
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
-import { ReleaseClientIdError, ReleaseClientIdErrors } from './release-client-id.errors.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { EReleaseClientIdUseCaseError, ReleaseClientIdErrors } from './release-client-id.errors.js';
 
-type Response = Result<ReleaseClientIdResponseDTO | never, ReleaseClientIdError>;
+type Response = Result<
+  ReleaseClientIdResponseDTO | never,
+  UseCaseError<EReleaseClientIdUseCaseError>
+>;
 
 export type ReleaseClientIdParams = {
   userId: string;
@@ -33,10 +37,10 @@ export class ReleaseClientId implements UseCase<ReleaseClientIdParams, Promise<R
       // TODO: handle error proper way (use service error)
       // TICKET: https://brainas.atlassian.net/browse/BA-217
       console.error(err);
-      return new ReleaseClientIdErrors.UserDoesNotExist(userId);
+      return ReleaseClientIdErrors.UserDoesNotExist(userId);
     }
 
-    const clientOrError: Result<Client> = await this.createNewCleintInDB(userId);
+    const clientOrError: Result<Client, never> = await this.createNewCleintInDB(userId);
 
     if (clientOrError.isFailure) {
       // TODO: Need to handle this case
@@ -47,13 +51,13 @@ export class ReleaseClientId implements UseCase<ReleaseClientIdParams, Promise<R
     return Result.ok({ clientId: client.id.toString() });
   }
 
-  private async createNewCleintInDB(userId: string): Promise<Result<Client>> {
+  private async createNewCleintInDB(userId: string): Promise<Result<Client, never>> {
     const clientProps: IClientProps = {
       userId: userId,
       syncTime: null,
     };
 
-    const clientOrError: Result<Client> = Client.create(clientProps);
+    const clientOrError: Result<Client, never> = Client.create(clientProps);
 
     if (clientOrError.isFailure) {
       // TODO: for this moment there is no suppose that it can be failed in normal flow

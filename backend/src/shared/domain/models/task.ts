@@ -1,15 +1,11 @@
-import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { ETaskError, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 import { Result } from '../../core/result.js';
 import { Guard } from '../../core/guard.js';
 import { DomainError } from '../../core/domain-error.js';
 
-export enum ETaskError {
-  TitleMissed = 'TASK_ERROR__TITLE_MISSED',
-  TitleTooShort = 'TASK_ERROR__TITLE_TOO_SHORT',
-  TitleTooLong = 'TASK_ERROR__TITLE_TOO_LONG',
-}
+export { ETaskError };
 
 export interface ITaskProps {
   userId: string;

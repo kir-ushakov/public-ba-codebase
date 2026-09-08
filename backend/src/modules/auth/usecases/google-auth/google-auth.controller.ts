@@ -23,7 +23,7 @@ export class GoogleAuthController extends BaseController {
       } else {
         const error = result.error;
         BaseController.jsonResponse(res, error.httpCode, {
-          name: error.name,
+          name: error.code,
           code: error.code,
           message: error.message,
         });

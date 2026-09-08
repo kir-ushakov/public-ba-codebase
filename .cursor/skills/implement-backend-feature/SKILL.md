@@ -48,7 +48,7 @@ Changing an existing schema instead of adding one? Stop and follow `change-mongo
 Create `backend/src/modules/<module>/usecases/<name>/` and build it in dependency order:
 
 1. **Domain first.** Validation lives in the entity or value object via `Guard` + `Result`. Add the failure case to the entity's error enum. There is no validation library and no `*.validation.ts` layer.
-2. `<name>.errors.ts` — a `UseCaseError` subclass plus the `<Name>Errors` namespace, each error carrying its `httpCode`.
+2. `<name>.errors.ts` — `<Name>Errors` factories returning `Result.fail(new UseCaseError(...))` with `httpCode`. HTTP `name` strings belong in `@brainassistant/contracts` as `E<Name>UseCaseError` (re-export here). If the use case cannot fail yet, keep the file with `type XxxError = UseCaseError<never>`.
 3. `<name>.usecase.ts` — implements `UseCase<Params, Promise<Result>>`, takes repos and services through the constructor, returns `Result`. No Express types cross this boundary.
 4. `<name>.mapper.ts` — only when request-to-params mapping is non-trivial.
 5. `<name>.controller.ts` — extends `BaseController`, reads `req.user`, branches on `result.isSuccess`, keeps the `try/catch`.

@@ -1,8 +1,13 @@
 import { Result } from '../../core/result.js';
+import { DomainError } from '../../core/domain-error.js';
 import { GoogleAuthTokens } from '../values/user/google-auth-tokens.js';
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 import { UserEmail } from '../values/user/user-email.js';
+
+export enum EUserError {
+  AlreadyVerified = 'USER_ERROR__ALREADY_VERIFIED',
+}
 
 export interface UserProps {
   // TODO: use separate username (string) and email (UserEmail)
@@ -66,7 +71,7 @@ export class User extends AggregateRoot<UserProps> {
     this.props.googleRefreshToken = googleTokens.refreshToken;
   }
 
-  public static create(props: UserProps, id?: UniqueEntityID): Result<User> {
+  public static create(props: UserProps, id?: UniqueEntityID): Result<User, never> {
     // TODO: check null or undefined here
 
     const isNewUser = !!!id;
@@ -89,17 +94,19 @@ export class User extends AggregateRoot<UserProps> {
       // TODO: Use Domain event to notify listeners about new user
     }
 
-    return Result.ok<User>(user);
+    return Result.ok<User, never>(user);
   }
 
-  public verify(): Result<void> {
+  public verify(): Result<void, DomainError<User, EUserError>> {
     if (this.props.verified) {
-      return Result.fail<void>('User already verified.');
+      return Result.fail(
+        new DomainError<User, EUserError>(EUserError.AlreadyVerified, 'User already verified.'),
+      );
     }
 
     this.props.verified = true;
 
-    return Result.ok<void>();
+    return Result.ok<void, DomainError<User, EUserError>>();
   }
 
   private constructor(props: UserProps, id?: UniqueEntityID) {

@@ -7,7 +7,6 @@ import { FileLike } from 'openai/uploads.js';
 import { retry } from '../../../shared/infra/http/utils/retry-helper.function.js';
 import { BufferUtilsService } from '../../../shared/services/files/buffer-utils.service.js';
 import { FilenameUtilsService } from '../../../shared/services/files/filename-utils.service.js';
-import { wrapServiceError } from '../../../shared/utils/wrap-service-error.functions.js';
 import { OpenAIClientService } from './open-ai-client.service.js';
 
 export enum OpenAISpeechTranscriberError {
@@ -96,10 +95,10 @@ export class OpenAISpeechTranscriberService {
     });
 
     if (filenameResult.isFailure) {
-      return wrapServiceError<OpenAISpeechTranscriberError>(
+      return serviceFail<OpenAISpeechTranscriberError>(
         'Failed to create filename from MIME type',
         OpenAISpeechTranscriberError.FilePreparationFailed,
-        filenameResult.error,
+        { cause: filenameResult.error },
       );
     }
 
@@ -113,10 +112,10 @@ export class OpenAISpeechTranscriberService {
     const result = await BufferUtilsService.convertBufferToFile(buffer, filename);
 
     if (result.isFailure) {
-      return wrapServiceError<OpenAISpeechTranscriberError>(
+      return serviceFail<OpenAISpeechTranscriberError>(
         'Failed to convert audio buffer to file for transcription',
         OpenAISpeechTranscriberError.FilePreparationFailed,
-        result.error,
+        { cause: result.error },
       );
     }
 
@@ -126,10 +125,10 @@ export class OpenAISpeechTranscriberService {
   private getClientOrFail(): Result<OpenAI, ServiceError<OpenAISpeechTranscriberError>> {
     const openAIClientResult = this.openAIClientService.getClientOrFail();
     if (openAIClientResult.isFailure) {
-      return wrapServiceError<OpenAISpeechTranscriberError>(
+      return serviceFail<OpenAISpeechTranscriberError>(
         'Failed to initialize OpenAI client',
         OpenAISpeechTranscriberError.ClientInitializationFailed,
-        openAIClientResult.error,
+        { cause: openAIClientResult.error },
       );
     }
     return Result.ok(openAIClientResult.getValue());

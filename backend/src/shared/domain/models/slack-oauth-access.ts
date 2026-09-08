@@ -14,7 +14,7 @@ export interface ISlackOAuthAccessPresitant extends ISlackOAuthAccessProps {
   _id?: string;
 }
 
-export type CreateSlackOAuthAccessResult = Result<SlackOAuthAccess>;
+export type CreateSlackOAuthAccessResult = Result<SlackOAuthAccess, never>;
 
 export class SlackOAuthAccess extends AggregateRoot<ISlackOAuthAccessProps> {
   get id(): UniqueEntityID {
@@ -47,7 +47,7 @@ export class SlackOAuthAccess extends AggregateRoot<ISlackOAuthAccessProps> {
   ): CreateSlackOAuthAccessResult {
     const slackOAuthAccess = new SlackOAuthAccess(props, id);
 
-    return Result.ok<SlackOAuthAccess>(slackOAuthAccess);
+    return Result.ok<SlackOAuthAccess, never>(slackOAuthAccess);
   }
 
   private constructor(props: ISlackOAuthAccessProps, id?: UniqueEntityID) {

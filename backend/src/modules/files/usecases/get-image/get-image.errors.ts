@@ -4,13 +4,11 @@ import { ServiceError } from '../../../../shared/core/service-error.js';
 import { EImageRepoServiceError } from '../../../../shared/repo/image-repo.service.js';
 import { EHttpStatus } from '../../../../shared/infra/http/models/base-controller.js';
 
-type GetImageErrorCodes = EImageRepoServiceError;
-export class GetImageError extends UseCaseError<GetImageErrorCodes> {}
-
-export namespace GetImageErrors {
-  export class ImageNotFoundError extends Result<never, GetImageError> {
-    constructor(error: ServiceError<EImageRepoServiceError>) {
-      super(false, new GetImageError(error.code, error.message, EHttpStatus.NotFound));
-    }
-  }
-}
+export const GetImageErrors = {
+  ImageNotFoundError: (
+    error: ServiceError<EImageRepoServiceError>,
+  ): Result<never, UseCaseError<EImageRepoServiceError>> =>
+    Result.fail(
+      new UseCaseError<EImageRepoServiceError>(error.code, error.message, EHttpStatus.NotFound),
+    ),
+};

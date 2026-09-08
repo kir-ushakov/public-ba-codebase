@@ -29,7 +29,7 @@ export class VerificationToken extends ValueObject<IVerificationTokenProps> {
     super(props);
   }
 
-  public static create(props?: IVerificationTokenProps): Result<VerificationToken> {
-    return Result.ok<VerificationToken>(new VerificationToken(props));
+  public static create(props?: IVerificationTokenProps): Result<VerificationToken, never> {
+    return Result.ok<VerificationToken, never>(new VerificationToken(props));
   }
 }

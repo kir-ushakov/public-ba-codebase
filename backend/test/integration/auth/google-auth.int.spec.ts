@@ -1,6 +1,7 @@
 import { Application } from 'express';
 import request from 'supertest';
 import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { EGoogleAuthUseCaseError } from '../../../src/modules/auth/usecases/google-auth/google-auth.errors.js';
 import UserModel from '../../../src/shared/infra/database/mongodb/user.model.js';
 import {
   authenticatedRequest,
@@ -114,7 +115,8 @@ describe('Integration: GoogleAuth (Controller -> UseCase -> Repo -> MongoDB)', (
     const res = await request(app).get(AUTH_PATH);
 
     expect(res.status).toBe(400);
-    expect(res.body.code).toBe('GOOGLE_OAUTH_REFRESH_TOKEN_NOT_RECEIVED');
+    expect(res.body.name).toBe(EGoogleAuthUseCaseError.RefreshTokenNotReceived);
+    expect(res.body.code).toBe(EGoogleAuthUseCaseError.RefreshTokenNotReceived);
     expect(await UserModel.countDocuments({ username: 'norefresh@example.com' })).toBe(0);
   });
 
@@ -133,7 +135,8 @@ describe('Integration: GoogleAuth (Controller -> UseCase -> Repo -> MongoDB)', (
     const res = await request(app).get(AUTH_PATH);
 
     expect(res.status).toBe(409);
-    expect(res.body.code).toBe('GOOGLE_OAUTH_EMAIL_ALREADY_IN_USE');
+    expect(res.body.name).toBe(EGoogleAuthUseCaseError.EmailAlreadyInUse);
+    expect(res.body.code).toBe(EGoogleAuthUseCaseError.EmailAlreadyInUse);
   });
 
   it('returns authorization failed when the Google strategy errors', async () => {
@@ -145,6 +148,7 @@ describe('Integration: GoogleAuth (Controller -> UseCase -> Repo -> MongoDB)', (
     const res = await request(app).get(AUTH_PATH);
 
     expect(res.status).toBe(400);
-    expect(res.body.code).toBe('GOOGLE_OAUTH_AUTHORIZATION_FAILED');
+    expect(res.body.name).toBe(EGoogleAuthUseCaseError.AuthorizationFailed);
+    expect(res.body.code).toBe(EGoogleAuthUseCaseError.AuthorizationFailed);
   });
 });
