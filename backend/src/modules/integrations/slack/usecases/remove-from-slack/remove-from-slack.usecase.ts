@@ -3,12 +3,13 @@ import { Result } from '../../../../../shared/core/result.js';
 import { UseCase } from '../../../../../shared/core/UseCase.js';
 import { SlackOAuthAccessRepo } from '../../../../../shared/repo/slack-oauth-access.repo.js';
 import { SlackOAuthAccess } from '../../../../../shared/domain/models/slack-oauth-access.js';
-import { RemoveFromSlackError, RemoveFromSlackErrors } from './remove-from-slack.errors.js';
+import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
+import { RemoveFromSlackErrorCode, RemoveFromSlackErrors } from './remove-from-slack.errors.js';
 
 export type RemoveFromSlackRequest = {
   userId: string;
 };
-export type RemoveFromSlackResponse = Result<void | never, RemoveFromSlackError>;
+export type RemoveFromSlackResponse = Result<void | never, UseCaseError<RemoveFromSlackErrorCode>>;
 
 export class RemoveFromSlackUsecase
   implements UseCase<RemoveFromSlackRequest, Promise<RemoveFromSlackResponse>>
@@ -26,7 +27,7 @@ export class RemoveFromSlackUsecase
       await this._slackOAuthAccessRepo.getSlackOAuthAccessByUserId(userId);
 
     if (!slackOAuthAccess) {
-      return new RemoveFromSlackErrors.SlackOAuthAccessNotFound();
+      return RemoveFromSlackErrors.SlackOAuthAccessNotFound();
     }
 
     const accessToken = slackOAuthAccess.accessToken;

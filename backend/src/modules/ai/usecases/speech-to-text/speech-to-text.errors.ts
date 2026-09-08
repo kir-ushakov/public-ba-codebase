@@ -9,34 +9,27 @@ export enum SpeechToTextErrorCode {
   TranscribeAudioFileFailed = 'SPEECH_TO_TEXT_ERROR__TRANSCRIBE_FAILED',
 }
 
-export class SpeechToTextError extends UseCaseError<SpeechToTextErrorCode> {}
-
-export namespace SpeechToTextErrors {
-  export class UnsupportedMimeType extends Result<never, SpeechToTextError> {
-    constructor(error: ServiceError<OpenAISpeechTranscriberError>) {
-      super(
-        false,
-        new SpeechToTextError(
-          SpeechToTextErrorCode.UnsupportedMimeType,
-          error.message,
-          EHttpStatus.BadRequest,
-          error,
-        ),
-      );
-    }
-  }
-
-  export class TranscribeAudioFileFailed extends Result<never, SpeechToTextError> {
-    constructor(error: ServiceError<OpenAISpeechTranscriberError>) {
-      super(
-        false,
-        new SpeechToTextError(
-          SpeechToTextErrorCode.TranscribeAudioFileFailed,
-          error.message,
-          EHttpStatus.BadGateway,
-          error,
-        ),
-      );
-    }
-  }
-}
+export const SpeechToTextErrors = {
+  UnsupportedMimeType: (
+    error: ServiceError<OpenAISpeechTranscriberError>,
+  ): Result<never, UseCaseError<SpeechToTextErrorCode>> =>
+    Result.fail(
+      new UseCaseError<SpeechToTextErrorCode>(
+        SpeechToTextErrorCode.UnsupportedMimeType,
+        error.message,
+        EHttpStatus.BadRequest,
+        error,
+      ),
+    ),
+  TranscribeAudioFileFailed: (
+    error: ServiceError<OpenAISpeechTranscriberError>,
+  ): Result<never, UseCaseError<SpeechToTextErrorCode>> =>
+    Result.fail(
+      new UseCaseError<SpeechToTextErrorCode>(
+        SpeechToTextErrorCode.TranscribeAudioFileFailed,
+        error.message,
+        EHttpStatus.BadGateway,
+        error,
+      ),
+    ),
+};

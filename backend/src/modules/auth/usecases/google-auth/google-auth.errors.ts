@@ -8,47 +8,29 @@ export enum EGoogleAuthUsecaseError {
   AuthorizationFailed = 'GOOGLE_OAUTH_AUTHORIZATION_FAILED',
 }
 
-type EGoogleAuthError = EGoogleAuthUsecaseError;
-
-export class GoogleAuthError extends UseCaseError<EGoogleAuthError> {}
-
-export namespace GoogleAuthErrors {
-  export class EmailAlreadyInUse extends Result<never, GoogleAuthError> {
-    constructor(email: string) {
-      super(
-        false,
-        new GoogleAuthError(
-          EGoogleAuthUsecaseError.EmailAlreadyInUse,
-          `Cannot create user with this email. The email ${email} already exists`,
-          EHttpStatus.Conflict,
-        ),
-      );
-    }
-  }
-
-  export class RefreshTokenNotReceived extends Result<never, GoogleAuthError> {
-    constructor() {
-      super(
-        false,
-        new GoogleAuthError(
-          EGoogleAuthUsecaseError.RefreshTokenNotReceived,
-          'Google refresh token was not received. Please repeat consent to re-authorize offline access.',
-          EHttpStatus.BadRequest,
-        ),
-      );
-    }
-  }
-
-  export class AuthorizationFailed extends Result<never, GoogleAuthError> {
-    constructor() {
-      super(
-        false,
-        new GoogleAuthError(
-          EGoogleAuthUsecaseError.AuthorizationFailed,
-          'Google authorization code is invalid or expired. Please try signing in again.',
-          EHttpStatus.BadRequest,
-        ),
-      );
-    }
-  }
-}
+export const GoogleAuthErrors = {
+  EmailAlreadyInUse: (email: string): Result<never, UseCaseError<EGoogleAuthUsecaseError>> =>
+    Result.fail(
+      new UseCaseError<EGoogleAuthUsecaseError>(
+        EGoogleAuthUsecaseError.EmailAlreadyInUse,
+        `Cannot create user with this email. The email ${email} already exists`,
+        EHttpStatus.Conflict,
+      ),
+    ),
+  RefreshTokenNotReceived: (): Result<never, UseCaseError<EGoogleAuthUsecaseError>> =>
+    Result.fail(
+      new UseCaseError<EGoogleAuthUsecaseError>(
+        EGoogleAuthUsecaseError.RefreshTokenNotReceived,
+        'Google refresh token was not received. Please repeat consent to re-authorize offline access.',
+        EHttpStatus.BadRequest,
+      ),
+    ),
+  AuthorizationFailed: (): Result<never, UseCaseError<EGoogleAuthUsecaseError>> =>
+    Result.fail(
+      new UseCaseError<EGoogleAuthUsecaseError>(
+        EGoogleAuthUsecaseError.AuthorizationFailed,
+        'Google authorization code is invalid or expired. Please try signing in again.',
+        EHttpStatus.BadRequest,
+      ),
+    ),
+};

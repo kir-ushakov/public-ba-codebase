@@ -4,9 +4,10 @@ import { User } from '../../../../shared/domain/models/user.js';
 import { VerificationToken } from '../../../../shared/domain/values/user/verification-token.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { VerifyEmailResponseDTO } from './verify-email.dto.js';
-import { VerifyEmailError } from './verify-email.errors.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { EVerifyEmailUsecaseError } from './verify-email.errors.js';
 
-type UseCaseResult = Result<VerifyEmailResponseDTO | never, VerifyEmailError>;
+type UseCaseResult = Result<VerifyEmailResponseDTO | never, UseCaseError<EVerifyEmailUsecaseError>>;
 
 export type VerifyEmailParams = {
   tokenId: string;

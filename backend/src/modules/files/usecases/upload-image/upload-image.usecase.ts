@@ -2,7 +2,8 @@ import path from 'path';
 import { promises as fsp } from 'fs';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
-import { UploadImageError, UploadImageErrors } from './upload-image.errors.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { UploadImageErrorCode, UploadImageErrors } from './upload-image.errors.js';
 import { GoogleDriveService } from '././../../../integrations/google/services/google-drive.service.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { config } from '../../../../config/index.js';
@@ -18,7 +19,7 @@ export type UploadImageParams = {
   userId: string;
 };
 
-export type UploadImageResult = Result<{ imageId: string }, UploadImageError>;
+export type UploadImageResult = Result<{ imageId: string }, UseCaseError<UploadImageErrorCode>>;
 
 export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<UploadImageResult>> {
   private googleDriveService: GoogleDriveService;
@@ -41,7 +42,7 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
 
     const pathToFileOrError = await this.prepareLocalFile(params, userId);
     if (pathToFileOrError.isFailure) {
-      return Result.fail<never, UploadImageError>(pathToFileOrError.error);
+      return Result.fail<never, UseCaseError<UploadImageErrorCode>>(pathToFileOrError.error);
     }
     const { pathToFile } = pathToFileOrError.getValue();
 
@@ -68,14 +69,16 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
       // TODO: handele error properly (as service error)
       // TICKET: https://brainas.atlassian.net/browse/BA-218
       console.error('Error uploading file to Google Drive:', error);
-      return new UploadImageErrors.UploadToGoogleDriveFailed();
+      return UploadImageErrors.UploadToGoogleDriveFailed();
     }
   }
 
   private async prepareLocalFile(
     req: UploadImageParams,
     userId: string,
-  ): Promise<Result<{ pathToFile: string; extension: string }, UploadImageError>> {
+  ): Promise<
+    Result<{ pathToFile: string; extension: string }, UseCaseError<UploadImageErrorCode>>
+  > {
     const tempPath = req.file.path;
     const originalname = req.file.originalname;
     const userUploadDir = `${config.paths.uploadTempDir}/${userId}`;
@@ -88,7 +91,7 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
     if (!this.allowedTypes.includes(fileType)) {
       // eslint-disable-next-line security/detect-non-literal-fs-filename -- multer temp path
       await fsp.unlink(tempPath);
-      return new UploadImageErrors.NotSupportedTypeError(fileType);
+      return UploadImageErrors.NotSupportedTypeError(fileType);
     }
 
     // eslint-disable-next-line security/detect-non-literal-fs-filename -- move from multer temp into user upload dir

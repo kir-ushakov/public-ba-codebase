@@ -10,14 +10,15 @@ import { ActionRepo } from '../../../../shared/repo/action.repo.js';
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
 import { TaskRepoService } from '../../../../shared/repo/task-repo.service.js';
 import { Change } from '../../domain/values/change.js';
-import { GetChangesError, GetChangesErrors } from './get-changes.errors.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { GetChangesErrorCode, GetChangesErrors } from './get-changes.errors.js';
 
 export type GetChangesParams = {
   userId: string;
   clientId: string;
 };
 
-export type GetChangesResult = Result<Change[], GetChangesError>;
+export type GetChangesResult = Result<Change[], UseCaseError<GetChangesErrorCode>>;
 
 export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesResult>> {
   private clientRepo: ClientRepo;
@@ -39,7 +40,7 @@ export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesR
       client = await this.clientRepo.find(userId, clientId);
     } catch (err) {
       console.error(`Failed to find client (userId: ${userId}, clientId: ${clientId})`, err);
-      return new GetChangesErrors.ClientNotFoundError(userId, clientId);
+      return GetChangesErrors.ClientNotFoundError(userId, clientId);
     }
 
     const lastSyncTime: Date = client.syncTime;

@@ -4,7 +4,8 @@ import { Profile } from 'passport-google-oauth20';
 import { v4 as uuidv4 } from 'uuid';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
-import { GoogleAuthError, GoogleAuthErrors } from './google-auth.errors.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { EGoogleAuthUsecaseError, GoogleAuthErrors } from './google-auth.errors.js';
 import { LoginResponseDTO } from '../login/login.dto.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { User } from '../../../../shared/domain/models/user.js';
@@ -20,7 +21,10 @@ import {
 export type GoogleAuthRequest = {
   context: { req: Request; res: Response; next: NextFunction };
 };
-export type GoogleAuthResult = Result<LoginResponseDTO | never, GoogleAuthError>;
+export type GoogleAuthResult = Result<
+  LoginResponseDTO | never,
+  UseCaseError<EGoogleAuthUsecaseError>
+>;
 
 export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<GoogleAuthResult>> {
   private passport: PassportStatic;
@@ -39,14 +43,14 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
         err: unknown,
         res: GoogleProfileWithTokens,
       ): Promise<void> => {
-        if (err) return resolve(new GoogleAuthErrors.AuthorizationFailed());
+        if (err) return resolve(GoogleAuthErrors.AuthorizationFailed());
 
         const profile = res.profile;
         const tokens = res.tokens;
 
         const userOrError = await this.findOrCreateUser(profile, tokens);
         if (userOrError.isFailure) {
-          return resolve(userOrError as Result<never, GoogleAuthError>);
+          return resolve(userOrError as Result<never, UseCaseError<EGoogleAuthUsecaseError>>);
         }
 
         const user = userOrError.getValue();
@@ -79,7 +83,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
   private async findOrCreateUser(
     profile: Profile,
     tokenPayload: GoogleOAuthTokenPayload,
-  ): Promise<Result<User | never, GoogleAuthError>> {
+  ): Promise<Result<User | never, UseCaseError<EGoogleAuthUsecaseError>>> {
     let user: User;
     user = await this.userRepo.getUserByGoogleId(profile.id);
 
@@ -98,7 +102,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
       // If we have no refresh token in DB and Google didn't return one in this callback,
       // we need to force consent again.
       if (!tokenPayload.refreshToken && !user.googleRefreshToken) {
-        return new GoogleAuthErrors.RefreshTokenNotReceived();
+        return GoogleAuthErrors.RefreshTokenNotReceived();
       }
       return Result.ok(user);
     }
@@ -107,7 +111,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
 
     if (existUser) {
       if (existUser.verified) {
-        return new GoogleAuthErrors.EmailAlreadyInUse(profile._json.email);
+        return GoogleAuthErrors.EmailAlreadyInUse(profile._json.email);
       } else {
         await this.userRepo.removeByUsername(profile._json.email);
       }
@@ -116,7 +120,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
     const email: UserEmail = UserEmail.create(profile._json.email).getValue();
 
     if (!tokens?.refreshToken) {
-      return new GoogleAuthErrors.RefreshTokenNotReceived();
+      return GoogleAuthErrors.RefreshTokenNotReceived();
     }
 
     const userModel: User = User.create({

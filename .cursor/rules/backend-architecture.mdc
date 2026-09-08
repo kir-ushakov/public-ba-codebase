@@ -24,7 +24,7 @@ Business flows live in `backend/src/modules/<module>/usecases/<use-case>/` and c
 
 - `<name>.controller.ts` — extends `BaseController`, implements `executeImpl`
 - `<name>.usecase.ts` — implements `UseCase<Params, Promise<Result>>`, contains no Express types
-- `<name>.errors.ts` — namespaced `UseCaseError` subclasses carrying `httpCode`
+- `<name>.errors.ts` — an enum of codes plus `<Name>Errors` factories that return `Result.fail(new UseCaseError(...))` with `httpCode`. Do not add an empty `UseCaseError` subclass or a `Result` subclass per error. If the use case cannot fail yet, still keep the file and `type XxxError = UseCaseError<never>` so `Result` matches neighbouring folders.
 - `<name>.mapper.ts` / `<name>.dto.ts` — only when mapping is non-trivial
 - `index.ts` — composition root: instantiates repos, services, use-case and controller, exports the controller singleton
 

@@ -5,10 +5,14 @@ import {
   OpenAISpeechTranscriberError,
   OpenAISpeechTranscriberService,
 } from '../../services/open-ai-speech-transcriber.service.js';
-import { SpeechToTextError, SpeechToTextErrors } from './speech-to-text.errors.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { SpeechToTextErrorCode, SpeechToTextErrors } from './speech-to-text.errors.js';
 
 type SpeechToTextRequest = SpeechToTextRequestDTO;
-type SpeechToTextResponse = Result<SpeechToTextResponseDTO | never, SpeechToTextError>;
+type SpeechToTextResponse = Result<
+  SpeechToTextResponseDTO | never,
+  UseCaseError<SpeechToTextErrorCode>
+>;
 
 export class SpeechToText implements UseCase<SpeechToTextRequest, Promise<SpeechToTextResponse>> {
   constructor(private readonly openAISpeechTranscriberService: OpenAISpeechTranscriberService) {}
@@ -18,9 +22,9 @@ export class SpeechToText implements UseCase<SpeechToTextRequest, Promise<Speech
     if (textOrError.isFailure) {
       switch (textOrError.error.code) {
         case OpenAISpeechTranscriberError.UnsupportedType:
-          return new SpeechToTextErrors.UnsupportedMimeType(textOrError.error);
+          return SpeechToTextErrors.UnsupportedMimeType(textOrError.error);
         default:
-          return new SpeechToTextErrors.TranscribeAudioFileFailed(textOrError.error);
+          return SpeechToTextErrors.TranscribeAudioFileFailed(textOrError.error);
       }
     }
 

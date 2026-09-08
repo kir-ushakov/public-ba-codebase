@@ -4,10 +4,11 @@ import { ETaskError, ITaskProps, Task } from '../../../../../shared/domain/model
 import { UniqueEntityID } from '../../../../../shared/domain/UniqueEntityID.js';
 import { TaskRepoService } from '../../../../../shared/repo/task-repo.service.js';
 import { SlackService } from '../../../../../shared/infra/integrations/slack/slack.service.js';
-import { CreateTaskError, CreateTaskErrors } from './create-task.errors.js';
+import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
+import { CreateTaskErrors } from './create-task.errors.js';
 import { DomainError } from '../../../../../shared/core/domain-error.js';
 
-export type CreateTaskResult = Result<Task, CreateTaskError>;
+export type CreateTaskResult = Result<Task, UseCaseError<ETaskError>>;
 
 export type CreateTaskParams = {
   taskProps: ITaskProps;
@@ -28,7 +29,7 @@ export class CreateTask implements UseCase<CreateTaskParams, Promise<CreateTaskR
       params.id,
     );
     if (taskOrError.isFailure) {
-      return new CreateTaskErrors.DataInvalid(taskOrError.error);
+      return CreateTaskErrors.DataInvalid(taskOrError.error);
     }
 
     const task: Task = taskOrError.getValue();

@@ -4,14 +4,15 @@ import { Result } from '../../../../shared/core/result.js';
 import { LoginResponseDTO } from './login.dto.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
-import { LoginError } from './login.errors.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { ELoginUsecaseError, LoginErrors } from './login.errors.js';
 import { LoginService } from '../../services/login.service.js';
 import { UserMapper } from '../../../../shared/mappers/user.mapper.js';
 
 export type LoginRequest = {
   context: { req: Request; res: Response; next: NextFunction };
 };
-export type LoginResult = Result<LoginResponseDTO, never | LoginError>;
+export type LoginResult = Result<LoginResponseDTO, never | UseCaseError<ELoginUsecaseError>>;
 
 export class LoginUsecase implements UseCase<LoginRequest, Promise<LoginResult>> {
   private passport: PassportStatic;
@@ -33,11 +34,11 @@ export class LoginUsecase implements UseCase<LoginRequest, Promise<LoginResult>>
         }
 
         if (!userPersistent) {
-          return resolve(new LoginError.LoginFailed());
+          return resolve(LoginErrors.LoginFailed());
         }
 
         if (!userPersistent.verified) {
-          return resolve(new LoginError.UserAccountNotVerified());
+          return resolve(LoginErrors.UserAccountNotVerified());
         }
 
         const user = UserMapper.toDomain(userPersistent);

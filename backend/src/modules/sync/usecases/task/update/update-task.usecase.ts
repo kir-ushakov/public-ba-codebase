@@ -3,14 +3,15 @@ import { Result } from '../../../../../shared/core/result.js';
 import { TaskDTO } from '@brainassistant/contracts';
 import { Task } from '../../../../../shared/domain/models/task.js';
 import { TaskRepoService } from '../../../../../shared/repo/task-repo.service.js';
-import { UpdateTaskError, UpdateTaskErrors } from './update-task.errors.js';
+import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
+import { UpdateTaskErrorCode, UpdateTaskErrors } from './update-task.errors.js';
 
 type Request = {
   userId: string;
   dto: TaskDTO;
 };
 
-export type UpdateTaskResult = Result<Task, UpdateTaskError>;
+export type UpdateTaskResult = Result<Task, UseCaseError<UpdateTaskErrorCode>>;
 
 export class UpdateTask implements UseCase<Request, Promise<UpdateTaskResult>> {
   constructor(private readonly taskRepoService: TaskRepoService) {}
@@ -21,7 +22,7 @@ export class UpdateTask implements UseCase<Request, Promise<UpdateTaskResult>> {
     const taskOrError = await this.taskRepoService.getUserTaskById(userId, taskDto.id);
 
     if (taskOrError.isFailure) {
-      return new UpdateTaskErrors.TaskNotFoundError(taskOrError.error);
+      return UpdateTaskErrors.TaskNotFoundError(taskOrError.error);
     }
 
     const task = taskOrError.getValue();
@@ -33,7 +34,7 @@ export class UpdateTask implements UseCase<Request, Promise<UpdateTaskResult>> {
     });
 
     if (updateResult.isFailure) {
-      return new UpdateTaskErrors.DataInvalid(updateResult.error);
+      return UpdateTaskErrors.DataInvalid(updateResult.error);
     }
 
     await this.taskRepoService.save(task);

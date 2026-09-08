@@ -29,7 +29,7 @@ filesRouter.use((err: unknown, _req: Request, res: Response, next: NextFunction)
   // User sent too much: this endpoint's contract, not infra. Multer enforces the
   // byte limit on the stream before execute(); we only attach FileTooLarge's description.
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
-    const error = new UploadImageErrors.FileTooLarge();
+    const error = UploadImageErrors.FileTooLarge();
     return BaseController.jsonResponse(res, error.httpCode, {
       name: error.code,
       message: error.message,

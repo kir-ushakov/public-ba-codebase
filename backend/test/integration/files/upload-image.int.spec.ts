@@ -118,7 +118,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       .field('imageId', 'image-too-big')
       .attach('file', oversized, { filename: 'huge.jpg', contentType: 'image/jpeg' });
 
-    const error = new UploadImageErrors.FileTooLarge();
+    const error = UploadImageErrors.FileTooLarge();
     expect(res.status).toBe(error.httpCode);
     expect(res.body).toEqual({ name: error.code, message: error.message });
     expect(await models.ImageModel.findOne({ imageId: 'image-too-big' }).lean()).toBeNull();

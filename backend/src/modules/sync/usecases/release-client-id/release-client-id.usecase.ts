@@ -4,9 +4,13 @@ import { Result } from '../../../../shared/core/result.js';
 import { Client, IClientProps } from '../../../../shared/domain/models/client.js';
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
-import { ReleaseClientIdError, ReleaseClientIdErrors } from './release-client-id.errors.js';
+import { UseCaseError } from '../../../../shared/core/use-case-error.js';
+import { EReleaseClientIdUsecaseError, ReleaseClientIdErrors } from './release-client-id.errors.js';
 
-type Response = Result<ReleaseClientIdResponseDTO | never, ReleaseClientIdError>;
+type Response = Result<
+  ReleaseClientIdResponseDTO | never,
+  UseCaseError<EReleaseClientIdUsecaseError>
+>;
 
 export type ReleaseClientIdParams = {
   userId: string;
@@ -33,7 +37,7 @@ export class ReleaseClientId implements UseCase<ReleaseClientIdParams, Promise<R
       // TODO: handle error proper way (use service error)
       // TICKET: https://brainas.atlassian.net/browse/BA-217
       console.error(err);
-      return new ReleaseClientIdErrors.UserDoesNotExist(userId);
+      return ReleaseClientIdErrors.UserDoesNotExist(userId);
     }
 
     const clientOrError: Result<Client> = await this.createNewCleintInDB(userId);
