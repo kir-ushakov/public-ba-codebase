@@ -20,10 +20,11 @@ RUN npm ci --verbose
 
 COPY backend/ .
 
-# tsc can exceed Node's default ~1.5GB heap on large projects / low-memory builders
-RUN NODE_OPTIONS="--max-old-space-size=4096" npx tsc
-
-RUN chown -R node:node /usr/src/app /usr/src/contracts
+# Default 1024 fits a 3GB VDS. Raise only when building on a bigger machine:
+#   docker compose ... build --build-arg TSC_MAX_OLD_SPACE_MB=4096 backend
+ARG TSC_MAX_OLD_SPACE_MB=1024
+RUN NODE_OPTIONS="--max-old-space-size=${TSC_MAX_OLD_SPACE_MB}" ./node_modules/.bin/tsc -p tsconfig.prod.json \
+  && chown -R node:node /usr/src/app /usr/src/contracts
 
 COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 # Strip CRLF if the file was saved on Windows (fixes: /usr/bin/env: 'sh\r': No such file)
