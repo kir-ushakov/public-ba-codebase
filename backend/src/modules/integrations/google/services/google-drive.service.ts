@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { drive_v3, google } from 'googleapis';
+import { drive, drive_v3 } from 'googleapis/build/src/apis/drive/index.js';
 import { OAuth2Client } from 'googleapis-common';
 import { Readable } from 'stream';
 import mime from 'mime';
@@ -79,7 +79,7 @@ export class GoogleDriveService {
         version: 'v3',
         auth: this.oAuth2Client,
       };
-      const service = google.drive(options);
+      const service = drive(options);
 
       const fileMetadata = {
         name: filename,
@@ -147,7 +147,7 @@ export class GoogleDriveService {
         version: 'v3',
         auth: this.oAuth2Client,
       };
-      return Result.ok(google.drive(options));
+      return Result.ok(drive(options));
     } catch (error) {
       return failFromGoogleError(error);
     }
