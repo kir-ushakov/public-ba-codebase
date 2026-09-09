@@ -48,10 +48,28 @@ describe('TaskMapper', () => {
         modifiedAt,
       };
 
-      const domain = TaskMapper.toDomain(raw) as Task;
+      const domain = TaskMapper.toDomain(raw);
 
       expect(domain.createdAt).toEqual(createdAt);
       expect(domain.modifiedAt).toEqual(modifiedAt);
+    });
+
+    it('loads a persisted task with an empty title and no imageId', () => {
+      const raw: TaskPresitant = {
+        _id: 'legacy-task',
+        userId: 'user-1',
+        type: ETaskType.Basic,
+        title: '',
+        status: ETaskStatus.Todo,
+        createdAt: new Date('2024-06-01T10:00:00.000Z'),
+        modifiedAt: new Date('2024-06-02T15:30:00.000Z'),
+      };
+
+      const domain = TaskMapper.toDomain(raw);
+      const dto = TaskMapper.toDTO(domain);
+
+      expect(dto.id).toBe('legacy-task');
+      expect(dto.title).toBe('');
     });
   });
 
@@ -93,7 +111,7 @@ describe('TaskMapper', () => {
       ).getValue();
 
       const persisted = TaskMapper.toPersistence(original);
-      const restored = TaskMapper.toDomain(persisted) as Task;
+      const restored = TaskMapper.toDomain(persisted);
 
       expect(restored.id.toString()).toBe('task-123');
       expect(restored.title).toBe('Valid task title');

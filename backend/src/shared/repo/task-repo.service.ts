@@ -6,8 +6,10 @@ import { TaskMapper } from '../mappers/task.mapper.js';
 import { ServiceError } from '../core/service-error.js';
 import { Result } from '../core/result.js';
 import { serviceFail } from '../core/service-fail.factory.js';
+import { ServiceErrorLevel } from '../core/service-error-level.enum.js';
+import { ETaskRepoLoadError } from './task-repo.service.error.js';
 
-export { ETaskRepoServiceError };
+export { ETaskRepoServiceError, ETaskRepoLoadError };
 
 export class TaskRepoService {
   constructor(private readonly models: IDbModels) {}
@@ -53,16 +55,41 @@ export class TaskRepoService {
         ETaskRepoServiceError.UserTaskNotFound,
       );
 
-    const task = TaskMapper.toDomain(taskDocument) as Task;
+    const task = TaskMapper.toDomain(taskDocument);
     return Result.ok<Task, ServiceError<ETaskRepoServiceError>>(task);
   }
 
   public async getChanges(userId: string, syncTime: Date): Promise<Task[]> {
-    const taskModel = this.models.TaskModel;
-    const changedTasks: TaskDocument[] = await taskModel
-      .find({ userId: userId, modifiedAt: { $gte: new Date(syncTime) } })
-      .sort({ modifiedAt: 1 });
-    return changedTasks.map(t => TaskMapper.toDomain(t) as Task);
+    const changedTasks: TaskPresitant[] = await this.models.TaskModel.find({
+      userId: userId,
+      modifiedAt: { $gte: new Date(syncTime) },
+    })
+      .sort({ modifiedAt: 1 })
+      .lean();
+
+    return changedTasks.map(raw => this.toDomainIfValid(raw)).filter(task => task !== null);
+  }
+
+  private toDomainIfValid(raw: TaskPresitant): Task | null {
+    const task = TaskMapper.toDomain(raw);
+    const invariants = task.checkWriteInvariants();
+    if (invariants.isSuccess) {
+      return task;
+    }
+
+    void serviceFail<ETaskRepoLoadError>(
+      'Persisted task failed write-time validation and was skipped',
+      ETaskRepoLoadError.PersistedTaskInvalid,
+      {
+        level: ServiceErrorLevel.Low,
+        metadata: {
+          taskId: task.id.toString(),
+          userId: task.userId,
+          domainCode: invariants.error.code,
+        },
+      },
+    );
+    return null;
   }
 
   public async deleteTaskById(taskId: string): Promise<void> {

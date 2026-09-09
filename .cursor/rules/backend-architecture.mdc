@@ -61,6 +61,35 @@ return this.ok(res, response);
 - Anything under `shared/domain/values/` is a `ValueObject` class (`create()` + getters), never a public interface/type alias. Infra payloads stay in infra; map them in the use-case. See `user-email.ts`.
 - Read `req.user` in the controller and pass plain values into the use-case; use-cases must not touch Express objects.
 
+## Public methods are the happy path
+
+A public method's body should read as the main scenario: query → map → return, or load → act → save. Do not inline a rare branch (skip a poison row, log-and-continue, retry-once) so that the special case *is* the method.
+
+Give that branch a name (`toDomainIfValid`, `openForceConsentScreen`) and keep `serviceFail` / session flags / metadata inside it.
+
+Collection reads (`getChanges` and similar pulls) must not fail the whole result because one persisted document fails write-time rules. `reconstitute` loads as-is; `create` / `update` keep `isValid`. If a row fails `checkWriteInvariants()`:
+
+- log with `serviceFail(..., Low, { id, userId, domainCode })` so `LoggerService` records it
+- omit the row (`null` / filter), do **not** `toDTO` it as a normal entity
+- do **not** return `Result.fail` or a `UseCaseError` — that becomes HTTP 4xx/5xx and blocks the rest of the pull
+
+`DomainError` is the detector. `ServiceError` is the incident. The code is backend-only if it never goes on the wire. A single-entity `getById` may still return the reconstituted row so an update can repair it.
+
+```ts
+// BAD — skip/log is the body of getChanges
+for (const raw of rows) {
+  const task = TaskMapper.toDomain(raw);
+  if (task.checkWriteInvariants().isFailure) {
+    void serviceFail(...);
+    continue;
+  }
+  tasks.push(task);
+}
+
+// GOOD — getChanges stays query + map; the name states the exception
+return rows.map(raw => this.toDomainIfValid(raw)).filter(task => task !== null);
+```
+
 ## Types and secrets
 
 `backend/tsconfig.json` has no `strict` or `strictNullChecks`, so the compiler will not catch loose types. Type parameters and return values explicitly and avoid `any`.

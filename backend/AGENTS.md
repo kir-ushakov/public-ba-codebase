@@ -88,7 +88,9 @@ error enum. There is no validation library and no layer above the domain that do
 ### Persistence pair → `src/shared/repo/task-repo.service.ts` + `src/shared/mappers/task.mapper.ts`
 
 A repo resolving models from the injected `models` registry, and the mapper that keeps raw documents
-from escaping it.
+from escaping it. `getChanges` + `toDomainIfValid` is the shape for a collection pull: the public
+method is query → map → return; a poison document is logged with `serviceFail` and omitted, not
+turned into HTTP failure. Write-time rules stay on `Task.create` / `update`.
 
 ### Integration spec → `test/integration/sync/task-create.int.spec.ts`
 

@@ -1,17 +1,16 @@
 import { Task, TaskPresitant } from '../domain/models/task.js';
 import { TaskDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
-import { DomainError } from '../core/domain-error.js';
 
 export class TaskMapper {
-  public static toDomain(raw: TaskPresitant): Task | DomainError<Task> {
+  public static toDomain(raw: TaskPresitant): Task {
     const { userId, type, title, status, imageId, _id, createdAt, modifiedAt } = raw;
 
-    const taskOrError = Task.reconstitute(
+    return Task.reconstitute(
       {
         userId,
         type: type as ETaskType,
-        title,
+        title: title ?? '',
         status: status as ETaskStatus,
         imageId,
         createdAt,
@@ -19,12 +18,6 @@ export class TaskMapper {
       },
       new UniqueEntityID(_id),
     );
-
-    if (taskOrError.isFailure) {
-      console.log(taskOrError.error);
-    }
-
-    return taskOrError.isSuccess ? taskOrError.getValue() : null;
   }
 
   public static toPersistence(task: Task): TaskPresitant {
