@@ -5,14 +5,12 @@ import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import {
   GoogleDriveImageFile,
   GoogleDriveService,
-} from '././../../../integrations/google/services/google-drive.service.js';
+} from '../../../integrations/google/services/google-drive.service.js';
+import { EGoogleDriveServiceError } from '../../../integrations/google/services/google-drive-service.error.js';
 import { ImageResizeService } from '../../services/image-resize.service.js';
 import { User } from '../../../../shared/domain/models/user.js';
-import {
-  EImageRepoServiceError,
-  ImageRepoService,
-} from '../../../../shared/repo/image-repo.service.js';
-import { GetImageErrors } from './get-image.errors.js';
+import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
+import { GetImageErrors, GetImageErrorCode } from './get-image.errors.js';
 
 export type GetImageRequest = {
   imageId: string;
@@ -20,10 +18,7 @@ export type GetImageRequest = {
   imageWidth?: number;
 };
 
-export type GetImageResult = Result<
-  GoogleDriveImageFile | never,
-  UseCaseError<EImageRepoServiceError>
->;
+export type GetImageResult = Result<GoogleDriveImageFile | never, UseCaseError<GetImageErrorCode>>;
 
 export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImageResult>> {
   constructor(
@@ -44,13 +39,22 @@ export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImag
     const image = imageOrError.getValue();
     const fileId = image.fileId;
 
-    let file: GoogleDriveImageFile = await this.googleDriveService.getImageById(user, fileId);
+    const fileOrError = await this.googleDriveService.getImageById(user, fileId);
+    if (fileOrError.isFailure) {
+      switch (fileOrError.error.code) {
+        case EGoogleDriveServiceError.InvalidGrant:
+          return GetImageErrors.GoogleRefreshTokenInvalid(fileOrError.error);
+        default:
+          return GetImageErrors.GoogleDriveRequestFailed(fileOrError.error);
+      }
+    }
+    let file: GoogleDriveImageFile = fileOrError.getValue();
 
     if (req.imageWidth) {
       file = await this.resize(file, req.imageWidth);
     }
 
-    return Result.ok<GoogleDriveImageFile, never>(file);
+    return Result.ok<GoogleDriveImageFile>(file);
   }
 
   private async resize(file: GoogleDriveImageFile, width: number): Promise<GoogleDriveImageFile> {

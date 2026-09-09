@@ -10,6 +10,7 @@ export { ETaskType } from './task-type.enum';
 export {
   EApiError,
   EUploadImageUseCaseError,
+  EGetImageUseCaseError,
   EGetChangesUseCaseError,
   ELoginUseCaseError,
   ESignUpUseCaseError,

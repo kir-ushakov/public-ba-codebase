@@ -19,7 +19,13 @@ export enum EApiError {
 export enum EUploadImageUseCaseError {
   NotSupportedType = 'UPLOAD_IMAGE_ERROR_CODE__NOT_SUPPORTED_TYPE',
   UploadToGoogleDriveFailed = 'UPLOAD_IMAGE_ERROR_CODE__UPLOAD_TO_GOOGLE_DRIVE_FAILED',
+  GoogleRefreshTokenInvalid = 'UPLOAD_IMAGE_ERROR__GOOGLE_REFRESH_TOKEN_INVALID',
   FileTooLarge = 'FILE_TOO_LARGE',
+}
+
+export enum EGetImageUseCaseError {
+  GoogleRefreshTokenInvalid = 'GET_IMAGE_ERROR__GOOGLE_REFRESH_TOKEN_INVALID',
+  GoogleDriveRequestFailed = 'GET_IMAGE_ERROR__GOOGLE_DRIVE_REQUEST_FAILED',
 }
 
 export enum EGetChangesUseCaseError {

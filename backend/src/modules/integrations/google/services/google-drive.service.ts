@@ -6,11 +6,21 @@ import { Readable } from 'stream';
 import mime from 'mime';
 import { User } from '../../../../shared/domain/models/user.js';
 import { config as defaultConfig } from '../../../../config/index.js';
+import { Result } from '../../../../shared/core/result.js';
+import { ServiceError } from '../../../../shared/core/service-error.js';
+import { ServiceErrorLevel } from '../../../../shared/core/service-error-level.enum.js';
+import { serviceFail } from '../../../../shared/core/service-fail.factory.js';
+import { isGoogleInvalidGrant } from './google-invalid-grant.js';
+import { EGoogleDriveServiceError } from './google-drive-service.error.js';
+
+export { EGoogleDriveServiceError };
 
 export type GoogleDriveImageFile = {
   data: Readable;
   headers: Record<string, string | undefined>;
 };
+
+export type GoogleDriveServiceResult<T> = Result<T, ServiceError<EGoogleDriveServiceError>>;
 
 export class GoogleDriveService {
   constructor(
@@ -22,7 +32,11 @@ export class GoogleDriveService {
   }
 
   public async listFiles(user: User): Promise<void> {
-    const driveService: drive_v3.Drive = await this.getDriveService(user);
+    const driveOrError = await this.getDriveService(user);
+    if (driveOrError.isFailure) {
+      return;
+    }
+    const driveService: drive_v3.Drive = driveOrError.getValue();
 
     const res = await driveService.files.list({
       pageSize: 10,
@@ -44,15 +58,18 @@ export class GoogleDriveService {
     });
   }
 
-  public async uploadFile(user: User, filePath: string): Promise<string | null | undefined> {
+  public async uploadFile(user: User, filePath: string): Promise<GoogleDriveServiceResult<string>> {
     try {
       const safeBaseDir = this.config.paths.uploadTempDir;
       const resolvedFilePath = path.resolve(filePath);
       if (!resolvedFilePath.startsWith(safeBaseDir)) {
-        throw new Error('Invalid file path');
+        return failGoogleDriveRequest('Invalid file path');
       }
 
-      await this.getDriveService(user);
+      const driveOrError = await this.getDriveService(user);
+      if (driveOrError.isFailure) {
+        return Result.fail(driveOrError.error);
+      }
 
       const filename = path.basename(resolvedFilePath);
       const extension = path.extname(resolvedFilePath);
@@ -80,16 +97,27 @@ export class GoogleDriveService {
         fields: 'id',
       });
 
-      return file.data.id;
+      const fileId = file.data.id;
+      if (!fileId) {
+        return failGoogleDriveRequest('Google Drive did not return a file id');
+      }
+
+      return Result.ok(fileId);
     } catch (err) {
-      this.logger.error('Upload failed:', err);
-      throw err;
+      return failFromGoogleError(err);
     }
   }
 
-  public async getImageById(user: User, imageId: string): Promise<GoogleDriveImageFile> {
+  public async getImageById(
+    user: User,
+    imageId: string,
+  ): Promise<GoogleDriveServiceResult<GoogleDriveImageFile>> {
     try {
-      const driveService: drive_v3.Drive = await this.getDriveService(user);
+      const driveOrError = await this.getDriveService(user);
+      if (driveOrError.isFailure) {
+        return Result.fail(driveOrError.error);
+      }
+      const driveService: drive_v3.Drive = driveOrError.getValue();
       const file = await driveService.files.get(
         {
           fileId: imageId,
@@ -98,30 +126,58 @@ export class GoogleDriveService {
         { responseType: 'stream' },
       );
 
-      return {
-        data: file.data as Readable,
+      return Result.ok({
+        data: file.data,
         headers: gaxiosHeadersToRecord(file.headers),
-      };
+      });
     } catch (error) {
-      this.logger.error(error);
-      throw error;
+      return failFromGoogleError(error);
     }
   }
 
-  private async getDriveService(user: User): Promise<drive_v3.Drive> {
-    this.oAuth2Client.setCredentials({
-      access_token: user.googleAccessToken,
-      refresh_token: user.googleRefreshToken,
-    });
-    await this.oAuth2Client.refreshAccessToken();
+  private async getDriveService(user: User): Promise<GoogleDriveServiceResult<drive_v3.Drive>> {
+    try {
+      this.oAuth2Client.setCredentials({
+        access_token: user.googleAccessToken,
+        refresh_token: user.googleRefreshToken,
+      });
+      await this.oAuth2Client.refreshAccessToken();
 
-    const options: drive_v3.Options = {
-      version: 'v3',
-      auth: this.oAuth2Client,
-    };
-    const driveService = google.drive(options);
-    return driveService;
+      const options: drive_v3.Options = {
+        version: 'v3',
+        auth: this.oAuth2Client,
+      };
+      return Result.ok(google.drive(options));
+    } catch (error) {
+      return failFromGoogleError(error);
+    }
   }
+}
+
+function failFromGoogleError(
+  error: unknown,
+): Result<never, ServiceError<EGoogleDriveServiceError>> {
+  if (isGoogleInvalidGrant(error)) {
+    return serviceFail<EGoogleDriveServiceError>(
+      'Google refresh token is invalid or revoked',
+      EGoogleDriveServiceError.InvalidGrant,
+      {
+        level: ServiceErrorLevel.Medium,
+        error: new Error('invalid_grant'),
+        metadata: { googleError: 'invalid_grant' },
+      },
+    );
+  }
+
+  return failGoogleDriveRequest('Google Drive request failed');
+}
+
+function failGoogleDriveRequest(
+  message: string,
+): Result<never, ServiceError<EGoogleDriveServiceError>> {
+  return serviceFail<EGoogleDriveServiceError>(message, EGoogleDriveServiceError.RequestFailed, {
+    level: ServiceErrorLevel.Medium,
+  });
 }
 
 function gaxiosHeadersToRecord(headers: unknown): Record<string, string | undefined> {

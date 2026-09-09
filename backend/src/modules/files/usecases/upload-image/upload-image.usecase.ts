@@ -4,7 +4,8 @@ import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { EUploadImageUseCaseError, UploadImageErrors } from './upload-image.errors.js';
-import { GoogleDriveService } from '././../../../integrations/google/services/google-drive.service.js';
+import { EGoogleDriveServiceError } from '../../../integrations/google/services/google-drive-service.error.js';
+import { GoogleDriveService } from '../../../integrations/google/services/google-drive.service.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { config } from '../../../../config/index.js';
 import { Image } from '../../../../shared/domain/models/image.js';
@@ -46,31 +47,33 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
     }
     const { pathToFile } = pathToFileOrError.getValue();
 
-    try {
-      const fileId: string = await this.googleDriveService.uploadFile(user, pathToFile);
-
-      const imageOrError = Image.create({
-        imageId: params.imageId,
-        storageType: 'googleDrive',
-        fileId,
-        userId,
-      });
-
-      // TODO: handle potential error properly (as domain error)
-      await this.imageRepoService.create(imageOrError.getValue());
-
-      // Return response with imageId confirmation
-      const response = {
-        imageId: params.imageId,
-      };
-
-      return Result.ok<{ imageId: string }, never>(response);
-    } catch (error) {
-      // TODO: handele error properly (as service error)
-      // TICKET: https://brainas.atlassian.net/browse/BA-218
-      console.error('Error uploading file to Google Drive:', error);
-      return UploadImageErrors.UploadToGoogleDriveFailed();
+    const fileIdOrError = await this.googleDriveService.uploadFile(user, pathToFile);
+    if (fileIdOrError.isFailure) {
+      switch (fileIdOrError.error.code) {
+        case EGoogleDriveServiceError.InvalidGrant:
+          return UploadImageErrors.GoogleRefreshTokenInvalid(fileIdOrError.error);
+        default:
+          return UploadImageErrors.UploadToGoogleDriveFailed(fileIdOrError.error);
+      }
     }
+
+    const fileId = fileIdOrError.getValue();
+
+    const imageOrError = Image.create({
+      imageId: params.imageId,
+      storageType: 'googleDrive',
+      fileId,
+      userId,
+    });
+
+    // TODO: handle potential error properly (as domain error)
+    await this.imageRepoService.create(imageOrError.getValue());
+
+    const response = {
+      imageId: params.imageId,
+    };
+
+    return Result.ok<{ imageId: string }>(response);
   }
 
   private async prepareLocalFile(
@@ -100,7 +103,7 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
     // Resize the image to allowed maximum width
     await this.imageResizeService.resizeImageToMaxSize(pathToFile, MAX_IMAGE_STORE_SIZE);
 
-    return Result.ok<{ pathToFile: string; extension: string }, never>({
+    return Result.ok<{ pathToFile: string; extension: string }>({
       pathToFile,
       extension: fileType,
     });
