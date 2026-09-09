@@ -7,6 +7,7 @@ import { User } from '../models/user.model';
 import { AuthService } from '../services/api/auth.service';
 import { AppAction } from './app.actions';
 import { SlackService } from '../services/integrations/slack.service';
+import { GoogleOAuthConsentService } from '../services/integrations/google-oauth-consent.service';
 import { MbLoginScreenAction } from 'src/app/mobile-app/components/screens/mb-login-screen/mb-login-screen.actions';
 import { MbSyncScreenAction } from 'src/app/mobile-app/components/screens/mb-sync-screen/mb-sync-screen.actions';
 import { SlackAPIAction } from '../services/integrations/slack.api.actions';
@@ -15,6 +16,7 @@ import { UserAction } from './user.actions';
 
 interface IUserIntegrations {
   isAddedToSlack: boolean | undefined;
+  googleNeedsReconsent?: boolean;
 }
 export interface IUserStateModel {
   userData: User | null;
@@ -41,6 +43,7 @@ export enum EUserAuthType {
     authType: undefined,
     integrations: {
       isAddedToSlack: undefined,
+      googleNeedsReconsent: false,
     },
   },
 })
@@ -49,11 +52,12 @@ export class UserState {
   constructor(
     private _authService: AuthService,
     private _slackService: SlackService,
+    private readonly googleOAuthConsentService: GoogleOAuthConsentService,
   ) {}
 
   @Selector()
   static isLoggedIn(state: IUserStateModel): boolean {
-    return !!state.userData;
+    return Boolean(state.userData);
   }
 
   @Selector()
@@ -95,6 +99,11 @@ export class UserState {
     return state.authType;
   }
 
+  @Selector()
+  static needsGoogleReconsent(state: IUserStateModel): boolean {
+    return state.integrations?.googleNeedsReconsent === true;
+  }
+
   @Action(MbLoginScreenAction.LoginUser)
   async login(
     ctx: StateContext<IUserStateModel>,
@@ -118,7 +127,18 @@ export class UserState {
         action instanceof UserAction.UserAuthenticatedWithGoogle
           ? EUserAuthType.Google
           : EUserAuthType.Password,
+      integrations: {
+        ...ctx.getState().integrations,
+        googleNeedsReconsent:
+          action instanceof UserAction.UserAuthenticatedWithGoogle
+            ? false
+            : ctx.getState().integrations?.googleNeedsReconsent,
+      },
     });
+
+    if (action instanceof UserAction.UserAuthenticatedWithGoogle) {
+      this.googleOAuthConsentService.clearForceConsentAttempt();
+    }
 
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
@@ -128,7 +148,7 @@ export class UserState {
     this._authService
       .logout()
       .pipe(
-        catchError(err => {
+        catchError(_err => {
           ctx.dispatch(UserAction.LogoutFailed);
           return EMPTY;
         }),
@@ -145,6 +165,20 @@ export class UserState {
     if (UserState.isLoggedIn(ctx.getState())) {
       ctx.patchState({ authState: EUserAuthState.LocalAuthenticated });
     }
+  }
+
+  @Action(AppAction.GoogleRefreshTokenInvalid)
+  googleRefreshTokenInvalid(ctx: StateContext<IUserStateModel>): void {
+    if (!ctx.getState().integrations?.googleNeedsReconsent) {
+      ctx.patchState({
+        integrations: {
+          ...ctx.getState().integrations,
+          googleNeedsReconsent: true,
+        },
+      });
+      ctx.dispatch(new AppAction.ShowErrorInUI('Google access expired. Please reconnect Google.'));
+    }
+    this.requestNewGoogleConsent();
   }
 
   @Action(MbSyncScreenAction.Relogin)
@@ -189,7 +223,7 @@ export class UserState {
     ctx.dispatch(SlackAPIAction.RemovedFromSlack);
   }
 
-  private loginUser(ctx: StateContext<IUserStateModel>, email: string, password: string) {
+  private loginUser(ctx: StateContext<IUserStateModel>, email: string, password: string): void {
     this._authService
       .login({
         username: email,
@@ -212,5 +246,9 @@ export class UserState {
         }),
       )
       .subscribe();
+  }
+
+  private requestNewGoogleConsent(): void {
+    this.googleOAuthConsentService.openForceConsentScreen();
   }
 }

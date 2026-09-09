@@ -1,10 +1,15 @@
+import { EGetImageUseCaseError } from '@brainassistant/contracts';
 import path from 'path';
 import { createReadStream } from 'fs';
 import { Application } from 'express';
 import request from 'supertest';
 import sharp from 'sharp';
 import { googleDriveService } from '../../../src/modules/integrations/google/services/index.js';
+import { EGoogleDriveServiceError } from '../../../src/modules/integrations/google/services/google-drive-service.error.js';
 import { EImageRepoServiceError } from '../../../src/shared/repo/image-repo.service.js';
+import { Result } from '../../../src/shared/core/result.js';
+import { ServiceError } from '../../../src/shared/core/service-error.js';
+import { ServiceErrorLevel } from '../../../src/shared/core/service-error-level.enum.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
@@ -29,15 +34,17 @@ describe('Integration: GetImage (Controller -> UseCase -> Repo -> MongoDB)', () 
   beforeEach(async () => {
     await clearDatabase();
     jest.clearAllMocks();
-    drive.uploadFile.mockResolvedValue('google-drive-file-id');
-    drive.getImageById.mockImplementation(async () => ({
-      // eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed test fixture path
-      data: createReadStream(TEST_IMAGE_PATH),
-      headers: { 'content-type': 'image/jpeg' },
-      status: 200,
-      statusText: 'OK',
-      config: {},
-    }));
+    drive.uploadFile.mockResolvedValue(Result.ok('google-drive-file-id'));
+    drive.getImageById.mockImplementation(async () =>
+      Result.ok({
+        // eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed test fixture path
+        data: createReadStream(TEST_IMAGE_PATH),
+        headers: { 'content-type': 'image/jpeg' },
+        status: 200,
+        statusText: 'OK',
+        config: {},
+      }),
+    );
   });
 
   it('returns 401 without auth cookie', async () => {
@@ -85,6 +92,29 @@ describe('Integration: GetImage (Controller -> UseCase -> Repo -> MongoDB)', () 
     const meta = await sharp(res.body).metadata();
     expect(meta.width).toBe(requestedWidth);
     expect(original.width).toBeGreaterThan(requestedWidth);
+  });
+
+  it('returns 403 when Google rejects the refresh token', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const imageId = 'image-get-invalid-grant';
+    await uploadFixture(app, jwtCookie, imageId);
+
+    drive.getImageById.mockResolvedValue(
+      Result.fail(
+        new ServiceError(
+          'Google refresh token is invalid or revoked',
+          EGoogleDriveServiceError.InvalidGrant,
+          undefined,
+          ServiceErrorLevel.Medium,
+        ),
+      ),
+    );
+
+    const res = await authenticatedRequest(app, jwtCookie).get(`/api/files/image/${imageId}`);
+
+    expect(res.status).toBe(403);
+    expect(res.body.name).toBe(EGetImageUseCaseError.GoogleRefreshTokenInvalid);
+    expect(res.body).toHaveProperty('message');
   });
 });
 

@@ -31,6 +31,7 @@ export {
   ETaskType,
   EApiError,
   EUploadImageUseCaseError,
+  EGetImageUseCaseError,
   EGetChangesUseCaseError,
   ELoginUseCaseError,
   ESignUpUseCaseError,

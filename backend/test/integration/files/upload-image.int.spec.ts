@@ -1,14 +1,15 @@
-import { EApiError } from '@brainassistant/contracts';
+import { EApiError, EUploadImageUseCaseError } from '@brainassistant/contracts';
 import path from 'path';
 import { promises as fsp } from 'fs';
 import { Application } from 'express';
 import request from 'supertest';
 import { googleDriveService } from '../../../src/modules/integrations/google/services/index.js';
+import { EGoogleDriveServiceError } from '../../../src/modules/integrations/google/services/google-drive-service.error.js';
 import { MAX_IMAGE_UPLOAD_FILE_BYTES } from '../../../src/modules/files/config.js';
-import {
-  EUploadImageUseCaseError,
-  UploadImageErrors,
-} from '../../../src/modules/files/usecases/upload-image/upload-image.errors.js';
+import { UploadImageErrors } from '../../../src/modules/files/usecases/upload-image/upload-image.errors.js';
+import { Result } from '../../../src/shared/core/result.js';
+import { ServiceError } from '../../../src/shared/core/service-error.js';
+import { ServiceErrorLevel } from '../../../src/shared/core/service-error-level.enum.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
@@ -49,7 +50,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
     const imageId = 'image-123';
     const mockGoogleDriveFileId = 'google-drive-file-id-abc';
 
-    drive.uploadFile.mockResolvedValue(mockGoogleDriveFileId);
+    drive.uploadFile.mockResolvedValue(Result.ok(mockGoogleDriveFileId));
 
     const res = await authenticatedRequest(app, jwtCookie)
       .post('/api/files/image')
@@ -94,7 +95,16 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
     const { jwtCookie } = await seedTestUser();
     const imageId = 'image-error';
 
-    drive.uploadFile.mockRejectedValue(new Error('Google Drive API error'));
+    drive.uploadFile.mockResolvedValue(
+      Result.fail(
+        new ServiceError(
+          'Google Drive API error',
+          EGoogleDriveServiceError.RequestFailed,
+          undefined,
+          ServiceErrorLevel.Medium,
+        ),
+      ),
+    );
 
     const res = await authenticatedRequest(app, jwtCookie)
       .post('/api/files/image')
@@ -108,6 +118,33 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
 
     const persistedImage = await models.ImageModel.findOne({ imageId }).lean();
     expect(persistedImage).toBeNull();
+  });
+
+  it('returns 403 when Google rejects the refresh token', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const imageId = 'image-invalid-grant';
+
+    drive.uploadFile.mockResolvedValue(
+      Result.fail(
+        new ServiceError(
+          'Google refresh token is invalid or revoked',
+          EGoogleDriveServiceError.InvalidGrant,
+          undefined,
+          ServiceErrorLevel.Medium,
+        ),
+      ),
+    );
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/files/image')
+      .field('imageId', imageId)
+      .attach('file', TEST_IMAGE_PATH)
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(403);
+    expect(res.body.name).toBe(EUploadImageUseCaseError.GoogleRefreshTokenInvalid);
+    expect(res.body).toHaveProperty('message');
+    expect(await models.ImageModel.findOne({ imageId }).lean()).toBeNull();
   });
 
   it('rejects a file larger than MAX_IMAGE_UPLOAD_FILE_BYTES', async () => {
