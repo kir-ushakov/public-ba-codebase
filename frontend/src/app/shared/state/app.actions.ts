@@ -1,5 +1,3 @@
-import { Change } from '../models';
-
 export namespace AppAction {
   export class Opened {
     static readonly type = '[App] Opened';
@@ -31,6 +29,10 @@ export namespace AppAction {
 
   export class UserNotAuthenticated {
     static readonly type = '[App API] User Not Authenticated';
+  }
+
+  export class GoogleRefreshTokenInvalid {
+    static readonly type = '[App API] Google Refresh Token Invalid';
   }
   export class ShowErrorInUI {
     static readonly type = '[App] Show Error In UI';

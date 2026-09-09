@@ -15,6 +15,7 @@ import { UserAction } from './user.actions';
 
 interface IUserIntegrations {
   isAddedToSlack: boolean | undefined;
+  googleNeedsReconsent?: boolean;
 }
 export interface IUserStateModel {
   userData: User | null;
@@ -41,6 +42,7 @@ export enum EUserAuthType {
     authType: undefined,
     integrations: {
       isAddedToSlack: undefined,
+      googleNeedsReconsent: false,
     },
   },
 })
@@ -53,7 +55,7 @@ export class UserState {
 
   @Selector()
   static isLoggedIn(state: IUserStateModel): boolean {
-    return !!state.userData;
+    return Boolean(state.userData);
   }
 
   @Selector()
@@ -95,6 +97,11 @@ export class UserState {
     return state.authType;
   }
 
+  @Selector()
+  static needsGoogleReconsent(state: IUserStateModel): boolean {
+    return state.integrations?.googleNeedsReconsent === true;
+  }
+
   @Action(MbLoginScreenAction.LoginUser)
   async login(
     ctx: StateContext<IUserStateModel>,
@@ -118,6 +125,13 @@ export class UserState {
         action instanceof UserAction.UserAuthenticatedWithGoogle
           ? EUserAuthType.Google
           : EUserAuthType.Password,
+      integrations: {
+        ...ctx.getState().integrations,
+        googleNeedsReconsent:
+          action instanceof UserAction.UserAuthenticatedWithGoogle
+            ? false
+            : ctx.getState().integrations?.googleNeedsReconsent,
+      },
     });
 
     ctx.dispatch(AppAction.NavigateToHomeScreen);
@@ -128,7 +142,7 @@ export class UserState {
     this._authService
       .logout()
       .pipe(
-        catchError(err => {
+        catchError(_err => {
           ctx.dispatch(UserAction.LogoutFailed);
           return EMPTY;
         }),
@@ -145,6 +159,22 @@ export class UserState {
     if (UserState.isLoggedIn(ctx.getState())) {
       ctx.patchState({ authState: EUserAuthState.LocalAuthenticated });
     }
+  }
+
+  @Action(AppAction.GoogleRefreshTokenInvalid)
+  googleRefreshTokenInvalid(ctx: StateContext<IUserStateModel>): void {
+    if (ctx.getState().integrations?.googleNeedsReconsent) {
+      return;
+    }
+
+    ctx.patchState({
+      integrations: {
+        ...ctx.getState().integrations,
+        googleNeedsReconsent: true,
+      },
+    });
+    ctx.dispatch(new AppAction.ShowErrorInUI('Google access expired. Please reconnect Google.'));
+    this.requestNewGoogleConsent();
   }
 
   @Action(MbSyncScreenAction.Relogin)
@@ -189,7 +219,7 @@ export class UserState {
     ctx.dispatch(SlackAPIAction.RemovedFromSlack);
   }
 
-  private loginUser(ctx: StateContext<IUserStateModel>, email: string, password: string) {
+  private loginUser(ctx: StateContext<IUserStateModel>, email: string, password: string): void {
     this._authService
       .login({
         username: email,
@@ -213,4 +243,10 @@ export class UserState {
       )
       .subscribe();
   }
+
+  /**
+   * Next step: open GOOGLE_OAUTH_FORCE_CONSENT_URL so Google issues a new refresh token.
+   * Not implemented yet — this method is the single place that will do it.
+   */
+  private requestNewGoogleConsent(): void {}
 }
