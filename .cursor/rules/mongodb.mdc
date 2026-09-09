@@ -18,6 +18,7 @@ alwaysApply: false
 - Every query returning a collection needs an explicit bound: a `userId` filter, a time window, or `.limit()` / pagination. The sync queries scoped by `userId` + `modifiedAt` are the pattern to follow.
 - Never load documents in order to filter, sort, count or group them in JavaScript when MongoDB can do it in the query.
 - Use `.lean()` for read-only queries whose result goes straight into a mapper.
+- A collection read may drop a document that fails **domain** write-rules after `toDomain` (see `toDomainIfValid` on `TaskRepoService.getChanges`). That is not a substitute for putting `userId` / time bounds in the Mongo query itself.
 - Project only the fields you need when reading documents that may carry large payloads.
 - No N+1: never query inside a loop over documents — use `$in` or a single aggregation.
 - Modify many documents with `updateMany` or `bulkWrite`, and prefer atomic operators (`$set`, `$inc`, `findOneAndUpdate`) over read-modify-write sequences.

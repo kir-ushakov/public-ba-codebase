@@ -111,4 +111,30 @@ describe('Task', () => {
       expect(updateResult.error.code).toBe(ETaskError.TitleMissed);
     });
   });
+
+  describe('reconstitute', () => {
+    it('loads a persisted task that create() would reject', () => {
+      const createdAt = new Date('2024-01-01T00:00:00.000Z');
+      const modifiedAt = new Date('2024-01-02T00:00:00.000Z');
+
+      const task = Task.reconstitute(
+        {
+          ...baseTaskProps,
+          title: '',
+          createdAt,
+          modifiedAt,
+        },
+        new UniqueEntityID('legacy-task'),
+      );
+
+      expect(task.id.toString()).toBe('legacy-task');
+      expect(task.title).toBe('');
+      expect(task.createdAt).toEqual(createdAt);
+      expect(task.modifiedAt).toEqual(modifiedAt);
+
+      const invariants = task.checkWriteInvariants();
+      expect(invariants.isFailure).toBe(true);
+      expect(invariants.error.code).toBe(ETaskError.TitleMissed);
+    });
+  });
 });

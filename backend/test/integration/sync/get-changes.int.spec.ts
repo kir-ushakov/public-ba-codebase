@@ -1,7 +1,17 @@
 import { Application } from 'express';
 import request from 'supertest';
-import { EChangeAction, EChangedEntity, GetChangesContract } from '@brainassistant/contracts';
+import {
+  EChangeAction,
+  EChangedEntity,
+  ETaskStatus,
+  ETaskType,
+  GetChangesContract,
+} from '@brainassistant/contracts';
 import { EGetChangesUseCaseError } from '../../../src/modules/sync/usecases/get-changes/get-changes.errors.js';
+import { models } from '../../../src/shared/infra/database/mongodb/index.js';
+import { ServiceErrorLevel } from '../../../src/shared/core/service-error-level.enum.js';
+import { ETaskError } from '../../../src/shared/domain/models/task.js';
+import { ETaskRepoLoadError } from '../../../src/shared/repo/task-repo.service.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
@@ -89,6 +99,55 @@ describe('Integration: GetChanges (Controller -> UseCase -> Repo -> MongoDB)', (
         object: expect.objectContaining({ id: created.id }),
       }),
     ]);
+  });
+
+  it('skips a persisted task that fails write-time validation instead of 500', async () => {
+    const { userId, jwtCookie } = await seedTestUser();
+    const clientId = await allocateClientId(app, jwtCookie);
+    const validTask = await createTaskViaApi(app, jwtCookie, {
+      id: 'task-valid-alongside-legacy',
+      title: 'Still delivered with the legacy row',
+    });
+
+    await models.TaskModel.create({
+      _id: 'legacy-empty-title',
+      userId,
+      type: ETaskType.Basic,
+      title: '',
+      status: ETaskStatus.Todo,
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      modifiedAt: new Date('2024-01-02T00:00:00.000Z'),
+    });
+
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+    try {
+      const res = await fetchChanges(app, jwtCookie, clientId);
+      expect(res.status).toBe(200);
+
+      const body: GetChangesContract.Response = res.body;
+      expect(body.changes).toEqual([
+        expect.objectContaining({
+          entity: EChangedEntity.Task,
+          action: EChangeAction.Updated,
+          object: expect.objectContaining({ id: validTask.id, title: validTask.title }),
+        }),
+      ]);
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        `[SERVICE ERROR] ${ETaskRepoLoadError.PersistedTaskInvalid}: Persisted task failed write-time validation and was skipped`,
+        expect.objectContaining({
+          level: ServiceErrorLevel.Low,
+          metadata: {
+            taskId: 'legacy-empty-title',
+            userId,
+            domainCode: ETaskError.TitleMissed,
+          },
+        }),
+      );
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 });
 
