@@ -22,7 +22,7 @@ services:
       context: .
       dockerfile: ./backend/Dockerfile.prod
       args:
-        TSC_MAX_OLD_SPACE_MB: 1024
+        TSC_MAX_OLD_SPACE_MB: 4096
     environment:
       - PORT=3443
       - CRT_PATH=/usr/ssl/brainassistant.app.crt

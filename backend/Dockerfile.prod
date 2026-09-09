@@ -20,9 +20,8 @@ RUN npm ci --verbose
 
 COPY backend/ .
 
-# Default 1024 fits a 3GB VDS. Raise only when building on a bigger machine:
-#   docker compose ... build --build-arg TSC_MAX_OLD_SPACE_MB=4096 backend
-ARG TSC_MAX_OLD_SPACE_MB=1024
+# Image is built on a developer machine / CI, then pulled on the VDS.
+ARG TSC_MAX_OLD_SPACE_MB=4096
 RUN NODE_OPTIONS="--max-old-space-size=${TSC_MAX_OLD_SPACE_MB}" ./node_modules/.bin/tsc -p tsconfig.prod.json \
   && chown -R node:node /usr/src/app /usr/src/contracts
 
