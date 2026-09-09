@@ -2,7 +2,7 @@ version: '3'
 
 services:
   frontend:
-    image: kirushakov/braias:frontend
+    image: kiushakov/braias:frontend
     container_name: frontend
     build:
       context: .
@@ -21,7 +21,7 @@ services:
       - nginx
 
   backend:
-    image: kirushakov/braias:backend
+    image: kiushakov/braias:backend
     container_name: backend
     build:
       context: .
@@ -73,7 +73,7 @@ services:
     restart: on-failure
 
   db:
-    image: kirushakov/braias:db
+    image: kiushakov/braias:db
     build: ./db
     container_name: db
     restart: always

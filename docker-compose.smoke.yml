@@ -3,7 +3,7 @@
 
 services:
   db:
-    image: kirushakov/braias:db
+    image: kiushakov/braias:db
     build: ./db
     container_name: ba-smoke-db
     environment:
@@ -30,7 +30,7 @@ services:
       retries: 20
 
   backend:
-    image: kirushakov/braias:backend
+    image: kiushakov/braias:backend
     build:
       context: .
       dockerfile: ./backend/Dockerfile
