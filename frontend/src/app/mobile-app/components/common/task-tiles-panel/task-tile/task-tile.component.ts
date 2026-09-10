@@ -40,6 +40,19 @@ export class TaskTileComponent {
     this.calculateImageWidth();
   }
 
+  onImageError(event: Event): void {
+    this.isLoading.set(false);
+    if (!this.isRemoteImageEvent(event) || !this.task.imageId) {
+      return;
+    }
+    this.imageService.probeRemoteImage(this.task.imageId);
+  }
+
+  private isRemoteImageEvent(event: Event): boolean {
+    const image = event.target;
+    return image instanceof HTMLImageElement && !image.src.startsWith('blob:');
+  }
+
   private calculateImageWidth(): void {
     const width =
       this.spinnerComponent?.getNativeElement()?.offsetWidth || this.DEFAULT_IMAGE_WIDTH;
