@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM node:24
 
 WORKDIR /app
@@ -10,13 +11,13 @@ RUN apt-get update \
 # Copy contracts and build
 COPY contracts/ ./contracts/
 WORKDIR /app/contracts
-RUN npm install && npm run build
+RUN --mount=type=cache,id=npm,target=/root/.npm npm install && npm run build
 
 # Copy backend and install dependencies (including linked contracts)
 WORKDIR /app/backend
 COPY backend/ .
-RUN npm install --verbose
-RUN npm install -g nodemon
+RUN --mount=type=cache,id=npm,target=/root/.npm npm install --verbose
+RUN --mount=type=cache,id=npm,target=/root/.npm npm install -g nodemon
 
 RUN chown -R node:node /app
 
