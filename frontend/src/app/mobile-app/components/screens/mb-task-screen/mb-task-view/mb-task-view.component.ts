@@ -8,6 +8,7 @@ import { MbTaskScreenState } from '../mb-task-screen.state';
 import type { DefaultTask, Task } from 'src/app/shared/models/task.model';
 import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
+import { ImageService } from 'src/app/shared/services/application/image.service';
 
 @Component({
   selector: 'ba-mb-task-view',
@@ -24,6 +25,7 @@ export class MbTaskViewComponent implements OnInit {
   constructor(
     private store: Store,
     private destroyRef: DestroyRef,
+    private imageService: ImageService,
   ) {
     this.task$ = this.store.select(MbTaskScreenState.task);
   }
@@ -48,9 +50,13 @@ export class MbTaskViewComponent implements OnInit {
     }
   }
 
-  onImageError(imageId: string): void {
+  onImageError(event: Event, imageId: string): void {
     if (this.currentImageId === imageId) {
       this.isImageLoading.set(false);
+    }
+    const image = event.target;
+    if (image instanceof HTMLImageElement && !image.src.startsWith('blob:')) {
+      this.imageService.probeRemoteImage(imageId);
     }
   }
 }

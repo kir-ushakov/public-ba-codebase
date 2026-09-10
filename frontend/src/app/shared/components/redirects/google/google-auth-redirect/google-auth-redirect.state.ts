@@ -8,11 +8,8 @@ import { User } from 'src/app/shared/models';
 import { EMPTY, catchError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { EGoogleAuthUseCaseError } from '@brainassistant/contracts';
-import {
-  GOOGLE_FORCE_CONSENT_ATTEMPT_STORAGE_KEY,
-  GOOGLE_OAUTH_FORCE_CONSENT_URL,
-} from 'src/app/shared/constants/google-oauth.const';
-import { readApiErrorName } from 'src/app/shared/helpers/google-refresh-token-invalid.function';
+import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
+import { readApiErrorName } from 'src/app/shared/helpers/http-error-body.function';
 
 export interface IGoogleAuthRedirectScreenStateModel {
   isLogging: boolean;
@@ -32,7 +29,10 @@ const defaults: IGoogleAuthRedirectScreenStateModel = {
 })
 @Injectable()
 export class GoogleAuthRedirectScreenState {
-  constructor(private googleAPIService: GoogleAPIService) {}
+  constructor(
+    private googleAPIService: GoogleAPIService,
+    private readonly googleOAuthConsentService: GoogleOAuthConsentService,
+  ) {}
 
   @Selector()
   static isLogging(state: IGoogleAuthRedirectScreenStateModel): boolean {
@@ -56,7 +56,7 @@ export class GoogleAuthRedirectScreenState {
   ): Promise<void> {
     ctx.patchState({ ...defaults });
 
-    if (payload.code == null || payload.code === '') {
+    if (payload.code === undefined || payload.code === null || payload.code === '') {
       ctx.patchState({
         isLogging: false,
         errorOccurred: true,
@@ -80,7 +80,7 @@ export class GoogleAuthRedirectScreenState {
     ctx: StateContext<IGoogleAuthRedirectScreenStateModel>,
     user: User,
   ): void {
-    sessionStorage.removeItem(GOOGLE_FORCE_CONSENT_ATTEMPT_STORAGE_KEY);
+    this.googleOAuthConsentService.clearForceConsentAttempt();
     ctx.patchState({ isLogging: false });
     ctx.dispatch(new UserAction.UserAuthenticatedWithGoogle(user));
     ctx.dispatch(AppAction.NavigateToProfileScreen);
@@ -104,7 +104,7 @@ export class GoogleAuthRedirectScreenState {
     }
 
     if (errorCode === EGoogleAuthUseCaseError.AuthorizationFailed) {
-      sessionStorage.removeItem(GOOGLE_FORCE_CONSENT_ATTEMPT_STORAGE_KEY);
+      this.googleOAuthConsentService.clearForceConsentAttempt();
       ctx.patchState({
         errorMessage: 'Google code expired. Please try signing in again.',
       });
@@ -121,14 +121,10 @@ export class GoogleAuthRedirectScreenState {
    * We redirect once; flag avoids an endless loop if consent still yields no token.
    */
   private retryOnceWithForcedGoogleConsent(): void {
-    const alreadyRetried = sessionStorage.getItem(GOOGLE_FORCE_CONSENT_ATTEMPT_STORAGE_KEY) === '1';
-
-    if (!alreadyRetried) {
-      sessionStorage.setItem(GOOGLE_FORCE_CONSENT_ATTEMPT_STORAGE_KEY, '1');
-      window.location.href = GOOGLE_OAUTH_FORCE_CONSENT_URL;
+    if (this.googleOAuthConsentService.hasRecentForceConsentAttempt()) {
+      this.googleOAuthConsentService.clearForceConsentAttempt();
       return;
     }
-
-    sessionStorage.removeItem(GOOGLE_FORCE_CONSENT_ATTEMPT_STORAGE_KEY);
+    this.googleOAuthConsentService.openForceConsentScreen();
   }
 }

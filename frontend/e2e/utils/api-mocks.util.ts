@@ -1,6 +1,7 @@
 import { Page } from '@playwright/test';
 import {
   EApiError,
+  EUploadImageUseCaseError,
   type ApiErrorDto,
   type GetChangesContract,
   type SendChangeContract,
@@ -11,6 +12,8 @@ import {
 export type SetupApiMocksOptions = {
   /** POST /api/sync/task returns 500; the task stays in the client sync queue. */
   failTaskSync?: boolean;
+  /** POST /api/files/image returns 403 Google refresh token invalid. */
+  failGoogleRefreshToken?: boolean;
 };
 
 type ReleaseClientIdResponse = { clientId: string };
@@ -85,8 +88,34 @@ export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = 
     }
 
     if (url.includes('/api/files/image') && method === 'POST') {
+      if (options.failGoogleRefreshToken) {
+        const body: ApiErrorDto = {
+          name: EUploadImageUseCaseError.GoogleRefreshTokenInvalid,
+          message: 'Google refresh token is invalid or revoked',
+        };
+        await route.fulfill(json(403, body));
+        return;
+      }
       const body: UploadImageContract.Response = { imageId: 'mock-uploaded-image-id' };
       await route.fulfill(json(200, body));
+      return;
+    }
+
+    if (url.includes('/api/files/image') && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'image/jpeg',
+        body: Buffer.from([0xff, 0xd8, 0xff, 0xd9]),
+      });
+      return;
+    }
+
+    if (url.includes('/api/integrations/google/oauth-consent-screen')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/plain',
+        body: 'google-oauth-consent',
+      });
       return;
     }
 

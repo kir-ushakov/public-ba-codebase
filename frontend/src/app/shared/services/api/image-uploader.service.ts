@@ -16,15 +16,18 @@ export class ImageUploaderService {
     try {
       const extension = mime.getExtension(blob.type) || 'jpg';
       const filename = `${uuidv4()}.${extension}`;
-      
+
       // Build request according to UploadImageContract.Request
       const request: UploadImageContract.Request = {
         imageId,
         file: blob,
       };
-      
+
       return await firstValueFrom(
-        this.http.post<UploadImageContract.Response>(API_ENDPOINTS.FILES.IMAGE, this.mapRequestToFormData(request, filename)),
+        this.http.post<UploadImageContract.Response>(
+          API_ENDPOINTS.FILES.IMAGE,
+          this.mapRequestToFormData(request, filename),
+        ),
       );
     } catch (error) {
       console.error('Error uploading image:', error);

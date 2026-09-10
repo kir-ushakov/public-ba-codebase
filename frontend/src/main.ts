@@ -29,7 +29,6 @@ bootstrapApplication(AppComponent, {
       }),
     ),
     provideStates([AppState, UserState, SyncState, TasksState]),
-    provideHttpClient(),
     provideNoopAnimations(),
     provideRouter(mobileRoutes),
     importProvidersFrom(
