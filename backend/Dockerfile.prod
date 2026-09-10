@@ -10,12 +10,13 @@ ENV MONGOMS_DISABLE_POSTINSTALL=1
 
 COPY contracts/ ../contracts/
 WORKDIR /usr/src/contracts
-RUN --mount=type=cache,id=npm,target=/root/.npm npm ci
+RUN --mount=type=cache,id=npm,target=/root/.npm npm ci --ignore-scripts
 RUN npm run build
 
 WORKDIR /usr/src/app
 COPY backend/package*.json ./
-RUN --mount=type=cache,id=npm,target=/root/.npm npm ci
+RUN --mount=type=cache,id=npm,target=/root/.npm npm ci --ignore-scripts \
+  && npm rebuild sharp
 
 COPY backend/ .
 
