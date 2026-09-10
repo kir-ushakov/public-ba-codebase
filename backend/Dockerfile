@@ -18,8 +18,7 @@ WORKDIR /app/backend
 COPY backend/ .
 RUN --mount=type=cache,id=npm,target=/root/.npm \
   npm ci --ignore-scripts \
-  && npm rebuild sharp \
-  && npm install -g nodemon --ignore-scripts
+  && npm rebuild sharp
 
 RUN chown -R node:node /app
 
