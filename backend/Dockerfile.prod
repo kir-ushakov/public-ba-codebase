@@ -1,4 +1,31 @@
-FROM node:24
+# syntax=docker/dockerfile:1
+# Build compiles with the full tree (TypeScript + test/lint). Runtime copies only
+# production node_modules + dist. Same node:24 so native addons (sharp) match.
+FROM node:24 AS builder
+
+WORKDIR /usr/src/app
+
+# mongodb-memory-server is a devDependency; do not download its MongoDB binary.
+ENV MONGOMS_DISABLE_POSTINSTALL=1
+
+COPY contracts/ ../contracts/
+WORKDIR /usr/src/contracts
+RUN --mount=type=cache,id=npm,target=/root/.npm npm ci --ignore-scripts
+RUN npm run build
+
+WORKDIR /usr/src/app
+COPY backend/package*.json ./
+RUN --mount=type=cache,id=npm,target=/root/.npm npm ci --ignore-scripts \
+  && npm rebuild sharp
+
+COPY backend/ .
+
+ARG TSC_MAX_OLD_SPACE_MB=4096
+RUN NODE_OPTIONS="--max-old-space-size=${TSC_MAX_OLD_SPACE_MB}" ./node_modules/.bin/tsc -p tsconfig.prod.json \
+  && npm prune --omit=dev \
+  && rm -rf /usr/src/contracts/node_modules
+
+FROM node:24 AS runtime
 
 WORKDIR /usr/src/app
 
@@ -7,28 +34,18 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends libvips42 gosu \
   && rm -rf /var/lib/apt/lists/*
 
-# Copy contracts package first
-COPY contracts/ ../contracts/
-WORKDIR /usr/src/contracts
-RUN npm ci
-RUN npm run build
-
-# Build backend
-WORKDIR /usr/src/app
-COPY backend/package*.json ./
-RUN npm ci --verbose
-
-COPY backend/ .
-
-# Image is built on a developer machine / CI, then pulled on the VDS.
-ARG TSC_MAX_OLD_SPACE_MB=4096
-RUN NODE_OPTIONS="--max-old-space-size=${TSC_MAX_OLD_SPACE_MB}" ./node_modules/.bin/tsc -p tsconfig.prod.json \
-  && chown -R node:node /usr/src/app /usr/src/contracts
+# file:../contracts is a symlink into /usr/src/contracts — copy both trees.
+COPY --from=builder /usr/src/app/package.json ./
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/contracts/package.json /usr/src/contracts/package.json
+COPY --from=builder /usr/src/contracts/dist /usr/src/contracts/dist
 
 COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 # Strip CRLF if the file was saved on Windows (fixes: /usr/bin/env: 'sh\r': No such file)
 RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
-  && chmod +x /usr/local/bin/docker-entrypoint.sh
+  && chmod +x /usr/local/bin/docker-entrypoint.sh \
+  && chown -R node:node /usr/src/app /usr/src/contracts
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 # Image default is node (docker:S6471). production.yml sets user: "0" so the
