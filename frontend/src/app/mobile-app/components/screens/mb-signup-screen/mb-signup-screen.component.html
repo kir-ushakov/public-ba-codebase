@@ -13,11 +13,11 @@
             placeholder="First Name"
             formControlName="firstName"
           />
-          <mat-error *ngIf="form.get('email').invalid"> First Name required </mat-error>
+          <mat-error *ngIf="form.get('firstName')?.invalid"> First Name required </mat-error>
         </mat-form-field>
         <mat-form-field class="login-form__email" floatLabel="never">
           <input id="lastNameInput" matInput placeholder="Last Name" formControlName="lastName" />
-          <mat-error *ngIf="form.get('email').invalid"> Last Name required </mat-error>
+          <mat-error *ngIf="form.get('lastName')?.invalid"> Last Name required </mat-error>
         </mat-form-field>
       </div>
 
@@ -29,7 +29,7 @@
           formControlName="email"
           autocomplete="email"
         />
-        <mat-error *ngIf="form.get('email').invalid"> Please input correct email </mat-error>
+        <mat-error *ngIf="form.get('email')?.invalid"> Please input correct email </mat-error>
       </mat-form-field>
 
       <mat-form-field class="login-form__password" floatLabel="never">
@@ -41,7 +41,7 @@
           formControlName="password"
           autocomplete="off"
         />
-        <mat-error *ngIf="form.get('password').invalid">
+        <mat-error *ngIf="form.get('password')?.invalid">
           Please input password, not less than 8 symbols
         </mat-error>
       </mat-form-field>
@@ -58,11 +58,11 @@
   <div class="login-link-holder">
     <div class="login-link" id="login-link" (click)="onLoginLinkClick()">Login</div>
   </div>
-} @else {
+} @else if (signUpResult(); as result) {
   <div class="mb-signup__success-block">
-    Hi, {{ signUpResult().firstName }} {{ signUpResult().lastName }}!
+    Hi, {{ result.firstName }} {{ result.lastName }}!
     <br />
     The verification link was sent on <br />
-    {{ signUpResult().email }}
+    {{ result.email }}
   </div>
 }

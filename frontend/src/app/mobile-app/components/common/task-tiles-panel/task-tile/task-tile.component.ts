@@ -29,7 +29,7 @@ export class TaskTileComponent {
   DEFAULT_IMAGE_WIDTH = 50;
 
   isLoading = signal(true);
-  calculatedImageWidth = signal<number | null>(null);
+  calculatedImageWidth = signal<number | undefined>(undefined);
 
   constructor(
     private store: Store,
