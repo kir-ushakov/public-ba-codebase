@@ -6,11 +6,12 @@ import { MAX_IMAGE_UPLOAD_FILE_BYTES } from './config.js';
 import { BaseController } from '../../shared/infra/http/models/base-controller.js';
 import { asyncHandler } from '../../shared/core/async-handler.function.js';
 import { UploadImageErrors } from './usecases/upload-image/upload-image.errors.js';
+import { requiredEnv } from '../../config/index.js';
 
 const filesRouter: Router = Router();
 
 const uploader: multer.Multer = multer({
-  dest: process.env.FILES_UPLOAD_PATH + '/tmp/',
+  dest: `${requiredEnv('FILES_UPLOAD_PATH')}/tmp/`,
   limits: { fileSize: MAX_IMAGE_UPLOAD_FILE_BYTES },
 });
 

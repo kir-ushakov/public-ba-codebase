@@ -4,6 +4,7 @@ import { UserDto } from '../dto/user.dto.js';
 import { LoginResponseDTO } from '../usecases/login/login.dto.js';
 import { User } from '../../../shared/domain/models/user.js';
 import { UserMapper } from '../../../shared/mappers/user.mapper.js';
+import { requiredEnv } from '../../../config/index.js';
 
 export class LoginService {
   /** JWT and cookie max-age: sliding renewal extends from each successful authenticated request */
@@ -11,7 +12,7 @@ export class LoginService {
 
   public static setJwtCookie(res: Response, loginResponseDto: LoginResponseDTO): void {
     const expiresIn = LoginService.JWT_TTL_SECONDS;
-    const newToken = jwt.sign(loginResponseDto, process.env.JWT_SECRET, {
+    const newToken = jwt.sign(loginResponseDto, requiredEnv('JWT_SECRET'), {
       expiresIn,
     });
 

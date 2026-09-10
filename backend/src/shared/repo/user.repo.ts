@@ -4,7 +4,6 @@ import { UserEmail } from '../domain/values/user/user-email.js';
 import { UserDocument } from '../infra/database/mongodb/user.model.js';
 import { User, UserPersistent } from '../domain/models/user.js';
 import { UserMapper } from '../mappers/user.mapper.js';
-import { VerificationTokenDocument } from '../infra/database/mongodb/verification-token.model.js';
 import {
   IVerificationTokenProps,
   VerificationToken,
@@ -41,16 +40,16 @@ export class UserRepo {
     const UserModel = this._models.UserModel;
     // TODO: Do we need to convert string -> ObjectId ? or we can use string directly?
     userId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
-    const userDocument: UserDocument = await UserModel.findOne({ _id: userId });
+    const userDocument = await UserModel.findOne({ _id: userId });
     const found = !!userDocument;
     if (!found) throw new Error(`User with id ${String(userId)} not found`);
     const user: User = UserMapper.toDomain(userDocument);
     return user;
   }
 
-  public async getTokenByTokenId(tokenId: string): Promise<VerificationToken> {
+  public async getTokenByTokenId(tokenId: string): Promise<VerificationToken | null> {
     const VerificationTokenModel = this._models.VerificationTokenModel;
-    const tokenDocument: VerificationTokenDocument = await VerificationTokenModel.findOne({
+    const tokenDocument = await VerificationTokenModel.findOne({
       token: tokenId,
     });
 
@@ -75,25 +74,28 @@ export class UserRepo {
     const filter = { _id: userId };
     const update = { ...userPersistent };
 
-    const updatedUser: UserDocument = await UserModel.findOneAndUpdate(filter, update, {
+    const updatedUser = await UserModel.findOneAndUpdate(filter, update, {
       useFindAndModify: false,
     });
+    if (!updatedUser) {
+      throw new Error(`User with id ${user.id.toString()} not found`);
+    }
 
     return updatedUser;
   }
 
-  public async getUserByGoogleId(googleId: string): Promise<User> {
+  public async getUserByGoogleId(googleId: string): Promise<User | null> {
     const UserModel = this._models.UserModel;
     const filter = { googleId: googleId };
-    const userDocument: UserDocument = await UserModel.findOne(filter);
+    const userDocument = await UserModel.findOne(filter);
     if (!userDocument) return null;
     return UserMapper.toDomain(userDocument);
   }
 
-  public async getUserByUsername(username: string): Promise<UserDocument> {
+  public async getUserByUsername(username: string): Promise<UserDocument | null> {
     const UserModel = this._models.UserModel;
     const filter = { username: username };
-    const user: UserDocument = await UserModel.findOne(filter);
+    const user = await UserModel.findOne(filter);
     return user;
   }
 

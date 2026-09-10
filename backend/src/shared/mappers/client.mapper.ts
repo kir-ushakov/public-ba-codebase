@@ -3,7 +3,7 @@ import { IClientPersistent } from '../infra/database/mongodb/client.model.js';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 
 export class ClientMapper {
-  public static toDomain(raw: IClientPersistent): Client {
+  public static toDomain(raw: IClientPersistent): Client | null {
     const clientOrError = Client.create(
       {
         userId: raw.userId,

@@ -34,16 +34,13 @@ export class SlackOAuthAccessRepo {
 
   public async getSlackOAuthAccessByUserId(userId: string): Promise<SlackOAuthAccess | null> {
     const SlackOAuthAccessModel = this._models.SlackOAuthAccessModel;
-    const slackOAuthAccessDocument: ISlackOAuthAccessDocument = await SlackOAuthAccessModel.findOne(
-      { userId },
-    );
+    const slackOAuthAccessDocument = await SlackOAuthAccessModel.findOne({ userId });
 
     const found = !!slackOAuthAccessDocument;
     if (!found) return null;
 
-    const slackOAuthAccess: SlackOAuthAccess = SlackOAuthAccessMapper.toDomain(
-      slackOAuthAccessDocument,
-    ) as SlackOAuthAccess;
+    const slackOAuthAccess = SlackOAuthAccessMapper.toDomain(slackOAuthAccessDocument);
+    if (!slackOAuthAccess) return null;
 
     return slackOAuthAccess;
   }

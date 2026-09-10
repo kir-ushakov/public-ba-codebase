@@ -15,7 +15,7 @@ import {
   imports: [CommonModule],
 })
 export class MbTaskBottomPanelComponent {
-  @Input() enabled: boolean;
+  @Input() enabled!: boolean;
 
   mode: Signal<ETaskViewMode> = this.store.selectSignal(MbTaskScreenState.mode);
 

@@ -24,14 +24,17 @@ export class ClientRepo {
   public async find(userId: string, clientId: string): Promise<Client> {
     const clientModel = this._models.ClientModel;
 
-    const clientDocument: ClientDocument = await clientModel.findOne({
+    const clientDocument = await clientModel.findOne({
       userId: userId,
       _id: clientId,
     });
     const found = !!clientDocument;
     if (!found) throw new Error(`Client not found for userId=${userId} and clientId=${clientId}`);
 
-    const client: Client = ClientMapper.toDomain(clientDocument);
+    const client: Client | null = ClientMapper.toDomain(clientDocument);
+    if (!client) {
+      throw new Error(`Client not found for userId=${userId} and clientId=${clientId}`);
+    }
     return client;
   }
 
@@ -44,9 +47,12 @@ export class ClientRepo {
     const filter = { _id: clientId };
     const update = { ...clientPersistent };
 
-    const updatedClient: ClientDocument = await clientModel.findOneAndUpdate(filter, update, {
+    const updatedClient = await clientModel.findOneAndUpdate(filter, update, {
       useFindAndModify: false,
     });
+    if (!updatedClient) {
+      throw new Error(`Client with id ${clientId} not found`);
+    }
 
     return updatedClient;
   }

@@ -17,10 +17,14 @@ import { readApiErrorName } from 'src/app/shared/helpers/google-refresh-token-in
 export interface IGoogleAuthRedirectScreenStateModel {
   isLogging: boolean;
   errorOccurred: boolean;
-  errorMessage: string;
+  errorMessage: string | null;
 }
 
-const defaults = { isLogging: true, errorOccurred: false, errorMessage: null };
+const defaults: IGoogleAuthRedirectScreenStateModel = {
+  isLogging: true,
+  errorOccurred: false,
+  errorMessage: null,
+};
 
 @State<IGoogleAuthRedirectScreenStateModel>({
   name: 'googleAuthRedirectScreenState',
@@ -41,7 +45,7 @@ export class GoogleAuthRedirectScreenState {
   }
 
   @Selector()
-  static errorMessage(state: IGoogleAuthRedirectScreenStateModel): string {
+  static errorMessage(state: IGoogleAuthRedirectScreenStateModel): string | null {
     return state.errorMessage;
   }
 

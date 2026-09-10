@@ -37,7 +37,7 @@ export class UpdateTaskController extends BaseController {
         });
       }
     } catch (err) {
-      this.fail(res, err.toString());
+      this.fail(res, err);
     }
   }
 }

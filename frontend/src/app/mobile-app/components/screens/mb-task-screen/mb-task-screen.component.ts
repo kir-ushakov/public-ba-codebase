@@ -35,7 +35,7 @@ import { MbTaskBottomPanelComponent } from 'src/app/mobile-app/components/screen
   ],
 })
 export class MbTaskScreenComponent implements OnInit, OnDestroy {
-  @ViewChild('menuDrawer') menuDrawer: MatDrawer;
+  @ViewChild('menuDrawer') menuDrawer!: MatDrawer;
   @ViewChild('titleInput') set titleInput(titleInputElRef: ElementRef) {
     if (titleInputElRef) {
       const titleInput: HTMLInputElement = titleInputElRef.nativeElement;

@@ -53,9 +53,7 @@ describe('TasksState', () => {
 
   it('creates a task optimistically and filters allTasks by userId', async () => {
     await firstValueFrom(
-      store.dispatch(
-        new TasksAction.CreateTask({ title: 'Fresh task title' } as Task, userId),
-      ),
+      store.dispatch(new TasksAction.CreateTask({ title: 'Fresh task title' } as Task, userId)),
     );
 
     const all = store.selectSnapshot(TasksState.allTasks);
@@ -65,7 +63,7 @@ describe('TasksState', () => {
       userId,
       status: ETaskStatus.Todo,
     });
-    expect(all[0].id).toBeTruthy();
+    expect(all[0]?.id).toBeTruthy();
   });
 
   it('updates a task title in place', async () => {
@@ -78,7 +76,7 @@ describe('TasksState', () => {
       ),
     );
 
-    expect(store.selectSnapshot(TasksState.allTasks)[0].title).toBe('Renamed task title');
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.title).toBe('Renamed task title');
   });
 
   it('removes a task on local delete', async () => {
@@ -116,9 +114,9 @@ describe('TasksState', () => {
       inserted.id,
       existing.id,
     ]);
-    expect(store.selectSnapshot(s => s.tasks.entities.find(t => t.id === existing.id)?.title)).toBe(
-      'Title from server',
-    );
+    expect(
+      store.selectSnapshot(s => s.tasks.entities.find((t: Task) => t.id === existing.id)?.title),
+    ).toBe('Title from server');
 
     await firstValueFrom(
       store.dispatch(

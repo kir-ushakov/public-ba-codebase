@@ -14,6 +14,10 @@ export class LoginController extends BaseController {
   }
 
   protected async executeImpl(req: Request, res: Response, next?: NextFunction): Promise<void> {
+    if (!next) {
+      this.fail(res, 'Express next() is required');
+      return;
+    }
     try {
       const result = await this.loginUsecase.execute({
         context: { req, res, next },
@@ -28,7 +32,7 @@ export class LoginController extends BaseController {
         });
       }
     } catch (err) {
-      this.fail(res, err.toString());
+      this.fail(res, err);
     }
   }
 }

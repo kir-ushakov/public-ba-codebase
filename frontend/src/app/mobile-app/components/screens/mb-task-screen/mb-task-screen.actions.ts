@@ -8,7 +8,7 @@ export namespace MbTaskScreenAction {
 
     constructor(
       public mode: ETaskViewMode,
-      public taskId: string,
+      public taskId: string | null,
     ) {}
   }
   export class ApplyButtonPressed {

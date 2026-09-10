@@ -13,10 +13,9 @@ import { SyncAction } from './sync.action';
 import { ImageService } from '../services/application/image.service';
 import { UserAction } from './user.actions';
 
-
 export interface SyncStateModel {
-  clientId: string;
-  lastTime: Date;
+  clientId: string | null;
+  lastTime: Date | null;
   changes: Change[];
 }
 
@@ -67,7 +66,7 @@ export class SyncState {
 
   @Action(AppAction.Opened)
   updateSyncTimer(ctx: StateContext<SyncStateModel>): void {
-    clearInterval(this.intervalId);
+    clearInterval(this.intervalId ?? undefined);
     this.intervalId = setInterval(() => {
       ctx.dispatch(new SyncAction.Synchronize());
     }, this.SYNC_PERIOD);
@@ -76,7 +75,7 @@ export class SyncState {
   @Action(UserAction.LoggedOut)
   @Action(AppAction.UserNotAuthenticated)
   clearTimer(): void {
-    clearInterval(this.intervalId);
+    clearInterval(this.intervalId ?? undefined);
   }
 
   @Action(SyncAction.Synchronize)
@@ -88,9 +87,9 @@ export class SyncState {
     try {
       await this.fetchServerChanges(ctx);
       await this.syncPendingChanges(ctx);
-  
+
       ctx.patchState({ lastTime: new Date() });
-      
+
       await this.imageService.uploadImages();
     } catch (err) {
       // TODO: Don't rely only on HTTP status code - check error name from backend response
@@ -104,22 +103,24 @@ export class SyncState {
   }
 
   private async fetchServerChanges(ctx: StateContext<SyncStateModel>): Promise<void> {
-    const changes = await lastValueFrom(
-      this.serverChangesService.fetch(ctx.getState().clientId)
-    );
+    const clientId = ctx.getState().clientId;
+    if (!clientId) {
+      return;
+    }
+    const changes = await lastValueFrom(this.serverChangesService.fetch(clientId));
     await ctx.dispatch(new SyncAction.ServerChangesLoaded(changes));
   }
 
   private async syncPendingChanges(ctx: StateContext<SyncStateModel>): Promise<void> {
     const changes = ctx.getState().changes;
-    
+
     for (const change of changes) {
       try {
         await lastValueFrom(this.clientChangesService.send(change));
         await ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
       } catch (error) {
         console.error('Sync Pending Change Error:', change, error);
-        
+
         // TODO: Don't rely only on HTTP status code - check error name from backend response
         // TICKET: https://brainas.atlassian.net/browse/BA-258
         if (error instanceof HttpErrorResponse && error.status === 404) {
@@ -155,14 +156,20 @@ export class SyncState {
   }
 
   private handleClientIdNotFoundError(ctx: StateContext<SyncStateModel>): void {
-    ctx.patchState({ 
+    ctx.patchState({
       clientId: null,
-      lastTime: null 
+      lastTime: null,
     });
     ctx.dispatch(new SyncAction.Synchronize());
   }
 
-  private async handleEntityNotFoundError(ctx: StateContext<SyncStateModel>, change: Change): Promise<void> {
+  private async handleEntityNotFoundError(
+    ctx: StateContext<SyncStateModel>,
+    change: Change,
+  ): Promise<void> {
+    if (!change.object) {
+      throw new Error('Cannot handle entity-not-found without change.object');
+    }
     // Entity not found on server - create local delete change to sync state with server
     const deleteChange: Change = {
       entity: change.entity,

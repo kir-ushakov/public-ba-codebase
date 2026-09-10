@@ -50,18 +50,18 @@ export class User extends AggregateRoot<UserProps> {
   }
 
   get verified(): boolean {
-    return this.props.verified;
+    return this.props.verified ?? false;
   }
 
-  get googleId(): string {
+  get googleId(): string | undefined {
     return this.props.googleId;
   }
 
-  get googleRefreshToken(): string {
+  get googleRefreshToken(): string | undefined {
     return this.props.googleRefreshToken;
   }
 
-  get googleAccessToken(): string {
+  get googleAccessToken(): string | undefined {
     return this.props.googleAccessToken;
   }
 
@@ -76,14 +76,8 @@ export class User extends AggregateRoot<UserProps> {
 
     const isNewUser = !!!id;
 
-    const defaultProps: UserProps = {
-      username: null,
-      firstName: null,
-      lastName: null,
+    const defaultProps: Partial<UserProps> = {
       verified: false,
-      googleId: null,
-      googleAccessToken: null,
-      googleRefreshToken: null,
     };
 
     props = { ...defaultProps, ...props };

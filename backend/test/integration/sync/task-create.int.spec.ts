@@ -69,6 +69,9 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
 
     const persisted = await models.TaskModel.findById(dto.id).lean();
     expect(persisted).not.toBeNull();
+    if (!persisted) {
+      throw new Error('expected persisted task');
+    }
     expect(persisted.title).toBe(dto.title);
     expect(persisted.imageId).toBe(dto.imageId);
     expect(String(persisted.userId)).toBe(userId);

@@ -1,5 +1,6 @@
 import { IMailgunClient } from 'mailgun.js/Interfaces';
 import { IMailAdapter } from '../mail-adapter.interface.js';
+import { requiredEnv } from '../../../../../config/index.js';
 
 export class MailgunAdapter implements IMailAdapter {
   private provider: IMailgunClient;
@@ -11,7 +12,7 @@ export class MailgunAdapter implements IMailAdapter {
   public async sendEmail(to: string, from: string, subject: string, html: string): Promise<void> {
     try {
       // 👇 Create email with MailGun API (provider is  MailgunClient)
-      const result = await this.provider.messages.create(process.env.EMAIL_DOMAIN, {
+      const result = await this.provider.messages.create(requiredEnv('EMAIL_DOMAIN'), {
         from: from,
         to: [to],
         subject: subject,

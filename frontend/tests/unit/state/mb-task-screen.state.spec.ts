@@ -83,8 +83,9 @@ describe('MbTaskScreenState', () => {
       .find(t => t.id !== existingWithPhoto.id);
 
     expect(imageService.saveImage).not.toHaveBeenCalled();
+    expect(created).toBeDefined();
     expect(created).toMatchObject({ title: 'Fresh task title', userId });
-    expect(created.imageId).toBeUndefined();
+    expect(created?.imageId).toBeUndefined();
   });
 
   it('still saves a photo taken during the current create session', async () => {
@@ -104,7 +105,7 @@ describe('MbTaskScreenState', () => {
       .find(t => t.id !== existingWithPhoto.id);
 
     expect(imageService.saveImage).toHaveBeenCalledWith('blob:current-session-photo');
-    expect(created.imageId).toBe('new-image-id');
+    expect(created?.imageId).toBe('new-image-id');
   });
 
   it('loads the selected task when opening view mode', async () => {

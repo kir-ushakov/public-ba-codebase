@@ -3,6 +3,7 @@ import { Application } from 'express';
 import request, { Test } from 'supertest';
 import { LoginService } from '../../../src/modules/auth/services/login.service.js';
 import UserModel from '../../../src/shared/infra/database/mongodb/user.model.js';
+import { requiredEnv } from '../../../src/config/index.js';
 
 export type SeedTestUserOptions = {
   email?: string;
@@ -49,7 +50,7 @@ export async function seedTestUser(options: SeedTestUserOptions = {}): Promise<S
         userId,
       },
     },
-    process.env.JWT_SECRET,
+    requiredEnv('JWT_SECRET'),
     { expiresIn: LoginService.JWT_TTL_SECONDS },
   );
 

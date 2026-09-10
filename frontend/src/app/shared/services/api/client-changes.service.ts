@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Change } from 'src/app/shared/models/change.model';
 import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
-import { ChangeableObjectDTO, ChangeDTO, EChangeAction, EChangedEntity, SendChangeContract } from '@brainassistant/contracts';
+import {
+  ChangeableObjectDTO,
+  ChangeDTO,
+  EChangeAction,
+  EChangedEntity,
+  SendChangeContract,
+} from '@brainassistant/contracts';
 import { ChangeMapper } from '../../mappers/change.mapper';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -24,7 +30,7 @@ export class ClientChangesService {
   public send(change: Change): Observable<SendChangeContract.Response> {
     try {
       const path = this.getPath(change);
-      
+
       switch (change.action) {
         case EChangeAction.Created:
         case EChangeAction.Updated:
@@ -33,11 +39,11 @@ export class ClientChangesService {
           const request: SendChangeContract.Request = {
             changeableObjectDto: changeDto.object as ChangeableObjectDTO,
           };
-          
+
           return change.action === EChangeAction.Created
             ? this.http.post<SendChangeContract.Response>(path, request)
             : this.http.patch<SendChangeContract.Response>(path, request);
-            
+
         case EChangeAction.Deleted:
           return this.http.delete<SendChangeContract.Response>(path);
       }
@@ -49,6 +55,9 @@ export class ClientChangesService {
 
   private getPath(change: Change): string {
     if (change.action === EChangeAction.Deleted) {
+      if (!change.object) {
+        throw new Error('Cannot build delete path without change.object');
+      }
       return (
         ClientChangesService.SYNC_REQUESTS_MAP[change.entity].endpoint + '/' + change.object.id
       );

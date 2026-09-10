@@ -4,7 +4,7 @@ import { Result } from '../../core/result.js';
 
 export interface IClientProps {
   userId: string;
-  syncTime: Date;
+  syncTime: Date | null;
 }
 
 export class Client extends AggregateRoot<IClientProps> {
@@ -16,7 +16,7 @@ export class Client extends AggregateRoot<IClientProps> {
     return this.props.userId;
   }
 
-  get syncTime(): Date {
+  get syncTime(): Date | null {
     return this.props.syncTime;
   }
 

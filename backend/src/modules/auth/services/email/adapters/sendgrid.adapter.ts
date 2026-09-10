@@ -21,7 +21,7 @@ export class SendgridMailAdapter implements IMailAdapter {
     } catch (error) {
       // TODO: log error here
       const response = (error as { response?: { body?: unknown } }).response;
-      if (response.body !== undefined) {
+      if (response?.body !== undefined) {
         console.error(response.body);
       }
     }

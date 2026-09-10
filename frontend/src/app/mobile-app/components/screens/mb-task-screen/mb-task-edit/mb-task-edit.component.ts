@@ -33,11 +33,11 @@ import { VoiceInputTriggerComponent } from 'src/app/shared/features/voice-input/
 })
 export class MbTaskEditComponent {
   formValidStatus = output<boolean>();
-  imageUri$: Observable<string> = inject(Store).select(MbTaskScreenState.imageUri);
+  imageUri$: Observable<string | null> = inject(Store).select(MbTaskScreenState.imageUri);
   voiceToTextConverting$: Observable<boolean> = inject(Store).select(
     VoiceInputState.voiceToTextConverting,
   );
-  form: FormGroup<FormControlsOf<ITaskEditFormData>>;
+  form!: FormGroup<FormControlsOf<ITaskEditFormData>>;
 
   MbTaskScreenState = MbTaskScreenState;
 
@@ -61,7 +61,7 @@ export class MbTaskEditComponent {
   }
 
   onVoiceRecordingStopped(): void {
-    this.form.controls.title.setValue('');
+    this.form.controls.title?.setValue('');
   }
 
   private initSubscriptions(): void {
@@ -95,12 +95,15 @@ export class MbTaskEditComponent {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((payload: { text: string }) => {
-        this.form.controls.title.setValue(payload.text);
+        this.form.controls.title?.setValue(payload.text);
       });
   }
 
   private updateTitleValidation(isRequired: boolean): void {
     const titleControl = this.form.get('title');
+    if (!titleControl) {
+      return;
+    }
 
     isRequired
       ? titleControl.setValidators(this.requiredTitleValidators)

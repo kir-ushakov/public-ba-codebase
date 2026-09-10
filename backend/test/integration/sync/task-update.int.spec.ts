@@ -75,6 +75,9 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       type: created.type,
       status: created.status,
     });
+    if (!persisted) {
+      throw new Error('expected persisted task');
+    }
     expect(new Date(persisted.createdAt).toISOString()).toBe(created.createdAt);
   });
 
@@ -120,6 +123,9 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(res.body).toHaveProperty('message');
 
     const persisted = await models.TaskModel.findById(created.id).lean();
+    if (!persisted) {
+      throw new Error('expected persisted task');
+    }
     expect(persisted.title).toBe('Valid task title');
   });
 });

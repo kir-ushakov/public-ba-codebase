@@ -2,7 +2,6 @@ import { WebClient } from '@slack/web-api';
 import { Result } from '../../../../../shared/core/result.js';
 import { UseCase } from '../../../../../shared/core/UseCase.js';
 import { SlackOAuthAccessRepo } from '../../../../../shared/repo/slack-oauth-access.repo.js';
-import { SlackOAuthAccess } from '../../../../../shared/domain/models/slack-oauth-access.js';
 import { UseCaseError } from '../../../../../shared/core/use-case-error.js';
 import { ERemoveFromSlackUseCaseError, RemoveFromSlackErrors } from './remove-from-slack.errors.js';
 
@@ -26,8 +25,7 @@ export class RemoveFromSlackUsecase
   }
   public async execute(req: RemoveFromSlackRequest): Promise<RemoveFromSlackResponse> {
     const userId = req.userId;
-    const slackOAuthAccess: SlackOAuthAccess =
-      await this._slackOAuthAccessRepo.getSlackOAuthAccessByUserId(userId);
+    const slackOAuthAccess = await this._slackOAuthAccessRepo.getSlackOAuthAccessByUserId(userId);
 
     if (!slackOAuthAccess) {
       return RemoveFromSlackErrors.SlackOAuthAccessNotFound();

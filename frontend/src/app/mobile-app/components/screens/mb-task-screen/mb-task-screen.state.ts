@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import type { StateContext } from '@ngxs/store';
 import { State, Action, Selector, Store } from '@ngxs/store';
-import type { Task } from 'src/app/shared/models/task.model';
+import type { DefaultTask, Task } from 'src/app/shared/models/task.model';
 import { ETaskStatus, defaultTask } from 'src/app/shared/models/task.model';
 import { MbTaskScreenAction } from './mb-task-screen.actions';
 import { TasksState } from 'src/app/shared/state/tasks.state';
@@ -21,7 +21,7 @@ export enum ETaskViewMode {
 
 export interface IMbTaskScreenStateModel {
   mode: ETaskViewMode;
-  taskData: Task;
+  taskData: Task | DefaultTask;
   taskViewForm: {
     formData: ITaskEditFormData;
     status: boolean;
@@ -30,7 +30,7 @@ export interface IMbTaskScreenStateModel {
   imageUrl: string | null;
 }
 
-const defaults = {
+const defaults: IMbTaskScreenStateModel = {
   mode: ETaskViewMode.Create,
   taskViewForm: {
     formData: {
@@ -59,7 +59,7 @@ export class MbTaskScreenState {
   }
 
   @Selector()
-  static task(state: IMbTaskScreenStateModel): Task {
+  static task(state: IMbTaskScreenStateModel): Task | DefaultTask {
     return state.taskData;
   }
 
@@ -77,7 +77,7 @@ export class MbTaskScreenState {
   }
 
   @Selector()
-  static imageUri(state: IMbTaskScreenStateModel): string {
+  static imageUri(state: IMbTaskScreenStateModel): string | null {
     return state.imageUrl;
   }
 
@@ -92,7 +92,10 @@ export class MbTaskScreenState {
   }
 
   @Action(MbTaskScreenAction.Opened)
-  opened(ctx: StateContext<IMbTaskScreenStateModel>, { mode, taskId }): void {
+  opened(
+    ctx: StateContext<IMbTaskScreenStateModel>,
+    { mode, taskId }: MbTaskScreenAction.Opened,
+  ): void {
     ctx.dispatch(new VoiceInputAction.Reset());
     ctx.setState({
       ...defaults,
@@ -124,14 +127,16 @@ export class MbTaskScreenState {
 
   private async handleCreateTask(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
     const { taskData, imageUrl } = ctx.getState();
-    const userId: string = this.store.selectSnapshot(UserState.userId);
-
-    let finalTaskData: Task = { ...taskData, imageId: undefined };
-
-    if (imageUrl) {
-      const imageId = await this.imageService.saveImage(imageUrl);
-      finalTaskData = { ...finalTaskData, imageId };
+    const userId = this.store.selectSnapshot(UserState.userId);
+    if (userId == null) {
+      throw new Error('Cannot create a task without a user id');
     }
+
+    let imageId: string | undefined;
+    if (imageUrl) {
+      imageId = await this.imageService.saveImage(imageUrl);
+    }
+    const finalTaskData = { ...taskData, imageId };
 
     ctx.patchState({ taskData: finalTaskData });
     ctx.dispatch(new TasksAction.CreateTask(finalTaskData, userId));
@@ -140,6 +145,9 @@ export class MbTaskScreenState {
 
   private handleUpdateTask(ctx: StateContext<IMbTaskScreenStateModel>): void {
     const taskData = ctx.getState().taskData;
+    if (taskData.id == null) {
+      return;
+    }
 
     ctx.dispatch(
       new TasksAction.UpdateTask({
@@ -178,7 +186,11 @@ export class MbTaskScreenState {
 
   @Action(MbTaskScreenAction.DeleteTaskOptionSelected)
   deleteTask(ctx: StateContext<IMbTaskScreenStateModel>): void {
-    ctx.dispatch(new TasksAction.DeleteTask(ctx.getState().taskData.id));
+    const taskId = ctx.getState().taskData.id;
+    if (taskId == null) {
+      return;
+    }
+    ctx.dispatch(new TasksAction.DeleteTask(taskId));
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
 
@@ -232,8 +244,12 @@ export class MbTaskScreenState {
     ctx: StateContext<IMbTaskScreenStateModel>,
     updatedTaskData: Partial<Task>,
   ): void {
+    const taskId = ctx.getState().taskData.id;
+    if (taskId == null) {
+      return;
+    }
     ctx.dispatch([
-      new TasksAction.UpdateTask({ taskId: ctx.getState().taskData.id, changes: updatedTaskData }),
+      new TasksAction.UpdateTask({ taskId, changes: updatedTaskData }),
       MbTaskScreenAction.Close,
     ]);
   }

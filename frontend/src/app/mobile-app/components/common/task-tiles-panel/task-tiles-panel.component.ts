@@ -18,7 +18,10 @@ export class TaskTilesPanelComponent {
         tasks: [],
       };
       for (let i = k; i < tasks.length; i += this.noOfColumns) {
-        column.tasks.push(tasks[i]);
+        const task = tasks[i];
+        if (task !== undefined) {
+          column.tasks.push(task);
+        }
       }
       this.columns = [...this.columns, column];
     }

@@ -1,7 +1,6 @@
 import { Result } from '../../../../shared/core/result.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { EUserError, User } from '../../../../shared/domain/models/user.js';
-import { VerificationToken } from '../../../../shared/domain/values/user/verification-token.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { VerifyEmailResponseDTO } from './verify-email.dto.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
@@ -24,9 +23,9 @@ export class VerifyEmailUseCase implements UseCase<VerifyEmailParams, Promise<Us
   public async execute(params: VerifyEmailParams): Promise<UseCaseResult> {
     const { tokenId } = params;
 
-    const token: VerificationToken = await this.userRepo.getTokenByTokenId(tokenId);
+    const token = await this.userRepo.getTokenByTokenId(tokenId);
     if (!token) {
-      // TODO: Potentially we can handle case if token not found (throw usecase error)
+      throw new Error('Verification token not found');
     }
     // TODO: verify that token not expired (throw usecase error)
 

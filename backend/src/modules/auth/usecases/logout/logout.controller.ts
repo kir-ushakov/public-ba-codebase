@@ -17,7 +17,7 @@ export class LogoutController extends BaseController {
       }
       this.ok(res);
     } catch (err) {
-      this.fail(res, err.toString());
+      this.fail(res, err);
     }
     return Promise.resolve();
   }

@@ -34,6 +34,10 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
+      - name: Typecheck
+        working-directory: ./frontend
+        run: npm run typecheck
+
       - name: Run knip
         working-directory: ./frontend
         run: npm run knip

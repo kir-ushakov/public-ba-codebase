@@ -23,9 +23,9 @@ import { PwaVersionUpdateService } from './shared/services/pwa/pwa-version-updat
   imports: [RouterOutlet],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  onlineEvent: Observable<Event>;
-  offlineEvent: Observable<Event>;
-  online$: Observable<boolean>;
+  onlineEvent!: Observable<Event>;
+  offlineEvent!: Observable<Event>;
+  online$!: Observable<boolean>;
   private pwaInstallDialogOpen = false;
   private appUrlOpen?: PluginListenerHandle;
 
@@ -49,7 +49,11 @@ export class AppComponent implements OnInit, OnDestroy {
     // Listen for PWA install prompt availability and show dialog automatically
     void this.initNativeDeepLinks();
     this.pwaInstallService.installPromptAvailable.subscribe(isAvailable => {
-      if (isAvailable && !this.pwaInstallDialogOpen && this.pwaInstallService.shouldShowInstallDialog()) {
+      if (
+        isAvailable &&
+        !this.pwaInstallDialogOpen &&
+        this.pwaInstallService.shouldShowInstallDialog()
+      ) {
         console.log('PWA install prompt is available, opening dialog');
         this.pwaInstallService.markDialogShownThisSession();
         this.pwaInstallDialogOpen = true;
@@ -76,7 +80,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this._zone.run(() => this.navigateFromExternalUrl(url)),
     );
     try {
-      const { url } = await App.getLaunchUrl();
+      const url = (await App.getLaunchUrl())?.url;
       if (url != null && url !== '') {
         this._zone.run(() => this.navigateFromExternalUrl(url));
       }

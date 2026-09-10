@@ -1,8 +1,8 @@
 export class Result<T, E = never> {
   public isSuccess: boolean;
   public isFailure: boolean;
-  public _error: E;
-  private _value: T;
+  public _error: E | undefined;
+  private _value: T | undefined;
 
   public constructor(isSuccess: boolean, error?: E, value?: T) {
     if (isSuccess && error) {
@@ -26,15 +26,15 @@ export class Result<T, E = never> {
       throw new Error("Can't get the value of an error result. Use 'error' instead.");
     }
 
-    return this._value;
+    return this._value as T;
   }
 
   get error(): E {
-    return this._error;
+    return this._error as E;
   }
 
   public static ok<U, E = never>(value?: U): Result<U, E> {
-    return new Result<U, E>(true, null, value);
+    return new Result<U, E>(true, undefined, value);
   }
 
   public static fail<U = never, E = never>(error: E): Result<U, E> {

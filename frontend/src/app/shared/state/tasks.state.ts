@@ -3,13 +3,7 @@ import { Injectable } from '@angular/core';
 import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
 import { patch, append, updateItem, iif, insertItem, removeItem } from '@ngxs/store/operators';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  Task,
-  ETaskStatus,
-  ETaskType,
-  Change,
-  TaskChanges,
-} from 'src/app/shared/models/';
+import { Task, ETaskStatus, ETaskType, Change, TaskChanges } from 'src/app/shared/models/';
 import { UserState } from './user.state';
 import { AppAction } from './app.actions';
 import { SyncAction } from './sync.action';
@@ -30,12 +24,12 @@ export class TasksState {
   static readonly actualStatuses: Array<ETaskStatus> = [ETaskStatus.Todo];
 
   @Selector([TasksState, UserState.userId])
-  static allTasks(state: ITasksStateModel, userId: string): Array<Task> {
+  static allTasks(state: ITasksStateModel, userId: string | null): Array<Task> {
     return this.getSortedUserTasks(state, userId);
   }
 
   @Selector([TasksState, UserState.userId])
-  static actualTasks(state: ITasksStateModel, userId: string): Array<Task> {
+  static actualTasks(state: ITasksStateModel, userId: string | null): Array<Task> {
     return this.getSortedUserTasks(state, userId).filter(t =>
       TasksState.actualStatuses.includes(t.status),
     );
@@ -44,7 +38,10 @@ export class TasksState {
   @Action(TasksAction.CreateTask)
   async createTask(
     ctx: StateContext<ITasksStateModel>,
-    { taskInitData, userId }: { taskInitData: Task; userId: string },
+    {
+      taskInitData,
+      userId,
+    }: { taskInitData: Pick<Task, 'title'> & { imageId?: string }; userId: string },
   ): Promise<void> {
     try {
       const now = this.now();
@@ -87,7 +84,7 @@ export class TasksState {
       }),
     );
 
-    const updatedTask: Task = ctx.getState().entities.find(t => t.id === taskUpdateData.taskId);
+    const updatedTask = ctx.getState().entities.find(t => t.id === taskUpdateData.taskId);
 
     ctx.dispatch(
       new SyncAction.ChangeForSyncOccurred({
@@ -123,14 +120,18 @@ export class TasksState {
   synchronize(ctx: StateContext<ITasksStateModel>, { changes }: { changes: Change[] }): void {
     const taskChanges = changes.filter(c => c.entity === EChangedEntity.Task);
     for (const taskChange of taskChanges) {
+      const changedObject = taskChange.object;
+      if (!changedObject) {
+        continue;
+      }
       if (taskChange.action === EChangeAction.Deleted) {
         ctx.setState(
           patch({
-            entities: removeItem<Task>(task => task.id === taskChange.object.id),
+            entities: removeItem<Task>(task => task.id === changedObject.id),
           }),
         );
       } else {
-        const task = taskChange.object as Task;
+        const task = changedObject as Task;
         ctx.setState(
           patch({
             entities: iif<Array<Task>>(
@@ -144,7 +145,11 @@ export class TasksState {
     }
   }
 
-  private createTaskEntity(taskInitData: Task, userId: string, timestamp: string): Task {
+  private createTaskEntity(
+    taskInitData: Pick<Task, 'title'> & { imageId?: string },
+    userId: string,
+    timestamp: string,
+  ): Task {
     return {
       type: ETaskType.Basic,
       userId,
@@ -157,7 +162,7 @@ export class TasksState {
     };
   }
 
-  private static getSortedUserTasks(state: ITasksStateModel, userId: string): Task[] {
+  private static getSortedUserTasks(state: ITasksStateModel, userId: string | null): Task[] {
     return state.entities
       .filter(e => e.userId === userId)
       .sort((a, b) => {

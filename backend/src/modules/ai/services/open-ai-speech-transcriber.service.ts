@@ -168,7 +168,7 @@ export class OpenAISpeechTranscriberService {
     }
   }
 
-  private mapOpenAIErrorToLevel(error: Error): ServiceErrorLevel {
+  private mapOpenAIErrorToLevel(error: unknown): ServiceErrorLevel {
     const criticalErrorStatuses = [401, 403, 429];
     if (error instanceof OpenAI.APIError && criticalErrorStatuses.includes(error.status)) {
       return ServiceErrorLevel.High;

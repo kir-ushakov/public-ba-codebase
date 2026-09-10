@@ -51,6 +51,9 @@ describe('Integration: GoogleAuth (Controller -> UseCase -> Repo -> MongoDB)', (
 
     const stored = await UserModel.findOne({ username: 'new.google@example.com' });
     expect(stored).toBeTruthy();
+    if (!stored) {
+      throw new Error('expected stored Google user');
+    }
     expect(stored.verified).toBe(true);
     expect(stored.googleId).toBe('g-new-1');
     expect(stored.googleRefreshToken).toBe('google-refresh-token');
@@ -97,6 +100,9 @@ describe('Integration: GoogleAuth (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(res.body.user.email).toBe('existing.google@example.com');
 
     const stored = await UserModel.findOne({ googleId: 'g-existing' });
+    if (!stored) {
+      throw new Error('expected stored Google user');
+    }
     expect(stored.googleAccessToken).toBe('second-access');
     expect(stored.googleRefreshToken).toBe('second-refresh');
     expect(await UserModel.countDocuments({ googleId: 'g-existing' })).toBe(1);

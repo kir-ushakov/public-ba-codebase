@@ -31,7 +31,7 @@ export class MobileAppState {
   }
 
   @Action(MbTaskTileAction.Clicked)
-  openTaskView(ctx: StateContext<MobileAppStateModel>, { taskId }) {
+  openTaskView(ctx: StateContext<MobileAppStateModel>, { taskId }: MbTaskTileAction.Clicked) {
     this.ngZone.run(() => {
       this.router.navigate([`task/${ETaskViewMode.View}/${taskId}`]);
     });

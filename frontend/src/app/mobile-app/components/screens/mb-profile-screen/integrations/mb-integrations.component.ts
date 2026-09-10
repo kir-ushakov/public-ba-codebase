@@ -17,7 +17,7 @@ export class MbIntegrationsComponent {
     return this.config.styleClass;
   }
   @Input() config: IMbIntegrationsComponentConfig = { styleClass: 'default' };
-  isAddedToSlack: Signal<boolean> = this._store.selectSignal(UserState.isAddedToSlack);
+  isAddedToSlack: Signal<boolean | undefined> = this._store.selectSignal(UserState.isAddedToSlack);
 
   constructor(private _store: Store) {}
   removeFromSlack() {

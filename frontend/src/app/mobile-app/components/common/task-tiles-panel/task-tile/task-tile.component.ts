@@ -19,7 +19,7 @@ export class TaskTileComponent {
   readonly androidPastelHostClass =
     Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
 
-  @Input() task: Task;
+  @Input() task!: Task;
   @HostListener('click') onClick() {
     this.store.dispatch(new MbTaskTileAction.Clicked(this.task.id));
   }

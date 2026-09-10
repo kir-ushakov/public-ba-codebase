@@ -23,8 +23,13 @@ export class GetImageController extends BaseController {
     }
 
     try {
+      const imageId = req.params.imageId;
+      if (!imageId) {
+        this.fail(res, 'imageId is required');
+        return;
+      }
       const getImageRequest: GetImageRequest = {
-        imageId: req.params.imageId,
+        imageId,
         user: UserMapper.toDomain(authenticatedUser),
         imageWidth,
       };

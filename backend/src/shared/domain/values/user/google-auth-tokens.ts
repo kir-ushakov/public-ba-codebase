@@ -37,9 +37,8 @@ export class GoogleAuthTokens extends ValueObject<GoogleAuthTokensProps> {
       );
     }
 
-    const refreshToken = Guard.notEmptyString(props.refreshToken)
-      ? props.refreshToken.trim()
-      : undefined;
+    const trimmedRefresh = props.refreshToken?.trim();
+    const refreshToken = trimmedRefresh ? trimmedRefresh : undefined;
 
     return Result.ok(
       new GoogleAuthTokens({

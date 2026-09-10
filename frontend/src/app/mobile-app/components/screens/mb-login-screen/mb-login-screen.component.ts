@@ -22,7 +22,7 @@ import { ReactiveFormsModule } from '@angular/forms';
   ],
 })
 export class MbLoginScreenComponent implements OnInit {
-  authError: Signal<string> = this.store.selectSignal(MbLoginScreenState.authError);
+  authError: Signal<string | null> = this.store.selectSignal(MbLoginScreenState.authError);
 
   public form: UntypedFormGroup = new UntypedFormGroup({
     email: new UntypedFormControl('', [Validators.required, Validators.email]),

@@ -144,8 +144,11 @@ export class ProgressRingComponent implements AfterViewInit, OnDestroy {
   // and trigger change detection. If `start()` ran before we had a non-zero radius, `pendingStart`
   // defers the animation until the first valid measurement arrives.
   private setupResizeObserver(): void {
-    this.resizeObserver = new ResizeObserver((entries) => {
+    this.resizeObserver = new ResizeObserver(entries => {
       const entry = entries[0];
+      if (!entry) {
+        return;
+      }
       const rect = entry.contentRect;
       const size = Math.min(rect.width, rect.height);
       const stroke = this.strokeWidth ?? 0;
@@ -164,4 +167,3 @@ export class ProgressRingComponent implements AfterViewInit, OnDestroy {
     this.resizeObserver.observe(this.hostRef.nativeElement);
   }
 }
-

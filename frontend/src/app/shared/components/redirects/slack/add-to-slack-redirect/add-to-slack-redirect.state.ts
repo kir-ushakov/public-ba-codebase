@@ -39,6 +39,14 @@ export class AddToSlackRedirectScreenState {
       errorOccurred: false,
     });
 
+    if (code == null || code === '') {
+      ctx.patchState({
+        isInstalling: false,
+        errorOccurred: true,
+      });
+      return;
+    }
+
     try {
       await this._slackService.addToSlack(code);
 

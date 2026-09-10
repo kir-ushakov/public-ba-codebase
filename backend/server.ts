@@ -2,12 +2,13 @@ import * as dotenv from 'dotenv';
 import https from 'https';
 import fs from 'fs';
 import { app } from './src/app.js';
+import { requiredEnv } from './src/config/index.js';
 
 dotenv.config();
 
 const port = process.env.PORT;
-const crtPath = process.env.CRT_PATH;
-const keyPath = process.env.KEY_PATH;
+const crtPath = requiredEnv('CRT_PATH');
+const keyPath = requiredEnv('KEY_PATH');
 const caBandlePath = process.env.CA_BANDLE_PATH;
 
 const httpsOptions: https.ServerOptions = {

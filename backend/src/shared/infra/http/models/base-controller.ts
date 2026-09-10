@@ -71,7 +71,7 @@ export abstract class BaseController {
     return BaseController.jsonResponse(res, EHttpStatus.Created, payload);
   }
 
-  public fail(res: express.Response, error: Error | string): express.Response {
+  public fail(res: express.Response, error: unknown): express.Response {
     // Log errors here
     console.log(error);
     return BaseController.jsonResponse(
