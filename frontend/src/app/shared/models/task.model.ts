@@ -22,6 +22,8 @@ export const defaultTask = {
   modifiedAt: null,
 };
 
+export type DefaultTask = typeof defaultTask & { imageId?: string };
+
 export type TaskChanges = {
   taskId: string;
   changes: Partial<Task>;

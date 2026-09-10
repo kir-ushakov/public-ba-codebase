@@ -29,18 +29,26 @@ export class AddToSlackUsecase implements UseCase<AddToSlackRequest, Promise<Add
 
   public async execute(req: AddToSlackRequest): Promise<AddToSlackResponse> {
     const response: OauthV2AccessResponse = await this._webClient.oauth.v2.access({
-      client_id: process.env.SLACK_CLIENT_ID,
-      client_secret: process.env.SLACK_CLIENT_SECRET,
+      client_id: process.env.SLACK_CLIENT_ID ?? '',
+      client_secret: process.env.SLACK_CLIENT_SECRET ?? '',
       code: req.code,
       redirect_uri: 'https://brainas.net/integrations/slack/install',
     });
 
+    const accessToken = response.access_token;
+    const authedUserId = response.authed_user?.id;
+    const slackBotUserId = response.bot_user_id;
+    const teamId = response.team?.id;
+    if (!accessToken || !authedUserId || !slackBotUserId || !teamId) {
+      throw new Error('Incomplete Slack OAuth response');
+    }
+
     const slackOAuthAccessProps: ISlackOAuthAccessProps = {
       userId: req.userId,
-      accessToken: response.access_token,
-      authedUserId: response.authed_user.id,
-      slackBotUserId: response.bot_user_id,
-      teamId: response.team.id,
+      accessToken,
+      authedUserId,
+      slackBotUserId,
+      teamId,
     };
 
     const existsSlackOAuthAccess = await this._slackOAuthAccessRepo.getSlackOAuthAccessByUserId(

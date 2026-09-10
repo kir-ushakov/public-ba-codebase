@@ -31,7 +31,7 @@ export class MbHomeScreenComponent implements OnInit {
     online: AppState.online,
   });
 
-  avatarInputData: IUserAvatarInputData;
+  avatarInputData!: IUserAvatarInputData;
 
   constructor(private store: Store) {}
 

@@ -53,7 +53,7 @@ export class Task extends AggregateRoot<ITaskProps> {
     return this.props.status;
   }
 
-  get imageId(): string {
+  get imageId(): string | undefined {
     return this.props.imageId;
   }
 

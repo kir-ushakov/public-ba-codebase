@@ -7,20 +7,14 @@ export class Guard {
     }
   }
 
-  public static notEmptyString(argument: string): boolean {
-    if (typeof argument === 'string' && argument.trim().length) {
-      return true;
-    } else {
-      return false;
-    }
+  public static notEmptyString(argument: unknown): boolean {
+    return typeof argument === 'string' && argument.trim().length > 0;
   }
 
-  public static textLengthAtLeast(text: string, minLength: number): boolean {
-    if (typeof text === 'string' && text.trim().length >= minLength) return true;
-    return false;
+  public static textLengthAtLeast(text: unknown, minLength: number): boolean {
+    return typeof text === 'string' && text.trim().length >= minLength;
   }
-  public static textLengthAtMost(text: string, maxLength: number): boolean {
-    if (typeof text === 'string' && text.trim().length <= maxLength) return true;
-    return false;
+  public static textLengthAtMost(text: unknown, maxLength: number): boolean {
+    return typeof text === 'string' && text.trim().length <= maxLength;
   }
 }

@@ -18,6 +18,7 @@
     "lint:check": "ng lint",
     "lint:style": "npx stylelint 'src/**/*.scss' --fix",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
+    "typecheck": "ng build --output-path dist/typecheck",
     "knip": "knip",
     "e2e": "npx playwright test",
     "e2e:ui": "npx playwright test --ui",

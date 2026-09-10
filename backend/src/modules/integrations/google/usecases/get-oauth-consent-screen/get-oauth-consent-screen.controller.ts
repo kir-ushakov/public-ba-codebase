@@ -11,11 +11,17 @@ export class GetOAuthConsentScreenController extends BaseController {
   }
 
   protected executeImpl(req: Request, res: Response, next?: NextFunction): Promise<void> {
+    if (!next) {
+      this.fail(res, 'Express next() is required');
+      return Promise.resolve();
+    }
     try {
       const forceConsentParam = req.query.forceConsent;
-      const forceConsentString = Array.isArray(forceConsentParam)
+      const forceConsentFirst = Array.isArray(forceConsentParam)
         ? forceConsentParam[0]
         : forceConsentParam;
+      const forceConsentString =
+        typeof forceConsentFirst === 'string' ? forceConsentFirst : undefined;
 
       const forceConsent = forceConsentString === '1' || forceConsentString === 'true';
 
@@ -32,7 +38,7 @@ export class GetOAuthConsentScreenController extends BaseController {
         ...authOptions,
       })(req, res, next);
     } catch (err) {
-      this.fail(res, err.toString());
+      this.fail(res, err);
     }
     return Promise.resolve();
   }

@@ -7,6 +7,10 @@
     "sourceMap": true,
     "outDir": "dist",
     "resolveJsonModule": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "types": ["node", "jest"]
   },
   "include": ["server.ts", "jest.config.ts", "src/**/*.ts", "src/**/*.d.ts", "test/**/*.ts"]

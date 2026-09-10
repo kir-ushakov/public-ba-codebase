@@ -1,6 +1,7 @@
-import { Strategy as JwtStrategy } from 'passport-jwt';
+import { Strategy as JwtStrategy, VerifiedCallback } from 'passport-jwt';
 import type { Request } from 'express';
 import UserModel from '../database/mongodb/user.model.js';
+import { requiredEnv } from '../../../config/index.js';
 
 interface IJwtTokenPayload {
   user: {
@@ -26,21 +27,22 @@ const cookieExtractor = function (req: Request): string | null {
 
 const opts = {
   jwtFromRequest: cookieExtractor,
-  secretOrKey: process.env.JWT_SECRET,
+  secretOrKey: requiredEnv('JWT_SECRET'),
 };
 
-export const jwtStrategy = new JwtStrategy(opts, async function (
+export const jwtStrategy = new JwtStrategy(opts, function (
   jwtPayload: IJwtTokenPayload,
-  done,
-) {
-  try {
-    const user = await UserModel.findOne({ _id: jwtPayload.user.userId });
-    if (user) {
-      return done(null, user);
-    } else {
-      return done(null, false);
-    }
-  } catch (err) {
-    return done(err, false);
-  }
+  done: VerifiedCallback,
+): void {
+  void UserModel.findOne({ _id: jwtPayload.user.userId })
+    .then(user => {
+      if (user) {
+        done(null, user);
+      } else {
+        done(null, false);
+      }
+    })
+    .catch((err: unknown) => {
+      done(err, false);
+    });
 });

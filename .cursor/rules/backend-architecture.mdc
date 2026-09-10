@@ -87,11 +87,11 @@ for (const raw of rows) {
 }
 
 // GOOD — getChanges stays query + map; the name states the exception
-return rows.map(raw => this.toDomainIfValid(raw)).filter(task => task !== null);
+return rows.map(raw => this.toDomainIfValid(raw)).filter((task): task is Task => task !== null);
 ```
 
 ## Types and secrets
 
-`backend/tsconfig.json` has no `strict` or `strictNullChecks`, so the compiler will not catch loose types. Type parameters and return values explicitly and avoid `any`.
+`backend/tsconfig.json` has `strict` and `noUncheckedIndexedAccess`. Type parameters and return values explicitly; do not use `any` or non-null assertions to silence the compiler. Optional and nullable values must be narrowed. Collection `.filter(x => x !== null)` needs a type predicate (`(x): x is T => x !== null`).
 
 Never hard-code URLs, credentials or keys, and never log passwords, tokens or whole request bodies.

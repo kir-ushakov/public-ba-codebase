@@ -5,7 +5,7 @@ export namespace TasksAction {
     static readonly type = '[Tasks] Create Task';
 
     constructor(
-      public taskInitData: Task,
+      public taskInitData: Pick<Task, 'title'> & { imageId?: string },
       public userId: string,
     ) {}
   }

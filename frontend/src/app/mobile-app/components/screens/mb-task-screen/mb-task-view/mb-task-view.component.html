@@ -1,20 +1,22 @@
 @let task = task$ | async;
-<div class="title-holder">
-  <span data-test="task-view-title">{{ task.title }}</span>
-</div>
-@if (task?.imageId) {
-  <div class="task-picture-holder">
-    @if (isImageLoading()) {
-      <div class="task-picture-spinner">
-        <ba-spinner></ba-spinner>
-      </div>
-    }
-    <img
-      class="task-picture"
-      [class.is-loading]="isImageLoading()"
-      [src]="task.imageId | imageSrc"
-      (load)="onImageLoaded(task.imageId)"
-      (error)="onImageError(task.imageId)"
-    />
+@if (task) {
+  <div class="title-holder">
+    <span data-test="task-view-title">{{ task.title }}</span>
   </div>
+  @if (task.imageId; as imageId) {
+    <div class="task-picture-holder">
+      @if (isImageLoading()) {
+        <div class="task-picture-spinner">
+          <ba-spinner></ba-spinner>
+        </div>
+      }
+      <img
+        class="task-picture"
+        [class.is-loading]="isImageLoading()"
+        [src]="imageId | imageSrc"
+        (load)="onImageLoaded(imageId)"
+        (error)="onImageError(imageId)"
+      />
+    </div>
+  }
 }

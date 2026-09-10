@@ -21,7 +21,7 @@ import { MatInputModule } from '@angular/material/input';
   imports: [CommonModule, MatInputModule, ReactiveFormsModule],
 })
 export class MbSignupScreenComponent {
-  signUpResult: Signal<SignUpResponseDTO> = this.store.selectSignal(
+  signUpResult: Signal<SignUpResponseDTO | null> = this.store.selectSignal(
     MbSignupScreenState.signUpResult,
   );
 

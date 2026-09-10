@@ -45,7 +45,7 @@ export class GoogleDriveService {
     });
 
     const files = res.data.files;
-    if (files.length === 0) {
+    if (!files || files.length === 0) {
       this.logger.log('No files found.');
       return;
     }
@@ -87,7 +87,7 @@ export class GoogleDriveService {
       };
 
       const media = {
-        mimeType: mimeType,
+        mimeType: mimeType ?? undefined,
         body: fs.createReadStream(resolvedFilePath), // eslint-disable-line security/detect-non-literal-fs-filename -- path checked against uploadTempDir
       };
 

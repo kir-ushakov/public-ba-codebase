@@ -25,7 +25,7 @@ export class ImageService {
     return imageId;
   }
 
-  public async getImageRecord(imageId: string): Promise<ImageRecord> {
+  public async getImageRecord(imageId: string): Promise<ImageRecord | undefined> {
     return await this.imageDbService.getImage(imageId);
   }
 
@@ -44,6 +44,9 @@ export class ImageService {
       images.map(async image => {
         try {
           const blob = image.blob;
+          if (!blob) {
+            return;
+          }
           await this.imageUploaderService.uploadImageBlob(image.id, blob);
 
           // set upload to true + url
@@ -57,4 +60,3 @@ export class ImageService {
     );
   }
 }
-

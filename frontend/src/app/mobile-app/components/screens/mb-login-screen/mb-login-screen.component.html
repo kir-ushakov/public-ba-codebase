@@ -13,7 +13,7 @@
         formControlName="email"
         autocomplete="email"
       />
-      <mat-error *ngIf="form.get('email').invalid"> Please input correct email </mat-error>
+      <mat-error *ngIf="form.get('email')?.invalid"> Please input correct email </mat-error>
     </mat-form-field>
 
     <mat-form-field class="login-form__password" floatLabel="never">
@@ -26,7 +26,7 @@
         formControlName="password"
         autocomplete="off"
       />
-      <mat-error *ngIf="form.get('password').invalid">
+      <mat-error *ngIf="form.get('password')?.invalid">
         Please input password, not less than 8 symbols
       </mat-error>
     </mat-form-field>

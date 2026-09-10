@@ -41,9 +41,10 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
     return new Promise<GoogleAuthResult>((resolve, reject) => {
       const handleGoogleCallback = async (
         err: unknown,
-        res: GoogleProfileWithTokens,
+        res: GoogleProfileWithTokens | false,
       ): Promise<void> => {
         if (err) return resolve(GoogleAuthErrors.AuthorizationFailed());
+        if (!res) return resolve(GoogleAuthErrors.AuthorizationFailed());
 
         const profile = res.profile;
         const tokens = res.tokens;
@@ -65,15 +66,18 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
       };
 
       try {
-        this.passport.authenticate('google', (err, res: GoogleProfileWithTokens) => {
-          handleGoogleCallback(err, res).catch((callbackErr: unknown) => {
-            reject(
-              callbackErr instanceof Error
-                ? callbackErr
-                : new Error('Unknown Google auth callback error'),
-            );
-          });
-        })(request.context.req, request.context.res, request.context.next);
+        this.passport.authenticate(
+          'google',
+          (err: unknown, res: GoogleProfileWithTokens | false) => {
+            handleGoogleCallback(err, res).catch((callbackErr: unknown) => {
+              reject(
+                callbackErr instanceof Error
+                  ? callbackErr
+                  : new Error('Unknown Google auth callback error'),
+              );
+            });
+          },
+        )(request.context.req, request.context.res, request.context.next);
       } catch (err: unknown) {
         reject(err instanceof Error ? err : new Error('Unknown Google auth error'));
       }
@@ -84,7 +88,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
     profile: Profile,
     tokenPayload: GoogleOAuthTokenPayload,
   ): Promise<Result<User | never, UseCaseError<EGoogleAuthUseCaseError>>> {
-    let user: User;
+    let user: User | null;
     user = await this.userRepo.getUserByGoogleId(profile.id);
 
     const tokensOrError = GoogleAuthTokens.create({
@@ -107,17 +111,22 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
       return Result.ok(user);
     }
 
-    const existUser: UserDocument = await this.userRepo.getUserByUsername(profile._json.email);
+    const emailRaw = profile._json.email;
+    if (!emailRaw) {
+      return GoogleAuthErrors.AuthorizationFailed();
+    }
+
+    const existUser: UserDocument | null = await this.userRepo.getUserByUsername(emailRaw);
 
     if (existUser) {
       if (existUser.verified) {
-        return GoogleAuthErrors.EmailAlreadyInUse(profile._json.email);
+        return GoogleAuthErrors.EmailAlreadyInUse(emailRaw);
       } else {
-        await this.userRepo.removeByUsername(profile._json.email);
+        await this.userRepo.removeByUsername(emailRaw);
       }
     }
 
-    const email: UserEmail = UserEmail.create(profile._json.email).getValue();
+    const email: UserEmail = UserEmail.create(emailRaw).getValue();
 
     if (!tokens?.refreshToken) {
       return GoogleAuthErrors.RefreshTokenNotReceived();
@@ -128,8 +137,8 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
       googleId: profile.id,
       googleAccessToken: tokens.accessToken,
       googleRefreshToken: tokens.refreshToken,
-      firstName: profile._json.given_name,
-      lastName: profile._json.family_name,
+      firstName: profile._json.given_name ?? '',
+      lastName: profile._json.family_name ?? '',
       verified: true,
     }).getValue();
 

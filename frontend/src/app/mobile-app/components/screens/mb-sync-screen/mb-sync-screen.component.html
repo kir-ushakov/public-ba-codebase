@@ -18,7 +18,7 @@
             placeholder="Password"
             formControlName="password"
           />
-          <mat-error *ngIf="syncForm.get('password').invalid">
+          <mat-error *ngIf="syncForm.get('password')?.invalid">
             Please input correct password
           </mat-error>
         </mat-form-field>

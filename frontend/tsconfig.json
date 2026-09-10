@@ -12,7 +12,10 @@
     "importHelpers": true,
     "target": "ES2022",
     "lib": ["ES2022", "dom"],
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

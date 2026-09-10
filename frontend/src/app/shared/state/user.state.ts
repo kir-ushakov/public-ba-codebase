@@ -20,8 +20,8 @@ interface IUserIntegrations {
 }
 export interface IUserStateModel {
   userData: User | null;
-  authState: EUserAuthState;
-  authType: EUserAuthType;
+  authState: EUserAuthState | null;
+  authType: EUserAuthType | undefined;
   integrations: IUserIntegrations;
 }
 
@@ -66,7 +66,7 @@ export class UserState {
   }
 
   @Selector()
-  static userNameFirstLetter(state: IUserStateModel): string {
+  static userNameFirstLetter(state: IUserStateModel): string | null {
     if (state.userData) {
       const firstName = state.userData.firstName;
       return firstName ? firstName.charAt(0) : null;
@@ -75,8 +75,8 @@ export class UserState {
   }
 
   @Selector()
-  static userId(state: IUserStateModel): string {
-    return state.userData.userId;
+  static userId(state: IUserStateModel): string | null {
+    return state.userData?.userId ?? null;
   }
 
   @Selector()
@@ -86,16 +86,16 @@ export class UserState {
 
   @Selector()
   static userEmail(state: IUserStateModel): string | null {
-    return state.userData?.email;
+    return state.userData?.email ?? null;
   }
 
   @Selector()
-  static isAddedToSlack(state: IUserStateModel): boolean {
+  static isAddedToSlack(state: IUserStateModel): boolean | undefined {
     return state.integrations.isAddedToSlack;
   }
 
   @Selector()
-  static authType(state: IUserStateModel): EUserAuthType {
+  static authType(state: IUserStateModel): EUserAuthType | undefined {
     return state.authType;
   }
 
@@ -186,8 +186,11 @@ export class UserState {
     ctx: StateContext<IUserStateModel>,
     { password }: { password: string },
   ): Promise<void> {
-    const email = ctx.getState().userData.email;
-    this.loginUser(ctx, email, password);
+    const userData = ctx.getState().userData;
+    if (!userData) {
+      return;
+    }
+    this.loginUser(ctx, userData.email, password);
   }
 
   @Action(SlackAPIAction.AddedToSlack)

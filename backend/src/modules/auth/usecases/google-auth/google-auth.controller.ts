@@ -14,6 +14,10 @@ export class GoogleAuthController extends BaseController {
   }
 
   protected async executeImpl(req: Request, res: Response, next?: NextFunction): Promise<void> {
+    if (!next) {
+      this.fail(res, 'Express next() is required');
+      return;
+    }
     try {
       const result = await this.usecase.execute({
         context: { req, res, next },
@@ -29,7 +33,7 @@ export class GoogleAuthController extends BaseController {
         });
       }
     } catch (err) {
-      this.fail(res, err.toString());
+      this.fail(res, err);
     }
   }
 }

@@ -29,7 +29,7 @@ export class VerifyEmailController extends BaseController {
         });
       }
     } catch (error) {
-      this.fail(res, error.toString());
+      this.fail(res, error);
     }
   }
 }

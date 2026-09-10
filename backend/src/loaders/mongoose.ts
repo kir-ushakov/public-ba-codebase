@@ -7,7 +7,7 @@ const DB_PASSWORD = process.env.DB_PASSWORD;
 
 const DB_URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${DB_CONTAINER}:${DB_PORT}/ba?authSource=admin`;
 
-export function connectToDb(client): Promise<Mongoose> {
+export function connectToDb(client: string): Promise<Mongoose> {
   return new Promise<Mongoose>((resolve, reject) => {
     mongoose
       .connect(DB_URI)

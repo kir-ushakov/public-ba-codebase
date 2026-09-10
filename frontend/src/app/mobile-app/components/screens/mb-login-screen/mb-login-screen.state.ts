@@ -4,7 +4,7 @@ import { MbLoginScreenAction } from './mb-login-screen.actions';
 import { UserAction } from 'src/app/shared/state/user.actions';
 
 interface IMbLoginScreenStateModel {
-  authErrMessage: string;
+  authErrMessage: string | null;
 }
 
 @State<IMbLoginScreenStateModel>({
@@ -14,12 +14,12 @@ interface IMbLoginScreenStateModel {
 @Injectable()
 export class MbLoginScreenState {
   @Selector()
-  static authError(state: IMbLoginScreenStateModel): string {
+  static authError(state: IMbLoginScreenStateModel): string | null {
     return state.authErrMessage;
   }
 
   @Action(UserAction.AuthFailed)
-  authFailed(ctx: StateContext<IMbLoginScreenStateModel>, { message }) {
+  authFailed(ctx: StateContext<IMbLoginScreenStateModel>, { message }: UserAction.AuthFailed) {
     ctx.patchState({
       authErrMessage: message,
     });

@@ -7,8 +7,8 @@ import { IUserAvatarInputData } from './user-avatar.interface';
   styleUrls: ['./user-avatar.component.scss'],
 })
 export class UserAvatarComponent {
-  @Input() data: IUserAvatarInputData;
-  @ViewChild('avatarHolder') avatarHolderRef: ElementRef;
+  @Input() data!: IUserAvatarInputData;
+  @ViewChild('avatarHolder') avatarHolderRef!: ElementRef;
 
   constructor(private _el: ElementRef) {}
 
@@ -28,7 +28,7 @@ export class UserAvatarComponent {
     if (this.data.photoUrl) {
       this.avatarHolderRef.nativeElement.style.backgroundImage = `url(${this.data.photoUrl})`;
     } else {
-      this.avatarHolderRef.nativeElement.innerHTML = this.data.firstLetter;
+      this.avatarHolderRef.nativeElement.innerHTML = this.data.firstLetter ?? '';
       if (this.data.color) {
         this.avatarHolderRef.nativeElement.style.background = this.data.color;
       }

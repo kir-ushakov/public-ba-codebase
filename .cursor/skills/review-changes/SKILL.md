@@ -56,7 +56,7 @@ These pass lint and tests and still break things:
 - A new mocked unit test for a controller, use case or repo. This project tests those through integration.
 - E2E mocks that no longer mirror the backend's real status codes and bodies.
 - `page.waitForTimeout()` in a Playwright spec, or `data-testid` instead of `data-test`.
-- Backend types left loose because `tsconfig` has no `strict` to catch them.
+- Backend types left loose (`any`, unchecked `!`, `null` assigned to a non-nullable field) despite `strict` and `noUncheckedIndexedAccess` in `backend/tsconfig.json`.
 
 ## 5. Tests
 

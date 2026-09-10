@@ -1,4 +1,3 @@
-import { DomainError } from '../core/domain-error.js';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 import {
   CreateSlackOAuthAccessResult,
@@ -7,9 +6,7 @@ import {
 } from '../domain/models/slack-oauth-access.js';
 
 export class SlackOAuthAccessMapper {
-  public static toDomain(
-    raw: ISlackOAuthAccessPresitant,
-  ): SlackOAuthAccess | DomainError<SlackOAuthAccess> {
+  public static toDomain(raw: ISlackOAuthAccessPresitant): SlackOAuthAccess | null {
     const slackOAuthAccessOrError: CreateSlackOAuthAccessResult = SlackOAuthAccess.create(
       {
         userId: raw.userId,

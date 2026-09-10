@@ -26,8 +26,8 @@ export class ActionRepo {
 
   public async getActionsOccurredSince(
     userId: string,
-    time: Date = null,
-    actionType: EActionType = null,
+    time: Date | null = null,
+    actionType: EActionType | null = null,
   ): Promise<Action[]> {
     const actionModel = this._models.ActionModel;
 

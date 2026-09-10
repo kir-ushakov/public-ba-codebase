@@ -1,4 +1,5 @@
 import { Strategy as GoogleStrategy, Profile, VerifyCallback } from 'passport-google-oauth20';
+import { requiredEnv } from '../../../config/index.js';
 
 /** Passport payload — not a domain value object. Map to GoogleAuthTokens in the use-case. */
 export type GoogleOAuthTokenPayload = {
@@ -8,9 +9,9 @@ export type GoogleOAuthTokenPayload = {
 
 export const googleStrategy = new GoogleStrategy(
   {
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_OAUTH_CALLBACK,
+    clientID: requiredEnv('GOOGLE_CLIENT_ID'),
+    clientSecret: requiredEnv('GOOGLE_CLIENT_SECRET'),
+    callbackURL: requiredEnv('GOOGLE_OAUTH_CALLBACK'),
   },
   function (
     accessToken: string,
@@ -26,7 +27,7 @@ export const googleStrategy = new GoogleStrategy(
         done(null, false);
       }
     } catch (err) {
-      done(err, false);
+      done(err instanceof Error ? err : new Error('Unknown Google strategy error'), false);
     }
   },
 );

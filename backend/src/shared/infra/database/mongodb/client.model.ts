@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IClientPersistent {
   _id?: string;
   userId: string;
-  syncTime: Date;
+  syncTime: Date | null;
 }
 
 export interface ClientDocument extends Omit<IClientPersistent, '_id'>, Document<string> {}

@@ -22,5 +22,8 @@ export function isGoogleRefreshTokenInvalidError(error: unknown): boolean {
     return false;
   }
   const name = readApiErrorName(error);
-  return Boolean(name) && GOOGLE_REFRESH_TOKEN_INVALID_NAMES.has(name);
+  if (!name) {
+    return false;
+  }
+  return GOOGLE_REFRESH_TOKEN_INVALID_NAMES.has(name);
 }

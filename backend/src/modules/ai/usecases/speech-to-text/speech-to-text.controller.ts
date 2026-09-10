@@ -15,6 +15,10 @@ export class SpeechToTextController extends BaseController {
 
   protected async executeImpl(req: Request, res: Response): Promise<void> {
     const file = req.file;
+    if (!file) {
+      this.fail(res, 'Audio file is required');
+      return;
+    }
     const audioBuffer = file.buffer;
     const mimeType = file.mimetype;
     const audio = new Blob([audioBuffer], { type: mimeType });

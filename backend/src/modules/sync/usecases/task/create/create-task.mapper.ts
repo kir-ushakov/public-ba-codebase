@@ -7,12 +7,12 @@ export function requestToUsecaseParams(
   userId: string,
 ): CreateTaskParams {
   const taskDto: TaskDTO = payload.changeableObjectDto;
-  const { id, ...taskPropsWithoutId } = taskDto;
+  const { id, userId: _dtoUserId, ...taskPropsWithoutId } = taskDto;
 
   return {
     taskProps: {
-      userId,
       ...taskPropsWithoutId,
+      userId,
       createdAt: new Date(taskDto.createdAt),
       modifiedAt: new Date(taskDto.modifiedAt),
     },

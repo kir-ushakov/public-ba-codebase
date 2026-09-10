@@ -74,7 +74,7 @@ npm test
 
 Narrow the test run while iterating: `npm test -- <spec-file>`. There is no `build` script — `typecheck` is the compile check, and `compile` would start the server.
 
-`backend/tsconfig.json` has no `strict`, so the compiler will not catch loose types for you. Annotate parameters and return types explicitly.
+`backend/tsconfig.json` has `strict` and `noUncheckedIndexedAccess`. Annotate parameters and return types explicitly; do not use `any` or `!` to silence the compiler.
 
 ## 8. Review the diff
 

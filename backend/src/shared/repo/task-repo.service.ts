@@ -33,7 +33,10 @@ export class TaskRepoService {
     const filter = { _id: taskId };
     const update = { ...taskPresitant };
 
-    const updatedTask: TaskDocument = await taskModel.findOneAndUpdate(filter, update);
+    const updatedTask = await taskModel.findOneAndUpdate(filter, update);
+    if (!updatedTask) {
+      throw new Error(`Task with id ${taskId} not found`);
+    }
 
     return updatedTask;
   }
@@ -67,7 +70,9 @@ export class TaskRepoService {
       .sort({ modifiedAt: 1 })
       .lean();
 
-    return changedTasks.map(raw => this.toDomainIfValid(raw)).filter(task => task !== null);
+    return changedTasks
+      .map(raw => this.toDomainIfValid(raw))
+      .filter((task): task is Task => task !== null);
   }
 
   private toDomainIfValid(raw: TaskPresitant): Task | null {
@@ -99,13 +104,13 @@ export class TaskRepoService {
     });
   }
 
-  public async exists(taskId: string, userId: string = null): Promise<boolean> {
+  public async exists(taskId: string, userId?: string): Promise<boolean> {
     const TaskModel = this.models.TaskModel;
     const params: { _id: string; userId?: string } = { _id: taskId };
     if (userId) {
       params.userId = userId;
     }
-    const existingTask: TaskDocument = await TaskModel.findOne(params);
+    const existingTask = await TaskModel.findOne(params);
     const found = !!existingTask;
     return found;
   }

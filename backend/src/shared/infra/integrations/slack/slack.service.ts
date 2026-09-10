@@ -6,13 +6,12 @@ import {
 } from '@slack/web-api';
 import { Channel } from '@slack/web-api/dist/response/ConversationsListResponse.js';
 import { SlackOAuthAccessRepo } from '../../../repo/slack-oauth-access.repo.js';
-import { SlackOAuthAccess } from '../../../domain/models/slack-oauth-access.js';
 
 export class SlackService {
   readonly CHANNEL_NAME = 'brainasapp';
   private _slackOAuthAccessRepo: SlackOAuthAccessRepo;
-  private _webClient: WebClient;
-  private _slackAuthedUserId: string;
+  private _webClient!: WebClient;
+  private _slackAuthedUserId!: string;
 
   constructor(slackOAuthAccessRepo: SlackOAuthAccessRepo) {
     this._slackOAuthAccessRepo = slackOAuthAccessRepo;
@@ -41,8 +40,10 @@ export class SlackService {
 
   private async initWebClient(userId: string): Promise<void> {
     // getting access token from DB
-    const slackOAuthAccess: SlackOAuthAccess =
-      await this._slackOAuthAccessRepo.getSlackOAuthAccessByUserId(userId);
+    const slackOAuthAccess = await this._slackOAuthAccessRepo.getSlackOAuthAccessByUserId(userId);
+    if (!slackOAuthAccess) {
+      throw new Error(`Slack OAuth access not found for user ${userId}`);
+    }
     const slackAccessToken = slackOAuthAccess.accessToken;
     this._slackAuthedUserId = slackOAuthAccess.authedUserId;
 
@@ -52,26 +53,29 @@ export class SlackService {
   }
 
   private async createChannelIfNotExist(): Promise<string> {
-    let channel: Channel;
-
-    // trying to find a channel with 'brainasapp' name
     const result: ConversationsListResponse = await this._webClient.conversations.list();
-    channel = result.channels.find(c => c.name === this.CHANNEL_NAME);
+    let channel: Channel | undefined = result.channels?.find(c => c.name === this.CHANNEL_NAME);
     if (!channel) {
-      // if not found - create it
       const createChannelResp: ConversationsCreateResponse =
         await this._webClient.conversations.create({
           name: this.CHANNEL_NAME,
         });
       channel = createChannelResp.channel;
     } else if (!channel.is_member) {
-      // if channel exists but app bot not a member - need to join
+      const channelId = channel.id;
+      if (!channelId) {
+        throw new Error('Slack channel is missing an id');
+      }
       await this._webClient.conversations.join({
-        channel: channel.id,
+        channel: channelId,
       });
     }
 
-    return channel.id;
+    const channelId = channel?.id;
+    if (!channelId) {
+      throw new Error('Slack channel is missing an id');
+    }
+    return channelId;
   }
 
   private async addUserIfNotInChannel(channelId: string): Promise<void> {
@@ -79,7 +83,7 @@ export class SlackService {
     const membersResp: ConversationsMembersResponse = await this._webClient.conversations.members({
       channel: channelId,
     });
-    const isMemberOfChannel = membersResp.members.includes(this._slackAuthedUserId);
+    const isMemberOfChannel = membersResp.members?.includes(this._slackAuthedUserId) ?? false;
 
     // and add if not.
     if (!isMemberOfChannel) {

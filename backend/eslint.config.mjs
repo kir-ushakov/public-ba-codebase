@@ -24,9 +24,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * eslint-plugin-node), eslint-plugin-import, eslint-plugin-boundaries.
  *
  * Notes:
- * - Rules that require tsconfig `strictNullChecks` stay off until that flag is
- *   enabled in a dedicated follow-up (would be a large type migration).
- * - `no-unsafe-*` stay off for the same reason under `npm run lint --fix`.
+ * - `backend/tsconfig.json` has `strict` and `noUncheckedIndexedAccess`.
+ * - Rules that get noisier under those flags (`no-unnecessary-condition`,
+ *   `prefer-nullish-coalescing`, `no-unsafe-*`) stay off until a dedicated lint
+ *   pass. Do not treat ESLint as a substitute for `tsc`.
  */
 /** @type {import('eslint').Linter.Config[]} */
 export default [

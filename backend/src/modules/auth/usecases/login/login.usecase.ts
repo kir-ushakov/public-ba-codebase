@@ -52,15 +52,18 @@ export class LoginUsecase implements UseCase<LoginRequest, Promise<LoginResult>>
       };
 
       try {
-        this.passport.authenticate('local', (err, userPersistent) => {
-          handleLocalCallback(err, userPersistent).catch((callbackErr: unknown) => {
-            reject(
-              callbackErr instanceof Error
-                ? callbackErr
-                : new Error('Unknown local auth callback error'),
-            );
-          });
-        })(request.context.req, request.context.res, request.context.next);
+        this.passport.authenticate(
+          'local',
+          (err: unknown, userPersistent: UserPersistent | false) => {
+            handleLocalCallback(err, userPersistent).catch((callbackErr: unknown) => {
+              reject(
+                callbackErr instanceof Error
+                  ? callbackErr
+                  : new Error('Unknown local auth callback error'),
+              );
+            });
+          },
+        )(request.context.req, request.context.res, request.context.next);
       } catch (err: unknown) {
         reject(err instanceof Error ? err : new Error('Unknown local auth error'));
       }

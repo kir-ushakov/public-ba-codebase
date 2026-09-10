@@ -1,4 +1,10 @@
-import { TaskDTO, TagDTO, ChangeDTO, ChangeableObjectDTO, EChangedEntity }  from '@brainassistant/contracts';
+import {
+  TaskDTO,
+  TagDTO,
+  ChangeDTO,
+  ChangeableObjectDTO,
+  EChangedEntity,
+} from '@brainassistant/contracts';
 import { Tag } from '../models';
 import { ChangeableObject, Change } from '../models/change.model';
 import { Task } from '../models/task.model';
@@ -29,7 +35,7 @@ export class ChangeMapper {
     return {
       entity: changeDto.entity as EChangedEntity,
       action: changeDto.action,
-      object: model,
+      object: model ?? undefined,
     };
   }
 

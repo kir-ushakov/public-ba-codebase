@@ -10,7 +10,7 @@ import { EMPTY, catchError, tap } from 'rxjs';
 import { AppAction } from 'src/app/shared/state/app.actions';
 
 export interface IMbSignupScreenStateModel {
-  signUpResult: SignUpResponseDTO;
+  signUpResult: SignUpResponseDTO | null;
 }
 
 @State<IMbSignupScreenStateModel>({
@@ -24,7 +24,7 @@ export class MbSignupScreenState {
   constructor(private authService: AuthService) {}
 
   @Selector()
-  static signUpResult(state: IMbSignupScreenStateModel): SignUpResponseDTO {
+  static signUpResult(state: IMbSignupScreenStateModel): SignUpResponseDTO | null {
     return state.signUpResult;
   }
 

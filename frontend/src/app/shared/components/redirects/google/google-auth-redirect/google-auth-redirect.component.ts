@@ -25,7 +25,7 @@ export class GoogleAuthRedirectScreenComponent {
   ) {}
 
   ngOnInit() {
-    const code: string = this._activatedRoute.snapshot.queryParamMap.get('code');
+    const code = this._activatedRoute.snapshot.queryParamMap.get('code');
     this._store.dispatch(new GoogleAuthRedirectScreenAction.Opened(code));
   }
 

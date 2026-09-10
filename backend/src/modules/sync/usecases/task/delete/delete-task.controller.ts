@@ -16,9 +16,14 @@ export class DeleteTaskController extends BaseController {
     const userId = loggedUser._id;
 
     try {
+      const taskId = req.params.taskId;
+      if (!taskId) {
+        this.fail(res, 'taskId is required');
+        return;
+      }
       const result = await this._useCase.execute({
         userId,
-        taskId: req.params.taskId,
+        taskId,
       });
       if (result.isSuccess) {
         this.ok(res);

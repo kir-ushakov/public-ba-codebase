@@ -1,5 +1,5 @@
 export interface IUserAvatarInputData {
-  firstLetter: string;
+  firstLetter: string | null;
   color?: string;
   photoUrl?: string;
 }

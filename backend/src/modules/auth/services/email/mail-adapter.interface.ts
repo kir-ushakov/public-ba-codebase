@@ -1,3 +1,3 @@
 export interface IMailAdapter {
-  sendEmail: (to, from, subject, html) => Promise<void>;
+  sendEmail: (to: string, from: string, subject: string, html: string) => Promise<void>;
 }

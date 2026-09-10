@@ -7,6 +7,7 @@ import UserModel from './shared/infra/database/mongodb/user.model.js';
 import { googleStrategy, jwtStrategy } from './shared/infra/auth/index.js';
 import { unexpectedErrorHandler } from './shared/infra/http/utils/unexpected-error.middleware.js';
 import { LoggerService } from './shared/services/logger/logger.service.js';
+import { requiredEnv } from './config/index.js';
 
 /**
  * Builds the Express app (middleware, Passport, routers) without connecting
@@ -18,7 +19,7 @@ export function createApp(): Application {
   app.disable('x-powered-by');
   app.use(express.json());
 
-  const secret = process.env.SESSION_SECRET;
+  const secret = requiredEnv('SESSION_SECRET');
   app.use(
     session({
       secret,
@@ -32,8 +33,8 @@ export function createApp(): Application {
   if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
     app.use(passport.initialize());
     app.use(passport.session());
-    passport.serializeUser(UserModel.serializeUser());
-    passport.deserializeUser(UserModel.deserializeUser());
+    passport.serializeUser(UserModel.serializeUser() as never);
+    passport.deserializeUser(UserModel.deserializeUser() as never);
   }
 
   if (process.env.AUTHENTICATION_STRATEGY === 'JWT') {

@@ -43,8 +43,11 @@ export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesR
       return GetChangesErrors.ClientNotFoundError(userId, clientId);
     }
 
-    const lastSyncTime: Date = client.syncTime;
-    const changedTasks: Task[] = await this.taskRepoService.getChanges(userId, lastSyncTime);
+    const lastSyncTime = client.syncTime;
+    const changedTasks: Task[] = await this.taskRepoService.getChanges(
+      userId,
+      lastSyncTime ?? new Date(0),
+    );
 
     for (const changedTask of changedTasks) {
       const taskDto: TaskDTO = TaskMapper.toDTO(changedTask);

@@ -52,6 +52,9 @@ describe('Integration: DeleteTask (Controller -> UseCase -> Repo -> MongoDB)', (
       entityId: created.id,
       type: EActionType.TaskDeleted,
     });
+    if (!action) {
+      throw new Error('expected delete action');
+    }
     expect(action.occurredAt).toBeInstanceOf(Date);
   });
 

@@ -28,7 +28,7 @@ import { SignInWithGoogleBtnComponent } from 'src/app/shared/components/ui-eleme
   ],
 })
 export class MbSyncScreenComponent {
-  authType: Signal<string> = this.store.selectSignal(UserState.authType);
+  authType: Signal<EUserAuthType | undefined> = this.store.selectSignal(UserState.authType);
 
   syncForm = new UntypedFormGroup({
     password: new UntypedFormControl('', Validators.required),
