@@ -1,19 +1,19 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Store } from '@ngxs/store';
 import { firstValueFrom } from 'rxjs';
 import { ImageDbService, ImageRecord } from '../infrastructure/image-db.service';
 import { ImageOptimizerService } from '../utility/image-optimizer.service';
 import { ImageUploaderService } from '../api/image-uploader.service';
 import { FetchService } from '../infrastructure/fetch.service';
 import { UuidGeneratorService } from '../adapters/uuid-generator.service';
-import { isGoogleRefreshTokenInvalidError } from '../../helpers/google-refresh-token-invalid.function';
-import { AppAction } from '../../state/app.actions';
 import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
+
+export type EnsureUploadedResult = 'uploaded' | 'alreadyRemote' | 'missingBlob' | 'failed';
 
 @Injectable({ providedIn: 'root' })
 export class ImageService {
   private hasProbedRemoteImage = false;
+  private readonly uploadsInFlight = new Map<string, Promise<EnsureUploadedResult>>();
 
   constructor(
     private readonly imageDbService: ImageDbService,
@@ -21,7 +21,6 @@ export class ImageService {
     private readonly imageUploaderService: ImageUploaderService,
     private readonly fetchService: FetchService,
     private readonly uuidGeneratorService: UuidGeneratorService,
-    private readonly injector: Injector,
     private readonly http: HttpClient,
   ) {}
 
@@ -37,6 +36,10 @@ export class ImageService {
 
   public async getImageRecord(imageId: string): Promise<ImageRecord | undefined> {
     return await this.imageDbService.getImage(imageId);
+  }
+
+  public async deleteImage(imageId: string): Promise<void> {
+    await this.imageDbService.deleteImage(imageId);
   }
 
   /**
@@ -62,29 +65,35 @@ export class ImageService {
     return reducedBlob;
   }
 
-  public async uploadImages(): Promise<void> {
-    const images = await this.imageDbService.getAllUnuploadedImages();
+  public ensureUploaded(imageId: string): Promise<EnsureUploadedResult> {
+    const inFlight = this.uploadsInFlight.get(imageId);
+    if (inFlight) {
+      return inFlight;
+    }
 
-    await Promise.all(
-      images.map(async image => {
-        try {
-          const blob = image.blob;
-          if (!blob) {
-            return;
-          }
-          await this.imageUploaderService.uploadImageBlob(image.id, blob);
+    const upload = this.uploadIfNeeded(imageId).finally(() => {
+      this.uploadsInFlight.delete(imageId);
+    });
+    this.uploadsInFlight.set(imageId, upload);
+    return upload;
+  }
 
-          // set upload to true + url
-          await this.imageDbService.updateImage(image.id, {
-            uploaded: true,
-          });
-        } catch (error) {
-          console.error(`Failed to upload image ${image.id}:`, error);
-          if (isGoogleRefreshTokenInvalidError(error)) {
-            this.injector.get(Store).dispatch(new AppAction.GoogleRefreshTokenInvalid());
-          }
-        }
-      }),
-    );
+  private async uploadIfNeeded(imageId: string): Promise<EnsureUploadedResult> {
+    const record = await this.imageDbService.getImage(imageId);
+    if (!record || record.uploaded) {
+      return 'alreadyRemote';
+    }
+    if (!record.blob) {
+      return 'missingBlob';
+    }
+
+    try {
+      await this.imageUploaderService.uploadImageBlob(imageId, record.blob);
+      await this.imageDbService.updateImage(imageId, { uploaded: true });
+      return 'uploaded';
+    } catch (error) {
+      console.error(`Failed to upload image ${imageId}:`, error);
+      return 'failed';
+    }
   }
 }

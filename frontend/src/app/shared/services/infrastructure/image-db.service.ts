@@ -35,12 +35,6 @@ export class ImageDbService {
     await db.delete(DATABASE_CONFIG.STORES.IMAGES, id);
   }
 
-  async getAllUnuploadedImages(): Promise<ImageRecord[]> {
-    const db = await this.databaseService.getDatabase();
-    const allImages = await db.getAll(DATABASE_CONFIG.STORES.IMAGES);
-    return allImages.filter(image => image.uploaded === false);
-  }
-
   async updateImage(id: string, updates: Partial<Omit<ImageRecord, 'id'>>): Promise<void> {
     const db = await this.databaseService.getDatabase();
     const existing: any = await db.get(DATABASE_CONFIG.STORES.IMAGES, id);

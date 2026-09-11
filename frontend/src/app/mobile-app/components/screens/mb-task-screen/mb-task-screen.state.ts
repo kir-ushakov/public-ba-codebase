@@ -121,7 +121,7 @@ export class MbTaskScreenState {
     if (state.mode === ETaskViewMode.Create) {
       await this.handleCreateTask(ctx);
     } else {
-      this.handleUpdateTask(ctx);
+      await this.handleUpdateTask(ctx);
     }
   }
 
@@ -143,16 +143,23 @@ export class MbTaskScreenState {
     ctx.dispatch(MbTaskScreenAction.Close);
   }
 
-  private handleUpdateTask(ctx: StateContext<IMbTaskScreenStateModel>): void {
-    const taskData = ctx.getState().taskData;
+  private async handleUpdateTask(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
+    const { taskData, imageUrl } = ctx.getState();
     if (taskData.id == null) {
       return;
     }
 
+    let imageId = taskData.imageId;
+    if (imageUrl) {
+      imageId = await this.imageService.saveImage(imageUrl);
+    }
+    const changes = { ...taskData, imageId };
+
+    ctx.patchState({ taskData: changes });
     ctx.dispatch(
       new TasksAction.UpdateTask({
         taskId: taskData.id,
-        changes: taskData,
+        changes,
       }),
     );
     ctx.patchState({ mode: ETaskViewMode.View });
