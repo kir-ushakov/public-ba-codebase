@@ -7,11 +7,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Change } from '../models/change.model';
 import { append, patch, removeItem } from '@ngxs/store/operators';
 import { ServerChangesService } from '../services/api/server-changes.service';
-import { ClientChangesService } from '../services/api/client-changes.service';
 import { Observable, lastValueFrom, tap } from 'rxjs';
 import { SyncAction } from './sync.action';
-import { ImageService } from '../services/application/image.service';
 import { UserAction } from './user.actions';
+import {
+  MissingBlobDiscard,
+  OutboundSyncService,
+} from '../services/application/outbound-sync.service';
+import { TasksAction } from './tasks.action';
 
 export interface SyncStateModel {
   clientId: string | null;
@@ -36,9 +39,8 @@ export class SyncState {
 
   constructor(
     private readonly clientIdSerivce: ClientIdService,
-    private readonly clientChangesService: ClientChangesService,
     private readonly serverChangesService: ServerChangesService,
-    private readonly imageService: ImageService,
+    private readonly outboundSyncService: OutboundSyncService,
   ) {}
 
   @Action(SyncAction.ChangeForSyncOccurred)
@@ -89,8 +91,6 @@ export class SyncState {
       await this.syncPendingChanges(ctx);
 
       ctx.patchState({ lastTime: new Date() });
-
-      await this.imageService.uploadImages();
     } catch (err) {
       // TODO: Don't rely only on HTTP status code - check error name from backend response
       // TICKET: https://brainas.atlassian.net/browse/BA-258
@@ -112,33 +112,35 @@ export class SyncState {
   }
 
   private async syncPendingChanges(ctx: StateContext<SyncStateModel>): Promise<void> {
-    const changes = ctx.getState().changes;
+    const result = await this.outboundSyncService.process(ctx.getState().changes);
 
-    for (const change of changes) {
-      try {
-        await lastValueFrom(this.clientChangesService.send(change));
-        await ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
-      } catch (error) {
-        console.error('Sync Pending Change Error:', change, error);
-
-        // TODO: Don't rely only on HTTP status code - check error name from backend response
-        // TICKET: https://brainas.atlassian.net/browse/BA-258
-        if (error instanceof HttpErrorResponse && error.status === 404) {
-          await this.handleEntityNotFoundError(ctx, change);
-        } else {
-          // TODO: Notify user about temporary sync failure
-          // TODO: Consider exponential backoff for retry
-          // TODO: Maybe consider adding logic to mark unsynced changes as failed and give user option to retry sync manually
-          // TICKET: https://brainas.atlassian.net/browse/BA-259
-          // For now, keep in queue - will retry on next sync interval (20 sec)
-          // This prevents data loss from temporary network issues
-          // we can not continue sync process, because we can not know if change was successfully synchronized or not
-          // so we need to stop sync process and notify user about sync failure
-          ctx.dispatch(new SyncAction.SyncinhriniziationWasFailed());
-          return;
-        }
-      }
+    for (const change of result.sent) {
+      await ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
     }
+    for (const change of result.notFound) {
+      await this.handleEntityNotFoundError(ctx, change);
+    }
+    await this.discardTasksWithMissingBlobs(ctx, result.missingBlobDiscards);
+    if (result.sendFailed) {
+      ctx.dispatch(new SyncAction.SyncinhriniziationWasFailed());
+    }
+  }
+
+  private async discardTasksWithMissingBlobs(
+    ctx: StateContext<SyncStateModel>,
+    discards: MissingBlobDiscard[],
+  ): Promise<void> {
+    for (const discard of discards) {
+      this.dropQueuedChangesForEntity(ctx, discard.taskId);
+      ctx.dispatch(new AppAction.ShowErrorInUI('The task photo is missing. The task was removed.'));
+      await ctx.dispatch(new TasksAction.DeleteTask(discard.taskId));
+    }
+  }
+
+  private dropQueuedChangesForEntity(ctx: StateContext<SyncStateModel>, entityId: string): void {
+    ctx.patchState({
+      changes: ctx.getState().changes.filter(change => change.object?.id !== entityId),
+    });
   }
 
   private getClientIdAPICall(ctx: StateContext<SyncStateModel>): Observable<string> {
@@ -170,7 +172,6 @@ export class SyncState {
     if (!change.object) {
       throw new Error('Cannot handle entity-not-found without change.object');
     }
-    // Entity not found on server - create local delete change to sync state with server
     const deleteChange: Change = {
       entity: change.entity,
       action: EChangeAction.Deleted,

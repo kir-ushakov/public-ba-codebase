@@ -116,6 +116,28 @@ describe('MbTaskScreenState', () => {
     expect(store.selectSnapshot(MbTaskScreenState.task)).toEqual(existingWithPhoto);
     expect(store.selectSnapshot(MbTaskScreenState.imageUri)).toBeNull();
   });
+
+  it('saves a new photo when applying an edit', async () => {
+    deviceCameraService.takePicture.mockResolvedValue('blob:edited-photo');
+
+    await firstValueFrom(
+      store.dispatch(new MbTaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
+    );
+    await firstValueFrom(store.dispatch(MbTaskScreenAction.EditTaskOptionSelected));
+    await firstValueFrom(store.dispatch(MbTaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(
+      store.dispatch(
+        new MbTaskScreenAction.UpdateFormData(true, { title: existingWithPhoto.title }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(MbTaskScreenAction.ApplyButtonPressed));
+
+    expect(imageService.saveImage).toHaveBeenCalledWith('blob:edited-photo');
+    const updated = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(t => t.id === existingWithPhoto.id);
+    expect(updated?.imageId).toBe('new-image-id');
+  });
 });
 
 function leftoverCreateState() {
