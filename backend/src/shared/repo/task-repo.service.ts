@@ -1,6 +1,7 @@
 import { ETaskRepoServiceError } from '@brainassistant/contracts';
 import { Task, TaskPresitant } from '../domain/models/task.js';
 import { IDbModels } from '../infra/database/mongodb/index.js';
+import { isMongoDuplicateKeyError } from '../infra/database/mongodb/mongo-error.js';
 import { TaskDocument } from '../infra/database/mongodb/task.model.js';
 import { TaskMapper } from '../mappers/task.mapper.js';
 import { ServiceError } from '../core/service-error.js';
@@ -14,14 +15,18 @@ export { ETaskRepoServiceError, ETaskRepoLoadError };
 export class TaskRepoService {
   constructor(private readonly models: IDbModels) {}
 
-  public async create(task: Task): Promise<TaskDocument> {
+  public async create(task: Task): Promise<void> {
     const taskData: TaskPresitant = TaskMapper.toPersistence(task);
 
-    const TaskModel = this.models.TaskModel;
-
-    const newTask: TaskDocument = await TaskModel.create(taskData);
-
-    return newTask;
+    try {
+      await this.models.TaskModel.create(taskData);
+    } catch (error) {
+      if (isMongoDuplicateKeyError(error)) {
+        await this.ownDocumentIfDuplicateKey(task, error);
+        return;
+      }
+      throw error;
+    }
   }
 
   public async save(task: Task): Promise<TaskDocument> {
@@ -113,5 +118,17 @@ export class TaskRepoService {
     const existingTask = await TaskModel.findOne(params);
     const found = !!existingTask;
     return found;
+  }
+
+  private async ownDocumentIfDuplicateKey(task: Task, error: unknown): Promise<void> {
+    const existing = await this.models.TaskModel.findOne({
+      _id: task.id.toString(),
+      userId: task.userId,
+    });
+    if (existing) {
+      return;
+    }
+
+    throw error;
   }
 }

@@ -11,7 +11,19 @@ alwaysApply: false
 - Schemas live in `shared/infra/database/mongodb/<entity>.model.ts` and are registered in `IDbModels` and `models` in that folder's `index.ts`.
 - Repos in `shared/repo/` receive `IDbModels` through the constructor and read models from it (`this.models.TaskModel`). Do not import a model module directly inside a repo.
 - Documents are converted at the boundary by `shared/mappers/<entity>.mapper.ts` (`toDomain`, `toPersistence`, `toDTO`). A raw Mongoose document must never escape a repo into a use-case.
-- Repos return `Result` with a `ServiceError` built by `serviceFail()`. Do not `throw new Error` for expected outcomes such as "not found".
+- Repos return `Result` with a `ServiceError` built by `serviceFail()` for outcomes they **understand** (not found, invalid persisted row). Do not `throw new Error` for those. Do not invent a service/use-case code for an unrecognized driver error — let it propagate to the controller catch (`500 UNEXPECTED_ERROR`). A duplicate `_id` for the **same** user on create is success (idempotent retry), not an error.
+
+## Driver error codes
+
+Mongo numeric codes (`11000`, `11001`, …) are not self-explanatory. Use `EMongoErrorCode` / `isMongoDuplicateKeyError()` from `shared/infra/database/mongodb/mongo-error.ts`. Do not inline the number.
+
+```ts
+// BAD
+error.code === 11000
+
+// GOOD
+isMongoDuplicateKeyError(error)
+```
 
 ## Query safety
 

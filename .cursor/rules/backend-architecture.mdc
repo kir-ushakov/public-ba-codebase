@@ -38,7 +38,7 @@ syncRouter.post('/task', (req, res) => createTaskController.execute(req, res));
 
 ## Errors are values, not exceptions
 
-Use-cases and repos return `Result` (`shared/core/result.ts`) and fail with a typed error from `*.errors.ts` or `serviceFail()`. There is no centralized Express error middleware — never write code that assumes one exists.
+Use-cases and repos return `Result` (`shared/core/result.ts`) and fail with a typed error from `*.errors.ts` or `serviceFail()` for outcomes that layer **understands**. Do not add `Unexpected` to a use-case error union — that is already `BaseController.fail()` / `EApiError.Unexpected` on an uncaught exception. There is no centralized Express error middleware — never write code that assumes one exists.
 
 Controllers branch on `result.isSuccess` and respond via `BaseController.jsonResponse(res, error.httpCode, { name, message })`, keeping the `try/catch` in `executeImpl` like neighbouring controllers.
 
@@ -89,6 +89,13 @@ for (const raw of rows) {
 // GOOD — getChanges stays query + map; the name states the exception
 return rows.map(raw => this.toDomainIfValid(raw)).filter((task): task is Task => task !== null);
 ```
+
+## Numeric codes
+
+Protocol and driver numbers are named constants, not literals in `if` / `catch`:
+
+- HTTP status in production code → `EHttpStatus` (`Created`, `Conflict`, `InternalServerError`). `502 BadGateway` is for an **upstream** dependency (OpenAI, Google Drive), not for our MongoDB.
+- Mongo driver codes → `EMongoErrorCode` in `shared/infra/database/mongodb/mongo-error.ts`. The number `11000` belongs only in that enum, never at a `catch` / `if` site.
 
 ## Types and secrets
 
