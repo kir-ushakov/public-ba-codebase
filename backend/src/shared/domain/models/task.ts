@@ -1,4 +1,4 @@
-import { ETaskError, ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { ETaskError, ETaskStatus, ETaskType, TaskConst } from '@brainassistant/contracts';
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 import { Result } from '../../core/result.js';
@@ -30,8 +30,8 @@ export interface TaskPresitant {
 }
 
 export class Task extends AggregateRoot<ITaskProps> {
-  static readonly TITLE_MIN_LENGTH = 5;
-  static readonly TITLE_MAX_LENGTH = 120;
+  static readonly TITLE_MIN_LENGTH = TaskConst.TITLE_MIN_LENGTH;
+  static readonly TITLE_MAX_LENGTH = TaskConst.TITLE_MAX_LENGTH;
 
   get id(): UniqueEntityID {
     return this._id;

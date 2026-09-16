@@ -7,20 +7,21 @@
  * `test/public-api.shape.json` until the snapshot is updated on purpose.
  */
 
-import type {
-  ApiErrorDto,
-  ApiSuccessDto,
-  ChangeDTO,
-  DeletedObjectDTO,
-  IChangeableObjectDTO,
-  LoginRequestDTO,
-  LoginResponseDTO,
-  SignUpRequestDTO,
-  SignUpResponseDTO,
-  TagDTO,
-  TaskDTO,
-  UserDto,
-  VerifyEmailResponseDTO,
+import {
+  TaskConst,
+  type ApiErrorDto,
+  type ApiSuccessDto,
+  type ChangeDTO,
+  type DeletedObjectDTO,
+  type IChangeableObjectDTO,
+  type LoginRequestDTO,
+  type LoginResponseDTO,
+  type SignUpRequestDTO,
+  type SignUpResponseDTO,
+  type TagDTO,
+  type TaskDTO,
+  type UserDto,
+  type VerifyEmailResponseDTO,
 } from './dto';
 import { GetChangesContract, SendChangeContract, UploadImageContract } from './contracts';
 import {
@@ -198,5 +199,8 @@ export const PUBLIC_API_SHAPE = {
       request: [...SEND_CHANGE_REQUEST_KEYS],
       response: 'entity-or-void',
     },
+  },
+  consts: {
+    TaskConst,
   },
 };

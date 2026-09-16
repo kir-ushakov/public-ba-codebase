@@ -39,6 +39,12 @@ Prefer the `async` pipe or NGXS signals. When subscribing manually, always tear 
 - Keep logic out of templates: no non-trivial method calls in bindings, computation belongs in TypeScript.
 - Touch the DOM through Angular APIs, not directly.
 
+## Component-local functions
+
+A pure helper that belongs to one component lives in that component's `helpers/` folder as `*.function.ts` (same postfix as `shared/helpers/`). Keep the component folder root as Angular artifacts (`*.component.ts/html/scss`, optional `*.interface.ts`).
+
+Extract from the class when the helper is a pure transform you want to unit-test without TestBed. A private method is fine for one-line UI wiring with no test of its own. Do not add a screen-specific helper under `shared/`.
+
 ## Forms
 
 Reactive forms only, no `ngModel`. Type them with the existing helper: `FormGroup<FormControlsOf<T>>` from `shared/forms/types/form-controls-of.ts`. Do not add new `UntypedFormGroup` or `UntypedFormControl`.

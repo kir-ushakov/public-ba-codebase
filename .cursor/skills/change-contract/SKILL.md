@@ -33,12 +33,13 @@ The frontend is an offline PWA. Old clients keep running cached builds and hold 
 ## 2. Edit `contracts/src` and export it
 
 - `src/dto/<name>.dto.ts` — payload shapes, `type` not `interface`
+- `src/dto/<name>.const.ts` — optional entity limits both apps must enforce (`as const` numbers only)
 - `src/enums/<name>.enum.ts` — enums crossing the wire
 - `src/contracts/<name>.contract.ts` — the per-endpoint namespace with `Request` / `Response`
 
 Add it to the folder barrel **and** `src/index.ts`. Anything not re-exported from `src/index.ts` does not exist as far as the apps are concerned.
 
-Keep the package types-only: no validation, no mappers, no runtime logic, no dependencies.
+Keep the package free of validation, mappers and HTTP. Entity `*.const.ts` numbers are the allowed runtime values besides `PUBLIC_API_SHAPE`.
 
 ## 3. Rebuild
 

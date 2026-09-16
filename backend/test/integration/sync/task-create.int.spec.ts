@@ -1,6 +1,6 @@
 import { Application } from 'express';
 import request from 'supertest';
-import { TaskDTO, ETaskStatus, ETaskType, EApiError } from '@brainassistant/contracts';
+import { TaskDTO, ETaskStatus, ETaskType, EApiError, TaskConst } from '@brainassistant/contracts';
 import { ETaskError } from '../../../src/shared/domain/models/task.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
@@ -161,6 +161,52 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
 
     expect(res.status).toBe(400);
     expect(res.body.name).toBe(ETaskError.TitleMissed);
+    expect(res.body).toHaveProperty('message');
+  });
+
+  it('creates a task with a one-character title', async () => {
+    const { userId, jwtCookie } = await seedTestUser();
+
+    const dto = {
+      id: 'task-one-char',
+      type: ETaskType.Basic,
+      title: 'A',
+      status: ETaskStatus.Todo,
+    };
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/sync/task')
+      .send({ changeableObjectDto: dto })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(201);
+
+    const responseBody: TaskDTO = res.body;
+    expect(responseBody.title).toBe('A');
+    expect(responseBody.userId).toBe(userId);
+
+    const persisted = await models.TaskModel.findById(dto.id).lean();
+    expect(persisted).not.toBeNull();
+    expect(persisted?.title).toBe('A');
+  });
+
+  it('title longer than 100 characters -> 400 TitleTooLong', async () => {
+    const { jwtCookie } = await seedTestUser();
+
+    const badDto = {
+      id: 'task-title-too-long',
+      type: ETaskType.Basic,
+      title: 'a'.repeat(TaskConst.TITLE_MAX_LENGTH + 1),
+      status: ETaskStatus.Todo,
+    };
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/sync/task')
+      .send({ changeableObjectDto: badDto })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(400);
+    expect(res.body.name).toBe(ETaskError.TitleTooLong);
     expect(res.body).toHaveProperty('message');
   });
 });

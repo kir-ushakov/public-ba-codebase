@@ -19,7 +19,11 @@ Anything new must be exported from `src/index.ts` or the apps cannot see it. DTO
 
 ## Types only
 
-Keep this package free of runtime logic: no validation, no mappers, no HTTP calls, no dependencies. Mapping belongs in `backend/src/shared/mappers/` and `frontend/src/app/shared/mappers/`.
+Keep this package free of validation, mappers, HTTP calls and dependencies. Mapping belongs in
+`backend/src/shared/mappers/` and `frontend/src/app/shared/mappers/`.
+
+The allowed runtime values besides `PUBLIC_API_SHAPE` are entity `*.const.ts` files next to the DTO
+(e.g. `task.const.ts` → `TaskConst`): numbers both apps must enforce. No functions, no Guard.
 
 ## Build step
 

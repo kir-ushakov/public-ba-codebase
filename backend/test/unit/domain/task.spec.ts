@@ -1,6 +1,6 @@
 import { ETaskError, Task } from '../../../src/shared/domain/models/task.js';
 import { UniqueEntityID } from '../../../src/shared/domain/UniqueEntityID.js';
-import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { ETaskStatus, ETaskType, TaskConst } from '@brainassistant/contracts';
 
 const baseTaskProps = {
   userId: 'user-1',
@@ -34,14 +34,13 @@ describe('Task', () => {
       expect(task.modifiedAt).toEqual(new Date('2025-01-15T12:00:00.000Z'));
     });
 
-    it('rejects a title that is too short when no imageId is provided', () => {
+    it('accepts a two-character title when no imageId is provided', () => {
       const result = Task.create({
         ...baseTaskProps,
         title: 'Hi',
       });
 
-      expect(result.isFailure).toBe(true);
-      expect(result.error.code).toBe(ETaskError.TitleTooShort);
+      expect(result.isSuccess).toBe(true);
     });
 
     it('rejects an empty title when no imageId is provided', () => {
@@ -67,17 +66,26 @@ describe('Task', () => {
     it('rejects a title longer than the maximum', () => {
       const result = Task.create({
         ...baseTaskProps,
-        title: 'a'.repeat(121),
+        title: 'a'.repeat(TaskConst.TITLE_MAX_LENGTH + 1),
       });
 
       expect(result.isFailure).toBe(true);
       expect(result.error.code).toBe(ETaskError.TitleTooLong);
     });
 
+    it('accepts a title at the maximum length boundary', () => {
+      const result = Task.create({
+        ...baseTaskProps,
+        title: 'a'.repeat(TaskConst.TITLE_MAX_LENGTH),
+      });
+
+      expect(result.isSuccess).toBe(true);
+    });
+
     it('accepts a title at the minimum length boundary', () => {
       const result = Task.create({
         ...baseTaskProps,
-        title: '12345',
+        title: 'A',
       });
 
       expect(result.isSuccess).toBe(true);

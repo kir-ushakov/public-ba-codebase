@@ -8,19 +8,17 @@
         formControlName="title"
         [placeholder]="(voiceToTextConverting$ | async) ? '' : 'Task title here'"
         autocomplete="off"
+        [attr.maxlength]="titleMaxLength"
         data-test="task-title-input"
       />
 
-      <ba-voice-input-trigger
-        matIconSuffix
-        (recordingStopped)="onVoiceRecordingStopped()"
-      />
+      <ba-voice-input-trigger matIconSuffix (recordingStopped)="onVoiceRecordingStopped()" />
 
       <mat-error *ngIf="false"> Task title is <strong>required</strong> </mat-error>
     </mat-form-field>
     @if (imageUri$ | async) {
       <div class="task-picture-holder">
-        <img class="task-picture" src="{{ imageUri$ | async }}" data-test="task-picture"/>
+        <img class="task-picture" src="{{ imageUri$ | async }}" data-test="task-picture" />
       </div>
     } @else {
       <div class="take-a-picture-icon-holder">

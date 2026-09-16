@@ -5,6 +5,7 @@
 
 // Task DTOs
 export type { TaskDTO } from './task.dto';
+export { TaskConst } from './task.const';
 
 // User DTOs
 export type { UserDto } from './user.dto';
