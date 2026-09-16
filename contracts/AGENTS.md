@@ -7,8 +7,9 @@ in `src/` is invisible until `npm run build` runs here.
 The conventions are in `.cursor/rules/contracts.mdc`; the workflow is
 `.cursor/skills/change-contract/`. This file says where things live and what to imitate.
 
-Types only: no validation, no mappers, no runtime logic, no dependencies. The one runtime export is
-`PUBLIC_API_SHAPE`, which exists for the shape test.
+Types only: no validation, no mappers, no HTTP calls, no dependencies. Runtime values besides
+`PUBLIC_API_SHAPE` are entity `*.const.ts` numbers next to the DTO (`TaskConst` in `task.const.ts`).
+No functions, no Guard.
 
 ```powershell
 npm run build          # required before either app sees a change
@@ -19,7 +20,7 @@ npm test               # rebuilds, then diffs the public API against test/public
 
 ```
 src/
-├── dto/        api-response, auth, change, tag, task, user  (+ index barrel)
+├── dto/        api-response, auth, change, tag, task (+ task.const), user  (+ index barrel)
 ├── enums/      change-action, changed-entity, task-status, task-type, api-error  (+ index barrel)
 ├── contracts/  send-change, get-changes, files  (+ index barrel)
 ├── public-api.shape.ts   compile-time key lists + the snapshot payload
@@ -29,7 +30,8 @@ test/
 └── public-api.shape.test.cjs
 ```
 
-DTOs are re-exported from `src/index.ts` with `export type`, enums with a value `export`.
+DTOs are re-exported from `src/index.ts` with `export type`, enums and entity consts with a value
+`export`.
 
 ## Canonical references
 
@@ -53,6 +55,11 @@ The suffix marks the layer: `E<UseCase>UseCaseError`, domain `E<Entity>Error`, r
 `E<Repo>ServiceError`, app catch-all `EApiError`. Do not use `ErrorCode`. Add members, do not rename
 wire values (`FILE_TOO_LARGE` stays `FILE_TOO_LARGE`). Internal-only codes stay in the backend.
 
+### Entity limits → `src/dto/task.const.ts`
+
+Numbers both apps must enforce, grouped on the entity (`TaskConst.TITLE_MAX_LENGTH`). `as const`
+object, no functions. Tag and later entities get their own `<entity>.const.ts` the same way.
+
 ### Guarding the public API → `src/public-api.shape.ts` + `test/public-api.shape.json`
 
 How a breaking change is caught here rather than in production. Each DTO declares its keys with
@@ -60,7 +67,7 @@ How a breaking change is caught here rather than in production. Each DTO declare
 `tsc` first; then the exported `PUBLIC_API_SHAPE` is diffed against the committed JSON snapshot, so
 the change also has to be acknowledged deliberately by updating the snapshot.
 
-Every new DTO, enum or contract namespace gets an entry here. A snapshot updated without a sentence
+Every new DTO, enum, entity const or contract namespace gets an entry here. A snapshot updated without a sentence
 explaining why is the thing to catch in review.
 
 ## Not references

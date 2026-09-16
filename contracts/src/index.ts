@@ -22,6 +22,7 @@ export type {
   ApiErrorDto,
   ApiSuccessDto,
 } from './dto';
+export { TaskConst } from './dto';
 
 // Enums
 export {

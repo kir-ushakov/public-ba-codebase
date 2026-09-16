@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupApiMocks } from './utils/api-mocks.util';
+import { createTaskWithTitle, signIn } from './utils/task-flow.util';
 
 /**
  * E2E Test: User can create a task with title and image
@@ -92,4 +93,14 @@ test('user can create a task', async ({ page }) => {
 
   const tileImageSrc = await taskTileImage.getAttribute('src');
   expect(tileImageSrc).toBeTruthy();
+});
+
+test('user can create a task with a one-character title', async ({ page }) => {
+  await setupApiMocks(page);
+  await signIn(page);
+
+  const postResponse = await createTaskWithTitle(page, 'A');
+  const taskData = postResponse.request().postDataJSON();
+
+  expect(taskData.changeableObjectDto.title).toBe('A');
 });

@@ -16,7 +16,9 @@ src/app/
 ├── mobile-app/             the live shell — routes come from mobile-app.routing.ts
 │   └── components/
 │       ├── common/         reusable pieces of the mobile UI
-│       └── screens/        one folder per screen: component + template + scss + state
+│       └── screens/        one folder per screen: component + template + scss + state;
+│                           a component-local pure helper lives in that component's
+│                           `helpers/*.function.ts`, not in `shared/helpers/`
 ├── desktop-app/            present but NOT routed from main.ts
 └── shared/
     ├── components/         redirects/, ui-elements/
@@ -60,6 +62,8 @@ The fullest screen: component, template, SCSS, sub-components, `*.actions.ts` an
 folder, registered on the route with `provideStates([...])`. Shows the intended division of labour —
 the screen slice owns view mode and form data, reads other slices through `selectSnapshot`, and
 dispatches `TasksAction.*` instead of writing entities itself, then resets to defaults on close.
+Component-local pure helpers (e.g. clipping a voice title) sit in that component's `helpers/` as
+`*.function.ts` — see `mb-task-edit/helpers/clip-voice-task-title.function.ts`.
 
 ### Synced entity, both directions → `src/app/shared/state/tasks.state.ts`
 

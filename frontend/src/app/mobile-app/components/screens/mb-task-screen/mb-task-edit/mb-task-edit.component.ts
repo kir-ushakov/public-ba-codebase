@@ -16,7 +16,9 @@ import { MatInputModule } from '@angular/material/input';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './mb-task-edit.component.interface';
 import { ViewChild, ElementRef } from '@angular/core';
+import { TaskConst } from '@brainassistant/contracts';
 import { VoiceInputTriggerComponent } from 'src/app/shared/features/voice-input/components/voice-input-trigger/voice-input-trigger.component';
+import { clipVoiceTaskTitle } from './helpers/clip-voice-task-title.function';
 
 @Component({
   selector: 'ba-mb-task-edit',
@@ -40,6 +42,7 @@ export class MbTaskEditComponent {
   form!: FormGroup<FormControlsOf<ITaskEditFormData>>;
 
   MbTaskScreenState = MbTaskScreenState;
+  readonly titleMaxLength = TaskConst.TITLE_MAX_LENGTH;
 
   @ViewChild('titleInput') titleInput!: ElementRef<HTMLInputElement>;
 
@@ -48,7 +51,7 @@ export class MbTaskEditComponent {
   private readonly fb = inject(FormBuilder);
   private readonly actions$ = inject(Actions);
 
-  private readonly baseTitleValidators = [Validators.minLength(5), Validators.maxLength(50)];
+  private readonly baseTitleValidators = [Validators.maxLength(TaskConst.TITLE_MAX_LENGTH)];
   private readonly requiredTitleValidators = [Validators.required, ...this.baseTitleValidators];
 
   ngOnInit(): void {
@@ -95,7 +98,7 @@ export class MbTaskEditComponent {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((payload: { text: string }) => {
-        this.form.controls.title?.setValue(payload.text);
+        this.form.controls.title?.setValue(clipVoiceTaskTitle(payload.text));
       });
   }
 
