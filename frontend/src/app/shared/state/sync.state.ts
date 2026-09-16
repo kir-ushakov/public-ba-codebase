@@ -67,11 +67,12 @@ export class SyncState {
   }
 
   @Action(AppAction.Opened)
-  updateSyncTimer(ctx: StateContext<SyncStateModel>): void {
+  updateSyncTimer(ctx: StateContext<SyncStateModel>) {
     clearInterval(this.intervalId ?? undefined);
     this.intervalId = setInterval(() => {
       ctx.dispatch(new SyncAction.Synchronize());
     }, this.SYNC_PERIOD);
+    return ctx.dispatch(new SyncAction.Synchronize());
   }
 
   @Action(UserAction.LoggedOut)
