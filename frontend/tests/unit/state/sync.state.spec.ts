@@ -56,6 +56,32 @@ describe('SyncState', () => {
     actions$ = TestBed.inject(Actions);
   });
 
+  afterEach(() => {
+    store.dispatch(new AppAction.UserNotAuthenticated());
+    jest.useRealTimers();
+  });
+
+  it('starts a sync cycle immediately when the app opens', async () => {
+    resetState({ clientId: 'client-1', lastTime: null, changes: [] });
+
+    await firstValueFrom(store.dispatch(new AppAction.Opened()));
+
+    expect(serverChangesService.fetch).toHaveBeenCalledWith('client-1');
+    expect(outboundSyncService.process).toHaveBeenCalledWith([]);
+  });
+
+  it('repeats the sync cycle on the interval after the app opens', async () => {
+    jest.useFakeTimers();
+    resetState({ clientId: 'client-1', lastTime: null, changes: [] });
+
+    await firstValueFrom(store.dispatch(new AppAction.Opened()));
+    expect(serverChangesService.fetch).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(20_000);
+
+    expect(serverChangesService.fetch).toHaveBeenCalledTimes(2);
+  });
+
   it('enqueues a local change and removes it after outbound sync reports it sent', async () => {
     resetState({ clientId: 'client-1', lastTime: null, changes: [pendingChange] });
 
