@@ -19,7 +19,8 @@ e2e/
 ├── create-task.spec.ts
 ├── edit-task.spec.ts
 ├── delete-task.spec.ts
-└── sync-error.spec.ts
+├── sync-error.spec.ts
+└── voice-input-visibility.spec.ts
 ```
 
 Auth and the device camera are swapped at build time via `fileReplacements` in the `e2e` configuration of `angular.json`. HTTP is mocked in `utils/api-mocks.util.ts` — call `setupApiMocks(page)` at the start of a spec; do not scatter `page.route` calls.
@@ -50,5 +51,6 @@ That starts `npm run start:e2e` (see `playwright.config.js`) and runs the specs 
 - **edit-task** — change title, PATCH `/api/sync/task`
 - **delete-task** — DELETE `/api/sync/task`
 - **sync-error** — POST fails with 500; the task stays on home (offline queue)
+- **voice-input-visibility** — mic button is shown when signed in and online, hidden when offline
 
 Assert what the user can see and the outgoing request payload (`waitForResponse` then `request().postDataJSON()`). Do not reach into NGXS or component internals. Do not use `page.waitForTimeout()`.
