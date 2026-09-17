@@ -1,4 +1,5 @@
-import { Component, DestroyRef, inject, output } from '@angular/core';
+import { Component, DestroyRef, inject, NgZone, output, ViewChild } from '@angular/core';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { MbTaskScreenAction } from '../mb-task-screen.actions';
 import { Actions, ofActionDispatched, Store } from '@ngxs/store';
 import type { FormGroup } from '@angular/forms';
@@ -6,24 +7,25 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime } from 'rxjs';
+import { debounceTime, take } from 'rxjs';
 import type { Observable } from 'rxjs';
-import { MbTaskScreenState } from '../mb-task-screen.state';
+import { ETaskViewMode, MbTaskScreenState } from '../mb-task-screen.state';
 import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice-input.state';
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './mb-task-edit.component.interface';
-import { ViewChild, ElementRef } from '@angular/core';
 import { TaskConst } from '@brainassistant/contracts';
 import { VoiceInputTriggerComponent } from 'src/app/shared/features/voice-input/components/voice-input-trigger/voice-input-trigger.component';
 import { clipVoiceTaskTitle } from './helpers/clip-voice-task-title.function';
+import { stripTitleNewlines } from './helpers/strip-title-newlines.function';
 
 @Component({
   selector: 'ba-mb-task-edit',
   imports: [
     CommonModule,
+    CdkTextareaAutosize,
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
@@ -34,6 +36,7 @@ import { clipVoiceTaskTitle } from './helpers/clip-voice-task-title.function';
   styleUrl: './mb-task-edit.component.scss',
 })
 export class MbTaskEditComponent {
+  @ViewChild('titleAutosize') titleAutosize?: CdkTextareaAutosize;
   formValidStatus = output<boolean>();
   imageUri$: Observable<string | null> = inject(Store).select(MbTaskScreenState.imageUri);
   voiceToTextConverting$: Observable<boolean> = inject(Store).select(
@@ -44,19 +47,23 @@ export class MbTaskEditComponent {
   MbTaskScreenState = MbTaskScreenState;
   readonly titleMaxLength = TaskConst.TITLE_MAX_LENGTH;
 
-  @ViewChild('titleInput') titleInput!: ElementRef<HTMLInputElement>;
-
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);
   private readonly fb = inject(FormBuilder);
   private readonly actions$ = inject(Actions);
+  private readonly ngZone = inject(NgZone);
 
   private readonly baseTitleValidators = [Validators.maxLength(TaskConst.TITLE_MAX_LENGTH)];
   private readonly requiredTitleValidators = [Validators.required, ...this.baseTitleValidators];
 
   ngOnInit(): void {
     this.buildForm();
+    this.store.dispatch(new MbTaskScreenAction.UpdateFormData(this.form.valid, this.form.value));
     this.initSubscriptions();
+  }
+
+  ngAfterViewInit(): void {
+    this.resizeTitleField();
   }
 
   addPictureBtnPressed(): void {
@@ -65,9 +72,20 @@ export class MbTaskEditComponent {
 
   onVoiceRecordingStopped(): void {
     this.form.controls.title?.setValue('');
+    this.resizeTitleField();
   }
 
   private initSubscriptions(): void {
+    const titleControl = this.form.controls.title;
+    if (titleControl) {
+      titleControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(value => {
+        const sanitized = stripTitleNewlines(value ?? '');
+        if (sanitized !== value) {
+          titleControl.setValue(sanitized);
+        }
+      });
+    }
+
     this.form.valueChanges
       .pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
@@ -98,8 +116,15 @@ export class MbTaskEditComponent {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((payload: { text: string }) => {
-        this.form.controls.title?.setValue(clipVoiceTaskTitle(payload.text));
+        this.form.controls.title?.setValue(clipVoiceTaskTitle(stripTitleNewlines(payload.text)));
+        this.resizeTitleField();
       });
+  }
+
+  private resizeTitleField(): void {
+    this.ngZone.onStable.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.titleAutosize?.resizeToFitContent(true);
+    });
   }
 
   private updateTitleValidation(isRequired: boolean): void {
@@ -116,8 +141,14 @@ export class MbTaskEditComponent {
   }
 
   private buildForm(): void {
+    const mode = this.store.selectSnapshot(MbTaskScreenState.mode);
+    const existingTitle =
+      mode === ETaskViewMode.Edit
+        ? (this.store.selectSnapshot(MbTaskScreenState.task).title ?? '')
+        : '';
+
     this.form = this.fb.group<FormControlsOf<ITaskEditFormData>>({
-      title: this.fb.control('', {
+      title: this.fb.control(existingTitle, {
         validators: this.requiredTitleValidators,
         nonNullable: true,
       }),
