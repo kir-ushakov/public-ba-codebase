@@ -95,6 +95,42 @@ test('user can create a task', async ({ page }) => {
   expect(tileImageSrc).toBeTruthy();
 });
 
+test('title field grows extra lines without overlapping the image control', async ({ page }) => {
+  await setupApiMocks(page);
+  await signIn(page);
+
+  await page.click('[data-test="new-task-btn"]');
+  await page.waitForURL('/task/TASK_VIEW_MODE_CREATE');
+
+  const titleInput = page.locator('[data-test="task-title-input"]');
+  const addImageBtn = page.locator('[data-test="add-image-btn"]');
+  const applyButton = page.locator('[data-test="apply-changes-btn"]');
+
+  const heightBefore = await titleInput.evaluate(el => el.getBoundingClientRect().height);
+  await titleInput.fill(
+    'A very long task title that should wrap onto another line on a 375px mobile viewport xx',
+  );
+  const heightAfter = await titleInput.evaluate(el => el.getBoundingClientRect().height);
+  expect(heightAfter).toBeGreaterThan(heightBefore);
+
+  await titleInput.press('Enter');
+  await expect(titleInput).toHaveValue(
+    'A very long task title that should wrap onto another line on a 375px mobile viewport xx',
+  );
+
+  await expect(addImageBtn).toBeVisible();
+  await expect(applyButton).toBeVisible();
+
+  const titleBox = await titleInput.boundingBox();
+  const imageBox = await addImageBtn.boundingBox();
+  const applyBox = await applyButton.boundingBox();
+  expect(titleBox).toBeTruthy();
+  expect(imageBox).toBeTruthy();
+  expect(applyBox).toBeTruthy();
+  expect(imageBox!.y).toBeGreaterThan(titleBox!.y + titleBox!.height);
+  expect(applyBox!.y).toBeGreaterThan(imageBox!.y + imageBox!.height);
+});
+
 test('user can create a task with a one-character title', async ({ page }) => {
   await setupApiMocks(page);
   await signIn(page);

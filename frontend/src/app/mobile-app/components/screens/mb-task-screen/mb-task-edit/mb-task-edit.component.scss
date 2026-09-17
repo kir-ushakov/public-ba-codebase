@@ -10,6 +10,16 @@ $task-title-field-radius: 0.5rem;
     border-radius: $task-title-field-radius;
     overflow: hidden;
   }
+
+  textarea.mat-mdc-input-element {
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    resize: none;
+  }
+
+  .mat-mdc-form-field-icon-suffix {
+    align-self: start;
+  }
 }
 
 .take-a-picture-icon-holder {
@@ -23,4 +33,3 @@ $task-title-field-radius: 0.5rem;
     width: $picture-icon-size;
   }
 }
-

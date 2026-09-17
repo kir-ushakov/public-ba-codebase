@@ -1,16 +1,21 @@
 <div class="title-input-holder">
   <form class="task-form" [formGroup]="form">
     <mat-form-field class="title-input-holder" floatLabel="never">
-      <input
+      <textarea
         #titleInput
+        #titleAutosize="cdkTextareaAutosize"
         matInput
+        cdkTextareaAutosize
+        [cdkAutosizeMinRows]="1"
         id="titleInput"
         formControlName="title"
+        rows="1"
         [placeholder]="(voiceToTextConverting$ | async) ? '' : 'Task title here'"
         autocomplete="off"
         [attr.maxlength]="titleMaxLength"
         data-test="task-title-input"
-      />
+        (keydown.enter)="$event.preventDefault()"
+      ></textarea>
 
       <ba-voice-input-trigger matIconSuffix (recordingStopped)="onVoiceRecordingStopped()" />
 
