@@ -1,0 +1,52 @@
+<div class="rich-text-editor" [class.is-readonly]="readonly()">
+  @if (!readonly()) {
+    <div class="toolbar" role="toolbar" aria-label="Description formatting">
+      <button
+        class="toolbar-btn"
+        type="button"
+        data-test="task-description-bold-btn"
+        [class.is-active]="isBold()"
+        (click)="toggleBold()"
+      >
+        <mat-icon>format_bold</mat-icon>
+      </button>
+      <button
+        class="toolbar-btn"
+        type="button"
+        data-test="task-description-italic-btn"
+        [class.is-active]="isItalic()"
+        (click)="toggleItalic()"
+      >
+        <mat-icon>format_italic</mat-icon>
+      </button>
+      <button
+        class="toolbar-btn"
+        type="button"
+        data-test="task-description-bullet-list-btn"
+        [class.is-active]="isBulletList()"
+        (click)="toggleBulletList()"
+      >
+        <mat-icon>format_list_bulleted</mat-icon>
+      </button>
+      <button
+        class="toolbar-btn"
+        type="button"
+        data-test="task-description-ordered-list-btn"
+        [class.is-active]="isOrderedList()"
+        (click)="toggleOrderedList()"
+      >
+        <mat-icon>format_list_numbered</mat-icon>
+      </button>
+      <button
+        class="toolbar-btn"
+        type="button"
+        data-test="task-description-link-btn"
+        [class.is-active]="isLink()"
+        (click)="toggleLink()"
+      >
+        <mat-icon>link</mat-icon>
+      </button>
+    </div>
+  }
+  <div class="editor-host" #editorHost data-test="task-description-editor"></div>
+</div>

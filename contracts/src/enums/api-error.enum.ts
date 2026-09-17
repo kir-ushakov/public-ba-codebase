@@ -76,6 +76,8 @@ export enum ETaskError {
   TitleMissed = 'TASK_ERROR__TITLE_MISSED',
   TitleTooShort = 'TASK_ERROR__TITLE_TOO_SHORT',
   TitleTooLong = 'TASK_ERROR__TITLE_TOO_LONG',
+  DescriptionInvalid = 'TASK_ERROR__DESCRIPTION_INVALID',
+  DescriptionTooLong = 'TASK_ERROR__DESCRIPTION_TOO_LONG',
 }
 
 export enum ETaskRepoServiceError {

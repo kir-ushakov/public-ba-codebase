@@ -1,0 +1,89 @@
+@use 'sass:map';
+@use 'src/scss/colors' as colors;
+@use 'src/scss/spacing' as spacing;
+
+$editor-radius: 0.5rem;
+
+:host {
+  display: block;
+}
+
+.rich-text-editor {
+  border-radius: $editor-radius;
+  background-color: colors.$color-panel-bg;
+  overflow: hidden;
+}
+
+.toolbar {
+  display: flex;
+  gap: map.get(spacing.$spacing, 1);
+  padding: map.get(spacing.$spacing, 2) map.get(spacing.$spacing, 3);
+  border-bottom: 1px solid map.get(colors.$colors-gray-palette, 400);
+}
+
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: colors.$color-main-text;
+
+  mat-icon {
+    font-size: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  &.is-active,
+  &:active {
+    background-color: map.get(colors.$colors-gray-palette, 400);
+  }
+}
+
+.editor-host {
+  min-height: 5.5rem;
+  max-height: 14rem;
+  overflow-y: auto;
+}
+
+.rich-text-editor.is-readonly .editor-host {
+  min-height: 0;
+  max-height: none;
+  background: transparent;
+}
+
+:host ::ng-deep {
+  .tiptap {
+    outline: none;
+    padding: map.get(spacing.$spacing, 3);
+    color: colors.$color-main-text;
+    min-height: 4.5rem;
+  }
+
+  .tiptap p {
+    margin: 0 0 map.get(spacing.$spacing, 2);
+  }
+
+  .tiptap ul,
+  .tiptap ol {
+    margin: 0 0 map.get(spacing.$spacing, 2);
+    padding-left: 1.25rem;
+  }
+
+  .tiptap a {
+    color: map.get(colors.$colors-green, light);
+  }
+
+  .tiptap p.is-editor-empty:first-child::before {
+    color: map.get(map.get(colors.$colors-gray-palette, contrast), 700);
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+}

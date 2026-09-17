@@ -8,6 +8,7 @@ import { UserState } from './user.state';
 import { AppAction } from './app.actions';
 import { SyncAction } from './sync.action';
 import { TasksAction } from './tasks.action';
+import { isEmptyTaskDescription } from '../helpers/is-empty-task-description.function';
 
 interface ITasksStateModel {
   entities: Array<Task>;
@@ -41,7 +42,7 @@ export class TasksState {
     {
       taskInitData,
       userId,
-    }: { taskInitData: Pick<Task, 'title'> & { imageId?: string }; userId: string },
+    }: { taskInitData: Pick<Task, 'title' | 'description'> & { imageId?: string }; userId: string },
   ): Promise<void> {
     try {
       const now = this.now();
@@ -146,7 +147,7 @@ export class TasksState {
   }
 
   private createTaskEntity(
-    taskInitData: Pick<Task, 'title'> & { imageId?: string },
+    taskInitData: Pick<Task, 'title' | 'description'> & { imageId?: string },
     userId: string,
     timestamp: string,
   ): Task {
@@ -156,6 +157,9 @@ export class TasksState {
       id: uuidv4(),
       title: taskInitData.title,
       imageId: taskInitData.imageId,
+      description: isEmptyTaskDescription(taskInitData.description)
+        ? undefined
+        : taskInitData.description,
       status: ETaskStatus.Todo,
       createdAt: timestamp,
       modifiedAt: timestamp,

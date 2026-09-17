@@ -38,6 +38,21 @@ Prefer the `async` pipe or NGXS signals. When subscribing manually, always tear 
 - Use `@if` / `@for` / `@switch` in new and edited templates; leave untouched `*ngIf` blocks alone.
 - Keep logic out of templates: no non-trivial method calls in bindings, computation belongs in TypeScript.
 - Touch the DOM through Angular APIs, not directly.
+- HTML attribute order on an element: `class` first (before `id` if both exist), then other static attributes (`type`, `id`, `data-test`, `#ref`, …), then `[property]` / `[class.x]` bindings, then `(event)` bindings. Do not rewrite untouched templates just to match this.
+
+```html
+<!-- BAD -->
+<button type="button" class="toolbar-btn" (click)="toggleBold()" [class.is-active]="isBold()">
+
+<!-- GOOD -->
+<button
+  class="toolbar-btn"
+  type="button"
+  data-test="task-description-bold-btn"
+  [class.is-active]="isBold()"
+  (click)="toggleBold()"
+>
+```
 
 ## Component-local functions
 

@@ -1,10 +1,16 @@
 import { Task, TaskPresitant } from '../domain/models/task.js';
-import { TaskDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import {
+  TaskDTO,
+  ETaskStatus,
+  ETaskType,
+  type TaskDescriptionDoc,
+} from '@brainassistant/contracts';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
+import { TaskDescription } from '../domain/values/task/task-description.js';
 
 export class TaskMapper {
   public static toDomain(raw: TaskPresitant): Task {
-    const { userId, type, title, status, imageId, _id, createdAt, modifiedAt } = raw;
+    const { userId, type, title, status, imageId, description, _id, createdAt, modifiedAt } = raw;
 
     return Task.reconstitute(
       {
@@ -13,6 +19,7 @@ export class TaskMapper {
         title: title ?? '',
         status: status as ETaskStatus,
         imageId,
+        description: TaskMapper.toValidDescription(description),
         createdAt,
         modifiedAt,
       },
@@ -21,9 +28,9 @@ export class TaskMapper {
   }
 
   public static toPersistence(task: Task): TaskPresitant {
-    const { id, userId, type, title, status, imageId, createdAt, modifiedAt } = task;
+    const { id, userId, type, title, status, imageId, description, createdAt, modifiedAt } = task;
 
-    return {
+    const persisted: TaskPresitant = {
       _id: id.toString(),
       userId,
       type,
@@ -33,10 +40,16 @@ export class TaskMapper {
       createdAt,
       modifiedAt,
     };
+
+    if (description !== undefined) {
+      persisted.description = description;
+    }
+
+    return persisted;
   }
 
   public static toDTO(task: Task): TaskDTO {
-    return {
+    const dto: TaskDTO = {
       id: task.id.toString(),
       userId: task.userId,
       type: task.type,
@@ -46,5 +59,31 @@ export class TaskMapper {
       createdAt: task.createdAt.toISOString(),
       modifiedAt: task.modifiedAt.toISOString(),
     };
+
+    if (task.description !== undefined) {
+      dto.description = task.description;
+    }
+
+    return dto;
+  }
+
+  private static toValidDescription(
+    raw: TaskDescriptionDoc | undefined,
+  ): TaskDescriptionDoc | undefined {
+    if (raw === undefined) {
+      return undefined;
+    }
+
+    const created = TaskDescription.create(raw);
+    if (created.isFailure) {
+      return undefined;
+    }
+
+    const description = created.getValue();
+    if (description.isEmpty()) {
+      return undefined;
+    }
+
+    return description.toJSON();
   }
 }

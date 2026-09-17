@@ -67,7 +67,9 @@
     "ETaskError": [
       "TASK_ERROR__TITLE_MISSED",
       "TASK_ERROR__TITLE_TOO_SHORT",
-      "TASK_ERROR__TITLE_TOO_LONG"
+      "TASK_ERROR__TITLE_TOO_LONG",
+      "TASK_ERROR__DESCRIPTION_INVALID",
+      "TASK_ERROR__DESCRIPTION_TOO_LONG"
     ],
     "ETaskRepoServiceError": [
       "TASK_REPO_SERVICE_ERROR__USER_TASK_NOT_FOUND"
@@ -85,11 +87,46 @@
         "title",
         "status",
         "imageId",
+        "description",
         "createdAt",
         "modifiedAt"
       ],
       "optional": [
-        "imageId"
+        "imageId",
+        "description"
+      ]
+    },
+    "TaskDescriptionDoc": {
+      "keys": [
+        "type",
+        "content"
+      ],
+      "optional": [
+        "content"
+      ]
+    },
+    "TaskDescriptionNode": {
+      "keys": [
+        "type",
+        "attrs",
+        "content",
+        "marks",
+        "text"
+      ],
+      "optional": [
+        "attrs",
+        "content",
+        "marks",
+        "text"
+      ]
+    },
+    "TaskDescriptionMark": {
+      "keys": [
+        "type",
+        "attrs"
+      ],
+      "optional": [
+        "attrs"
       ]
     },
     "UserDto": {
@@ -210,7 +247,10 @@
   "consts": {
     "TaskConst": {
       "TITLE_MIN_LENGTH": 1,
-      "TITLE_MAX_LENGTH": 100
+      "TITLE_MAX_LENGTH": 100,
+      "DESCRIPTION_MAX_TEXT_LENGTH": 4000,
+      "DESCRIPTION_MAX_JSON_BYTES": 16384,
+      "DESCRIPTION_MAX_DEPTH": 8
     }
   }
 }

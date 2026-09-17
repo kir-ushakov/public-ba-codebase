@@ -8,6 +8,11 @@
 // DTOs
 export type {
   TaskDTO,
+  TaskDescriptionDoc,
+  TaskDescriptionMark,
+  TaskDescriptionNode,
+  TaskDescriptionMarkType,
+  TaskDescriptionNodeType,
   UserDto,
   LoginRequestDTO,
   LoginResponseDTO,

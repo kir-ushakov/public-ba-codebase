@@ -8,6 +8,7 @@ export type TaskSeed = {
   title?: string;
   status?: ETaskStatus;
   imageId?: string;
+  description?: TaskDTO['description'];
 };
 
 /**
@@ -33,6 +34,7 @@ export async function createTaskViaApi(
     title: seed.title ?? 'Integration Test Task',
     status: seed.status ?? ETaskStatus.Todo,
     ...(seed.imageId !== undefined ? { imageId: seed.imageId } : {}),
+    ...(seed.description !== undefined ? { description: seed.description } : {}),
   };
 
   const res = await authenticatedRequest(app, jwtCookie)

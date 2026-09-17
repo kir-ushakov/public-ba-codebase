@@ -128,4 +128,70 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     }
     expect(persisted.title).toBe('Valid task title');
   });
+
+  it('happy path: updates description and persists it', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const created = await createTaskViaApi(app, jwtCookie, {
+      id: 'task-update-description',
+      title: 'Task with details',
+    });
+    const description = {
+      type: 'doc' as const,
+      content: [
+        {
+          type: 'paragraph' as const,
+          content: [{ type: 'text' as const, text: 'Check delivery date' }],
+        },
+      ],
+    };
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          ...created,
+          description,
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(200);
+    expect(res.body.description).toEqual(description);
+
+    const persisted = await models.TaskModel.findById(created.id).lean();
+    expect(persisted?.description).toEqual(description);
+  });
+
+  it('clears description when an empty document is sent', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const created = await createTaskViaApi(app, jwtCookie, {
+      id: 'task-clear-description',
+      title: 'Task with details',
+      description: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'Will be cleared' }],
+          },
+        ],
+      },
+    });
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          ...created,
+          description: { type: 'doc', content: [{ type: 'paragraph' }] },
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(200);
+    expect(res.body.description).toBeUndefined();
+
+    const persisted = await models.TaskModel.findById(created.id).lean();
+    expect(persisted?.description).toBeUndefined();
+  });
 });

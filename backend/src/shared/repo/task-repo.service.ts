@@ -36,7 +36,11 @@ export class TaskRepoService {
     const taskId = task.id.toString();
 
     const filter = { _id: taskId };
-    const update = { ...taskPresitant };
+    const { description, ...rest } = taskPresitant;
+    const update =
+      description === undefined
+        ? { $set: rest, $unset: { description: 1 as const } }
+        : { $set: { ...rest, description } };
 
     const updatedTask = await taskModel.findOneAndUpdate(filter, update);
     if (!updatedTask) {

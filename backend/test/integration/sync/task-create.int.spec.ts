@@ -190,6 +190,65 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(persisted?.title).toBe('A');
   });
 
+  it('happy path: should create a task with a description and persist it', async () => {
+    const { userId, jwtCookie } = await seedTestUser();
+    const description = {
+      type: 'doc' as const,
+      content: [
+        {
+          type: 'paragraph' as const,
+          content: [{ type: 'text' as const, text: 'Contact supplier' }],
+        },
+      ],
+    };
+
+    const dto = {
+      id: 'task-with-description',
+      type: ETaskType.Basic,
+      title: 'Task with details',
+      status: ETaskStatus.Todo,
+      description,
+    };
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/sync/task')
+      .send({ changeableObjectDto: dto })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(201);
+
+    const responseBody: TaskDTO = res.body;
+    expect(responseBody.description).toEqual(description);
+    expect(responseBody.userId).toBe(userId);
+
+    const persisted = await models.TaskModel.findById(dto.id).lean();
+    expect(persisted?.description).toEqual(description);
+  });
+
+  it('invalid description node -> 400 DescriptionInvalid', async () => {
+    const { jwtCookie } = await seedTestUser();
+
+    const badDto = {
+      id: 'task-bad-description',
+      type: ETaskType.Basic,
+      title: 'Valid task title',
+      status: ETaskStatus.Todo,
+      description: {
+        type: 'doc',
+        content: [{ type: 'heading', content: [{ type: 'text', text: 'Nope' }] }],
+      },
+    };
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/sync/task')
+      .send({ changeableObjectDto: badDto })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(400);
+    expect(res.body.name).toBe(ETaskError.DescriptionInvalid);
+    expect(res.body).toHaveProperty('message');
+  });
+
   it('title longer than 100 characters -> 400 TitleTooLong', async () => {
     const { jwtCookie } = await seedTestUser();
 

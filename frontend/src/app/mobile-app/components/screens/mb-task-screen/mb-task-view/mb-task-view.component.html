@@ -3,6 +3,14 @@
   <div class="title-holder">
     <span data-test="task-view-title">{{ task.title }}</span>
   </div>
+  @if (task.description; as description) {
+    <ba-rich-text-editor
+      class="task-description"
+      [readonly]="true"
+      [content]="description"
+      data-test="task-view-description"
+    />
+  }
   @if (task.imageId; as imageId) {
     <div class="task-picture-holder">
       @if (isImageLoading()) {

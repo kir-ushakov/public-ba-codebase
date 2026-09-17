@@ -74,7 +74,12 @@ describe('MbTaskScreenState', () => {
   it('does not attach a previous photo when creating a title-only task', async () => {
     await firstValueFrom(store.dispatch(new MbTaskScreenAction.Opened(ETaskViewMode.Create, null)));
     await firstValueFrom(
-      store.dispatch(new MbTaskScreenAction.UpdateFormData(true, { title: 'Fresh task title' })),
+      store.dispatch(
+        new MbTaskScreenAction.UpdateFormData(true, {
+          title: 'Fresh task title',
+          description: null,
+        }),
+      ),
     );
     await firstValueFrom(store.dispatch(MbTaskScreenAction.ApplyButtonPressed));
 
@@ -88,6 +93,33 @@ describe('MbTaskScreenState', () => {
     expect(created?.imageId).toBeUndefined();
   });
 
+  it('creates a task with a description from the form', async () => {
+    const description = {
+      type: 'doc' as const,
+      content: [
+        {
+          type: 'paragraph' as const,
+          content: [{ type: 'text' as const, text: 'Contact supplier' }],
+        },
+      ],
+    };
+
+    await firstValueFrom(store.dispatch(new MbTaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    await firstValueFrom(
+      store.dispatch(
+        new MbTaskScreenAction.UpdateFormData(true, { title: 'Task with details', description }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(MbTaskScreenAction.ApplyButtonPressed));
+
+    const created = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(t => t.id !== existingWithPhoto.id);
+
+    expect(created?.title).toBe('Task with details');
+    expect(created?.description).toEqual(description);
+  });
+
   it('still saves a photo taken during the current create session', async () => {
     deviceCameraService.takePicture.mockResolvedValue('blob:current-session-photo');
 
@@ -95,7 +127,10 @@ describe('MbTaskScreenState', () => {
     await firstValueFrom(store.dispatch(MbTaskScreenAction.AddPictureBtnPressed));
     await firstValueFrom(
       store.dispatch(
-        new MbTaskScreenAction.UpdateFormData(true, { title: 'Task with a new photo' }),
+        new MbTaskScreenAction.UpdateFormData(true, {
+          title: 'Task with a new photo',
+          description: null,
+        }),
       ),
     );
     await firstValueFrom(store.dispatch(MbTaskScreenAction.ApplyButtonPressed));
@@ -127,7 +162,10 @@ describe('MbTaskScreenState', () => {
     await firstValueFrom(store.dispatch(MbTaskScreenAction.AddPictureBtnPressed));
     await firstValueFrom(
       store.dispatch(
-        new MbTaskScreenAction.UpdateFormData(true, { title: existingWithPhoto.title }),
+        new MbTaskScreenAction.UpdateFormData(true, {
+          title: existingWithPhoto.title,
+          description: null,
+        }),
       ),
     );
     await firstValueFrom(store.dispatch(MbTaskScreenAction.ApplyButtonPressed));
@@ -144,7 +182,7 @@ function leftoverCreateState() {
   return {
     mode: ETaskViewMode.Create,
     taskViewForm: {
-      formData: { title: '' },
+      formData: { title: '', description: null },
       status: false,
     },
     taskData: { ...defaultTask, imageId: 'old-image-id' },

@@ -1,9 +1,10 @@
 import { TaskDTO } from '@brainassistant/contracts';
 import { Task } from '../models/task.model';
+import { isEmptyTaskDescription } from '../helpers/is-empty-task-description.function';
 
 export class TasksMapper {
   public static toModel(taskDto: TaskDTO): Task {
-    return {
+    const task: Task = {
       id: taskDto.id,
       userId: taskDto.userId,
       type: taskDto.type,
@@ -13,6 +14,12 @@ export class TasksMapper {
       createdAt: taskDto.createdAt,
       modifiedAt: taskDto.modifiedAt,
     };
+
+    if (!isEmptyTaskDescription(taskDto.description)) {
+      task.description = taskDto.description;
+    }
+
+    return task;
   }
 
   public static toDto(task: Task): TaskDTO {
@@ -22,7 +29,7 @@ export class TasksMapper {
       );
     }
 
-    return {
+    const dto: TaskDTO = {
       id: task.id,
       userId: task.userId,
       type: task.type,
@@ -32,5 +39,11 @@ export class TasksMapper {
       createdAt: task.createdAt,
       modifiedAt: task.modifiedAt,
     };
+
+    if (!isEmptyTaskDescription(task.description)) {
+      dto.description = task.description;
+    }
+
+    return dto;
   }
 }
