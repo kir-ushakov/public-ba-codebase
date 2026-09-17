@@ -7,7 +7,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, take } from 'rxjs';
+import { take } from 'rxjs';
 import type { Observable } from 'rxjs';
 import { ETaskViewMode, MbTaskScreenState } from '../mb-task-screen.state';
 import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice-input.state';
@@ -86,13 +86,9 @@ export class MbTaskEditComponent {
       });
     }
 
-    this.form.valueChanges
-      .pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.store.dispatch(
-          new MbTaskScreenAction.UpdateFormData(this.form.valid, this.form.value),
-        );
-      });
+    this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.store.dispatch(new MbTaskScreenAction.UpdateFormData(this.form.valid, this.form.value));
+    });
 
     this.imageUri$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(imageUri => {
       const isPictureAdded = Boolean(imageUri);
