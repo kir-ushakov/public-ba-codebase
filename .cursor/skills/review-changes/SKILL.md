@@ -44,7 +44,7 @@ Backend, per `backend-architecture.mdc` and `mongodb.mdc`: use cases free of Exp
 
 Frontend, per `angular.mdc` and `ngxs.mdc`: no `HttpClient` in a component, domain data in NGXS rather than component signals, slices communicating by dispatching rather than injecting each other, DTOs mapped to models instead of stored raw, manual subscriptions torn down.
 
-Frontend UI, per `docs/design/UI_STYLE_GUIDE.md` and `docs/design/design-system.json`: no invented colors, spacing, radii, or typography; no new visual convention that is not in the design system; no one-off hex/px in a component SCSS file.
+Frontend UI, per `docs/design/UI_STYLE_GUIDE.md` and `docs/design/design-system.json`: no invented colors, spacing, radii, or typography; no new visual convention that is not in the design system; no one-off hex/px in a component SCSS file; no values copied by measuring an approved reference PNG.
 
 Queries: every query returning a collection needs an explicit bound; no filtering or sorting in JavaScript that MongoDB could do; no query inside a loop.
 

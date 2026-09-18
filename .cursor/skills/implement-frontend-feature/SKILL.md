@@ -29,8 +29,9 @@ If the work touches UI (template, SCSS, layout, or a new screen), read first:
 - `docs/design/UI_STYLE_GUIDE.md`
 - `docs/design/design-system.json`
 - `docs/design/screens/<name>.json` if that screen already has an approved spec
+- `docs/design/references/<name>.png` if that spec links a visual reference
 
-Do not invent colors, spacing, radii, or typography. Reuse existing UI components before creating new ones.
+Do not invent colors, spacing, radii, or typography. Do not measure token values from the PNG. Reuse existing UI components before creating new ones.
 
 `frontend/AGENTS.md` names the canonical reference for each kind of work — a screen with its own state, a self-contained feature, a synced entity, an API service, a device abstraction — plus the code that must not be copied. Open the matching one and read the whole folder first.
 

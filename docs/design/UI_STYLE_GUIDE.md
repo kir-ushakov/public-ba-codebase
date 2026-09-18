@@ -84,17 +84,47 @@ These files describe different layers. Do not duplicate values across them.
 |---|---|---|
 | `docs/design/design-system.json` | WHAT | Exact tokens: colors, spacing, type, radii, component recipes |
 | `docs/design/UI_STYLE_GUIDE.md` | HOW | Principles, allowed/forbidden patterns, how to design a new screen |
-| `docs/design/screens/*.json` | SCREEN | Approved composition of a specific screen. No screen-specific colors or radii |
+| `docs/design/screens/*.json` | SCREEN | Approved composition, behaviour, and states of a specific screen. No screen-specific colors or radii |
+| `docs/design/references/*.png` | LOOK | Approved visual reference. Composition, visual weight, density, proportions |
 
 `design-system.json` is product-wide. It is not a Home-page stylesheet.
 
 Create a `screens/<name>.json` only after that screen’s design is approved. Do not invent screen JSON as part of implementing a feature.
 
+The PNG is **not** a source of truth for values. `design-system.json` plus the screen JSON are. If an agent measures the PNG, it will copy accidental pixel details instead of tokens.
+
+### Approved visual references
+
+Commit only **approved** mockups. Intermediate generations (`task-view-final-v2.png`) do not belong in `references/`.
+
+Each approved screen JSON may have:
+
+- one primary reference PNG: `docs/design/references/<screen>.png`
+- extra PNGs only for important interactive states
+
+Link them from the screen JSON:
+
+```json
+"reference": {
+  "status": "approved",
+  "image": "../references/task-view.png",
+  "description": "Approved visual reference for the Task View screen."
+}
+
+"states": {
+  "statusSelectorOpen": {
+    "referenceImage": "../references/task-view-status-selector.png"
+  }
+}
+```
+
+When implementing, the package is: rules → tokens → screen spec → visual reference. Read the PNG for look and density. Take every color, spacing, radius, and type value from `design-system.json`.
+
 When generating a **new mockup** (outside this repo or with an image model), attach:
 
 1. `design-system.json`
 2. `UI_STYLE_GUIDE.md`
-3. Optionally a screenshot of the approved Home screen
+3. Optionally the approved Home reference PNG
 
 Do not also attach a separate Visual Language paragraph. It already lives in section 2.
 
@@ -591,7 +621,7 @@ Avoid animation used purely for visual spectacle.
 When asking for a new mockup or implementing a new screen:
 
 1. Read this file and `design-system.json`.
-2. If `docs/design/screens/<screen>.json` exists, that composition is already approved — implement it, do not restyle it.
+2. If `docs/design/screens/<screen>.json` exists, that composition is already approved — implement it, do not restyle it. If it links a PNG under `docs/design/references/`, use that image as the visual target and still take token values from `design-system.json`.
 3. Inspect existing shared UI components.
 4. Inspect at least one similar existing screen **and** the Home visual reference. Prefer the approved Home language over older Material-derived screens.
 5. Reuse existing components whenever possible.
@@ -608,7 +638,12 @@ A good request for a new screen looks like:
 
 Optionally attach a screenshot of Home.
 
-After a mockup is approved, save it as `docs/design/screens/<screen>.json`. That file describes structure and components. It must not repeat colors, radii, or spacing from `design-system.json`.
+After a mockup is approved:
+
+1. Save the composition as `docs/design/screens/<screen>.json`. That file describes structure, behaviour, and states. It must not repeat colors, radii, or spacing from `design-system.json`.
+2. Save the approved image as `docs/design/references/<screen>.png` and point `reference.image` at it.
+3. Save extra PNGs only for important interactive states, linked from `states.<name>.referenceImage`.
+4. Do not commit unapproved or intermediate mockups.
 
 ---
 
@@ -649,6 +684,7 @@ DON'T:
 - fill empty areas just to make the screen look busy
 - redesign existing shared components for one screen
 - silently extend the design system in a component file
+- measure or eyedrop colors, spacing, or radii from a reference PNG
 
 ---
 
@@ -659,14 +695,15 @@ When implementing or modifying UI:
 1. Read this file.
 2. Read `docs/design/design-system.json`.
 3. Read `docs/design/screens/<screen>.json` if one exists for the screen being changed.
-4. Inspect existing shared UI components.
-5. Inspect at least one similar existing screen.
-6. Reuse existing components whenever possible.
-7. Use existing design tokens.
-8. Do not introduce new visual conventions without explicit instruction.
-9. Keep the implementation mobile-first.
-10. Verify all relevant interaction states.
-11. Compare the finished screen against this guide before completing the task.
+4. Look at the linked reference PNG if present — for composition and density only, never as a source of token values.
+5. Inspect existing shared UI components.
+6. Inspect at least one similar existing screen.
+7. Reuse existing components whenever possible.
+8. Use existing design tokens.
+9. Do not introduce new visual conventions without explicit instruction.
+10. Keep the implementation mobile-first.
+11. Verify all relevant interaction states.
+12. Compare the finished screen against this guide before completing the task.
 
 When uncertain between creating a new visual pattern and reusing an existing one:
 
@@ -684,7 +721,7 @@ If a genuinely new visual primitive is required, propose the addition before int
 
 ## 26. Reference Visual Language
 
-The **approved** Home screen (`docs/design/screens/home.json`) is the primary visual reference.
+The **approved** Home screen (`docs/design/screens/home.json` and `docs/design/references/home.png`) is the primary visual reference.
 
 The live Angular Home screen may still lag behind that spec. Treat the approved spec and this guide as the target language, not whichever older screen happens to be nearby.
 

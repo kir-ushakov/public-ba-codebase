@@ -11,12 +11,15 @@ Before creating or modifying UI, read:
 - `docs/design/UI_STYLE_GUIDE.md`
 - `docs/design/design-system.json`
 - `docs/design/screens/<name>.json` if one exists for this screen
+- the linked PNG under `docs/design/references/` if the spec has `reference.image`
 
-These files are the source of truth for the Brain Assistant visual system.
+`design-system.json` and the screen JSON are the source of truth for values.
+The PNG is a visual reference only.
 
 ## Hard rules
 
 - Do not invent colors, spacing, typography, radii, shadows, or icon styles.
+- Do not measure colors, spacing, or radii from a reference PNG.
 - Use tokens from `design-system.json`. Prefer `var(--color-accent-primary)`, `var(--spacing-lg)`, `var(--radius-default)`.
 - Map new tokens through `frontend/src/scss/` partials. Do not hard-code hex/px in a component.
 - Reuse existing UI components before creating new ones.
