@@ -1,0 +1,29 @@
+// Ligature icon fonts render the glyph name (e.g. "add") until the font
+// file is ready. A 0%-size fallback keeps the letters invisible.
+@font-face {
+  font-family: 'Material Symbols Rounded Fallback';
+  src: local('Roboto'), local('Arial'), local('Helvetica Neue'), local('Helvetica');
+  size-adjust: 0%;
+}
+
+.material-symbols-rounded {
+  display: inline-block;
+  font-family: var(--icon-family), 'Material Symbols Rounded Fallback', sans-serif;
+  font-weight: var(--icon-weight);
+  font-style: normal;
+  font-size: var(--icon-size-default);
+  font-variation-settings:
+    'FILL' var(--icon-fill),
+    'wght' var(--icon-weight),
+    'GRAD' var(--icon-grade),
+    'opsz' var(--icon-optical-size);
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}

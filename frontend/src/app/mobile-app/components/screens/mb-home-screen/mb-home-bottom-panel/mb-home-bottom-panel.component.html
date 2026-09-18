@@ -1,3 +1,9 @@
-<div class="panel-button" (click)="createTask()" data-test="new-task-btn">
-  <img src="assets/ui/icons/plus-icon-btn.png" />
-</div>
+<button
+  class="create-fab"
+  type="button"
+  data-test="new-task-btn"
+  aria-label="Create"
+  (click)="createTask()"
+>
+  <span class="material-symbols-rounded" aria-hidden="true">add</span>
+</button>

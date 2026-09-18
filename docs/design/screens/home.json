@@ -155,7 +155,7 @@
     "floatingAction": {
       "id": "create",
       "component": "floating-action-button",
-      "icon": "plus",
+      "icon": "add",
       "ariaLabel": "Create",
       "action": "open-create-flow",
 

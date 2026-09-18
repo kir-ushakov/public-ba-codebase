@@ -22,6 +22,7 @@ The PNG is a visual reference only.
 - Do not measure colors, spacing, or radii from a reference PNG.
 - Use tokens from `design-system.json`. Prefer `var(--color-accent-primary)`, `var(--spacing-lg)`, `var(--radius-default)`.
 - Map new tokens through `frontend/src/scss/` partials. Do not hard-code hex/px in a component.
+- New UI uses Google Material Symbols Rounded. Do not add a custom SVG when a Material Symbol exists, and do not mix Material Symbols with legacy PNG icons on a redesigned screen.
 - Reuse existing UI components before creating new ones.
 - Do not copy older Material-derived palettes (`#00695c`, purple-gray, hardcoded avatar colors) as the new convention.
 - If a required visual state is missing from the design system, propose an extension. Do not silently introduce a new convention.

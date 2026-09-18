@@ -1,0 +1,36 @@
+// CSS custom properties mapped from docs/design/design-system.json.
+// Naming follows tokenNaming: --{category}-{path-kebab}.
+:root {
+  --color-accent-primary: #00a991;
+  --color-accent-hover: #00bfa5;
+  --color-accent-pressed: #008c79;
+  --color-accent-on-accent: #fff;
+  --color-icon-default: #aab3b8;
+  --color-icon-active: #00a991;
+  --color-border-separator: rgb(255 255 255 / 10%);
+  --color-border-on-accent: rgb(255 255 255 / 25%);
+
+  --spacing-xs: 4px;
+  --spacing-lg: 16px;
+
+  --radius-circle: 50%;
+
+  --icon-family: 'Material Symbols Rounded';
+  --icon-fill: 0;
+  --icon-weight: 400;
+  --icon-grade: 0;
+  --icon-optical-size: 24;
+  --icon-size-small: 18px;
+  --icon-size-default: 24px;
+  --icon-size-navigation: 26px;
+  --icon-size-large: 32px;
+
+  --fab-size: 56px;
+  --fab-icon-size: 28px;
+  --fab-offset-right: 16px;
+  --fab-offset-bottom: 16px;
+  --fab-ring: inset 0 0 0 1px var(--color-border-on-accent);
+
+  --elevation-floating-border: 1px solid var(--color-border-separator);
+  --elevation-floating-shadow: 0 4px 16px rgb(0 0 0 / 25%);
+}
