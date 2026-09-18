@@ -5,8 +5,11 @@
   --color-accent-hover: #00bfa5;
   --color-accent-pressed: #008c79;
   --color-accent-on-accent: #fff;
+  --color-background-navigation: #030810;
   --color-icon-default: #aab3b8;
   --color-icon-active: #00a991;
+  --color-text-secondary: #929da4;
+  --color-border-default: rgb(255 255 255 / 8%);
   --color-border-separator: rgb(255 255 255 / 10%);
   --color-border-on-accent: rgb(255 255 255 / 25%);
 
@@ -24,6 +27,10 @@
   --icon-size-default: 24px;
   --icon-size-navigation: 26px;
   --icon-size-large: 32px;
+
+  --bottom-navigation-height: 72px;
+  --bottom-navigation-item-gap: 4px;
+  --bottom-navigation-item-label-font-size: 12px;
 
   --fab-size: 56px;
   --fab-icon-size: 28px;

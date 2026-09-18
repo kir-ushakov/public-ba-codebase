@@ -23,6 +23,9 @@ test('user can create a task', async ({ page }) => {
   await page.click('text=Sign in with Google');
   await expect(page.getByText('Sign in with Google')).not.toBeVisible();
   await expect(page.locator('[data-test="new-task-btn"]')).toBeVisible();
+  await expect(page.locator('[data-test="bottom-nav-home"]')).toBeVisible();
+  await expect(page.locator('[data-test="bottom-nav-tasks"]')).toBeVisible();
+  await expect(page.locator('[data-test="bottom-nav-tags"]')).toBeVisible();
 
   // STEP 1: Navigate to Task Creation Screen
   await page.click('[data-test="new-task-btn"]');

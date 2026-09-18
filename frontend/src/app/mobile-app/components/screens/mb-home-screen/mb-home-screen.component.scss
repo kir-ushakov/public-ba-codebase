@@ -53,7 +53,7 @@
 }
 
 .bottom-panel-holder {
-  height: 7vh;
+  height: var(--bottom-navigation-height);
   position: relative;
   z-index: 1;
 }
