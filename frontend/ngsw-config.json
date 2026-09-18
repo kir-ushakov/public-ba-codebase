@@ -38,6 +38,22 @@
       "resources": {
         "urls": ["https://fonts.gstatic.com/s/materialicons/**"]
       }
+    },
+    {
+      "name": "material-symbols",
+      "installMode": "prefetch",
+      "resources": {
+        "urls": [
+          "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block"
+        ]
+      }
+    },
+    {
+      "name": "material-symbol-files",
+      "installMode": "lazy",
+      "resources": {
+        "urls": ["https://fonts.gstatic.com/s/materialsymbolsrounded/**"]
+      }
     }
   ]
 }

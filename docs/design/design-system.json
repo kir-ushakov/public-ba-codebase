@@ -55,7 +55,8 @@
       "border": {
         "default": "rgba(255,255,255,0.08)",
         "strong": "rgba(255,255,255,0.12)",
-        "separator": "rgba(255,255,255,0.10)"
+        "separator": "rgba(255,255,255,0.10)",
+        "onAccent": "rgba(255,255,255,0.25)"
       },
 
       "text": {
@@ -200,8 +201,13 @@
     },
 
     "icons": {
-      "style": "simple geometric outline",
-      "strokeWidth": "2px",
+      "family": "Material Symbols Rounded",
+      "provider": "Google Material Symbols",
+      "style": "rounded",
+      "fill": 0,
+      "weight": 400,
+      "grade": 0,
+      "opticalSize": 24,
 
       "sizes": {
         "small": "18px",
@@ -211,10 +217,12 @@
       },
 
       "rules": [
-        "Use one icon family throughout the application",
+        "Use Material Symbols Rounded for all new UI",
+        "Do not create custom SVG icons when an equivalent Material Symbol exists",
+        "Do not mix Material Symbols with legacy PNG icons on redesigned screens",
+        "Custom SVG icons are allowed only when the required product-specific icon does not exist in Material Symbols",
         "Inactive icons use neutral gray",
-        "Active navigation icons use the primary teal accent",
-        "Do not mix filled, outlined and skeuomorphic icon styles"
+        "Active navigation icons use the primary teal accent"
       ]
     },
 
@@ -309,6 +317,8 @@
       "background": "accent.primary",
       "iconColor": "accent.onAccent",
       "iconSize": "28px",
+      "ring": "1px inset border.onAccent",
+      "shadow": "elevation.floating.shadow",
 
       "position": {
         "right": "16px",

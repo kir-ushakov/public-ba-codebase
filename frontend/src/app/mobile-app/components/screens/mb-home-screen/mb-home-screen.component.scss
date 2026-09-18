@@ -54,4 +54,6 @@
 
 .bottom-panel-holder {
   height: 7vh;
+  position: relative;
+  z-index: 1;
 }

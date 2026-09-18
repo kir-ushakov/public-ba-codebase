@@ -51,8 +51,8 @@ No excessive rounded corners.
 
 **Icons**
 
-- Single icon family.
-- Simple geometric/outline icons.
+- Google Material Symbols Rounded.
+- Simple geometric/outline icons (`FILL` 0).
 - 24px standard size.
 - Teal only for active/primary actions.
 
@@ -249,7 +249,7 @@ Map tokens through the shared partials in `frontend/src/scss/` (`_colors`, `_spa
 
 Older screens may still use a previous palette (purple-gray Material tokens, `#00695c` green, hardcoded avatar colors). **Do not copy those as the new convention.** New and redesigned UI follows `design-system.json`.
 
-Existing PNG icons in `frontend/src/assets/ui/icons/` are a legacy set. New screens should use one simple geometric outline family and must not mix filled, outline, and skeuomorphic styles on the same screen.
+Existing PNG icons in `frontend/src/assets/ui/icons/` and `mat-icon` (Material Icons) are a legacy set. New and redesigned screens use **Material Symbols Rounded** and must not mix them with legacy PNG icons on the same screen.
 
 ---
 
@@ -382,42 +382,49 @@ Images should normally occupy the full available width of their media container.
 
 ---
 
-## 12. Icons
+## 12. Icon System
 
-Use **one icon family throughout the application**.
+Brain Assistant uses **Google Material Symbols Rounded** as the primary icon family.
 
-Icon style:
+Rules:
 
-**Simple geometric outline**
+- Use Material Symbols Rounded for all new UI.
+- Do not create custom SVG icons when an equivalent Material Symbol exists.
+- Do not mix Material Symbols with legacy PNG icons on redesigned screens.
+- Custom SVG icons are allowed only when the required product-specific icon
+  does not exist in Material Symbols.
+- Standard icon size: use the icon size tokens from `design-system.json`.
+- Icon color must use design-system color tokens.
 
-Standard size:
+Do not use `mat-icon` (Material Icons) for new UI. Render a symbol with:
 
-    24px
+```html
+<span class="material-symbols-rounded">add</span>
+```
 
-Navigation:
+Icons should normally use neutral gray (`--color-icon-default`).
 
-    26px
-
-Small contextual icons:
-
-    18px
-
-Icons should normally use neutral gray.
-
-Use teal for:
+Use teal (`--color-icon-active` / `--color-accent-primary`) for:
 
 - active state
 - selected state
 - primary action
 
-Do not mix:
+Examples:
 
-- filled icons
-- outline icons
-- 3D icons
-- skeuomorphic icons
-
-unless explicitly required by the component.
+- Create: `add`
+- Home: `home`
+- Search: `search`
+- More options: `more_vert`
+- Edit: `edit`
+- Delete: `delete`
+- Microphone: `mic`
+- Image: `image`
+- Calendar: `calendar_today`
+- Tags: `sell`
+- Back: `arrow_back`
+- Close: `close`
+- Done: `check`
 
 ---
 
@@ -467,6 +474,8 @@ It should:
 
 - use the teal accent
 - be circular
+- use the Material Symbols Rounded `add` icon
+- use a thin light inset ring (`border.onAccent`) so the circle reads against dark surfaces
 - float above bottom navigation
 - remain visually dominant without being oversized
 
