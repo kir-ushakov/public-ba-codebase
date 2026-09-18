@@ -9,6 +9,21 @@ it says where things live and which existing code to imitate.
 
 Run every command from `frontend/`. PowerShell — separate commands with `;`, never `&&`.
 
+## UI Design
+
+Before creating or modifying UI, read:
+
+- `/docs/design/UI_STYLE_GUIDE.md`
+- `/docs/design/design-system.json`
+- `/docs/design/screens/<name>.json` if that screen already has an approved spec
+
+These files are the source of truth for the Brain Assistant visual system.
+
+Do not invent colors, spacing, typography, radii, shadows, or icon styles.
+Reuse existing UI components before creating new ones. The live Home screen
+may still lag behind `docs/design/screens/home.json` — treat the approved
+spec as the visual reference, not the older Material-derived palette.
+
 ## Where things are
 
 ```

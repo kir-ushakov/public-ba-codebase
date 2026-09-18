@@ -1,0 +1,231 @@
+{
+  "screen": {
+    "id": "home",
+    "name": "Home",
+    "version": "1.0.0",
+
+    "purpose": "Main overview screen displaying the user's recent content and providing quick access to primary application areas.",
+
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+
+    "status": "approved",
+    "implementationStatus": "spec-only",
+
+    "layout": {
+      "type": "mobile",
+      "structure": [
+        "header",
+        "content-grid",
+        "floating-create-action",
+        "bottom-navigation"
+      ],
+
+      "contentGrid": {
+        "type": "masonry",
+        "columns": 2,
+        "gapToken": "spacing.scale.md",
+        "screenPaddingToken": "spacing.screen.horizontalPadding"
+      }
+    },
+
+    "header": {
+      "type": "page-header",
+
+      "left": {
+        "title": {
+          "text": "Home",
+          "typographyToken": "typography.styles.pageTitle"
+        },
+
+        "subtitle": {
+          "type": "item-count",
+          "pattern": "{count} items",
+          "typographyToken": "typography.styles.secondary"
+        }
+      },
+
+      "right": {
+        "actions": [
+          {
+            "id": "search",
+            "type": "icon-button",
+            "icon": "search",
+            "ariaLabel": "Search"
+          },
+          {
+            "id": "more",
+            "type": "icon-button",
+            "icon": "more-vertical",
+            "ariaLabel": "More options"
+          }
+        ],
+
+        "avatar": {
+          "type": "user-avatar",
+          "shape": "circle",
+          "fallback": "initial"
+        }
+      }
+    },
+
+    "content": {
+      "type": "content-grid",
+
+      "supportedCardTypes": [
+        "image",
+        "video",
+        "task"
+      ],
+
+      "cards": {
+        "image": {
+          "component": "media-card",
+
+          "structure": [
+            "media",
+            "title-row",
+            "metadata"
+          ],
+
+          "media": {
+            "type": "image",
+            "fit": "cover"
+          },
+
+          "titleRow": {
+            "leadingIcon": "image",
+            "title": true,
+            "overflowMenu": true
+          },
+
+          "metadata": [
+            "createdAt"
+          ]
+        },
+
+        "video": {
+          "component": "media-card",
+
+          "structure": [
+            "media",
+            "title-row",
+            "description",
+            "metadata"
+          ],
+
+          "media": {
+            "type": "thumbnail",
+            "fit": "cover"
+          },
+
+          "titleRow": {
+            "title": true,
+            "overflowMenu": true
+          },
+
+          "description": {
+            "maxLines": 2
+          },
+
+          "metadata": [
+            "contentType",
+            "createdAt"
+          ]
+        },
+
+        "task": {
+          "component": "task-card",
+
+          "structure": [
+            "title",
+            "metadata"
+          ],
+
+          "title": true,
+
+          "metadata": [
+            "status",
+            "createdAt"
+          ]
+        }
+      }
+    },
+
+    "floatingAction": {
+      "id": "create",
+      "component": "floating-action-button",
+      "icon": "plus",
+      "ariaLabel": "Create",
+      "action": "open-create-flow",
+
+      "position": {
+        "horizontal": "right",
+        "vertical": "above-bottom-navigation"
+      }
+    },
+
+    "bottomNavigation": {
+      "component": "bottom-navigation",
+
+      "items": [
+        {
+          "id": "home",
+          "label": "Home",
+          "icon": "home",
+          "route": "/home",
+          "active": true
+        },
+        {
+          "id": "tasks",
+          "label": "Tasks",
+          "icon": "calendar",
+          "route": "/tasks",
+          "active": false
+        },
+        {
+          "id": "tags",
+          "label": "Tags",
+          "icon": "tag",
+          "route": "/tags",
+          "active": false
+        }
+      ]
+    },
+
+    "responsive": {
+      "mobileFirst": true,
+
+      "mobile": {
+        "columns": 2
+      }
+    },
+
+    "visualRules": [
+      "Use global design tokens from design-system.json.",
+      "Do not define screen-specific colors.",
+      "Do not define screen-specific border radii.",
+      "Do not define arbitrary spacing values.",
+      "Media should remain the strongest visual element inside media cards.",
+      "Cards may have different heights depending on their content.",
+      "Do not force masonry cards to equal heights.",
+      "The create action must remain visually dominant.",
+      "The Home navigation item must use the global active navigation state."
+    ],
+
+    "reference": {
+      "status": "approved",
+      "description": "Dark two-column masonry Home screen with media-dominant cards, compact metadata, teal primary actions and persistent bottom navigation."
+    },
+
+    "angular": {
+      "note": "The live Home screen does not yet match this spec. Treat this JSON as the approved target, not a description of the current implementation. Bottom-nav destinations /tasks and /tags are product destinations from the approved design; they are not a claim that those Angular routes already exist.",
+      "screenFolder": "frontend/src/app/mobile-app/components/screens/mb-home-screen/",
+      "existingPiecesToReuse": [
+        "frontend/src/app/mobile-app/components/common/task-tiles-panel/",
+        "frontend/src/app/shared/components/ui-elements/user-avatar/",
+        "frontend/src/app/mobile-app/components/screens/mb-home-screen/mb-home-bottom-panel/"
+      ]
+    }
+  }
+}

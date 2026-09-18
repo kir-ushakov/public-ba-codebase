@@ -12,7 +12,7 @@ Run every command from `frontend/`. The shell is PowerShell: separate commands w
 ## Checklist
 
 ```
-- [ ] 1. Read a neighbouring screen
+- [ ] 1. Read the visual system, then a neighbouring screen
 - [ ] 2. Decide which state layer owns this
 - [ ] 3. Model, mapper and API service
 - [ ] 4. Actions and state handlers
@@ -22,11 +22,21 @@ Run every command from `frontend/`. The shell is PowerShell: separate commands w
 - [ ] 8. lint / test / build
 ```
 
-## 1. Read a neighbouring screen
+## 1. Read the visual system, then a neighbouring screen
+
+If the work touches UI (template, SCSS, layout, or a new screen), read first:
+
+- `docs/design/UI_STYLE_GUIDE.md`
+- `docs/design/design-system.json`
+- `docs/design/screens/<name>.json` if that screen already has an approved spec
+
+Do not invent colors, spacing, radii, or typography. Reuse existing UI components before creating new ones.
 
 `frontend/AGENTS.md` names the canonical reference for each kind of work — a screen with its own state, a self-contained feature, a synced entity, an API service, a device abstraction — plus the code that must not be copied. Open the matching one and read the whole folder first.
 
 `mobile-app/` is the live shell. `desktop-app/` exists but is not routed from `main.ts` — do not add features there unless asked explicitly.
+
+The live Home screen may still lag behind `docs/design/screens/home.json`. For visual language, follow the approved spec and the style guide, not the older Material-derived palette.
 
 ## 2. Decide which state layer owns this
 
@@ -65,6 +75,8 @@ Slices talk by dispatching actions, never by injecting each other. A global slic
 Standalone component with its own `imports`. Add the route in `mobile-app/mobile-app.routing.ts`, with `providers: [provideStates([...])]` if it has screen state.
 
 Add `data-test` attributes to anything E2E will need to click or read, while you are in the template — retrofitting them later is what makes E2E specs reach for CSS classes.
+
+Map visual values through `frontend/src/scss/` partials from `docs/design/design-system.json`. Before finishing, run the Final Check in `docs/design/UI_STYLE_GUIDE.md`.
 
 ## 6. Sync impact
 

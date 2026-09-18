@@ -1,0 +1,437 @@
+{
+  "designSystem": {
+    "name": "Brain Assistant Dark Technical",
+    "version": "1.0.0",
+    "scope": "product",
+
+    "tokenNaming": {
+      "cssCustomPropertyConvention": "--{category}-{path-kebab}",
+      "examples": {
+        "colors.accent.primary": "--color-accent-primary",
+        "colors.background.app": "--color-background-app",
+        "spacing.scale.lg": "--spacing-lg",
+        "shape.radius.default": "--radius-default",
+        "typography.styles.body.fontSize": "--typography-body-size"
+      }
+    },
+
+    "designDirection": {
+      "style": "dark technical minimalism",
+      "keywords": [
+        "minimal",
+        "technical",
+        "productive",
+        "restrained",
+        "modern",
+        "dark",
+        "high-contrast"
+      ],
+      "principles": [
+        "Functionality takes priority over decoration",
+        "Use visual hierarchy rather than decorative elements",
+        "Use teal as the single primary accent color",
+        "Prefer subtle borders over shadows",
+        "Keep surfaces visually distinct but close in tone",
+        "Use consistent spacing based on a 4px grid",
+        "Keep navigation visually stable across screens",
+        "Avoid visual clichés associated with AI products"
+      ]
+    },
+
+    "colors": {
+      "background": {
+        "app": "#071219",
+        "content": "#0B171E",
+        "navigation": "#030810"
+      },
+
+      "surface": {
+        "default": "#101E25",
+        "elevated": "#14242B",
+        "hover": "#182A31",
+        "selected": "#12302F"
+      },
+
+      "border": {
+        "default": "rgba(255,255,255,0.08)",
+        "strong": "rgba(255,255,255,0.12)",
+        "separator": "rgba(255,255,255,0.10)"
+      },
+
+      "text": {
+        "primary": "#F1F4F5",
+        "secondary": "#929DA4",
+        "tertiary": "#69767E",
+        "disabled": "#566169",
+        "inverse": "#071219"
+      },
+
+      "icon": {
+        "default": "#AAB3B8",
+        "active": "#00A991",
+        "disabled": "#59656C"
+      },
+
+      "accent": {
+        "primary": "#00A991",
+        "hover": "#00BFA5",
+        "pressed": "#008C79",
+        "subtle": "rgba(0,169,145,0.15)",
+        "onAccent": "#FFFFFF"
+      },
+
+      "semantic": {
+        "danger": "#D95C5C",
+        "warning": "#D6A34A",
+        "success": "#00A991",
+        "info": "#668FA8"
+      }
+    },
+
+    "typography": {
+      "fontFamily": {
+        "primary": "Inter, Roboto, system-ui, sans-serif"
+      },
+
+      "styles": {
+        "pageTitle": {
+          "fontSize": "32px",
+          "fontWeight": 700,
+          "lineHeight": 1.2,
+          "color": "text.primary"
+        },
+
+        "sectionTitle": {
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": 1.3,
+          "color": "text.primary"
+        },
+
+        "cardTitle": {
+          "fontSize": "16px",
+          "fontWeight": 600,
+          "lineHeight": 1.35,
+          "color": "text.primary"
+        },
+
+        "body": {
+          "fontSize": "16px",
+          "fontWeight": 400,
+          "lineHeight": 1.5,
+          "color": "text.primary"
+        },
+
+        "secondary": {
+          "fontSize": "14px",
+          "fontWeight": 400,
+          "lineHeight": 1.4,
+          "color": "text.secondary"
+        },
+
+        "caption": {
+          "fontSize": "12px",
+          "fontWeight": 400,
+          "lineHeight": 1.4,
+          "color": "text.tertiary"
+        }
+      }
+    },
+
+    "spacing": {
+      "baseUnit": "4px",
+
+      "scale": {
+        "xs": "4px",
+        "sm": "8px",
+        "md": "12px",
+        "lg": "16px",
+        "xl": "24px",
+        "2xl": "32px",
+        "3xl": "48px"
+      },
+
+      "screen": {
+        "horizontalPadding": "16px",
+        "topPadding": "16px",
+        "sectionGap": "24px"
+      },
+
+      "card": {
+        "padding": "12px",
+        "gap": "12px"
+      }
+    },
+
+    "shape": {
+      "radius": {
+        "small": "6px",
+        "default": "8px",
+        "large": "12px",
+        "circle": "50%"
+      },
+
+      "rules": [
+        "Use 8px radius for normal cards and controls",
+        "Use 12px radius only for large containers or dialogs",
+        "Circular shapes are reserved for avatars and floating action buttons",
+        "Avoid excessive pill-shaped controls except tags and statuses"
+      ]
+    },
+
+    "elevation": {
+      "strategy": "borders-first",
+
+      "card": {
+        "border": "1px solid var(--color-border-default)",
+        "shadow": "none"
+      },
+
+      "floating": {
+        "border": "1px solid var(--color-border-separator)",
+        "shadow": "0 4px 16px rgba(0,0,0,0.25)"
+      },
+
+      "rules": [
+        "Normal cards should not use visible drop shadows",
+        "Use shadows only for floating elements",
+        "Prefer surface contrast and borders for hierarchy"
+      ]
+    },
+
+    "icons": {
+      "style": "simple geometric outline",
+      "strokeWidth": "2px",
+
+      "sizes": {
+        "small": "18px",
+        "default": "24px",
+        "navigation": "26px",
+        "large": "32px"
+      },
+
+      "rules": [
+        "Use one icon family throughout the application",
+        "Inactive icons use neutral gray",
+        "Active navigation icons use the primary teal accent",
+        "Do not mix filled, outlined and skeuomorphic icon styles"
+      ]
+    },
+
+    "layout": {
+      "mobileFirst": true,
+
+      "content": {
+        "maxWidth": "100%",
+        "horizontalPadding": "16px"
+      },
+
+      "grid": {
+        "defaultColumns": 2,
+        "gap": "12px",
+        "alignment": "top"
+      },
+
+      "rules": [
+        "Use whitespace to separate logical groups",
+        "Do not fill empty areas with decorative content",
+        "Cards may have different heights when content requires it",
+        "Maintain consistent horizontal alignment"
+      ]
+    },
+
+    "header": {
+      "background": "background.navigation",
+      "minHeight": "96px",
+      "horizontalPadding": "16px",
+
+      "title": {
+        "style": "pageTitle"
+      },
+
+      "subtitle": {
+        "style": "secondary"
+      },
+
+      "actions": {
+        "alignment": "right",
+        "gap": "16px"
+      },
+
+      "avatar": {
+        "size": "48px",
+        "shape": "circle",
+        "background": "accent.primary",
+        "textColor": "text.primary"
+      }
+    },
+
+    "cards": {
+      "background": "surface.default",
+      "border": "border.default",
+      "borderRadius": "8px",
+      "padding": "12px",
+
+      "media": {
+        "borderRadius": "6px",
+        "objectFit": "cover",
+        "width": "100%"
+      },
+
+      "content": {
+        "gap": "8px"
+      },
+
+      "title": {
+        "style": "cardTitle"
+      },
+
+      "metadata": {
+        "style": "secondary"
+      },
+
+      "menu": {
+        "icon": "more-vertical",
+        "color": "icon.default"
+      },
+
+      "rules": [
+        "Media should dominate image and video cards",
+        "Metadata should never compete visually with the title",
+        "Card actions should remain visually secondary",
+        "Do not use colored card backgrounds for ordinary content"
+      ]
+    },
+
+    "floatingActionButton": {
+      "size": "56px",
+      "shape": "circle",
+      "background": "accent.primary",
+      "iconColor": "accent.onAccent",
+      "iconSize": "28px",
+
+      "position": {
+        "right": "16px",
+        "bottomAboveNavigation": "16px"
+      },
+
+      "purpose": "Primary create action"
+    },
+
+    "bottomNavigation": {
+      "background": "background.navigation",
+      "height": "72px",
+      "borderTop": "1px solid var(--color-border-default)",
+
+      "item": {
+        "iconSize": "26px",
+        "labelFontSize": "12px",
+        "gap": "4px"
+      },
+
+      "inactive": {
+        "iconColor": "icon.default",
+        "textColor": "text.secondary"
+      },
+
+      "active": {
+        "iconColor": "accent.primary",
+        "textColor": "accent.primary"
+      },
+
+      "rules": [
+        "Active destination must be immediately recognizable",
+        "Use accent color only for the active destination",
+        "Do not use filled backgrounds behind navigation items",
+        "Keep navigation visually quiet"
+      ]
+    },
+
+    "buttons": {
+      "primary": {
+        "background": "accent.primary",
+        "textColor": "accent.onAccent",
+        "borderRadius": "8px",
+        "minHeight": "44px",
+        "horizontalPadding": "16px"
+      },
+
+      "secondary": {
+        "background": "surface.elevated",
+        "textColor": "text.primary",
+        "border": "border.default",
+        "borderRadius": "8px",
+        "minHeight": "44px"
+      },
+
+      "ghost": {
+        "background": "transparent",
+        "textColor": "text.secondary"
+      }
+    },
+
+    "inputs": {
+      "background": "surface.default",
+      "border": "border.default",
+      "borderRadius": "8px",
+      "height": "44px",
+      "textColor": "text.primary",
+      "placeholderColor": "text.tertiary",
+
+      "focus": {
+        "borderColor": "accent.primary",
+        "outline": "none"
+      }
+    },
+
+    "interaction": {
+      "primaryAction": "accent.primary",
+      "selectedState": "accent.primary",
+      "focusState": "accent.primary",
+
+      "rules": [
+        "Teal represents action, selection and success",
+        "Do not use teal simply as decoration",
+        "Interactive elements must have clear pressed and disabled states",
+        "Dangerous actions must use semantic danger color rather than teal"
+      ]
+    },
+
+    "imageTreatment": {
+      "objectFit": "cover",
+      "borderRadius": "6px",
+      "border": "none",
+
+      "rules": [
+        "Do not apply decorative filters to user images",
+        "Preserve natural image colors",
+        "Do not overlay gradients unless required for text readability",
+        "Images should remain the strongest visual element inside media cards"
+      ]
+    },
+
+    "aiVisualLanguage": {
+      "rules": [
+        "AI functionality should visually belong to the product",
+        "Do not use purple AI gradients",
+        "Do not use glowing neon effects",
+        "Do not use magic stars or sparkles as generic AI indicators",
+        "Do not create a separate visual language for AI features",
+        "Use normal application components for AI actions and results"
+      ]
+    },
+
+    "avoid": [
+      "glassmorphism",
+      "large decorative gradients",
+      "heavy shadows",
+      "excessive rounded corners",
+      "random accent colors",
+      "purple AI aesthetics",
+      "oversized cards without functional reason",
+      "decorative empty-state graphics unless useful",
+      "mixing multiple icon styles",
+      "unnecessary animations"
+    ]
+  }
+}

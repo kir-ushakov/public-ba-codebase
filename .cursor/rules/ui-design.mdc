@@ -1,0 +1,25 @@
+---
+description: Brain Assistant visual system - tokens, style guide, no invented UI values
+globs: frontend/**/*.scss,frontend/**/*.html,frontend/**/*.css,docs/design/**
+alwaysApply: false
+---
+
+# UI Design
+
+Before creating or modifying UI, read:
+
+- `docs/design/UI_STYLE_GUIDE.md`
+- `docs/design/design-system.json`
+- `docs/design/screens/<name>.json` if one exists for this screen
+
+These files are the source of truth for the Brain Assistant visual system.
+
+## Hard rules
+
+- Do not invent colors, spacing, typography, radii, shadows, or icon styles.
+- Use tokens from `design-system.json`. Prefer `var(--color-accent-primary)`, `var(--spacing-lg)`, `var(--radius-default)`.
+- Map new tokens through `frontend/src/scss/` partials. Do not hard-code hex/px in a component.
+- Reuse existing UI components before creating new ones.
+- Do not copy older Material-derived palettes (`#00695c`, purple-gray, hardcoded avatar colors) as the new convention.
+- If a required visual state is missing from the design system, propose an extension. Do not silently introduce a new convention.
+- After UI work, run the Final Check in `UI_STYLE_GUIDE.md`.
