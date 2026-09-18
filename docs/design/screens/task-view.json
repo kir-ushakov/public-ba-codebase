@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-view",
     "name": "Task View",
-    "version": "1.0.0",
+    "version": "1.1.0",
 
     "purpose": "Read a task and perform focused task actions without entering full edit mode.",
 
@@ -223,6 +223,7 @@
 
     "bottomNavigation": {
       "component": "bottom-navigation",
+      "iconFamily": "Material Symbols Rounded",
       "items": [
         {
           "id": "home",
@@ -234,22 +235,15 @@
         {
           "id": "tasks",
           "label": "Tasks",
-          "icon": "calendar",
+          "icon": "calendar_month",
           "route": "/tasks",
           "active": false
         },
         {
           "id": "tags",
           "label": "Tags",
-          "icon": "tag",
+          "icon": "sell",
           "route": "/tags",
-          "active": false
-        },
-        {
-          "id": "settings",
-          "label": "Settings",
-          "icon": "settings",
-          "route": "/settings",
           "active": false
         }
       ]
@@ -266,17 +260,18 @@
       "Delete task uses the global danger semantic treatment and requires confirmation.",
       "Display the task cover image as the primary media image when one exists.",
       "Keep overlays visually subordinate to the task and consistent with the global surface hierarchy.",
-      "Bottom navigation must stay visually stable across screens. Home's approved spec currently has Home/Tasks/Tags. Settings appears in this mockup as a proposed destination — do not implement a fourth tab only on Task View."
+      "Bottom navigation is shared with Home: Home, Tasks, Tags. Use Material Symbols Rounded icons home, calendar_month and sell. Do not add Settings or a fourth tab.",
+      "Settings, profile and integrations belong to the Home avatar account menu, not to bottom navigation."
     ],
 
     "reference": {
       "status": "approved",
       "image": "../references/task-view.png",
-      "description": "Approved visual reference for the Task View screen."
+      "description": "Approved visual reference for the Task View screen with the shared Home/Tasks/Tags bottom navigation."
     },
 
     "angular": {
-      "note": "The live Task View does not yet match this spec. It is title + optional description + single image, with a side drawer for Edit/Done/Cancel/Delete and a home icon instead of bottom navigation. Duplicate, due date, task tags, cover-vs-attachments, In progress, and /settings are product destinations from the approved design, not claims that those fields, enum values, or Angular routes already exist.",
+      "note": "The live Task View does not yet match this spec. It is title + optional description + single image, with a side drawer for Edit/Done/Cancel/Delete and a home icon instead of bottom navigation. Duplicate, due date, task tags, cover-vs-attachments and In progress are product destinations from the approved design, not claims that those fields, enum values, or Angular routes already exist. Settings is not a Task View destination.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/mb-task-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/screens/mb-task-screen/mb-task-view/",
