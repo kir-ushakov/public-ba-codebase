@@ -52,6 +52,12 @@ Approved screen composition lives in `docs/design/screens/<name>.json`.
 Do not put screen-specific colors or radii there, and do not create a
 screen JSON until that screen’s design is approved.
 
+Approved mockups live in `docs/design/references/`. PNG is a visual
+reference (composition, density, proportions), not a source of tokens.
+Do not measure colors, spacing, or radii from it. Commit only approved
+images: one primary PNG per screen, plus extra PNGs only for important
+interactive states.
+
 ## Verify, do not invent
 
 Never invent API endpoints, database fields, env/config variable names, contract types, or existing behaviour. Read the relevant file first and reuse what is there.

@@ -1,0 +1,289 @@
+{
+  "screen": {
+    "id": "task-view",
+    "name": "Task View",
+    "version": "1.0.0",
+
+    "purpose": "Read a task and perform focused task actions without entering full edit mode.",
+
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+
+    "status": "approved",
+    "implementationStatus": "spec-only",
+
+    "layout": {
+      "type": "mobile",
+      "structure": [
+        "header",
+        "task-summary",
+        "description",
+        "cover-image",
+        "tags",
+        "quick-properties",
+        "bottom-navigation"
+      ]
+    },
+
+    "header": {
+      "type": "page-header",
+
+      "left": {
+        "action": {
+          "id": "back",
+          "type": "icon-button",
+          "icon": "arrow-left",
+          "action": "navigate-back"
+        },
+        "title": {
+          "text": "Task",
+          "typographyToken": "typography.styles.pageTitle"
+        }
+      },
+
+      "right": {
+        "actions": [
+          {
+            "id": "more",
+            "type": "icon-button",
+            "icon": "more-vertical",
+            "ariaLabel": "Task options",
+            "action": "open-options-menu"
+          }
+        ]
+      }
+    },
+
+    "content": {
+      "summary": {
+        "title": {
+          "source": "task.title",
+          "typographyToken": "typography.styles.pageTitle"
+        },
+        "status": {
+          "component": "status-chip",
+          "source": "task.status"
+        },
+        "dueDate": {
+          "component": "compact-date",
+          "source": "task.dueDate",
+          "icon": "calendar"
+        }
+      },
+
+      "description": {
+        "label": "Description",
+        "component": "read-only-content-card",
+        "source": "task.description",
+        "render": "rich-text"
+      },
+
+      "coverImage": {
+        "label": "Image",
+        "component": "task-cover-image",
+        "source": "task.coverImage",
+        "fit": "cover",
+        "visibility": "when-present"
+      },
+
+      "tags": {
+        "label": "Tags",
+        "component": "tag-list",
+        "source": "task.tags",
+        "removable": false,
+        "quickAdd": true,
+        "addAction": {
+          "label": "Add tag",
+          "style": "dashed-chip"
+        }
+      },
+
+      "quickProperties": [
+        {
+          "id": "status",
+          "component": "property-row",
+          "label": "Status",
+          "value": "{task.status}",
+          "icon": "status-{task.status}",
+          "trailingIcon": "chevron-right",
+          "action": "open-status-selector"
+        },
+        {
+          "id": "due-date",
+          "component": "property-row",
+          "label": "Due date",
+          "value": "{task.dueDate.relative}",
+          "secondaryValue": "{task.dueDate.formatted}",
+          "icon": "calendar",
+          "trailingIcon": "chevron-right",
+          "action": "open-due-date-selector"
+        }
+      ]
+    },
+
+    "states": {
+      "default": {
+        "description": "Standard read-only task details view."
+      },
+
+      "statusSelectorOpen": {
+        "trigger": "quick-properties.status",
+        "referenceImage": "../references/task-view-status-selector.png",
+        "overlay": {
+          "component": "bottom-sheet",
+          "title": "Set status",
+          "dismiss": [
+            "close-button",
+            "swipe-down",
+            "backdrop"
+          ],
+          "options": [
+            {
+              "id": "todo",
+              "label": "To do",
+              "description": "Not started yet",
+              "icon": "status-todo"
+            },
+            {
+              "id": "in-progress",
+              "label": "In progress",
+              "description": "Currently working on this",
+              "icon": "status-in-progress"
+            },
+            {
+              "id": "done",
+              "label": "Done",
+              "description": "Task completed",
+              "icon": "status-done"
+            },
+            {
+              "id": "cancelled",
+              "label": "Cancelled",
+              "description": "Task is no longer relevant",
+              "icon": "status-cancelled"
+            }
+          ],
+          "selected": "{task.status}",
+          "selectionTreatment": "accent border and check icon",
+          "primaryAction": {
+            "label": "Apply",
+            "style": "primary",
+            "action": "update-task-status"
+          }
+        }
+      },
+
+      "optionsMenuOpen": {
+        "trigger": "header.more",
+        "referenceImage": "../references/task-view-options.png",
+        "overlay": {
+          "component": "context-menu",
+          "anchor": "header.more",
+          "items": [
+            {
+              "id": "edit",
+              "label": "Edit task",
+              "icon": "edit",
+              "action": "open-task-edit"
+            },
+            {
+              "id": "duplicate",
+              "label": "Duplicate",
+              "icon": "copy",
+              "action": "duplicate-task"
+            },
+            {
+              "id": "delete",
+              "label": "Delete task",
+              "icon": "trash",
+              "semantic": "danger",
+              "action": "open-delete-confirmation"
+            }
+          ]
+        }
+      },
+
+      "deleteConfirmationOpen": {
+        "trigger": "options-menu.delete",
+        "overlay": {
+          "component": "confirmation-dialog",
+          "title": "Delete task?",
+          "message": "This action removes the task.",
+          "dangerAction": {
+            "label": "Delete",
+            "action": "delete-task"
+          },
+          "secondaryAction": {
+            "label": "Cancel",
+            "action": "close-dialog"
+          }
+        }
+      }
+    },
+
+    "bottomNavigation": {
+      "component": "bottom-navigation",
+      "items": [
+        {
+          "id": "home",
+          "label": "Home",
+          "icon": "home",
+          "route": "/home",
+          "active": true
+        },
+        {
+          "id": "tasks",
+          "label": "Tasks",
+          "icon": "calendar",
+          "route": "/tasks",
+          "active": false
+        },
+        {
+          "id": "tags",
+          "label": "Tags",
+          "icon": "tag",
+          "route": "/tags",
+          "active": false
+        },
+        {
+          "id": "settings",
+          "label": "Settings",
+          "icon": "settings",
+          "route": "/settings",
+          "active": false
+        }
+      ]
+    },
+
+    "visualRules": [
+      "Use global design tokens from design-system.json.",
+      "Do not define screen-specific colors, radii or arbitrary spacing.",
+      "The reference PNG is a visual target, not a source of token values. Do not measure colors, spacing, or radii from it.",
+      "Task content is read-only in the default state; full editing opens Task Edit.",
+      "Status and due date are quick-edit property rows.",
+      "Do not duplicate Done or Cancelled actions in the options menu; status changes belong to the status selector.",
+      "The options menu contains object-level actions: Edit task, Duplicate and Delete task.",
+      "Delete task uses the global danger semantic treatment and requires confirmation.",
+      "Display the task cover image as the primary media image when one exists.",
+      "Keep overlays visually subordinate to the task and consistent with the global surface hierarchy.",
+      "Bottom navigation must stay visually stable across screens. Home's approved spec currently has Home/Tasks/Tags. Settings appears in this mockup as a proposed destination — do not implement a fourth tab only on Task View."
+    ],
+
+    "reference": {
+      "status": "approved",
+      "image": "../references/task-view.png",
+      "description": "Approved visual reference for the Task View screen."
+    },
+
+    "angular": {
+      "note": "The live Task View does not yet match this spec. It is title + optional description + single image, with a side drawer for Edit/Done/Cancel/Delete and a home icon instead of bottom navigation. Duplicate, due date, task tags, cover-vs-attachments, In progress, and /settings are product destinations from the approved design, not claims that those fields, enum values, or Angular routes already exist.",
+      "screenFolder": "frontend/src/app/mobile-app/components/screens/mb-task-screen/",
+      "existingPiecesToReuse": [
+        "frontend/src/app/mobile-app/components/screens/mb-task-screen/mb-task-view/",
+        "frontend/src/app/mobile-app/components/screens/mb-task-screen/mb-task-side-menu/",
+        "frontend/src/app/shared/components/ui-elements/rich-text-editor/",
+        "frontend/src/app/mobile-app/components/screens/mb-home-screen/mb-home-bottom-panel/"
+      ]
+    }
+  }
+}

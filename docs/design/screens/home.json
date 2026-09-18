@@ -206,6 +206,7 @@
       "Do not define screen-specific colors.",
       "Do not define screen-specific border radii.",
       "Do not define arbitrary spacing values.",
+      "The reference PNG is a visual target, not a source of token values. Do not measure colors, spacing, or radii from it.",
       "Media should remain the strongest visual element inside media cards.",
       "Cards may have different heights depending on their content.",
       "Do not force masonry cards to equal heights.",
@@ -215,6 +216,7 @@
 
     "reference": {
       "status": "approved",
+      "image": "../references/home.png",
       "description": "Dark two-column masonry Home screen with media-dominant cards, compact metadata, teal primary actions and persistent bottom navigation."
     },
 

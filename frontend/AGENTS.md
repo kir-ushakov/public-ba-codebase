@@ -16,13 +16,15 @@ Before creating or modifying UI, read:
 - `/docs/design/UI_STYLE_GUIDE.md`
 - `/docs/design/design-system.json`
 - `/docs/design/screens/<name>.json` if that screen already has an approved spec
+- `/docs/design/references/<name>.png` if that spec links a visual reference
 
-These files are the source of truth for the Brain Assistant visual system.
+`design-system.json` and the screen JSON are the source of truth for values.
+The PNG shows composition, visual weight, and density — do not measure tokens from it.
 
 Do not invent colors, spacing, typography, radii, shadows, or icon styles.
-Reuse existing UI components before creating new ones. The live Home screen
-may still lag behind `docs/design/screens/home.json` — treat the approved
-spec as the visual reference, not the older Material-derived palette.
+Reuse existing UI components before creating new ones. Live screens may still
+lag behind the approved specs — treat those specs (and their PNGs) as the
+target, not the older Material-derived palette.
 
 ## Where things are
 

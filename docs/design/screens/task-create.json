@@ -1,0 +1,201 @@
+{
+  "screen": {
+    "id": "task-create",
+    "name": "Create Task",
+    "version": "1.0.0",
+
+    "purpose": "Create a new task with title, rich description, images, tags, status and due date.",
+
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+
+    "status": "approved",
+    "implementationStatus": "spec-only",
+    "sharedPattern": "task-form",
+
+    "layout": {
+      "type": "mobile",
+      "structure": [
+        "header",
+        "task-form",
+        "bottom-actions"
+      ]
+    },
+
+    "header": {
+      "type": "page-header",
+
+      "left": {
+        "action": {
+          "id": "back",
+          "type": "icon-button",
+          "icon": "arrow-left",
+          "action": "navigate-back"
+        },
+        "title": {
+          "text": "Create Task",
+          "typographyToken": "typography.styles.pageTitle"
+        }
+      },
+
+      "right": {
+        "actions": [
+          {
+            "id": "more",
+            "type": "icon-button",
+            "icon": "more-vertical",
+            "ariaLabel": "More options"
+          }
+        ]
+      }
+    },
+
+    "form": {
+      "component": "task-form",
+      "mode": "create",
+      "sections": [
+        {
+          "id": "title",
+          "label": "Title",
+          "component": "text-input",
+          "placeholder": "Task title here...",
+          "voiceInput": {
+            "enabled": true,
+            "icon": "microphone"
+          },
+          "characterCount": true
+        },
+        {
+          "id": "description",
+          "label": "Description",
+          "component": "rich-text-editor",
+          "placeholder": "Write additional details about this task...",
+          "toolbar": [
+            "bold",
+            "italic",
+            "bulleted-list",
+            "numbered-list",
+            "link"
+          ],
+          "characterCount": true
+        },
+        {
+          "id": "images",
+          "label": "Images",
+          "component": "image-gallery-editor",
+          "addAction": {
+            "label": "Add image",
+            "icon": "image",
+            "action": "add-image"
+          },
+          "multiple": true,
+          "cover": {
+            "enabled": true,
+            "selectionRule": "Exactly one attached image may be selected as cover when images exist.",
+            "defaultRule": "The first added image becomes the cover automatically.",
+            "tileUse": "The cover image is used as the task image on task tiles.",
+            "selectedTreatment": [
+              "accent selection border",
+              "small COVER badge"
+            ],
+            "changeAction": "set-image-as-cover"
+          }
+        },
+        {
+          "id": "tags",
+          "label": "Tags",
+          "component": "tag-selector",
+          "placeholder": "Add tags...",
+          "multiple": true,
+          "selectedDisplay": {
+            "component": "chip-list",
+            "removable": true
+          },
+          "addAction": {
+            "label": "Add tag",
+            "style": "dashed-chip"
+          }
+        },
+        {
+          "id": "status",
+          "label": "Status",
+          "component": "segmented-status-selector",
+          "options": [
+            {
+              "id": "todo",
+              "label": "To do",
+              "icon": "status-todo",
+              "default": true
+            },
+            {
+              "id": "in-progress",
+              "label": "In progress",
+              "icon": "status-in-progress"
+            },
+            {
+              "id": "done",
+              "label": "Done",
+              "icon": "status-done"
+            },
+            {
+              "id": "cancelled",
+              "label": "Cancelled",
+              "icon": "status-cancelled"
+            }
+          ]
+        },
+        {
+          "id": "due-date",
+          "label": "Due date",
+          "component": "date-selector",
+          "emptyText": "Not set",
+          "icon": "calendar"
+        }
+      ]
+    },
+
+    "bottomActions": {
+      "component": "sticky-form-actions",
+      "actions": [
+        {
+          "id": "cancel",
+          "label": "Cancel",
+          "style": "secondary",
+          "action": "navigate-back"
+        },
+        {
+          "id": "submit",
+          "label": "Create Task",
+          "style": "primary",
+          "action": "create-task"
+        }
+      ]
+    },
+
+    "visualRules": [
+      "Use global design tokens from design-system.json.",
+      "Do not define screen-specific colors, radii or arbitrary spacing.",
+      "The reference PNG is a visual target, not a source of token values. Do not measure colors, spacing, or radii from it.",
+      "Create and Edit must use the same task-form composition.",
+      "Images are attachments; the cover is a role of one attached image, not a separate image field.",
+      "Teal marks the cover selection, selected status and primary action.",
+      "Do not add a delete action or title-clear action to this screen."
+    ],
+
+    "reference": {
+      "status": "approved",
+      "image": "../references/task-create.png",
+      "description": "Approved visual reference for the Create Task screen."
+    },
+
+    "angular": {
+      "note": "The live Create Task screen does not yet match this spec. Treat this JSON as the approved target. TaskDTO currently has a single optional imageId, no tags field, and no dueDate. ETaskStatus is Todo/Done/Cancel — In progress is a product destination, not a current wire value. Character counters in the PNG (200/1000) are visual placeholders; live limits stay in TaskConst until a separate product decision changes them.",
+      "screenFolder": "frontend/src/app/mobile-app/components/screens/mb-task-screen/",
+      "existingPiecesToReuse": [
+        "frontend/src/app/mobile-app/components/screens/mb-task-screen/mb-task-edit/",
+        "frontend/src/app/shared/components/ui-elements/rich-text-editor/",
+        "frontend/src/app/shared/features/voice-input/components/voice-input-trigger/"
+      ]
+    }
+  }
+}
