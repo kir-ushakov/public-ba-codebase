@@ -24,7 +24,7 @@ const ALLOWED_NODE_TYPES = new Set<TaskDescriptionNodeType>([
   'hardBreak',
 ]);
 
-const ALLOWED_MARK_TYPES = new Set<TaskDescriptionMarkType>(['bold', 'italic', 'link']);
+const ALLOWED_MARK_TYPES = new Set<TaskDescriptionMarkType>(['bold', 'italic', 'strike', 'link']);
 
 const LINK_HREF_PATTERN = /^(https?:\/\/|mailto:)/i;
 

@@ -38,6 +38,7 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
 
   readonly isBold = signal(false);
   readonly isItalic = signal(false);
+  readonly isStrike = signal(false);
   readonly isBulletList = signal(false);
   readonly isOrderedList = signal(false);
   readonly isLink = signal(false);
@@ -89,6 +90,10 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
 
   toggleItalic(): void {
     this.editor?.chain().focus().toggleItalic().run();
+  }
+
+  toggleStrike(): void {
+    this.editor?.chain().focus().toggleStrike().run();
   }
 
   toggleBulletList(): void {
@@ -184,6 +189,7 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
 
     this.isBold.set(editor.isActive('bold'));
     this.isItalic.set(editor.isActive('italic'));
+    this.isStrike.set(editor.isActive('strike'));
     this.isBulletList.set(editor.isActive('bulletList'));
     this.isOrderedList.set(editor.isActive('orderedList'));
     this.isLink.set(editor.isActive('link'));

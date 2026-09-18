@@ -1,7 +1,7 @@
 import { ETaskStatus } from '../enums/task-status.enum';
 import { ETaskType } from '../enums/task-type.enum';
 
-export type TaskDescriptionMarkType = 'bold' | 'italic' | 'link';
+export type TaskDescriptionMarkType = 'bold' | 'italic' | 'strike' | 'link';
 
 export type TaskDescriptionNodeType =
   | 'doc'

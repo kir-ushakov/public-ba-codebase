@@ -22,6 +22,24 @@ describe('TaskDescription', () => {
       expect(result.getValue().isEmpty()).toBe(true);
     });
 
+    it('accepts strikethrough text', () => {
+      const result = TaskDescription.create({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'done', marks: [{ type: 'strike' }] }],
+          },
+        ],
+      });
+
+      expect(result.isSuccess).toBe(true);
+      expect(result.getValue().toJSON().content?.[0]).toEqual({
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'done', marks: [{ type: 'strike' }] }],
+      });
+    });
+
     it('rejects an unsupported node type', () => {
       const result = TaskDescription.create({
         type: 'doc',
