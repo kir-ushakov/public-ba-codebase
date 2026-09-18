@@ -1,7 +1,8 @@
 import { Task, TaskPresitant } from '../../../src/shared/domain/models/task.js';
 import { UniqueEntityID } from '../../../src/shared/domain/UniqueEntityID.js';
 import { TaskMapper } from '../../../src/shared/mappers/task.mapper.js';
-import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { ETaskStatus, ETaskType, type TaskDescriptionDoc } from '@brainassistant/contracts';
+import { sampleDescription } from '../domain/task-description.fixture.js';
 
 describe('TaskMapper', () => {
   beforeEach(() => {
@@ -94,6 +95,22 @@ describe('TaskMapper', () => {
       expect(dto.createdAt).toBe('2025-01-15T12:00:00.000Z');
       expect(dto.modifiedAt).toBe('2025-01-15T12:00:00.000Z');
       expect('_id' in dto).toBe(false);
+      expect(dto.description).toBeUndefined();
+    });
+
+    it('includes description when the task has one', () => {
+      const task = Task.create(
+        {
+          userId: 'user-1',
+          type: ETaskType.Basic,
+          title: 'Valid task title',
+          status: ETaskStatus.Todo,
+          description: sampleDescription,
+        },
+        new UniqueEntityID('task-123'),
+      ).getValue();
+
+      expect(TaskMapper.toDTO(task).description).toEqual(sampleDescription);
     });
   });
 
@@ -118,6 +135,46 @@ describe('TaskMapper', () => {
       expect(restored.imageId).toBe('image-1');
       expect(restored.createdAt).toEqual(original.createdAt);
       expect(restored.modifiedAt).toEqual(original.modifiedAt);
+    });
+
+    it('preserves description through persistence and back to domain', () => {
+      const original = Task.create(
+        {
+          userId: 'user-1',
+          type: ETaskType.Basic,
+          title: 'Valid task title',
+          status: ETaskStatus.Todo,
+          description: sampleDescription,
+        },
+        new UniqueEntityID('task-123'),
+      ).getValue();
+
+      const persisted = TaskMapper.toPersistence(original);
+      const restored = TaskMapper.toDomain(persisted);
+
+      expect(persisted.description).toEqual(sampleDescription);
+      expect(restored.description).toEqual(sampleDescription);
+    });
+
+    it('drops an invalid persisted description instead of failing the task', () => {
+      const raw: TaskPresitant = {
+        _id: 'task-1',
+        userId: 'user-1',
+        type: ETaskType.Basic,
+        title: 'Persisted task title',
+        status: ETaskStatus.Todo,
+        description: {
+          type: 'doc',
+          content: [{ type: 'heading', content: [{ type: 'text', text: 'Nope' }] }],
+        } as unknown as TaskDescriptionDoc,
+        createdAt: new Date('2024-06-01T10:00:00.000Z'),
+        modifiedAt: new Date('2024-06-02T15:30:00.000Z'),
+      };
+
+      const domain = TaskMapper.toDomain(raw);
+
+      expect(domain.title).toBe('Persisted task title');
+      expect(domain.description).toBeUndefined();
     });
   });
 });

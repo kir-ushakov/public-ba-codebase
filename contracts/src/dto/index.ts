@@ -4,7 +4,14 @@
  */
 
 // Task DTOs
-export type { TaskDTO } from './task.dto';
+export type {
+  TaskDTO,
+  TaskDescriptionDoc,
+  TaskDescriptionMark,
+  TaskDescriptionNode,
+  TaskDescriptionMarkType,
+  TaskDescriptionNodeType,
+} from './task.dto';
 export { TaskConst } from './task.const';
 
 // User DTOs

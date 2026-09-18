@@ -19,6 +19,9 @@ import {
   type SignUpRequestDTO,
   type SignUpResponseDTO,
   type TagDTO,
+  type TaskDescriptionDoc,
+  type TaskDescriptionMark,
+  type TaskDescriptionNode,
   type TaskDTO,
   type UserDto,
   type VerifyEmailResponseDTO,
@@ -59,10 +62,26 @@ const TASK_DTO_KEYS = [
   'title',
   'status',
   'imageId',
+  'description',
   'createdAt',
   'modifiedAt',
 ] as const satisfies readonly (keyof TaskDTO)[];
 const _taskDto: ExactKeys<TaskDTO, typeof TASK_DTO_KEYS> = true;
+
+const TASK_DESCRIPTION_DOC_KEYS = ['type', 'content'] as const satisfies readonly (keyof TaskDescriptionDoc)[];
+const _taskDescriptionDoc: ExactKeys<TaskDescriptionDoc, typeof TASK_DESCRIPTION_DOC_KEYS> = true;
+
+const TASK_DESCRIPTION_NODE_KEYS = [
+  'type',
+  'attrs',
+  'content',
+  'marks',
+  'text',
+] as const satisfies readonly (keyof TaskDescriptionNode)[];
+const _taskDescriptionNode: ExactKeys<TaskDescriptionNode, typeof TASK_DESCRIPTION_NODE_KEYS> = true;
+
+const TASK_DESCRIPTION_MARK_KEYS = ['type', 'attrs'] as const satisfies readonly (keyof TaskDescriptionMark)[];
+const _taskDescriptionMark: ExactKeys<TaskDescriptionMark, typeof TASK_DESCRIPTION_MARK_KEYS> = true;
 
 const USER_DTO_KEYS = ['firstName', 'lastName', 'email', 'userId'] as const satisfies readonly (keyof UserDto)[];
 const _userDto: ExactKeys<UserDto, typeof USER_DTO_KEYS> = true;
@@ -129,6 +148,9 @@ const SEND_CHANGE_REQUEST_KEYS = [
 const _sendChangeReq: ExactKeys<SendChangeContract.Request, typeof SEND_CHANGE_REQUEST_KEYS> = true;
 
 void _taskDto;
+void _taskDescriptionDoc;
+void _taskDescriptionNode;
+void _taskDescriptionMark;
 void _userDto;
 void _tagDto;
 void _changeable;
@@ -172,7 +194,19 @@ export const PUBLIC_API_SHAPE = {
   dto: {
     TaskDTO: {
       keys: [...TASK_DTO_KEYS],
-      optional: ['imageId'],
+      optional: ['imageId', 'description'],
+    },
+    TaskDescriptionDoc: {
+      keys: [...TASK_DESCRIPTION_DOC_KEYS],
+      optional: ['content'],
+    },
+    TaskDescriptionNode: {
+      keys: [...TASK_DESCRIPTION_NODE_KEYS],
+      optional: ['attrs', 'content', 'marks', 'text'],
+    },
+    TaskDescriptionMark: {
+      keys: [...TASK_DESCRIPTION_MARK_KEYS],
+      optional: ['attrs'],
     },
     UserDto: { keys: [...USER_DTO_KEYS], optional: [] as string[] },
     TagDTO: { keys: [...TAG_DTO_KEYS], optional: [] as string[] },

@@ -1,5 +1,6 @@
-import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { ETaskStatus, ETaskType, type TaskDescriptionDoc } from '@brainassistant/contracts';
 export { ETaskStatus, ETaskType };
+export type { TaskDescriptionDoc };
 
 export type Task = {
   id: string;
@@ -7,6 +8,7 @@ export type Task = {
   type: ETaskType;
   title: string;
   imageId?: string;
+  description?: TaskDescriptionDoc;
   status: ETaskStatus;
   createdAt: string;
   modifiedAt: string;
@@ -22,7 +24,10 @@ export const defaultTask = {
   modifiedAt: null,
 };
 
-export type DefaultTask = typeof defaultTask & { imageId?: string };
+export type DefaultTask = typeof defaultTask & {
+  imageId?: string;
+  description?: TaskDescriptionDoc;
+};
 
 export type TaskChanges = {
   taskId: string;

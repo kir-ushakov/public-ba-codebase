@@ -16,10 +16,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './mb-task-edit.component.interface';
-import { TaskConst } from '@brainassistant/contracts';
+import { TaskConst, type TaskDescriptionDoc } from '@brainassistant/contracts';
 import { VoiceInputTriggerComponent } from 'src/app/shared/features/voice-input/components/voice-input-trigger/voice-input-trigger.component';
 import { clipVoiceTaskTitle } from './helpers/clip-voice-task-title.function';
 import { stripTitleNewlines } from './helpers/strip-title-newlines.function';
+import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/rich-text-editor/rich-text-editor.component';
 
 @Component({
   selector: 'ba-mb-task-edit',
@@ -30,6 +31,7 @@ import { stripTitleNewlines } from './helpers/strip-title-newlines.function';
     MatInputModule,
     MatIconModule,
     VoiceInputTriggerComponent,
+    RichTextEditorComponent,
     ReactiveFormsModule,
   ],
   templateUrl: './mb-task-edit.component.html',
@@ -58,7 +60,9 @@ export class MbTaskEditComponent {
 
   ngOnInit(): void {
     this.buildForm();
-    this.store.dispatch(new MbTaskScreenAction.UpdateFormData(this.form.valid, this.form.value));
+    this.store.dispatch(
+      new MbTaskScreenAction.UpdateFormData(this.form.valid, this.form.getRawValue()),
+    );
     this.initSubscriptions();
   }
 
@@ -87,7 +91,9 @@ export class MbTaskEditComponent {
     }
 
     this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      this.store.dispatch(new MbTaskScreenAction.UpdateFormData(this.form.valid, this.form.value));
+      this.store.dispatch(
+        new MbTaskScreenAction.UpdateFormData(this.form.valid, this.form.getRawValue()),
+      );
     });
 
     this.imageUri$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(imageUri => {
@@ -143,11 +149,17 @@ export class MbTaskEditComponent {
         ? (this.store.selectSnapshot(MbTaskScreenState.task).title ?? '')
         : '';
 
+    const existingDescription =
+      mode === ETaskViewMode.Edit
+        ? (this.store.selectSnapshot(MbTaskScreenState.task).description ?? null)
+        : null;
+
     this.form = this.fb.group<FormControlsOf<ITaskEditFormData>>({
       title: this.fb.control(existingTitle, {
         validators: this.requiredTitleValidators,
         nonNullable: true,
       }),
+      description: this.fb.control<TaskDescriptionDoc | null>(existingDescription),
     });
   }
 }

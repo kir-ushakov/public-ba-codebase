@@ -1,6 +1,12 @@
 import { ETaskError, Task } from '../../../src/shared/domain/models/task.js';
 import { UniqueEntityID } from '../../../src/shared/domain/UniqueEntityID.js';
-import { ETaskStatus, ETaskType, TaskConst } from '@brainassistant/contracts';
+import {
+  ETaskStatus,
+  ETaskType,
+  TaskConst,
+  type TaskDescriptionDoc,
+} from '@brainassistant/contracts';
+import { sampleDescription } from './task-description.fixture.js';
 
 const baseTaskProps = {
   userId: 'user-1',
@@ -91,6 +97,42 @@ describe('Task', () => {
       expect(result.isSuccess).toBe(true);
     });
 
+    it('stores a valid description', () => {
+      const result = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        description: sampleDescription,
+      });
+
+      expect(result.isSuccess).toBe(true);
+      expect(result.getValue().description).toEqual(sampleDescription);
+    });
+
+    it('drops an empty description instead of storing it', () => {
+      const result = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        description: { type: 'doc', content: [{ type: 'paragraph' }] },
+      });
+
+      expect(result.isSuccess).toBe(true);
+      expect(result.getValue().description).toBeUndefined();
+    });
+
+    it('rejects an unsupported description node', () => {
+      const result = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        description: {
+          type: 'doc',
+          content: [{ type: 'heading', content: [{ type: 'text', text: 'Nope' }] }],
+        } as unknown as TaskDescriptionDoc,
+      });
+
+      expect(result.isFailure).toBe(true);
+      expect(result.error.code).toBe(ETaskError.DescriptionInvalid);
+    });
+
     it('preserves a provided id', () => {
       const result = Task.create(
         {
@@ -117,6 +159,22 @@ describe('Task', () => {
 
       expect(updateResult.isFailure).toBe(true);
       expect(updateResult.error.code).toBe(ETaskError.TitleMissed);
+    });
+
+    it('updates description and can clear it with an empty document', () => {
+      const createResult = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        description: sampleDescription,
+      });
+      const task = createResult.getValue();
+
+      const cleared = task.update({
+        description: { type: 'doc', content: [{ type: 'paragraph' }] },
+      });
+
+      expect(cleared.isSuccess).toBe(true);
+      expect(task.description).toBeUndefined();
     });
   });
 

@@ -21,6 +21,7 @@
 
       <mat-error *ngIf="false"> Task title is <strong>required</strong> </mat-error>
     </mat-form-field>
+    <ba-rich-text-editor formControlName="description" />
     @if (imageUri$ | async) {
       <div class="task-picture-holder">
         <img class="task-picture" src="{{ imageUri$ | async }}" data-test="task-picture" />

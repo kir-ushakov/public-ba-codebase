@@ -12,6 +12,7 @@ import type { ITaskEditFormData } from './mb-task-edit/mb-task-edit.component.in
 import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
+import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-description.function';
 
 export enum ETaskViewMode {
   Create = 'TASK_VIEW_MODE_CREATE',
@@ -35,6 +36,7 @@ const defaults: IMbTaskScreenStateModel = {
   taskViewForm: {
     formData: {
       title: '',
+      description: null,
     },
     status: false,
   },
@@ -112,10 +114,16 @@ export class MbTaskScreenState {
   async applyButtonPressed(ctx: StateContext<IMbTaskScreenStateModel>): Promise<void> {
     const state = ctx.getState();
 
+    const formData = state.taskViewForm.formData;
+    const description = isEmptyTaskDescription(formData.description)
+      ? undefined
+      : (formData.description ?? undefined);
+
     ctx.patchState({
       taskData: {
         ...state.taskData,
-        ...state.taskViewForm.formData,
+        ...formData,
+        description,
       },
     });
     if (state.mode === ETaskViewMode.Create) {
@@ -174,7 +182,7 @@ export class MbTaskScreenState {
       taskData: { ...task },
       taskViewForm: {
         ...ctx.getState().taskViewForm,
-        formData: { title: task.title },
+        formData: { title: task.title, description: task.description ?? null },
       },
     });
   }

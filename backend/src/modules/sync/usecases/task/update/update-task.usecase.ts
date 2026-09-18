@@ -31,6 +31,7 @@ export class UpdateTask implements UseCase<Request, Promise<UpdateTaskResult>> {
       title: taskDto.title,
       status: taskDto.status,
       imageId: taskDto.imageId,
+      description: taskDto.description,
     });
 
     if (updateResult.isFailure) {

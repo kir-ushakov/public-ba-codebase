@@ -66,6 +66,26 @@ describe('TasksState', () => {
     expect(all[0]?.id).toBeTruthy();
   });
 
+  it('stores description on optimistic create', async () => {
+    const description = {
+      type: 'doc' as const,
+      content: [
+        {
+          type: 'paragraph' as const,
+          content: [{ type: 'text' as const, text: 'Contact supplier' }],
+        },
+      ],
+    };
+
+    await firstValueFrom(
+      store.dispatch(
+        new TasksAction.CreateTask({ title: 'Task with details', description }, userId),
+      ),
+    );
+
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.description).toEqual(description);
+  });
+
   it('updates a task title in place', async () => {
     await firstValueFrom(
       store.dispatch(
