@@ -44,6 +44,8 @@ Backend, per `backend-architecture.mdc` and `mongodb.mdc`: use cases free of Exp
 
 Frontend, per `angular.mdc` and `ngxs.mdc`: no `HttpClient` in a component, domain data in NGXS rather than component signals, slices communicating by dispatching rather than injecting each other, DTOs mapped to models instead of stored raw, manual subscriptions torn down.
 
+Frontend UI, per `docs/design/UI_STYLE_GUIDE.md` and `docs/design/design-system.json`: no invented colors, spacing, radii, or typography; no new visual convention that is not in the design system; no one-off hex/px in a component SCSS file.
+
 Queries: every query returning a collection needs an explicit bound; no filtering or sorting in JavaScript that MongoDB could do; no query inside a loop.
 
 ## 4. Repo-specific traps
@@ -57,6 +59,7 @@ These pass lint and tests and still break things:
 - E2E mocks that no longer mirror the backend's real status codes and bodies.
 - `page.waitForTimeout()` in a Playwright spec, or `data-testid` instead of `data-test`.
 - Backend types left loose (`any`, unchecked `!`, `null` assigned to a non-nullable field) despite `strict` and `noUncheckedIndexedAccess` in `backend/tsconfig.json`.
+- A new hex, rgba, radius, or spacing value in frontend SCSS that is not a token from `docs/design/design-system.json`.
 
 ## 5. Tests
 

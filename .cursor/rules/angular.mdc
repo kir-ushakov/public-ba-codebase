@@ -66,4 +66,8 @@ Reactive forms only, no `ngModel`. Type them with the existing helper: `FormGrou
 
 ## Styles
 
-Component styles are SCSS and use the shared partials rather than raw values: breakpoints via `@use 'src/scss/breakpoints' as bp;` with `@include bp.up(md)`, plus the `_colors`, `_spacing`, `_typography` and `_button` partials.
+Visual values come from `docs/design/design-system.json`. Do not invent colors, spacing, radii, or typography. Full rules: `docs/design/UI_STYLE_GUIDE.md`.
+
+Component styles are SCSS. Map tokens through the shared partials rather than raw values: breakpoints via `@use 'src/scss/breakpoints' as bp;` with `@include bp.up(md)`, plus the `_colors`, `_spacing`, `_typography` and `_button` partials.
+
+If a required token is missing from those partials, add it there from the design system. Do not hard-code a one-off hex or px in the component. Older screens may still use a previous palette — do not copy those values as the new convention.

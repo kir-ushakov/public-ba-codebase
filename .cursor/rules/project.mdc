@@ -10,6 +10,7 @@ alwaysApply: true
 - `frontend/` — Angular 19 PWA, standalone components, NGXS state.
 - `backend/` — Express + Mongoose API, ESM, use-case architecture.
 - `contracts/` — `@brainassistant/contracts`, shared API types linked into both apps as `file:../contracts`.
+- `docs/design/` — product visual system: tokens, UI style guide, approved screen specs.
 - `db/`, `nginx/`, `scripts/`, `docker-compose.yml` — infrastructure.
 
 `frontend`, `backend` and `contracts` are separate npm packages. Run `npm`/`ng` commands from inside the relevant folder, not from the repo root.
@@ -31,6 +32,25 @@ The dev environment is Windows PowerShell. Do not chain commands with `&&` and d
 ## `type` vs `interface`
 
 House style, not the TypeScript handbook: `type` is an object **shape** (DTO, JSON, HTTP/Passport payload, test fixture). `interface` is a **contract** a class `implements`. A `type` is erased at compile time; it is not a class and does not imply instances. Do not convert `type` → `interface` for “consistency”. See `.cursor/rules/typescript-type-vs-interface.mdc`.
+
+## UI Design
+
+All frontend UI must follow `docs/design/UI_STYLE_GUIDE.md`.
+
+All visual values must come from `docs/design/design-system.json`.
+
+Do not invent colors, spacing, typography, radii, shadows, icon styles,
+or other visual conventions during feature implementation.
+
+Reuse existing UI components and patterns before creating new ones.
+
+If the existing design system cannot represent a required UI state,
+propose an extension to the design system instead of silently introducing
+a new visual convention.
+
+Approved screen composition lives in `docs/design/screens/<name>.json`.
+Do not put screen-specific colors or radii there, and do not create a
+screen JSON until that screen’s design is approved.
 
 ## Verify, do not invent
 
