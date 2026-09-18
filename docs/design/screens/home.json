@@ -2,7 +2,7 @@
   "screen": {
     "id": "home",
     "name": "Home",
-    "version": "1.0.0",
+    "version": "1.1.0",
 
     "purpose": "Main overview screen displaying the user's recent content and providing quick access to primary application areas.",
 
@@ -64,7 +64,8 @@
         "avatar": {
           "type": "user-avatar",
           "shape": "circle",
-          "fallback": "initial"
+          "fallback": "initial",
+          "action": "open-account-menu"
         }
       }
     },
@@ -165,8 +166,37 @@
       }
     },
 
+    "accountMenu": {
+      "component": "account-menu",
+      "trigger": "header.avatar",
+      "items": [
+        {
+          "id": "profile",
+          "label": "Profile",
+          "icon": "person"
+        },
+        {
+          "id": "settings",
+          "label": "Settings",
+          "icon": "settings"
+        },
+        {
+          "id": "integrations",
+          "label": "Integrations",
+          "icon": "hub"
+        },
+        {
+          "id": "sign-out",
+          "label": "Sign out",
+          "icon": "logout",
+          "semantic": "danger"
+        }
+      ]
+    },
+
     "bottomNavigation": {
       "component": "bottom-navigation",
+      "iconFamily": "Material Symbols Rounded",
 
       "items": [
         {
@@ -179,14 +209,14 @@
         {
           "id": "tasks",
           "label": "Tasks",
-          "icon": "calendar",
+          "icon": "calendar_month",
           "route": "/tasks",
           "active": false
         },
         {
           "id": "tags",
           "label": "Tags",
-          "icon": "tag",
+          "icon": "sell",
           "route": "/tags",
           "active": false
         }
@@ -211,7 +241,10 @@
       "Cards may have different heights depending on their content.",
       "Do not force masonry cards to equal heights.",
       "The create action must remain visually dominant.",
-      "The Home navigation item must use the global active navigation state."
+      "The Home navigation item must use the global active navigation state.",
+      "FAB add and bottom navigation use Material Symbols Rounded: add, home, calendar_month, sell.",
+      "Bottom navigation destinations are Home, Tasks and Tags only. Do not add Settings as a fourth tab.",
+      "The avatar opens the account menu: Profile, Settings, Integrations, Sign out."
     ],
 
     "reference": {

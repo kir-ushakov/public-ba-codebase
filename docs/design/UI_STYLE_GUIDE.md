@@ -420,7 +420,7 @@ Examples:
 - Delete: `delete`
 - Microphone: `mic`
 - Image: `image`
-- Calendar: `calendar_today`
+- Calendar / Tasks: `calendar_month`
 - Tags: `sell`
 - Back: `arrow_back`
 - Close: `close`
@@ -504,6 +504,16 @@ Avoid glowing focus effects.
 Navigation uses the darkest surface in the application.
 
 Bottom navigation should remain visually stable between screens.
+
+Destinations:
+
+    Home
+    Tasks
+    Tags
+
+Icons are Material Symbols Rounded: `home`, `calendar_month`, `sell`.
+
+Settings is not a bottom navigation destination. Account, settings and integrations open from the avatar.
 
 Inactive destination:
 
