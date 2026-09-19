@@ -30,13 +30,17 @@
           <span class="material-symbols-rounded" aria-hidden="true">more_vert</span>
         </button>
         @if (isMenuOpen()) {
-          <div class="task-tile-menu-backdrop" (click)="closeMenu($event)"></div>
+          <button
+            class="task-tile-menu-backdrop"
+            type="button"
+            aria-label="Close menu"
+            (click)="closeMenu($event)"
+          ></button>
           <div
             class="task-tile-menu"
             role="menu"
             data-test="task-tile-menu"
             aria-label="Task options"
-            (click)="$event.stopPropagation()"
           >
             <button
               class="task-tile-menu-item"

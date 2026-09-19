@@ -11,7 +11,12 @@
 </button>
 
 @if (isOpen()) {
-  <div class="account-menu-backdrop" (click)="close()"></div>
+  <button
+    class="account-menu-backdrop"
+    type="button"
+    aria-label="Close menu"
+    (click)="close()"
+  ></button>
   <div class="account-menu" role="menu" data-test="account-menu" aria-label="Account">
     <div class="account-menu-header">
       <div class="account-menu-avatar">
