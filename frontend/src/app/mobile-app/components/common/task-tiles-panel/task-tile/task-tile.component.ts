@@ -1,24 +1,20 @@
-import { Component, HostBinding, Input, HostListener, signal, ViewChild } from '@angular/core';
-import { Capacitor } from '@capacitor/core';
+import { Component, ElementRef, Input, HostListener, signal, ViewChild } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { MbTaskTileAction } from './task-tile.actions';
 import { Task } from 'src/app/shared/models/task.model';
-import { CommonModule } from '@angular/common';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
+import { formatTaskTileDate } from './helpers/format-task-tile-date.function';
+import { taskTypeIcon } from './helpers/task-type-icon.function';
 
 @Component({
   selector: 'ba-task-tile',
   templateUrl: './task-tile.component.html',
   styleUrls: ['./task-tile.component.scss'],
-  imports: [CommonModule, SpinnerComponent, ImageSrcPipe],
+  imports: [SpinnerComponent, ImageSrcPipe],
 })
 export class TaskTileComponent {
-  @HostBinding('class.task-tile--android-pastel')
-  readonly androidPastelHostClass =
-    Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
-
   @Input() task!: Task;
   @HostListener('click') onClick() {
     this.store.dispatch(new MbTaskTileAction.Clicked(this.task.id));
@@ -34,10 +30,23 @@ export class TaskTileComponent {
   constructor(
     private store: Store,
     private imageService: ImageService,
+    private host: ElementRef<HTMLElement>,
   ) {}
+
+  get typeIcon(): string {
+    return taskTypeIcon(this.task.type);
+  }
+
+  get createdAtLabel(): string {
+    return formatTaskTileDate(this.task.createdAt);
+  }
 
   ngAfterViewInit() {
     this.calculateImageWidth();
+  }
+
+  onMoreClick(event: Event): void {
+    event.stopPropagation();
   }
 
   onImageError(event: Event): void {
@@ -55,7 +64,9 @@ export class TaskTileComponent {
 
   private calculateImageWidth(): void {
     const width =
-      this.spinnerComponent?.getNativeElement()?.offsetWidth || this.DEFAULT_IMAGE_WIDTH;
+      this.host.nativeElement.offsetWidth ||
+      this.spinnerComponent?.getNativeElement()?.offsetWidth ||
+      this.DEFAULT_IMAGE_WIDTH;
     const dpr = window.devicePixelRatio || 1;
     this.calculatedImageWidth.set(dpr * width);
   }

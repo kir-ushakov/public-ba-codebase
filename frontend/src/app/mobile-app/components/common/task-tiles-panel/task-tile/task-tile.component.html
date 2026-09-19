@@ -1,7 +1,6 @@
 <div class="task-tile-inner">
-  <div class="task-tile-title">{{ task.title }}</div>
   @if (task.imageId) {
-    <div class="task-tile-picture" *ngIf="task.imageId">
+    <div class="task-tile-picture">
       @if (isLoading()) {
         <ba-spinner></ba-spinner>
       }
@@ -14,4 +13,22 @@
       }
     </div>
   }
+  <div class="task-tile-body">
+    <span class="material-symbols-rounded type-icon" aria-hidden="true">{{ typeIcon }}</span>
+    <div class="task-tile-text">
+      <div class="task-tile-title-row">
+        <span class="task-tile-title">{{ task.title }}</span>
+        <button
+          class="task-tile-more"
+          type="button"
+          data-test="task-tile-more"
+          aria-label="More options"
+          (click)="onMoreClick($event)"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">more_vert</span>
+        </button>
+      </div>
+      <div class="task-tile-meta">{{ createdAtLabel }}</div>
+    </div>
+  </div>
 </div>

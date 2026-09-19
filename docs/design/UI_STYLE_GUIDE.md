@@ -359,6 +359,12 @@ Typical hierarchy:
 
 Metadata must never visually compete with the title.
 
+The leading icon on a task card is the **task type**, not whether the card has an image or video.
+
+Do not print the type name (TODO, TIMER, SCHEDULE, LOCATION) on the card. Use only the Material Symbol from `design-system.json` → `icons.taskType`.
+
+Do not use `check` or `check_circle` for TODO: those read as completed. TODO uses `radio_button_unchecked`.
+
 ---
 
 ## 11. Images and Video
@@ -420,6 +426,10 @@ Examples:
 - Delete: `delete`
 - Microphone: `mic`
 - Image: `image`
+- Task type TODO: `radio_button_unchecked`
+- Task type Timer: `timer`
+- Task type Schedule: `event_repeat`
+- Task type Location: `location_on`
 - Calendar / Tasks: `calendar_month`
 - Tags: `sell`
 - Back: `arrow_back`

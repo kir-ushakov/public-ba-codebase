@@ -2,7 +2,7 @@
   "screen": {
     "id": "home",
     "name": "Home",
-    "version": "1.1.0",
+    "version": "1.2.0",
 
     "purpose": "Main overview screen displaying the user's recent content and providing quick access to primary application areas.",
 
@@ -95,7 +95,7 @@
           },
 
           "titleRow": {
-            "leadingIcon": "image",
+            "leadingIcon": "task-type",
             "title": true,
             "overflowMenu": true
           },
@@ -121,6 +121,7 @@
           },
 
           "titleRow": {
+            "leadingIcon": "task-type",
             "title": true,
             "overflowMenu": true
           },
@@ -139,14 +140,17 @@
           "component": "task-card",
 
           "structure": [
-            "title",
+            "title-row",
             "metadata"
           ],
 
-          "title": true,
+          "titleRow": {
+            "leadingIcon": "task-type",
+            "title": true,
+            "overflowMenu": true
+          },
 
           "metadata": [
-            "status",
             "createdAt"
           ]
         }
@@ -244,13 +248,17 @@
       "The Home navigation item must use the global active navigation state.",
       "FAB add and bottom navigation use Material Symbols Rounded: add, home, calendar_month, sell.",
       "Bottom navigation destinations are Home, Tasks and Tags only. Do not add Settings as a fourth tab.",
-      "The avatar opens the account menu: Profile, Settings, Integrations, Sign out."
+      "The avatar opens the account menu: Profile, Settings, Integrations, Sign out.",
+      "The leading icon on every Home card is the task type from design-system icons.taskType, not an image/video icon.",
+      "Do not print TODO, TIMER, SCHEDULE or LOCATION as text on the card.",
+      "Presence of an image does not change the leading icon.",
+      "Current live type is TODO (ETaskType.Basic) using radio_button_unchecked. Do not use check or check_circle."
     ],
 
     "reference": {
       "status": "approved",
       "image": "../references/home.png",
-      "description": "Dark two-column masonry Home screen with media-dominant cards, compact metadata, teal primary actions and persistent bottom navigation."
+      "description": "Dark two-column masonry Home screen with media-dominant cards, task-type leading icons, compact metadata, teal primary actions and persistent bottom navigation."
     },
 
     "angular": {
