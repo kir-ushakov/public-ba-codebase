@@ -1,37 +1,58 @@
-@use 'sass:map';
-@use 'src/scss/colors' as colors;
-
 :host {
   display: flex;
   height: 100%;
   flex-direction: column;
   overflow: hidden;
+  background-color: var(--color-background-app);
 }
 
 .top-panel-holder {
-  background-color: map.get(colors.$colors-gray-palette, 600);
+  background-color: var(--color-background-app);
   display: flex;
-  height: 7vh;
-  padding: 0 5px;
+  align-items: flex-start;
+  min-height: var(--header-min-height);
+  padding: var(--spacing-lg);
 
   .top-panel-holder-left,
   .top-panel-holder-right {
     display: flex;
     flex: 1;
-
-    > * {
-      margin-left: 0.625rem;
-    }
   }
 
   .top-panel-holder-right {
+    position: relative;
+    z-index: 2;
     justify-content: end;
+    align-items: center;
+    gap: var(--spacing-lg);
+  }
+
+  .page-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .page-title {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: var(--typography-page-title-size);
+    font-weight: var(--typography-page-title-weight);
+    line-height: var(--typography-page-title-line-height);
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--typography-secondary-size);
+    font-weight: var(--typography-secondary-weight);
+    line-height: var(--typography-secondary-line-height);
   }
 
   .avatar-holder {
     align-self: center;
-    height: 6vh;
-    width: 6vh;
+    height: var(--header-avatar-size);
+    width: var(--header-avatar-size);
   }
 
   .sync-icon-holder {
@@ -40,8 +61,9 @@
 }
 
 .main-panel-holder {
-  background: colors.$color-main-bg;
+  background-color: var(--color-background-app);
   flex: 1;
+  padding: 0 var(--spacing-lg);
   overflow: hidden;
   overflow-y: scroll;
 

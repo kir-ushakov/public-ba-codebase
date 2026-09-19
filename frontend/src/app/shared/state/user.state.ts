@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { patch } from '@ngxs/store/operators';
+import { MbHomeAccountMenuAction } from 'src/app/mobile-app/components/screens/mb-home-screen/mb-home-account-menu/mb-home-account-menu.actions';
 import { MbProfileScreenAction } from 'src/app/mobile-app/components/screens/mb-profile-screen/mb-profile-screen.actions';
 import { User } from '../models/user.model';
 import { AuthService } from '../services/api/auth.service';
@@ -144,6 +145,7 @@ export class UserState {
   }
 
   @Action(MbProfileScreenAction.Logout)
+  @Action(MbHomeAccountMenuAction.SignOut)
   logout(ctx: StateContext<IUserStateModel>): void {
     this._authService
       .logout()

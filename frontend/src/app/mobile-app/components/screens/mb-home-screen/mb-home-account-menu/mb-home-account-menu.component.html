@@ -1,0 +1,77 @@
+<button
+  class="avatar-trigger"
+  type="button"
+  data-test="home-avatar"
+  aria-label="Account menu"
+  aria-haspopup="menu"
+  [attr.aria-expanded]="isOpen()"
+  (click)="toggle()"
+>
+  <ba-user-avatar [data]="avatarInputData"></ba-user-avatar>
+</button>
+
+@if (isOpen()) {
+  <button
+    class="account-menu-backdrop"
+    type="button"
+    aria-label="Close menu"
+    (click)="close()"
+  ></button>
+  <div class="account-menu" role="menu" data-test="account-menu" aria-label="Account">
+    <div class="account-menu-header">
+      <div class="account-menu-avatar">
+        <ba-user-avatar [data]="avatarInputData"></ba-user-avatar>
+      </div>
+      <div class="account-menu-identity">
+        <span class="account-menu-name">{{ userFullName }}</span>
+        <span class="account-menu-email">{{ userEmail }}</span>
+      </div>
+    </div>
+
+    <div class="account-menu-separator"></div>
+
+    <button
+      class="account-menu-item"
+      type="button"
+      role="menuitem"
+      data-test="account-menu-profile"
+      (click)="openProfile()"
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">person</span>
+      Profile
+    </button>
+    <button
+      class="account-menu-item"
+      type="button"
+      role="menuitem"
+      data-test="account-menu-settings"
+      disabled
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">settings</span>
+      Settings
+    </button>
+    <button
+      class="account-menu-item"
+      type="button"
+      role="menuitem"
+      data-test="account-menu-integrations"
+      disabled
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">hub</span>
+      Integrations
+    </button>
+
+    <div class="account-menu-separator"></div>
+
+    <button
+      class="account-menu-item is-danger"
+      type="button"
+      role="menuitem"
+      data-test="account-menu-sign-out"
+      (click)="signOut()"
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">logout</span>
+      Sign out
+    </button>
+  </div>
+}

@@ -1,7 +1,7 @@
 {
   "designSystem": {
     "name": "Brain Assistant Dark Technical",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "scope": "product",
 
     "tokenNaming": {
@@ -223,7 +223,20 @@
         "Custom SVG icons are allowed only when the required product-specific icon does not exist in Material Symbols",
         "Inactive icons use neutral gray",
         "Active navigation icons use the primary teal accent"
-      ]
+      ],
+
+      "taskType": {
+        "todo": "radio_button_unchecked",
+        "timer": "timer",
+        "schedule": "event_repeat",
+        "location": "location_on",
+        "rules": [
+          "The leading icon on a task card is the task type, not media presence.",
+          "Do not show the type name as text on the card.",
+          "Do not use check or check_circle for TODO; they read as completed.",
+          "Today only TODO is live; it maps from ETaskType.Basic (TASK_TYPE_BASIC)."
+        ]
+      }
     },
 
     "layout": {
@@ -299,15 +312,31 @@
       },
 
       "menu": {
-        "icon": "more-vertical",
-        "color": "icon.default"
+        "icon": "more_vert",
+        "color": "icon.default",
+        "items": {
+          "edit": {
+            "icon": "edit"
+          },
+          "duplicate": {
+            "icon": "content_copy"
+          },
+          "addToTags": {
+            "icon": "sell"
+          },
+          "delete": {
+            "icon": "delete",
+            "semantic": "danger"
+          }
+        }
       },
 
       "rules": [
         "Media should dominate image and video cards",
         "Metadata should never compete visually with the title",
         "Card actions should remain visually secondary",
-        "Do not use colored card backgrounds for ordinary content"
+        "Do not use colored card backgrounds for ordinary content",
+        "The leading icon is the task type from icons.taskType, never a media or content-type icon"
       ]
     },
 

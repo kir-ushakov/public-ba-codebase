@@ -1,5 +1,10 @@
 <div class="top-panel-holder">
-  <div class="top-panel-holder-left"></div>
+  <div class="top-panel-holder-left">
+    <div class="page-header-text">
+      <h1 class="page-title" data-test="home-title">Home</h1>
+      <p class="page-subtitle" data-test="home-item-count">{{ itemCountLabel }}</p>
+    </div>
+  </div>
   <div class="top-panel-holder-right">
     <div *ngIf="!selectors.online()">
       <img src="assets/ui/icons/no-connection.png" />
@@ -12,7 +17,11 @@
       <img src="assets/ui/icons/no-synchronize.png" />
     </div>
     <div *ngIf="selectors.isLoggedIn()" class="avatar-holder">
-      <ba-user-avatar [data]="avatarInputData" [routerLink]="['/profile']"></ba-user-avatar>
+      <ba-mb-home-account-menu
+        [avatarInputData]="avatarInputData"
+        [userFullName]="selectors.userFullName()"
+        [userEmail]="selectors.userEmail()"
+      ></ba-mb-home-account-menu>
     </div>
   </div>
 </div>

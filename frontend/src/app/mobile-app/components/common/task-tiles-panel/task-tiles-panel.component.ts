@@ -27,7 +27,7 @@ export class TaskTilesPanelComponent {
     }
   }
 
-  readonly noOfColumns = 3;
+  readonly noOfColumns = 2;
 
   columns: { index: number; tasks: Task[] }[] = [];
 }

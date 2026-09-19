@@ -1,91 +1,19 @@
 :host {
-  display: flex;
+  display: block;
   position: relative;
-  height: auto;
-  overflow: visible;
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-default);
-  background-color: var(--color-surface-default);
-  cursor: pointer;
-
-  &.is-menu-open {
-    z-index: 2;
-  }
-}
-
-.task-tile-inner {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
   width: 100%;
+  height: 100%;
 }
 
-.task-tile-picture {
+.avatar-trigger {
+  display: block;
   width: 100%;
-
-  img {
-    display: block;
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    border-radius: var(--radius-small);
-  }
-}
-
-.task-tile-body {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-}
-
-.type-icon {
-  flex-shrink: 0;
-  font-size: var(--icon-size-small);
-  color: var(--color-icon-default);
-}
-
-.task-tile-text {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.task-tile-title-row {
-  display: flex;
-  position: relative;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-}
-
-.task-tile-title {
-  min-width: 0;
-  flex: 1;
-  color: var(--color-text-primary);
-  font-size: var(--typography-card-title-size);
-  font-weight: var(--typography-card-title-weight);
-  line-height: var(--typography-card-title-line-height);
-  word-break: break-word;
-}
-
-.task-tile-more {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
+  height: 100%;
   padding: 0;
   appearance: none;
   border: 0;
   background: transparent;
-  color: var(--color-icon-default);
   cursor: pointer;
-
-  .material-symbols-rounded {
-    font-size: var(--icon-size-small);
-    color: var(--color-icon-default);
-  }
 
   &:focus {
     outline: none;
@@ -94,18 +22,11 @@
   &:focus-visible {
     outline: 1px solid var(--color-accent-primary);
     outline-offset: var(--spacing-xs);
-    border-radius: var(--radius-small);
+    border-radius: var(--radius-circle);
   }
 }
 
-.task-tile-meta {
-  color: var(--color-text-secondary);
-  font-size: var(--typography-secondary-size);
-  font-weight: var(--typography-secondary-weight);
-  line-height: var(--typography-secondary-line-height);
-}
-
-.task-tile-menu-backdrop {
+.account-menu-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1;
@@ -115,9 +36,9 @@
   background: transparent;
 }
 
-.task-tile-menu {
+.account-menu {
   position: absolute;
-  top: calc(100% + var(--spacing-xs));
+  top: calc(100% + var(--spacing-sm));
   right: 0;
   z-index: 2;
   display: flex;
@@ -131,13 +52,53 @@
   box-shadow: var(--elevation-floating-shadow);
 }
 
-.task-tile-menu-separator {
+.account-menu-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+}
+
+.account-menu-avatar {
+  flex-shrink: 0;
+  width: var(--header-avatar-size);
+  height: var(--header-avatar-size);
+}
+
+.account-menu-identity {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.account-menu-name {
+  overflow: hidden;
+  color: var(--color-text-primary);
+  font-size: var(--typography-card-title-size);
+  font-weight: var(--typography-card-title-weight);
+  line-height: var(--typography-card-title-line-height);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-menu-email {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: var(--typography-secondary-size);
+  font-weight: var(--typography-secondary-weight);
+  line-height: var(--typography-secondary-line-height);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-menu-separator {
   height: 0;
   margin: var(--spacing-sm) 0;
   border-top: 1px solid var(--color-border-separator);
 }
 
-.task-tile-menu-item {
+.account-menu-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
@@ -152,7 +113,6 @@
   font-weight: var(--typography-body-weight);
   line-height: var(--typography-body-line-height);
   text-align: left;
-  white-space: nowrap;
 
   .material-symbols-rounded {
     font-size: var(--icon-size-default);

@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Store } from '@ngxs/store';
-import { MbHomeBottomPanelAction } from './mb-home-bottom-panel.actions';
+import { Router, RouterLink } from '@angular/router';
+import { ETaskViewMode } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.state';
 
 @Component({
   selector: 'ba-mb-home-bottom-panel',
@@ -10,9 +9,9 @@ import { MbHomeBottomPanelAction } from './mb-home-bottom-panel.actions';
   imports: [RouterLink],
 })
 export class MbHomeBottomPanelComponent {
-  constructor(private store: Store) {}
+  constructor(private router: Router) {}
 
   createTask(): void {
-    this.store.dispatch(MbHomeBottomPanelAction.CreateTask);
+    void this.router.navigate(['task/' + ETaskViewMode.Create]);
   }
 }

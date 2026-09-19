@@ -1,12 +1,11 @@
 :host {
   display: grid;
-  flex-wrap: nowrap;
-  gap: clamp(0.3125rem, 1.5vw, 1rem);
-  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .tiles-column {
   display: flex;
   flex-direction: column;
-  row-gap: clamp(0.3125rem, 1.5vw, 1rem);
+  row-gap: var(--spacing-md);
 }

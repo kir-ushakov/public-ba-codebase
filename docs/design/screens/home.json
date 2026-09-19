@@ -2,7 +2,7 @@
   "screen": {
     "id": "home",
     "name": "Home",
-    "version": "1.1.0",
+    "version": "1.3.0",
 
     "purpose": "Main overview screen displaying the user's recent content and providing quick access to primary application areas.",
 
@@ -95,7 +95,7 @@
           },
 
           "titleRow": {
-            "leadingIcon": "image",
+            "leadingIcon": "task-type",
             "title": true,
             "overflowMenu": true
           },
@@ -121,6 +121,7 @@
           },
 
           "titleRow": {
+            "leadingIcon": "task-type",
             "title": true,
             "overflowMenu": true
           },
@@ -139,14 +140,17 @@
           "component": "task-card",
 
           "structure": [
-            "title",
+            "title-row",
             "metadata"
           ],
 
-          "title": true,
+          "titleRow": {
+            "leadingIcon": "task-type",
+            "title": true,
+            "overflowMenu": true
+          },
 
           "metadata": [
-            "status",
             "createdAt"
           ]
         }
@@ -190,6 +194,38 @@
           "label": "Sign out",
           "icon": "logout",
           "semantic": "danger"
+        }
+      ]
+    },
+
+    "taskOptionsMenu": {
+      "component": "task-options-menu",
+      "trigger": "card.overflowMenu",
+      "items": [
+        {
+          "id": "edit",
+          "label": "Edit",
+          "icon": "edit",
+          "action": "open-task-edit"
+        },
+        {
+          "id": "duplicate",
+          "label": "Duplicate",
+          "icon": "content_copy",
+          "enabled": false
+        },
+        {
+          "id": "add-to-tags",
+          "label": "Add to tags",
+          "icon": "sell",
+          "enabled": false
+        },
+        {
+          "id": "delete",
+          "label": "Delete",
+          "icon": "delete",
+          "semantic": "danger",
+          "action": "delete-task"
         }
       ]
     },
@@ -244,13 +280,24 @@
       "The Home navigation item must use the global active navigation state.",
       "FAB add and bottom navigation use Material Symbols Rounded: add, home, calendar_month, sell.",
       "Bottom navigation destinations are Home, Tasks and Tags only. Do not add Settings as a fourth tab.",
-      "The avatar opens the account menu: Profile, Settings, Integrations, Sign out."
+      "The avatar opens the account menu: Profile, Settings, Integrations, Sign out.",
+      "The leading icon on every Home card is the task type from design-system icons.taskType, not an image/video icon.",
+      "Do not print TODO, TIMER, SCHEDULE or LOCATION as text on the card.",
+      "Presence of an image does not change the leading icon.",
+      "Current live type is TODO (ETaskType.Basic) using radio_button_unchecked. Do not use check or check_circle.",
+      "The card overflow menu is Edit, Duplicate, Add to tags and Delete. Duplicate and Add to tags are visible but disabled until those features exist."
     ],
+
+    "states": {
+      "taskOptionsOpen": {
+        "referenceImage": "../references/home-task-options.png"
+      }
+    },
 
     "reference": {
       "status": "approved",
       "image": "../references/home.png",
-      "description": "Dark two-column masonry Home screen with media-dominant cards, compact metadata, teal primary actions and persistent bottom navigation."
+      "description": "Dark two-column masonry Home screen with media-dominant cards, task-type leading icons, compact metadata, teal primary actions and persistent bottom navigation."
     },
 
     "angular": {
