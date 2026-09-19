@@ -9,21 +9,42 @@
 .top-panel-holder {
   background-color: var(--color-background-app);
   display: flex;
-  height: 7vh;
-  padding: 0 5px;
+  align-items: flex-start;
+  min-height: var(--header-min-height);
+  padding: var(--spacing-lg);
 
   .top-panel-holder-left,
   .top-panel-holder-right {
     display: flex;
     flex: 1;
-
-    > * {
-      margin-left: 0.625rem;
-    }
   }
 
   .top-panel-holder-right {
     justify-content: end;
+    align-items: center;
+    gap: var(--spacing-lg);
+  }
+
+  .page-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .page-title {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: var(--typography-page-title-size);
+    font-weight: var(--typography-page-title-weight);
+    line-height: var(--typography-page-title-line-height);
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--typography-secondary-size);
+    font-weight: var(--typography-secondary-weight);
+    line-height: var(--typography-secondary-line-height);
   }
 
   .avatar-holder {
@@ -40,6 +61,7 @@
 .main-panel-holder {
   background-color: var(--color-background-app);
   flex: 1;
+  padding: 0 var(--spacing-lg);
   overflow: hidden;
   overflow-y: scroll;
 

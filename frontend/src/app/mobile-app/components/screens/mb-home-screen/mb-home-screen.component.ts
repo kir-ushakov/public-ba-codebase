@@ -33,6 +33,10 @@ export class MbHomeScreenComponent implements OnInit {
 
   avatarInputData!: IUserAvatarInputData;
 
+  get itemCountLabel(): string {
+    return `${this.selectors.tasks().length} items`;
+  }
+
   constructor(private store: Store) {}
 
   ngOnInit(): void {

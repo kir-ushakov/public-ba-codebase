@@ -9,13 +9,24 @@
   --color-background-navigation: #030810;
   --color-icon-default: #aab3b8;
   --color-icon-active: #00a991;
+  --color-text-primary: #f1f4f5;
   --color-text-secondary: #929da4;
   --color-border-default: rgb(255 255 255 / 8%);
   --color-border-separator: rgb(255 255 255 / 10%);
   --color-border-on-accent: rgb(255 255 255 / 25%);
 
   --spacing-xs: 4px;
+  --spacing-md: 12px;
   --spacing-lg: 16px;
+
+  --typography-page-title-size: 32px;
+  --typography-page-title-weight: 700;
+  --typography-page-title-line-height: 1.2;
+  --typography-secondary-size: 14px;
+  --typography-secondary-weight: 400;
+  --typography-secondary-line-height: 1.4;
+
+  --header-min-height: 96px;
 
   --radius-circle: 50%;
 
