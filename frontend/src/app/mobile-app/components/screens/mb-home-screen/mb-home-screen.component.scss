@@ -1,15 +1,13 @@
-@use 'sass:map';
-@use 'src/scss/colors' as colors;
-
 :host {
   display: flex;
   height: 100%;
   flex-direction: column;
   overflow: hidden;
+  background-color: var(--color-background-app);
 }
 
 .top-panel-holder {
-  background-color: map.get(colors.$colors-gray-palette, 600);
+  background-color: var(--color-background-app);
   display: flex;
   height: 7vh;
   padding: 0 5px;
@@ -40,7 +38,7 @@
 }
 
 .main-panel-holder {
-  background: colors.$color-main-bg;
+  background-color: var(--color-background-app);
   flex: 1;
   overflow: hidden;
   overflow-y: scroll;
