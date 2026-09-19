@@ -73,6 +73,7 @@
           "toolbar": [
             "bold",
             "italic",
+            "strikethrough",
             "bulleted-list",
             "numbered-list",
             "link"

@@ -11,8 +11,11 @@ test('user can create a task with a description', async ({ page }) => {
   await page.waitForURL('/task/TASK_VIEW_MODE_CREATE');
   await page.fill('[data-test="task-title-input"]', 'Task with details');
 
-  await page.locator('[data-test="task-description-content"]').click();
+  const editor = page.locator('[data-test="task-description-content"]');
+  await editor.click();
   await page.keyboard.type('Contact supplier');
+  await editor.press('Control+A');
+  await page.locator('[data-test="task-description-strike-btn"]').click();
 
   const applyButton = page.locator('[data-test="apply-changes-btn"]');
   await expect(applyButton).toBeEnabled();
@@ -25,7 +28,9 @@ test('user can create a task with a description', async ({ page }) => {
 
   const body = postResponse.request().postDataJSON() as SendChangeContract.Request<TaskDTO>;
   expect(body.changeableObjectDto.title).toBe('Task with details');
-  expect(JSON.stringify(body.changeableObjectDto.description)).toContain('Contact supplier');
+  const descriptionJson = JSON.stringify(body.changeableObjectDto.description);
+  expect(descriptionJson).toContain('Contact supplier');
+  expect(descriptionJson).toContain('"type":"strike"');
 
   await page.waitForURL(/\/(home)?$/);
   await expect(

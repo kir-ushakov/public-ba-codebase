@@ -10,7 +10,6 @@ export function createTaskDescriptionExtensions(readonly: boolean): Extensions {
       blockquote: false,
       code: false,
       horizontalRule: false,
-      strike: false,
       underline: false,
       trailingNode: false,
       link: {

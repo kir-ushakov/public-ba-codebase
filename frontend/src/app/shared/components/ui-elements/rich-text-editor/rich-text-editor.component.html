@@ -22,6 +22,15 @@
       <button
         class="toolbar-btn"
         type="button"
+        data-test="task-description-strike-btn"
+        [class.is-active]="isStrike()"
+        (click)="toggleStrike()"
+      >
+        <mat-icon>format_strikethrough</mat-icon>
+      </button>
+      <button
+        class="toolbar-btn"
+        type="button"
         data-test="task-description-bullet-list-btn"
         [class.is-active]="isBulletList()"
         (click)="toggleBulletList()"
