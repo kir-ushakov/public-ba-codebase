@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideStore, Store } from '@ngxs/store';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
+import { MbHomeAccountMenuAction } from 'src/app/mobile-app/components/screens/mb-home-screen/mb-home-account-menu/mb-home-account-menu.actions';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
@@ -10,6 +11,7 @@ import { EUserAuthState, UserState } from 'src/app/shared/state/user.state';
 
 describe('UserState', () => {
   let store: Store;
+  let authService: { logout: jest.Mock };
   let googleOAuthConsentService: {
     openForceConsentScreen: jest.Mock;
     clearForceConsentAttempt: jest.Mock;
@@ -24,6 +26,9 @@ describe('UserState', () => {
   };
 
   beforeEach(() => {
+    authService = {
+      logout: jest.fn().mockReturnValue(of(undefined)),
+    };
     googleOAuthConsentService = {
       openForceConsentScreen: jest.fn(),
       clearForceConsentAttempt: jest.fn(),
@@ -32,7 +37,7 @@ describe('UserState', () => {
     TestBed.configureTestingModule({
       providers: [
         provideStore([UserState]),
-        { provide: AuthService, useValue: {} },
+        { provide: AuthService, useValue: authService },
         { provide: SlackService, useValue: {} },
         { provide: GoogleOAuthConsentService, useValue: googleOAuthConsentService },
       ],
@@ -78,5 +83,12 @@ describe('UserState', () => {
     });
 
     expect(store.selectSnapshot(UserState.needsGoogleReconsent)).toBe(false);
+  });
+
+  it('clears the session after home account menu sign out', async () => {
+    await firstValueFrom(store.dispatch(new MbHomeAccountMenuAction.SignOut()));
+
+    expect(authService.logout).toHaveBeenCalledTimes(1);
+    expect(store.selectSnapshot(UserState.isLoggedIn)).toBe(false);
   });
 });

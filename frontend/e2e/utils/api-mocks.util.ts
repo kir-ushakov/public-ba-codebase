@@ -117,6 +117,11 @@ export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = 
       return;
     }
 
+    if (url.includes('/api/auth/logout') && method === 'DELETE') {
+      await route.fulfill(json(200, {}));
+      return;
+    }
+
     if (url.includes('/api/integrations/google/oauth-consent-screen')) {
       await route.fulfill({
         status: 200,

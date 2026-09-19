@@ -20,6 +20,8 @@
   }
 
   .top-panel-holder-right {
+    position: relative;
+    z-index: 2;
     justify-content: end;
     align-items: center;
     gap: var(--spacing-lg);
@@ -49,8 +51,8 @@
 
   .avatar-holder {
     align-self: center;
-    height: 6vh;
-    width: 6vh;
+    height: var(--header-avatar-size);
+    width: var(--header-avatar-size);
   }
 
   .sync-icon-holder {

@@ -17,7 +17,11 @@
       <img src="assets/ui/icons/no-synchronize.png" />
     </div>
     <div *ngIf="selectors.isLoggedIn()" class="avatar-holder">
-      <ba-user-avatar [data]="avatarInputData" [routerLink]="['/profile']"></ba-user-avatar>
+      <ba-mb-home-account-menu
+        [avatarInputData]="avatarInputData"
+        [userFullName]="selectors.userFullName()"
+        [userEmail]="selectors.userEmail()"
+      ></ba-mb-home-account-menu>
     </div>
   </div>
 </div>
