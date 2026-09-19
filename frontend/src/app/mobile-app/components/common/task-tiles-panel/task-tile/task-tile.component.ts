@@ -1,6 +1,8 @@
 import { Component, ElementRef, Input, HostListener, signal, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { MbTaskTileAction } from './task-tile.actions';
+import { ETaskViewMode } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.state';
 import { Task } from 'src/app/shared/models/task.model';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
 import { ImageService } from 'src/app/shared/services/application/image.service';
@@ -13,11 +15,22 @@ import { taskTypeIcon } from './helpers/task-type-icon.function';
   templateUrl: './task-tile.component.html',
   styleUrls: ['./task-tile.component.scss'],
   imports: [SpinnerComponent, ImageSrcPipe],
+  host: {
+    '[class.is-menu-open]': 'isMenuOpen()',
+  },
 })
 export class TaskTileComponent {
   @Input() task!: Task;
   @HostListener('click') onClick() {
-    this.store.dispatch(new MbTaskTileAction.Clicked(this.task.id));
+    if (this.isMenuOpen()) {
+      return;
+    }
+    void this.router.navigate([`task/${ETaskViewMode.View}/${this.task.id}`]);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeMenu();
   }
 
   @ViewChild(SpinnerComponent, { static: false }) spinnerComponent!: SpinnerComponent;
@@ -26,11 +39,13 @@ export class TaskTileComponent {
 
   isLoading = signal(true);
   calculatedImageWidth = signal<number | undefined>(undefined);
+  readonly isMenuOpen = signal(false);
 
   constructor(
     private store: Store,
     private imageService: ImageService,
     private host: ElementRef<HTMLElement>,
+    private router: Router,
   ) {}
 
   get typeIcon(): string {
@@ -47,6 +62,24 @@ export class TaskTileComponent {
 
   onMoreClick(event: Event): void {
     event.stopPropagation();
+    this.isMenuOpen.update(isOpen => !isOpen);
+  }
+
+  closeMenu(event?: Event): void {
+    event?.stopPropagation();
+    this.isMenuOpen.set(false);
+  }
+
+  editTask(event: Event): void {
+    event.stopPropagation();
+    this.closeMenu();
+    void this.router.navigate([`task/${ETaskViewMode.Edit}/${this.task.id}`]);
+  }
+
+  deleteTask(event: Event): void {
+    event.stopPropagation();
+    this.closeMenu();
+    this.store.dispatch(new MbTaskTileAction.DeleteSelected(this.task.id));
   }
 
   onImageError(event: Event): void {

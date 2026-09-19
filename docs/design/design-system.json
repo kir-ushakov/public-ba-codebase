@@ -313,7 +313,22 @@
 
       "menu": {
         "icon": "more_vert",
-        "color": "icon.default"
+        "color": "icon.default",
+        "items": {
+          "edit": {
+            "icon": "edit"
+          },
+          "duplicate": {
+            "icon": "content_copy"
+          },
+          "addToTags": {
+            "icon": "sell"
+          },
+          "delete": {
+            "icon": "delete",
+            "semantic": "danger"
+          }
+        }
       },
 
       "rules": [

@@ -23,10 +23,64 @@
           type="button"
           data-test="task-tile-more"
           aria-label="More options"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="isMenuOpen()"
           (click)="onMoreClick($event)"
         >
           <span class="material-symbols-rounded" aria-hidden="true">more_vert</span>
         </button>
+        @if (isMenuOpen()) {
+          <div class="task-tile-menu-backdrop" (click)="closeMenu($event)"></div>
+          <div
+            class="task-tile-menu"
+            role="menu"
+            data-test="task-tile-menu"
+            aria-label="Task options"
+            (click)="$event.stopPropagation()"
+          >
+            <button
+              class="task-tile-menu-item"
+              type="button"
+              role="menuitem"
+              data-test="task-tile-menu-edit"
+              (click)="editTask($event)"
+            >
+              <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+              Edit
+            </button>
+            <button
+              class="task-tile-menu-item"
+              type="button"
+              role="menuitem"
+              data-test="task-tile-menu-duplicate"
+              disabled
+            >
+              <span class="material-symbols-rounded" aria-hidden="true">content_copy</span>
+              Duplicate
+            </button>
+            <button
+              class="task-tile-menu-item"
+              type="button"
+              role="menuitem"
+              data-test="task-tile-menu-add-to-tags"
+              disabled
+            >
+              <span class="material-symbols-rounded" aria-hidden="true">sell</span>
+              Add to tags
+            </button>
+            <div class="task-tile-menu-separator"></div>
+            <button
+              class="task-tile-menu-item is-danger"
+              type="button"
+              role="menuitem"
+              data-test="task-tile-menu-delete"
+              (click)="deleteTask($event)"
+            >
+              <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+              Delete
+            </button>
+          </div>
+        }
       </div>
       <div class="task-tile-meta">{{ createdAtLabel }}</div>
     </div>

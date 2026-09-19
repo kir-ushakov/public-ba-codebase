@@ -1,11 +1,10 @@
 import { State, Action, StateContext } from '@ngxs/store';
 import { Router } from '@angular/router';
-import { MbHomeBottomPanelAction } from './components/screens/mb-home-screen/mb-home-bottom-panel/mb-home-bottom-panel.actions';
 import { Injectable, NgZone } from '@angular/core';
 import { MbTaskScreenAction } from './components/screens/mb-task-screen/mb-task-screen.actions';
 import { MbTaskTileAction } from './components/common/task-tiles-panel/task-tile/task-tile.actions';
-import { ETaskViewMode } from './components/screens/mb-task-screen/mb-task-screen.state';
 import { AppAction } from '../shared/state/app.actions';
+import { TasksAction } from '../shared/state/tasks.action';
 
 // TODO: For this moment this interface is empty
 // sorry lint :(
@@ -23,18 +22,9 @@ export class MobileAppState {
     private ngZone: NgZone,
   ) {}
 
-  @Action(MbHomeBottomPanelAction.CreateTask)
-  openCreateTaskView() {
-    this.ngZone.run(() => {
-      this.router.navigate(['task/' + ETaskViewMode.Create]);
-    });
-  }
-
-  @Action(MbTaskTileAction.Clicked)
-  openTaskView(ctx: StateContext<MobileAppStateModel>, { taskId }: MbTaskTileAction.Clicked) {
-    this.ngZone.run(() => {
-      this.router.navigate([`task/${ETaskViewMode.View}/${taskId}`]);
-    });
+  @Action(MbTaskTileAction.DeleteSelected)
+  deleteTask(ctx: StateContext<MobileAppStateModel>, { taskId }: MbTaskTileAction.DeleteSelected) {
+    return ctx.dispatch(new TasksAction.DeleteTask(taskId));
   }
 
   @Action(MbTaskScreenAction.Close)

@@ -16,9 +16,11 @@ e2e/
 ├── utils/
 │   ├── api-mocks.util.ts
 │   └── task-flow.util.ts
+├── account-menu.spec.ts
 ├── create-task.spec.ts
 ├── edit-task.spec.ts
 ├── delete-task.spec.ts
+├── home-task-menu.spec.ts
 ├── sync-error.spec.ts
 └── voice-input-visibility.spec.ts
 ```
@@ -47,9 +49,11 @@ That starts `npm run start:e2e` (see `playwright.config.js`) and runs the specs 
 
 ## What the specs cover
 
+- **account-menu** — avatar menu: Profile, disabled Settings/Integrations, Sign out
 - **create-task** — Google stub login, title + image, POST `/api/sync/task`
 - **edit-task** — change title, PATCH `/api/sync/task`
 - **delete-task** — DELETE `/api/sync/task`
+- **home-task-menu** — Home card overflow: Edit, disabled Duplicate/Add to tags, Delete
 - **sync-error** — POST fails with 500; the task stays on home (offline queue)
 - **voice-input-visibility** — mic button is shown when signed in and online, hidden when offline
 

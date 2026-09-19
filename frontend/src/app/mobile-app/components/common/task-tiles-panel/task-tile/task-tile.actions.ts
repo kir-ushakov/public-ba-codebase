@@ -1,7 +1,7 @@
 export namespace MbTaskTileAction {
-  export class Clicked {
-    static readonly type = '[MbTaskView] Tile Clicked';
+  export class DeleteSelected {
+    static readonly type = '[MbTaskTile] Delete Selected';
 
-    constructor(public taskId: string | number) {}
+    constructor(public taskId: string) {}
   }
 }

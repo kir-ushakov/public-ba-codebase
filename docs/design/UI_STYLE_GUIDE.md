@@ -365,6 +365,8 @@ Do not print the type name (TODO, TIMER, SCHEDULE, LOCATION) on the card. Use on
 
 Do not use `check` or `check_circle` for TODO: those read as completed. TODO uses `radio_button_unchecked`.
 
+The card overflow menu is Edit, Duplicate, Add to tags and Delete. Duplicate and Add to tags are visible but disabled until those features exist. Delete uses the danger semantic color.
+
 ---
 
 ## 11. Images and Video
@@ -423,6 +425,7 @@ Examples:
 - Search: `search`
 - More options: `more_vert`
 - Edit: `edit`
+- Duplicate: `content_copy`
 - Delete: `delete`
 - Microphone: `mic`
 - Image: `image`
