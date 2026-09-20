@@ -435,6 +435,9 @@ Examples:
 - Task type Location: `location_on`
 - Calendar / Tasks: `calendar_month`
 - Tags: `sell`
+- Logged in / account: `person`
+- Sync warning: `warning`
+- Sync now: `sync`
 - Back: `arrow_back`
 - Close: `close`
 - Done: `check`
@@ -559,6 +562,8 @@ Typical structure:
 Actions should remain visually secondary to the title.
 
 Avoid oversized app bars unless the screen specifically requires them.
+
+Signed-in-not-synced is a status banner below the header, not a large header icon. Use `person`, `warning` and `sync` from Material Symbols Rounded. Take values from `design-system.json` → `statusBanner`.
 
 ---
 
