@@ -1,6 +1,3 @@
-@use 'sass:map';
-@use 'src/scss/colors' as colors;
-
 :host {
   align-items: center;
   border-radius: 50%;
@@ -18,9 +15,9 @@
 
 .first-letter {
   align-items: center;
-  background-color: colors.$color-avarat;
+  background-color: var(--color-accent-primary);
   background-size: contain;
-  color: map.get(colors.$colors-gray-palette, 600);
+  color: var(--color-text-primary);
   display: flex;
   width: 100%;
   height: 100%;

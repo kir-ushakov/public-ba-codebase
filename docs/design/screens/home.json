@@ -2,7 +2,7 @@
   "screen": {
     "id": "home",
     "name": "Home",
-    "version": "1.3.0",
+    "version": "1.5.0",
 
     "purpose": "Main overview screen displaying the user's recent content and providing quick access to primary application areas.",
 
@@ -16,6 +16,7 @@
       "type": "mobile",
       "structure": [
         "header",
+        "sync-status-banner",
         "content-grid",
         "floating-create-action",
         "bottom-navigation"
@@ -46,6 +47,15 @@
       },
 
       "right": {
+        "layout": "column",
+
+        "avatar": {
+          "type": "user-avatar",
+          "shape": "circle",
+          "fallback": "initial",
+          "action": "open-account-menu"
+        },
+
         "actions": [
           {
             "id": "search",
@@ -59,14 +69,25 @@
             "icon": "more-vertical",
             "ariaLabel": "More options"
           }
-        ],
+        ]
+      }
+    },
 
-        "avatar": {
-          "type": "user-avatar",
-          "shape": "circle",
-          "fallback": "initial",
-          "action": "open-account-menu"
-        }
+    "syncStatusBanner": {
+      "id": "signed-in-not-synced",
+      "component": "status-banner",
+      "visibleWhen": "user.isLocalAuthenticated",
+      "leading": {
+        "icon": "person",
+        "badgeIcon": "warning"
+      },
+      "title": "Signed in, not synced",
+      "body": "Your changes will sync when connection is available.",
+      "action": {
+        "id": "sync-now",
+        "label": "Sync now",
+        "icon": "sync",
+        "route": "/sync"
       }
     },
 
@@ -279,6 +300,10 @@
       "The create action must remain visually dominant.",
       "The Home navigation item must use the global active navigation state.",
       "FAB add and bottom navigation use Material Symbols Rounded: add, home, calendar_month, sell.",
+      "Header actions use Material Symbols Rounded: search, more_vert. Avatar fallback is the user initial, not an icon.",
+      "The avatar sits on the top-right, aligned with the page title. Search and more_vert sit below the avatar, not in the title row.",
+      "Signed-in-not-synced uses the status banner (person, warning, sync), never the legacy no-synchronize.png header icon.",
+      "Do not mix Material Symbols with legacy PNG icons on Home. Do not show no-connection.png or no-synchronize.png.",
       "Bottom navigation destinations are Home, Tasks and Tags only. Do not add Settings as a fourth tab.",
       "The avatar opens the account menu: Profile, Settings, Integrations, Sign out.",
       "The leading icon on every Home card is the task type from design-system icons.taskType, not an image/video icon.",
@@ -291,6 +316,9 @@
     "states": {
       "taskOptionsOpen": {
         "referenceImage": "../references/home-task-options.png"
+      },
+      "signedInNotSynced": {
+        "referenceImage": "../references/home-signed-in-not-synced.jpg"
       }
     },
 
@@ -306,7 +334,8 @@
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/common/task-tiles-panel/",
         "frontend/src/app/shared/components/ui-elements/user-avatar/",
-        "frontend/src/app/mobile-app/components/screens/mb-home-screen/mb-home-bottom-panel/"
+        "frontend/src/app/mobile-app/components/screens/mb-home-screen/mb-home-bottom-panel/",
+        "frontend/src/app/mobile-app/components/screens/mb-home-screen/mb-home-sync-status/"
       ]
     }
   }

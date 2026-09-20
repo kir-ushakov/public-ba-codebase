@@ -10,6 +10,8 @@ import {
 } from '@brainassistant/contracts';
 
 export type SetupApiMocksOptions = {
+  /** GET /api/sync/changes returns 401; Home shows the signed-in-not-synced banner. */
+  unauthorizedChanges?: boolean;
   /** POST /api/sync/task returns 500; the task stays in the client sync queue. */
   failTaskSync?: boolean;
   /** POST /api/files/image returns 403 Google refresh token invalid. */
@@ -60,6 +62,14 @@ export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = 
     }
 
     if (url.includes('/api/sync/changes') && method === 'GET') {
+      if (options.unauthorizedChanges) {
+        const body: ApiErrorDto = {
+          name: 'USER_NOT_AUTHENTICATED',
+          message: 'User not authenticated',
+        };
+        await route.fulfill(json(401, body));
+        return;
+      }
       const body: GetChangesContract.Response = { changes: [] };
       await route.fulfill(json(200, body));
       return;

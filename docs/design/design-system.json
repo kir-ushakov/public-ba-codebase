@@ -1,7 +1,7 @@
 {
   "designSystem": {
     "name": "Brain Assistant Dark Technical",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "scope": "product",
 
     "tokenNaming": {
@@ -84,6 +84,7 @@
       "semantic": {
         "danger": "#D95C5C",
         "warning": "#D6A34A",
+        "warningSubtle": "rgba(214,163,74,0.12)",
         "success": "#00A991",
         "info": "#668FA8"
       }
@@ -285,6 +286,45 @@
         "background": "accent.primary",
         "textColor": "text.primary"
       }
+    },
+
+    "statusBanner": {
+      "background": "semantic.warningSubtle",
+      "border": "border.default",
+      "borderRadius": "large",
+      "padding": "12px",
+      "gap": "12px",
+
+      "title": {
+        "style": "cardTitle"
+      },
+
+      "body": {
+        "style": "secondary"
+      },
+
+      "leading": {
+        "icon": "person",
+        "iconColor": "icon.default",
+        "badgeIcon": "warning",
+        "badgeColor": "semantic.warning"
+      },
+
+      "action": {
+        "icon": "sync",
+        "background": "transparent",
+        "textColor": "accent.primary",
+        "border": "accent.primary",
+        "borderRadius": "default",
+        "minHeight": "44px",
+        "horizontalPadding": "12px"
+      },
+
+      "rules": [
+        "Use a status banner for signed-in-not-synced, not a header icon",
+        "Warning color is only for the badge, not the whole banner chrome",
+        "The banner action must not compete with the floating create button"
+      ]
     },
 
     "cards": {
