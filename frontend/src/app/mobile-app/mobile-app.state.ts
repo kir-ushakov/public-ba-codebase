@@ -1,8 +1,8 @@
 import { State, Action, StateContext } from '@ngxs/store';
 import { Router } from '@angular/router';
 import { Injectable, NgZone } from '@angular/core';
-import { MbTaskScreenAction } from './components/screens/mb-task-screen/mb-task-screen.actions';
-import { MbTaskTileAction } from './components/common/task-tiles-panel/task-tile/task-tile.actions';
+import { TaskScreenAction } from './components/screens/task-screen/task-screen.actions';
+import { TaskTileAction } from './components/common/task-tiles-panel/task-tile/task-tile.actions';
 import { AppAction } from '../shared/state/app.actions';
 import { TasksAction } from '../shared/state/tasks.action';
 
@@ -22,12 +22,12 @@ export class MobileAppState {
     private ngZone: NgZone,
   ) {}
 
-  @Action(MbTaskTileAction.DeleteSelected)
-  deleteTask(ctx: StateContext<MobileAppStateModel>, { taskId }: MbTaskTileAction.DeleteSelected) {
+  @Action(TaskTileAction.DeleteSelected)
+  deleteTask(ctx: StateContext<MobileAppStateModel>, { taskId }: TaskTileAction.DeleteSelected) {
     return ctx.dispatch(new TasksAction.DeleteTask(taskId));
   }
 
-  @Action(MbTaskScreenAction.Close)
+  @Action(TaskScreenAction.Close)
   @Action(AppAction.NavigateToHomeScreen)
   openHomeView() {
     this.ngZone.run(() => {

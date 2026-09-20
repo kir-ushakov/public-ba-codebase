@@ -73,14 +73,14 @@ without `takeUntilDestroyed()`, and `api/speech-to-text.service.ts` declares its
 and builds the URL inline instead of using `@brainassistant/contracts` and `api-endpoints.const.ts`.
 Follow the API-service reference below for that half.
 
-### Screen with a screen-scoped slice → `src/app/mobile-app/components/screens/mb-task-screen/`
+### Screen with a screen-scoped slice → `src/app/mobile-app/components/screens/task-screen/`
 
 The fullest screen: component, template, SCSS, sub-components, `*.actions.ts` and `*.state.ts` in one
 folder, registered on the route with `provideStates([...])`. Shows the intended division of labour —
 the screen slice owns view mode and form data, reads other slices through `selectSnapshot`, and
 dispatches `TasksAction.*` instead of writing entities itself, then resets to defaults on close.
 Component-local pure helpers (e.g. clipping a voice title) sit in that component's `helpers/` as
-`*.function.ts` — see `mb-task-edit/helpers/clip-voice-task-title.function.ts`.
+`*.function.ts` — see `task-edit/helpers/clip-voice-task-title.function.ts`.
 
 ### Synced entity, both directions → `src/app/shared/state/tasks.state.ts`
 

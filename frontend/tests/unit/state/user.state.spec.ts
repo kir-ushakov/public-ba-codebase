@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideStore, Store } from '@ngxs/store';
 import { firstValueFrom, of } from 'rxjs';
-import { MbHomeAccountMenuAction } from 'src/app/mobile-app/components/screens/mb-home-screen/mb-home-account-menu/mb-home-account-menu.actions';
+import { HomeAccountMenuAction } from 'src/app/mobile-app/components/screens/home-screen/home-account-menu/home-account-menu.actions';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
@@ -86,7 +86,7 @@ describe('UserState', () => {
   });
 
   it('clears the session after home account menu sign out', async () => {
-    await firstValueFrom(store.dispatch(new MbHomeAccountMenuAction.SignOut()));
+    await firstValueFrom(store.dispatch(new HomeAccountMenuAction.SignOut()));
 
     expect(authService.logout).toHaveBeenCalledTimes(1);
     expect(store.selectSnapshot(UserState.isLoggedIn)).toBe(false);

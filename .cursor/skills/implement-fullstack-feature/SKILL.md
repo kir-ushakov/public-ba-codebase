@@ -39,7 +39,7 @@ The apps compile against `contracts/dist/`. Starting in the backend or the front
 Read the create-task path end to end before writing anything. It is the template for any synced feature:
 
 ```
-MbTaskScreenState.handleCreateTask
+TaskScreenState.handleCreateTask
   -> TasksAction.CreateTask                (optimistic insert in shared/state/tasks.state.ts)
   -> SyncAction.ChangeForSyncOccurred      (queued in shared/state/sync.state.ts)
   -> ClientChangesService.send             (POST /api/sync/task)

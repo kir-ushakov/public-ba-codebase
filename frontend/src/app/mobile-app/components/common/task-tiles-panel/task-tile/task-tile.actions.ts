@@ -1,6 +1,6 @@
-export namespace MbTaskTileAction {
+export namespace TaskTileAction {
   export class DeleteSelected {
-    static readonly type = '[MbTaskTile] Delete Selected';
+    static readonly type = '[TaskTile] Delete Selected';
 
     constructor(public taskId: string) {}
   }

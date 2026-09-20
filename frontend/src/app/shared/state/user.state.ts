@@ -2,15 +2,15 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { patch } from '@ngxs/store/operators';
-import { MbHomeAccountMenuAction } from 'src/app/mobile-app/components/screens/mb-home-screen/mb-home-account-menu/mb-home-account-menu.actions';
-import { MbProfileScreenAction } from 'src/app/mobile-app/components/screens/mb-profile-screen/mb-profile-screen.actions';
+import { HomeAccountMenuAction } from 'src/app/mobile-app/components/screens/home-screen/home-account-menu/home-account-menu.actions';
+import { ProfileScreenAction } from 'src/app/mobile-app/components/screens/profile-screen/profile-screen.actions';
 import { User } from '../models/user.model';
 import { AuthService } from '../services/api/auth.service';
 import { AppAction } from './app.actions';
 import { SlackService } from '../services/integrations/slack.service';
 import { GoogleOAuthConsentService } from '../services/integrations/google-oauth-consent.service';
-import { MbLoginScreenAction } from 'src/app/mobile-app/components/screens/mb-login-screen/mb-login-screen.actions';
-import { MbSyncScreenAction } from 'src/app/mobile-app/components/screens/mb-sync-screen/mb-sync-screen.actions';
+import { LoginScreenAction } from 'src/app/mobile-app/components/screens/login-screen/login-screen.actions';
+import { SyncScreenAction } from 'src/app/mobile-app/components/screens/sync-screen/sync-screen.actions';
 import { SlackAPIAction } from '../services/integrations/slack.api.actions';
 import { EMPTY, catchError, tap } from 'rxjs';
 import { UserAction } from './user.actions';
@@ -105,7 +105,7 @@ export class UserState {
     return state.integrations?.googleNeedsReconsent === true;
   }
 
-  @Action(MbLoginScreenAction.LoginUser)
+  @Action(LoginScreenAction.LoginUser)
   async login(
     ctx: StateContext<IUserStateModel>,
     { email, password }: { email: string; password: string },
@@ -144,8 +144,8 @@ export class UserState {
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
 
-  @Action(MbProfileScreenAction.Logout)
-  @Action(MbHomeAccountMenuAction.SignOut)
+  @Action(ProfileScreenAction.Logout)
+  @Action(HomeAccountMenuAction.SignOut)
   logout(ctx: StateContext<IUserStateModel>): void {
     this._authService
       .logout()
@@ -183,7 +183,7 @@ export class UserState {
     this.requestNewGoogleConsent();
   }
 
-  @Action(MbSyncScreenAction.Relogin)
+  @Action(SyncScreenAction.Relogin)
   async relogin(
     ctx: StateContext<IUserStateModel>,
     { password }: { password: string },
@@ -211,7 +211,7 @@ export class UserState {
     });
   }
 
-  @Action(MbProfileScreenAction.RemoveFromSlack)
+  @Action(ProfileScreenAction.RemoveFromSlack)
   async removeFromSlack(ctx: StateContext<IUserStateModel>): Promise<void> {
     try {
       await this._slackService.removeFromSlack();
