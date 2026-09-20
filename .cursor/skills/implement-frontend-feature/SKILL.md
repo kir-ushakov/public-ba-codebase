@@ -49,7 +49,7 @@ Three layers, and picking wrong is the usual mistake:
 | Domain state | `shared/state/` (`tasks`, `user`, `sync`, `app`), registered in `main.ts` | entities, optimistic updates, enqueuing sync changes |
 | Component signal | inside the component | local UI only — never domain data |
 
-Screen state orchestrates and dispatches into domain state; it does not own entities. `MbTaskScreenState.handleCreateTask` dispatching `TasksAction.CreateTask` is the pattern.
+Screen state orchestrates and dispatches into domain state; it does not own entities. `TaskScreenState.handleCreateTask` dispatching `TasksAction.CreateTask` is the pattern.
 
 Every slice is persisted to the device (`withNgxsStoragePlugin({ keys: '*' })`), so treat any new state field as a stored-data shape change: keep it serializable, and make defaults and selectors tolerate state written by an older build.
 

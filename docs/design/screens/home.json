@@ -330,12 +330,12 @@
 
     "angular": {
       "note": "The live Home screen does not yet match this spec. Treat this JSON as the approved target, not a description of the current implementation. Bottom-nav destinations /tasks and /tags are product destinations from the approved design; they are not a claim that those Angular routes already exist.",
-      "screenFolder": "frontend/src/app/mobile-app/components/screens/mb-home-screen/",
+      "screenFolder": "frontend/src/app/mobile-app/components/screens/home-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/common/task-tiles-panel/",
         "frontend/src/app/shared/components/ui-elements/user-avatar/",
-        "frontend/src/app/mobile-app/components/screens/mb-home-screen/mb-home-bottom-panel/",
-        "frontend/src/app/mobile-app/components/screens/mb-home-screen/mb-home-sync-status/"
+        "frontend/src/app/mobile-app/components/screens/home-screen/home-bottom-panel/",
+        "frontend/src/app/mobile-app/components/screens/home-screen/home-sync-status/"
       ]
     }
   }

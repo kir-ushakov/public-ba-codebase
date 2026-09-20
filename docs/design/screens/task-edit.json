@@ -192,10 +192,10 @@
     },
 
     "angular": {
-      "note": "Create and Edit share mb-task-edit today. The live screen does not yet match this spec. Same data-shape caveats as task-create.json: single imageId, no task tags or dueDate on TaskDTO, no In progress in ETaskStatus, mockup counters are not TaskConst.",
-      "screenFolder": "frontend/src/app/mobile-app/components/screens/mb-task-screen/",
+      "note": "Create and Edit share task-edit today. The live screen does not yet match this spec. Same data-shape caveats as task-create.json: single imageId, no task tags or dueDate on TaskDTO, no In progress in ETaskStatus, mockup counters are not TaskConst.",
+      "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
       "existingPiecesToReuse": [
-        "frontend/src/app/mobile-app/components/screens/mb-task-screen/mb-task-edit/",
+        "frontend/src/app/mobile-app/components/screens/task-screen/task-edit/",
         "frontend/src/app/shared/components/ui-elements/rich-text-editor/",
         "frontend/src/app/shared/features/voice-input/components/voice-input-trigger/"
       ]

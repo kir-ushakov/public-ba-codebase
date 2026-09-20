@@ -28,14 +28,14 @@ export namespace UserAction {
 }
 ```
 
-Slices communicate by dispatching actions, not by injecting one another. A global slice may handle a screen's action — `UserState` handles `MbLoginScreenAction.LoginUser` — which is preferred over reaching into another slice's state.
+Slices communicate by dispatching actions, not by injecting one another. A global slice may handle a screen's action — `UserState` handles `LoginScreenAction.LoginUser` — which is preferred over reaching into another slice's state.
 
 Several `@Action(...)` decorators may be stacked on one handler when actions share behaviour.
 
 ## Registration
 
 - Global slices live in `shared/state/` and are registered in `main.ts` with `provideStates([...])`.
-- Screen and feature slices are co-located with their screen or feature and registered on the route: `providers: [provideStates([MbTaskScreenState, VoiceInputState])]`.
+- Screen and feature slices are co-located with their screen or feature and registered on the route: `providers: [provideStates([TaskScreenState, VoiceInputState])]`.
 
 ## Persistence
 

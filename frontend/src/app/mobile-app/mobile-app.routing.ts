@@ -1,21 +1,21 @@
 import { Routes } from '@angular/router';
 import { AuthGuardService } from '../shared/services/auth/auth-guard.service';
-import { MbHomeScreenComponent } from './components/screens/mb-home-screen/mb-home-screen.component';
-import { MbTaskScreenComponent } from './components/screens/mb-task-screen/mb-task-screen.component';
-import { MbLoginScreenComponent } from './components/screens/mb-login-screen/mb-login-screen.component';
-import { MbSignupScreenComponent } from './components/screens/mb-signup-screen/mb-signup-screen.component';
-import { MbProfileScreenComponent } from './components/screens/mb-profile-screen/mb-profile-screen.component';
-import { MbSyncScreenComponent } from './components/screens/mb-sync-screen/mb-sync-screen.component';
+import { HomeScreenComponent } from './components/screens/home-screen/home-screen.component';
+import { TaskScreenComponent } from './components/screens/task-screen/task-screen.component';
+import { LoginScreenComponent } from './components/screens/login-screen/login-screen.component';
+import { SignupScreenComponent } from './components/screens/signup-screen/signup-screen.component';
+import { ProfileScreenComponent } from './components/screens/profile-screen/profile-screen.component';
+import { SyncScreenComponent } from './components/screens/sync-screen/sync-screen.component';
 import { AddToSlackRedirectComponent } from '../shared/components/redirects/slack/add-to-slack-redirect/add-to-slack-redirect.component';
 import { GoogleAuthRedirectScreenComponent } from '../shared/components/redirects/google/google-auth-redirect/google-auth-redirect.component';
 import { MobileAppComponent } from './mobile-app.component';
 import { provideStates } from '@ngxs/store';
 import { MobileAppState } from './mobile-app.state';
-import { MbLoginScreenState } from './components/screens/mb-login-screen/mb-login-screen.state';
+import { LoginScreenState } from './components/screens/login-screen/login-screen.state';
 import { GoogleAuthRedirectScreenState } from '../shared/components/redirects/google/google-auth-redirect/google-auth-redirect.state';
-import { MbTaskScreenState } from './components/screens/mb-task-screen/mb-task-screen.state';
+import { TaskScreenState } from './components/screens/task-screen/task-screen.state';
 import { VoiceInputState } from '../shared/features/voice-input/state/voice-input.state';
-import { MbSignupScreenState } from './components/screens/mb-signup-screen/mb-signup-screen.state';
+import { SignupScreenState } from './components/screens/signup-screen/signup-screen.state';
 import { AddToSlackRedirectScreenState } from '../shared/components/redirects/slack/add-to-slack-redirect/add-to-slack-redirect.state';
 
 export const mobileRoutes: Routes = [
@@ -28,25 +28,25 @@ export const mobileRoutes: Routes = [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       {
         path: 'home',
-        component: MbHomeScreenComponent,
+        component: HomeScreenComponent,
       },
       {
         path: 'profile',
-        component: MbProfileScreenComponent,
+        component: ProfileScreenComponent,
       },
       {
         path: 'task/:mode',
-        component: MbTaskScreenComponent,
-        providers: [provideStates([MbTaskScreenState, VoiceInputState])],
+        component: TaskScreenComponent,
+        providers: [provideStates([TaskScreenState, VoiceInputState])],
       },
       {
         path: 'task/:mode/:id',
-        component: MbTaskScreenComponent,
-        providers: [provideStates([MbTaskScreenState, VoiceInputState])],
+        component: TaskScreenComponent,
+        providers: [provideStates([TaskScreenState, VoiceInputState])],
       },
       {
         path: 'sync',
-        component: MbSyncScreenComponent,
+        component: SyncScreenComponent,
       },
       {
         path: 'integrations/slack/install',
@@ -57,13 +57,13 @@ export const mobileRoutes: Routes = [
   },
   {
     path: 'login',
-    component: MbLoginScreenComponent,
-    providers: [provideStates([MbLoginScreenState])],
+    component: LoginScreenComponent,
+    providers: [provideStates([LoginScreenState])],
   },
   {
     path: 'signup',
-    component: MbSignupScreenComponent,
-    providers: [provideStates([MbSignupScreenState])],
+    component: SignupScreenComponent,
+    providers: [provideStates([SignupScreenState])],
   },
   {
     path: 'google/oauth2callback',

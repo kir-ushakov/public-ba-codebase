@@ -1,5 +1,5 @@
 import { TaskConst } from '@brainassistant/contracts';
-import { clipVoiceTaskTitle } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-edit/helpers/clip-voice-task-title.function';
+import { clipVoiceTaskTitle } from 'src/app/mobile-app/components/screens/task-screen/task-edit/helpers/clip-voice-task-title.function';
 
 describe('clipVoiceTaskTitle', () => {
   it('leaves a title of the max length or fewer unchanged', () => {

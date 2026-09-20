@@ -1,0 +1,22 @@
+<mat-drawer-container class="task-view-container" hasBackdrop="fasle">
+  <mat-drawer-content class="task-view-content">
+    <div class="top-panel-holder">
+      <ba-task-top-panel></ba-task-top-panel>
+    </div>
+    <div class="main-panel-holder">
+      @let mode = mode$ | async;
+      @if (mode === ETaskViewMode.Create || mode === ETaskViewMode.Edit) {
+        <ba-task-edit></ba-task-edit>
+      }
+      @if (mode === ETaskViewMode.View) {
+        <ba-task-view></ba-task-view>
+      }
+    </div>
+    <div class="bottom-panel-holder">
+      <ba-task-bottom-panel></ba-task-bottom-panel>
+    </div>
+  </mat-drawer-content>
+  <mat-drawer #menuDrawer class="task-view-sidemenu" mode="over" position="end">
+    <ba-task-side-menu></ba-task-side-menu>
+  </mat-drawer>
+</mat-drawer-container>

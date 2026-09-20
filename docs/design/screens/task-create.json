@@ -191,9 +191,9 @@
 
     "angular": {
       "note": "The live Create Task screen does not yet match this spec. Treat this JSON as the approved target. TaskDTO currently has a single optional imageId, no tags field, and no dueDate. ETaskStatus is Todo/Done/Cancel — In progress is a product destination, not a current wire value. Character counters in the PNG (200/1000) are visual placeholders; live limits stay in TaskConst until a separate product decision changes them.",
-      "screenFolder": "frontend/src/app/mobile-app/components/screens/mb-task-screen/",
+      "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
       "existingPiecesToReuse": [
-        "frontend/src/app/mobile-app/components/screens/mb-task-screen/mb-task-edit/",
+        "frontend/src/app/mobile-app/components/screens/task-screen/task-edit/",
         "frontend/src/app/shared/components/ui-elements/rich-text-editor/",
         "frontend/src/app/shared/features/voice-input/components/voice-input-trigger/"
       ]

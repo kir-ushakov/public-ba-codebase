@@ -1,8 +1,8 @@
 import { Component, ElementRef, Input, HostListener, signal, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
-import { MbTaskTileAction } from './task-tile.actions';
-import { ETaskViewMode } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-screen.state';
+import { TaskTileAction } from './task-tile.actions';
+import { ETaskViewMode } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
 import { Task } from 'src/app/shared/models/task.model';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
 import { ImageService } from 'src/app/shared/services/application/image.service';
@@ -79,7 +79,7 @@ export class TaskTileComponent {
   deleteTask(event: Event): void {
     event.stopPropagation();
     this.closeMenu();
-    this.store.dispatch(new MbTaskTileAction.DeleteSelected(this.task.id));
+    this.store.dispatch(new TaskTileAction.DeleteSelected(this.task.id));
   }
 
   onImageError(event: Event): void {

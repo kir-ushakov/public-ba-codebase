@@ -1,0 +1,31 @@
+@use 'src/scss/constants';
+@use 'src/scss/colors';
+
+:host {
+  align-items: center;
+  background-color: colors.$color-panel-bg;
+  display: flex;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 0 constants.$main-padding;
+}
+
+.top-panel-btn {
+  display: flex;
+  height: 30px;
+  width: 30px;
+
+  &.done {
+    background: url('/assets/ui/icons/checkmark-green.png') center / auto 85% no-repeat;
+    display: flex;
+  }
+
+  &.options {
+    background: url('/assets/ui/icons/options.png') center / auto 85% no-repeat;
+    display: flex;
+  }
+
+  &:not(:last-child) {
+    margin-right: 10px;
+  }
+}

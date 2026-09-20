@@ -1,4 +1,4 @@
-import { stripTitleNewlines } from 'src/app/mobile-app/components/screens/mb-task-screen/mb-task-edit/helpers/strip-title-newlines.function';
+import { stripTitleNewlines } from 'src/app/mobile-app/components/screens/task-screen/task-edit/helpers/strip-title-newlines.function';
 
 describe('stripTitleNewlines', () => {
   it('leaves a single-line title unchanged', () => {
