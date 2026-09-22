@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
-import { IDeviceCameraService } from '../../src/app/shared/services/pwa/device-camera.service.interface';
+import { IDeviceCameraService } from '../../../src/app/shared/services/pwa/device-camera.service.interface';
 
 /**
  * Stub DeviceCameraService for Playwright integration tests.
- * Returns a fake image from integration/assets instead of using the device camera.
+ * Returns a fake image from tests/integration/assets instead of using the device camera.
  * Implements IDeviceCameraService to ensure API compatibility.
  */
 @Injectable({
   providedIn: 'root',
 })
 export class DeviceCameraService implements IDeviceCameraService {
-  private readonly TEST_IMAGE_PATH = 'integration/assets/test-img.jpg';
+  private readonly TEST_IMAGE_PATH = 'tests/integration/assets/test-img.jpg';
 
   public async takePicture(quality = 90): Promise<string | null> {
     console.log('[integration] DeviceCameraService.takePicture() called - returning test image');

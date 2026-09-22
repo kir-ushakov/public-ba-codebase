@@ -8,8 +8,13 @@ const presetConfig = createCjsPreset({
 module.exports = {
   ...presetConfig,
   setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
-  testMatch: ['<rootDir>/tests/**/*.spec.ts'],
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/dist/', '<rootDir>/integration/', '<rootDir>/e2e/'],
+  testMatch: ['<rootDir>/tests/unit/**/*.spec.ts'],
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/dist/',
+    '<rootDir>/tests/integration/',
+    '<rootDir>/tests/e2e/',
+  ],
   transformIgnorePatterns: [
     'node_modules/(?!(.*\\.mjs$|@angular/common/locales/.*\\.js$|uuid|mime))',
   ],

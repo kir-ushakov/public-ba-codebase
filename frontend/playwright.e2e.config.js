@@ -2,10 +2,10 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Live two-client e2e against the smoke Docker backend.
- * Does not use the mocked `integration/` suite or `start:integration` stubs.
+ * Does not use the mocked `tests/integration/` suite or `start:integration` stubs.
  */
 export default defineConfig({
-  testDir: './e2e',
+  testDir: './tests/e2e',
   timeout: 90_000,
   expect: { timeout: 30_000 },
   fullyParallel: false,

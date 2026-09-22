@@ -6,5 +6,5 @@
     "esModuleInterop": true,
     "isolatedModules": true
   },
-  "include": ["tests/**/*.spec.ts", "setup-jest.ts"]
+  "include": ["tests/unit/**/*.spec.ts", "setup-jest.ts"]
 }

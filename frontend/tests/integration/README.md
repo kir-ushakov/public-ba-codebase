@@ -2,12 +2,12 @@
 
 Playwright drives the real UI against a **mocked** backend. Specs live in this folder and run on every PR (`npm run integration` from `frontend/`).
 
-Live two-client tests against a real backend are **not** here — see `frontend/e2e/`.
+Live two-client tests against a real backend are **not** here — see `frontend/tests/e2e/`.
 
 ## Layout
 
 ```
-integration/
+tests/integration/
 ├── assets/
 │   └── test-img.jpg
 ├── stubs/
