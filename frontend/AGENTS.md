@@ -54,7 +54,7 @@ persisted on the device.
 
 Tests: state specs in `tests/unit/state/`, helper/pipe/service specs beside them,
 component template tripwires in `tests/unit/components/`, mocked Playwright specs in
-`e2e/` (guide in `e2e/README.md`), live two-client specs in `e2e-live/`.
+`integration/` (guide in `integration/README.md`), live two-client specs in `e2e/`.
 
 ## Canonical references
 
@@ -101,7 +101,7 @@ the DTO mapped to a model inside `pipe(map(...))` so no DTO ever reaches NGXS st
 
 An interface, a web and a native implementation selected at runtime via `Capacitor.isNativePlatform()`,
 recording strategies behind them, and a small state machine guarding invalid transitions. The shape
-to follow for anything that touches a browser or device API, so E2E can stub it.
+to follow for anything that touches a browser or device API, so Playwright integration can stub it.
 
 ### Mapper → `src/app/shared/mappers/task.mapper.ts`
 
@@ -121,11 +121,11 @@ asserts user-visible text, `@if` branches, and `[data-test]` hooks. Does not ass
 CSS classes or `should create`. `home-sync-status`, `home-bottom-panel` and
 `task-side-menu-item` next to it are the smaller variants.
 
-### E2E spec → `e2e/create-task.spec.ts` with `e2e/utils/api-mocks.util.ts`
+### Integration spec → `integration/create-task.spec.ts` with `integration/utils/api-mocks.util.ts`
 
 The fullest mocked flow: `setupApiMocks(page)` first, `data-test` selectors, `page.waitForResponse`
 registered before the click that triggers it, then the outgoing payload inspected via
-`request().postDataJSON()`. `e2e/utils/task-flow.util.ts` holds the reusable sign-in and
+`request().postDataJSON()`. `integration/utils/task-flow.util.ts` holds the reusable sign-in and
 create-task steps; `edit-task`, `delete-task` and `sync-error` are the variants.
 
 ## Not references

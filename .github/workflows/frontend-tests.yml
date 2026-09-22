@@ -65,9 +65,9 @@ jobs:
         working-directory: ./frontend
         run: npm test
 
-  # E2E tests with Playwright
-  e2e-tests:
-    name: E2E Tests (Playwright)
+  # Playwright integration tests (mocked API)
+  integration-tests:
+    name: Integration Tests (Playwright)
     runs-on: ubuntu-latest
     
     steps:
@@ -91,7 +91,7 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: ./frontend
-        run: npm run e2e
+        run: npm run integration
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

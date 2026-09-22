@@ -56,14 +56,14 @@ These pass lint and tests and still break things:
 - A `FooContract.Request` / `FooContract.Response` annotation deleted from a controller as "redundant". It documents the public API; it stays.
 - A `type` converted to `interface` (or back) for consistency. House style: `type` for shapes, `interface` for contracts a class implements.
 - A new mocked unit test for a controller, use case or repo. This project tests those through integration.
-- E2E mocks that no longer mirror the backend's real status codes and bodies.
+- Playwright integration mocks that no longer mirror the backend's real status codes and bodies.
 - `page.waitForTimeout()` in a Playwright spec, or `data-testid` instead of `data-test`.
 - Backend types left loose (`any`, unchecked `!`, `null` assigned to a non-nullable field) despite `strict` and `noUncheckedIndexedAccess` in `backend/tsconfig.json`.
 - A new hex, rgba, radius, or spacing value in frontend SCSS that is not a token from `docs/design/design-system.json`.
 
 ## 5. Tests
 
-Does the changed behaviour have coverage in the right place — integration in `backend/test/integration/` for a backend flow, a state spec in `frontend/tests/unit/state/` for state logic, a component spec in `frontend/tests/unit/components/` for a template tripwire, a Playwright spec for a user-visible flow? Unit tests in `backend/test/unit/` are only for pure domain models and mappers. Component specs must not assert CSS or `should create`.
+Does the changed behaviour have coverage in the right place — integration in `backend/test/integration/` for a backend flow, a state spec in `frontend/tests/unit/state/` for state logic, a component spec in `frontend/tests/unit/components/` for a template tripwire, a Playwright spec in `frontend/integration/` for a user-visible flow? Unit tests in `backend/test/unit/` are only for pure domain models and mappers. Component specs must not assert CSS or `should create`.
 
 Check the assertions, not just the presence of a spec: an integration test that never reads the document back through the model has not tested persistence.
 
