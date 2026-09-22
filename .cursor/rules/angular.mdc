@@ -60,6 +60,8 @@ A pure helper that belongs to one component lives in that component's `helpers/`
 
 Extract from the class when the helper is a pure transform you want to unit-test without TestBed. A private method is fine for one-line UI wiring with no test of its own. Do not add a screen-specific helper under `shared/`.
 
+A template tripwire (title, button, `@if`, `data-test`) lives in `frontend/tests/unit/components/`. Follow `testing-frontend.mdc`. Do not add `should create` or CSS-class assertions.
+
 ## Forms
 
 Reactive forms only, no `ngModel`. Type them with the existing helper: `FormGroup<FormControlsOf<T>>` from `shared/forms/types/form-controls-of.ts`. Do not add new `UntypedFormGroup` or `UntypedFormControl`.

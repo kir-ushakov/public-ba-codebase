@@ -89,6 +89,8 @@ Then check the receiving side: inbound server changes are applied in the same sl
 
 State logic gets a Jest spec in `frontend/tests/unit/state/<slice>.spec.ts`, using `TestBed` with `provideStore([...])` and `store.reset({...})`. Follow `tasks.state.spec.ts`.
 
+A changed template gets a tripwire in `frontend/tests/unit/components/` — user-visible text, `@if`, and `data-test` hooks. Follow `task-tile.component.spec.ts`.
+
 A user-visible flow gets a Playwright spec — follow `add-e2e-test`.
 
 ## 8. Verify

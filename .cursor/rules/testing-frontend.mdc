@@ -1,0 +1,30 @@
+---
+description: Frontend unit tests — state, helpers, and component template tripwires
+globs: frontend/tests/unit/**/*.ts,frontend/src/app/**/*.component.ts,frontend/src/app/**/*.component.html
+alwaysApply: false
+---
+
+# Frontend unit tests
+
+Specs live in `frontend/tests/unit/`, named `<subject>.spec.ts`, run with `npm test` from `frontend/`.
+
+## Layers
+
+- NGXS → `tests/unit/state/` (follow `tasks.state.spec.ts`)
+- helper / pipe / service → `tests/unit/helpers/`, `pipes/`, `services/`
+- component template → `tests/unit/components/`
+
+## Component specs
+
+A cheap first-stage net: if AI deletes a title, a button, an `@if` block, or a `data-test` hook, Jest should fail in seconds — before Playwright.
+
+Select with `[data-test="..."]` or user-visible text. Do not select by CSS class. Do not assert spacing, tokens, or `should create`.
+
+Canonical tripwires:
+
+- `tests/unit/components/task-tile.component.spec.ts` — title binding and `@if` menu
+- `tests/unit/components/home-sync-status.component.spec.ts` — banner copy and Sync now
+- `tests/unit/components/home-bottom-panel.component.spec.ts` — create button and nav hooks
+- `tests/unit/components/task-side-menu-item.component.spec.ts` — label from input
+
+A screen flow still gets Playwright. Component spec does not replace e2e. Pure logic still belongs in a helper spec, not the component spec.
