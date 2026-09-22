@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './integration',
+  testDir: './tests/integration',
   timeout: 30000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI, // Fail if test.only is left in CI
@@ -50,6 +50,6 @@ export default defineConfig({
   ],
 
   // Completely isolate Playwright from other configurations
-  testMatch: '**/integration/**/*.spec.ts',
-  testIgnore: ['**/tests/**', '**/src/**', '**/e2e/**'],
+  testMatch: '**/*.spec.ts',
+  testIgnore: ['**/tests/unit/**', '**/src/**', '**/tests/e2e/**'],
 });

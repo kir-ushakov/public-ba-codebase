@@ -88,7 +88,7 @@ Component, route, `data-test` hooks.
 
 ## 9. Frontend tests
 
-State spec in `frontend/tests/unit/state/`, a component template tripwire in `frontend/tests/unit/components/` if the UI changed, and a Playwright integration spec for the user-visible flow with mocks extended in `integration/utils/api-mocks.util.ts` to match what step 5 pinned.
+State spec in `frontend/tests/unit/state/`, a component template tripwire in `frontend/tests/unit/components/` if the UI changed, and a Playwright integration spec for the user-visible flow with mocks extended in `tests/integration/utils/api-mocks.util.ts` to match what step 5 pinned.
 
 ## 10. Full verification
 

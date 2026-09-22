@@ -94,8 +94,8 @@
                 "src/manifest.webmanifest",
                 {
                   "glob": "**/*",
-                  "input": "integration/assets",
-                  "output": "/integration/assets"
+                  "input": "tests/integration/assets",
+                  "output": "/tests/integration/assets"
                 }
               ],
               "fileReplacements": [
@@ -105,11 +105,11 @@
                 },
                 {
                   "replace": "src/app/shared/components/ui-elements/sign-in-with-google-btn/sign-in-with-google-btn.component.ts",
-                  "with": "integration/stubs/sign-in-with-google-btn.component.ts"
+                  "with": "tests/integration/stubs/sign-in-with-google-btn.component.ts"
                 },
                 {
                   "replace": "src/app/shared/services/pwa/device-camera.service.ts",
-                  "with": "integration/stubs/device-camera.service.ts"
+                  "with": "tests/integration/stubs/device-camera.service.ts"
                 }
               ]
             }

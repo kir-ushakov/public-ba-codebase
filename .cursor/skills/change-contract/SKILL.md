@@ -59,7 +59,7 @@ Map the DTO into use-case params in `*.mapper.ts`, and out of the domain in `sha
 
 Update the API service in `shared/services/api/` and the mapper in `shared/mappers/`. Enums from contracts can be reused directly in `shared/models/`; DTOs are mapped to models and never stored in NGXS state as-is.
 
-If Playwright integration mocks return this payload, update `frontend/integration/utils/api-mocks.util.ts` — it is typed against the contract and mirrors the real backend's status codes.
+If Playwright integration mocks return this payload, update `frontend/tests/integration/utils/api-mocks.util.ts` — it is typed against the contract and mirrors the real backend's status codes.
 
 ## 6. Verify both apps
 

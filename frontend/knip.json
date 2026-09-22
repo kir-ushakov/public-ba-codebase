@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/app/**/*.ts!", "integration/**/*.ts!", "e2e/**/*.ts!", "tests/**/*.ts!"],
-  "project": ["src/**/*.ts", "integration/**/*.ts", "e2e/**/*.ts", "tests/**/*.ts"],
+  "entry": ["src/app/**/*.ts!", "tests/**/*.ts!"],
+  "project": ["src/**/*.ts", "tests/**/*.ts"],
   "ignoreDependencies": [
     "ts-node",
     "@capacitor/angular",

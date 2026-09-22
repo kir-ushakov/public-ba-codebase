@@ -1,13 +1,13 @@
 ---
 description: Frontend live two-client E2E tests with Playwright
-globs: frontend/e2e/**/*.ts
+globs: frontend/tests/e2e/**/*.ts
 alwaysApply: false
 ---
 
 # Frontend E2E tests
 
-Playwright specs in `frontend/e2e/` drive two browser contexts against the **real** smoke backend. They are nightly only (`npm run e2e` from `frontend/`, after `node scripts/smoke/up.mjs`).
+Playwright specs in `frontend/tests/e2e/` drive two browser contexts against the **real** smoke backend. They are nightly only (`npm run e2e` from `frontend/`, after `node scripts/smoke/up.mjs`).
 
-Do not add mocked UI specs here. Those belong in `frontend/integration/` and run on every PR.
+Do not add mocked UI specs here. Those belong in `frontend/tests/integration/` and run on every PR.
 
 Do not use this folder for routine coverage of a user-visible flow.

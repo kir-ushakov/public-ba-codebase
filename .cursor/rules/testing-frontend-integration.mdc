@@ -1,12 +1,12 @@
 ---
 description: Frontend Playwright integration tests — real UI, mocked API
-globs: frontend/integration/**/*.ts
+globs: frontend/tests/integration/**/*.ts
 alwaysApply: false
 ---
 
 # Frontend integration tests
 
-Playwright specs in `frontend/integration/*.spec.ts` drive the real UI against a mocked backend, running on the `integration` build configuration (`npm run start:integration`, `npm run integration`).
+Playwright specs in `frontend/tests/integration/*.spec.ts` drive the real UI against a mocked backend, running on the `integration` build configuration (`npm run start:integration`, `npm run integration`).
 
 ## Selectors
 
@@ -20,9 +20,9 @@ If an element has no hook, add a `data-test` attribute to the template instead o
 
 ## Mocks and stubs
 
-- HTTP is mocked centrally in `integration/utils/api-mocks.util.ts`. Call `await setupApiMocks(page)` at the start of a spec and extend that util rather than scattering `page.route` calls across specs.
-- Auth and device APIs are swapped at build time through `fileReplacements` in the `integration` configuration of `frontend/angular.json`, pointing at `integration/stubs/*`. Covering a new native capability means adding a stub plus a `fileReplacements` entry — do not fake it inside the spec.
-- Binary fixtures live in `integration/assets/`.
+- HTTP is mocked centrally in `tests/integration/utils/api-mocks.util.ts`. Call `await setupApiMocks(page)` at the start of a spec and extend that util rather than scattering `page.route` calls across specs.
+- Auth and device APIs are swapped at build time through `fileReplacements` in the `integration` configuration of `frontend/angular.json`, pointing at `tests/integration/stubs/*`. Covering a new native capability means adding a stub plus a `fileReplacements` entry — do not fake it inside the spec.
+- Binary fixtures live in `tests/integration/assets/`.
 
 ## Waiting and assertions
 

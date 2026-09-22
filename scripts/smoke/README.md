@@ -47,7 +47,7 @@ node scripts/smoke/http-smoke.mjs
 
 `.github/workflows/compose-smoke.yml` runs on a nightly schedule and `workflow_dispatch`. It is intentionally not on every PR — image builds are slow.
 
-Live two-client Playwright (UI, two browser contexts) uses the same stack: `node scripts/smoke/up.mjs` then `npm run e2e` in `frontend/`. See `frontend/e2e/README.md` and `.github/workflows/live-e2e.yml`.
+Live two-client Playwright (UI, two browser contexts) uses the same stack: `node scripts/smoke/up.mjs` then `npm run e2e` in `frontend/`. See `frontend/tests/e2e/README.md` and `.github/workflows/live-e2e.yml`.
 
 ## Notes
 

@@ -57,7 +57,7 @@ Work down this list; do not skip to the backend.
 Reproduce in a spec rather than by hand:
 
 - queue and retry behaviour → `frontend/tests/unit/state/sync.state.spec.ts`
-- a failing push from the user's point of view → `frontend/integration/sync-error.spec.ts`, which uses `setupApiMocks(page, { failTaskSync: true })`
+- a failing push from the user's point of view → `frontend/tests/integration/sync-error.spec.ts`, which uses `setupApiMocks(page, { failTaskSync: true })`
 - the server contract → the integration specs in `backend/test/integration/sync/`
 
 Never "fix" sync by disabling the interval, widening a catch, or dropping changes from the queue. Queued changes are unsaved user data.

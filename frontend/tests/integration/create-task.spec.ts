@@ -6,8 +6,8 @@ import { createTaskWithTitle, signIn } from './utils/task-flow.util';
  * Integration: User can create a task with title and image
  *
  * Stubs used:
- * - integration/stubs/sign-in-with-google-btn.component.ts - Fake Google authentication
- * - integration/stubs/device-camera.service.ts - Returns test image from integration/assets/test-img.jpg
+ * - tests/integration/stubs/sign-in-with-google-btn.component.ts - Fake Google authentication
+ * - tests/integration/stubs/device-camera.service.ts - Returns test image from tests/integration/assets/test-img.jpg
  *
  * Mocks:
  * - All API endpoints (see utils/api-mocks.util.ts)
@@ -34,7 +34,7 @@ test('user can create a task', async ({ page }) => {
   // STEP 2: Fill in task details
   await page.fill('[data-test="task-title-input"]', 'My First Task');
 
-  // Uses stub device-camera.service.ts to return test image from integration/assets/test-img.jpg
+  // Uses stub device-camera.service.ts to return test image from tests/integration/assets/test-img.jpg
   await page.click('[data-test="add-image-btn"]');
   const taskImage = page.locator('[data-test="task-picture"]');
   await expect(taskImage).toBeVisible();

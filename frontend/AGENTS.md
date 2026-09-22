@@ -52,9 +52,9 @@ src/app/
 and `withNgxsStoragePlugin({ keys: '*' })`, so every slice, including screen and feature slices, is
 persisted on the device.
 
-Tests: state specs in `tests/unit/state/`, helper/pipe/service specs beside them,
-component template tripwires in `tests/unit/components/`, mocked Playwright specs in
-`integration/` (guide in `integration/README.md`), live two-client specs in `e2e/`.
+Tests: Jest in `tests/unit/` (state, helpers, component tripwires), mocked Playwright in
+`tests/integration/` (guide in `tests/integration/README.md`), live two-client specs in
+`tests/e2e/`. `npm test` is Jest only.
 
 ## Canonical references
 
@@ -121,11 +121,11 @@ asserts user-visible text, `@if` branches, and `[data-test]` hooks. Does not ass
 CSS classes or `should create`. `home-sync-status`, `home-bottom-panel` and
 `task-side-menu-item` next to it are the smaller variants.
 
-### Integration spec → `integration/create-task.spec.ts` with `integration/utils/api-mocks.util.ts`
+### Integration spec → `tests/integration/create-task.spec.ts` with `tests/integration/utils/api-mocks.util.ts`
 
 The fullest mocked flow: `setupApiMocks(page)` first, `data-test` selectors, `page.waitForResponse`
 registered before the click that triggers it, then the outgoing payload inspected via
-`request().postDataJSON()`. `integration/utils/task-flow.util.ts` holds the reusable sign-in and
+`request().postDataJSON()`. `tests/integration/utils/task-flow.util.ts` holds the reusable sign-in and
 create-task steps; `edit-task`, `delete-task` and `sync-error` are the variants.
 
 ## Not references

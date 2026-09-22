@@ -91,9 +91,9 @@ Examples: [task create](./backend/test/integration/sync/task-create.int.spec.ts)
 - Unit: Jest on NGXS slices (`npm test` from `frontend/`). Specs live in `frontend/tests/unit/`.
 - Integration: Playwright against the UI with a mocked backend. Run instructions are in the frontend integration test guide.
 
-Example: [task creation user flows](./frontend/integration/create-task.spec.ts).
+Example: [task creation user flows](./frontend/tests/integration/create-task.spec.ts).
 
-📚 [Frontend integration tests](./frontend/integration/README.md)
+📚 [Frontend integration tests](./frontend/tests/integration/README.md)
 
 ## CI/CD
 

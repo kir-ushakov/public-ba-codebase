@@ -1,6 +1,6 @@
 # Live two-client e2e
 
-Playwright drives two isolated browser contexts against the **real** smoke backend (HTTPS + Mongo). The mocked UI suite lives in `frontend/integration/` and runs on every PR; this folder is nightly only.
+Playwright drives two isolated browser contexts against the **real** smoke backend (HTTPS + Mongo). The mocked UI suite lives in `frontend/tests/integration/` and runs on every PR; this folder is nightly only.
 
 ## What it checks
 
@@ -26,7 +26,7 @@ From `frontend/`:
 npm run e2e
 ```
 
-That serves Angular with `proxy.e2e.conf.json` (`/api` → `https://127.0.0.1:3443`) and runs `e2e/two-client-sync.spec.ts`.
+That serves Angular with `proxy.e2e.conf.json` (`/api` → `https://127.0.0.1:3443`) and runs `tests/e2e/two-client-sync.spec.ts`.
 
 Tear down:
 
