@@ -20,5 +20,7 @@ test('user can delete a task', async ({ page }) => {
   await deletePromise;
 
   await page.waitForURL(/\/(home)?$/);
-  await expect(page.locator('[data-test="task-tile"]', { hasText: 'Task to delete' })).toHaveCount(0);
+  await expect(page.locator('[data-test="task-tile"]', { hasText: 'Task to delete' })).toHaveCount(
+    0,
+  );
 });

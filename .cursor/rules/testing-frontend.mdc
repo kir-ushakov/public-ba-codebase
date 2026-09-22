@@ -27,4 +27,4 @@ Canonical tripwires:
 - `tests/unit/components/home-bottom-panel.component.spec.ts` — create button and nav hooks
 - `tests/unit/components/task-side-menu-item.component.spec.ts` — label from input
 
-A screen flow still gets Playwright. Component spec does not replace e2e. Pure logic still belongs in a helper spec, not the component spec.
+A screen flow still gets Playwright integration. Component spec does not replace it. Pure logic still belongs in a helper spec, not the component spec.

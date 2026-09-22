@@ -43,7 +43,7 @@ function parseSendChangeTask(postData: string | null): TaskDTO | null {
 }
 
 /**
- * Mocks backend API routes so E2E specs run without a live server.
+ * Mocks backend API routes so Playwright integration specs run without a live server.
  *
  * Statuses and response bodies must mirror the real backend, which is pinned by the
  * integration specs in `backend/test/integration/`. POST and PATCH `/api/sync/task`

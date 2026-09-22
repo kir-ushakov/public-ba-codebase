@@ -16,7 +16,7 @@ Add these badges to your README.md to show the status of your GitHub Actions wor
 ### 2. Frontend Tests (`frontend-tests.yml`)
 
 - **Triggers**: Push/PR when `frontend/**` or `contracts/**` change
-- **Jobs**: Jest unit tests, Playwright E2E
+- **Jobs**: Jest unit tests, Playwright integration
 
 ### 3. Security Scan (`security.yml`)
 
@@ -32,7 +32,7 @@ No additional secrets are required for the basic CI pipeline. The `GITHUB_TOKEN`
 - Runs ESLint (must pass; no `|| true` masking)
 - Uploads coverage to Codecov (optional)
 
-### Frontend E2E (Playwright)
+### Frontend integration (Playwright)
 
 - Runs Playwright browser tests against the Angular app
 

@@ -91,7 +91,7 @@ State logic gets a Jest spec in `frontend/tests/unit/state/<slice>.spec.ts`, usi
 
 A changed template gets a tripwire in `frontend/tests/unit/components/` — user-visible text, `@if`, and `data-test` hooks. Follow `task-tile.component.spec.ts`.
 
-A user-visible flow gets a Playwright spec — follow `add-e2e-test`.
+A user-visible flow gets a Playwright spec — follow `add-integration-test`.
 
 ## 8. Verify
 
@@ -102,4 +102,4 @@ npm test
 npm run build-prod
 ```
 
-E2E is a separate, slower loop (`npm run e2e`); run it when you touched a flow that specs cover.
+Playwright integration is a separate, slower loop (`npm run integration`); run it when you touched a flow that specs cover.

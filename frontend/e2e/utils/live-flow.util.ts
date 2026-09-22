@@ -79,7 +79,11 @@ export async function seedVerifiedUser(): Promise<SeededUser> {
   return { email, password };
 }
 
-export async function loginWithPassword(page: Page, email: string, password: string): Promise<void> {
+export async function loginWithPassword(
+  page: Page,
+  email: string,
+  password: string,
+): Promise<void> {
   await page.goto('/');
   await page.locator('[data-test="login-email"]').fill(email);
   await page.locator('[data-test="login-password"]').fill(password);
@@ -96,8 +100,7 @@ export async function createTaskWithTitle(page: Page, title: string): Promise<vo
   await expect(applyButton).toBeEnabled();
 
   const postPromise = page.waitForResponse(
-    response =>
-      response.url().includes('/api/sync/task') && response.request().method() === 'POST',
+    response => response.url().includes('/api/sync/task') && response.request().method() === 'POST',
   );
   await applyButton.click();
   const post = await postPromise;

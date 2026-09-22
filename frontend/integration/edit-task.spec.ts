@@ -34,6 +34,10 @@ test('user can edit a task title', async ({ page }) => {
 
   await page.click('[data-test="go-home-btn"]');
   await page.waitForURL(/\/(home)?$/);
-  await expect(page.locator('[data-test="task-tile"]', { hasText: 'Edited task title' })).toBeVisible();
-  await expect(page.locator('[data-test="task-tile"]', { hasText: 'Original task title' })).toHaveCount(0);
+  await expect(
+    page.locator('[data-test="task-tile"]', { hasText: 'Edited task title' }),
+  ).toBeVisible();
+  await expect(
+    page.locator('[data-test="task-tile"]', { hasText: 'Original task title' }),
+  ).toHaveCount(0);
 });

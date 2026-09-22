@@ -88,7 +88,7 @@ Component, route, `data-test` hooks.
 
 ## 9. Frontend tests
 
-State spec in `frontend/tests/unit/state/`, a component template tripwire in `frontend/tests/unit/components/` if the UI changed, and an E2E spec for the user-visible flow with mocks extended in `e2e/utils/api-mocks.util.ts` to match what step 5 pinned.
+State spec in `frontend/tests/unit/state/`, a component template tripwire in `frontend/tests/unit/components/` if the UI changed, and a Playwright integration spec for the user-visible flow with mocks extended in `integration/utils/api-mocks.util.ts` to match what step 5 pinned.
 
 ## 10. Full verification
 
@@ -96,7 +96,7 @@ State spec in `frontend/tests/unit/state/`, a component template tripwire in `fr
 cd contracts; npm run build; npm test
 cd ../backend; npm run lint:check; npm run typecheck; npm test
 cd ../frontend; npm run lint:check; npm run lint:style; npm test; npm run build-prod
-cd ../frontend; npm run e2e
+cd ../frontend; npm run integration
 ```
 
 ## 11. Report compatibility

@@ -1,9 +1,5 @@
 import { test, expect } from '@playwright/test';
-import {
-  createTaskWithTitle,
-  loginWithPassword,
-  seedVerifiedUser,
-} from './utils/live-flow.util';
+import { createTaskWithTitle, loginWithPassword, seedVerifiedUser } from './utils/live-flow.util';
 
 test('task created on one device appears on the other after sync', async ({ browser }) => {
   const user = await seedVerifiedUser();

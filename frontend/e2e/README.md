@@ -1,44 +1,24 @@
-# Frontend E2E tests (mocked API)
+# Live two-client e2e
 
-Playwright drives the real UI against a **mocked** backend. Specs live in this folder and run on every PR (`npm run e2e` from `frontend/`).
+Playwright drives two isolated browser contexts against the **real** smoke backend (HTTPS + Mongo). The mocked UI suite lives in `frontend/integration/` and runs on every PR; this folder is nightly only.
 
-Live two-client tests against a real backend are **not** here — see `frontend/e2e-live/`.
+## What it checks
 
-## Layout
+One verified user, two devices (separate Playwright contexts). Create a task in A; B’s home list shows it after the 20s sync interval.
 
+No API mocks. No Google stub. Title-only tasks (live Google Drive is a placeholder and would 502).
+
+## Prerequisites
+
+Docker Desktop (or Engine) must be running so `docker-compose.smoke.yml` can boot.
+
+## Run locally
+
+From the repo root, start the smoke stack and leave it up:
+
+```bash
+node scripts/smoke/up.mjs
 ```
-e2e/
-├── assets/
-│   └── test-img.jpg
-├── stubs/
-│   ├── sign-in-with-google-btn.component.ts
-│   └── device-camera.service.ts
-├── utils/
-│   ├── api-mocks.util.ts
-│   └── task-flow.util.ts
-├── account-menu.spec.ts
-├── create-task.spec.ts
-├── edit-task.spec.ts
-├── delete-task.spec.ts
-├── home-sync-status.spec.ts
-├── home-task-menu.spec.ts
-├── sync-error.spec.ts
-└── voice-input-visibility.spec.ts
-```
-
-Auth and the device camera are swapped at build time via `fileReplacements` in the `e2e` configuration of `angular.json`. HTTP is mocked in `utils/api-mocks.util.ts` — call `setupApiMocks(page)` at the start of a spec; do not scatter `page.route` calls.
-
-## Selectors
-
-Target elements with `[data-test="..."]`. This project uses `data-test`, not `data-testid`. If a control has no hook, add a `data-test` attribute to the template.
-
-```ts
-await page.click('[data-test="new-task-btn"]');
-```
-
-Text and role selectors are fine for user-visible copy, e.g. `page.getByText('Sign in with Google')`.
-
-## Run
 
 From `frontend/`:
 
@@ -46,17 +26,16 @@ From `frontend/`:
 npm run e2e
 ```
 
-That starts `npm run start:e2e` (see `playwright.config.js`) and runs the specs in this folder.
+That serves Angular with `proxy.e2e.conf.json` (`/api` → `https://127.0.0.1:3443`) and runs `e2e/two-client-sync.spec.ts`.
 
-## What the specs cover
+Tear down:
 
-- **account-menu** — avatar menu: Profile, disabled Settings/Integrations, Sign out
-- **create-task** — Google stub login, title + image, POST `/api/sync/task`
-- **edit-task** — change title, PATCH `/api/sync/task`
-- **delete-task** — DELETE `/api/sync/task`
-- **home-task-menu** — Home card overflow: Edit, disabled Duplicate/Add to tags, Delete
-- **home-sync-status** — 401 on GET `/api/sync/changes` shows the signed-in-not-synced banner; Sync now goes to `/sync`
-- **sync-error** — POST fails with 500; the task stays on home (offline queue)
-- **voice-input-visibility** — mic button is shown when signed in and online, hidden when offline
+```bash
+node scripts/smoke/down.mjs
+```
 
-Assert what the user can see and the outgoing request payload (`waitForResponse` then `request().postDataJSON()`). Do not reach into NGXS or component internals. Do not use `page.waitForTimeout()`.
+Alternatively, API-only smoke (`node scripts/smoke/run.mjs`) with `SMOKE_KEEP_UP=1` also leaves the same compose project (`ba-smoke`) running.
+
+## CI
+
+`.github/workflows/live-e2e.yml` runs on a nightly schedule (`0 4 * * *`) and `workflow_dispatch`. It is not on every PR — the smoke image build is slow, and this spec waits on the 20s client sync tick.

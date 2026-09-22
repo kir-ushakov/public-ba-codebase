@@ -88,8 +88,8 @@ If you changed observable behaviour and no existing spec would fail, add a test 
 - NGXS slice → `frontend/tests/unit/state/`
 - pure helper, pipe, or frontend service → `frontend/tests/unit/`
 - component template (title, button, `@if`, `data-test`) → `frontend/tests/unit/components/`
-- user-visible flow → Playwright in `frontend/e2e/`
+- user-visible flow → Playwright in `frontend/integration/`
 
 Do not add mocked unit tests for backend use-cases or controllers.
-Do not use `e2e-live/` for routine coverage.
+Do not use `frontend/e2e/` for routine coverage.
 Do not assert CSS classes, spacing, or `should create`.

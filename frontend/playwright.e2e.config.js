@@ -2,10 +2,10 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Live two-client e2e against the smoke Docker backend.
- * Does not use the mocked `e2e/` suite or `start:e2e` stubs.
+ * Does not use the mocked `integration/` suite or `start:integration` stubs.
  */
 export default defineConfig({
-  testDir: './e2e-live',
+  testDir: './e2e',
   timeout: 90_000,
   expect: { timeout: 30_000 },
   fullyParallel: false,
@@ -24,7 +24,7 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'npm run start:live-e2e',
+    command: 'npm run start:e2e',
     url: 'http://localhost:4200',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
