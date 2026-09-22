@@ -52,8 +52,9 @@ src/app/
 and `withNgxsStoragePlugin({ keys: '*' })`, so every slice, including screen and feature slices, is
 persisted on the device.
 
-Tests: state specs in `tests/unit/state/`, mocked Playwright specs in `e2e/` (guide in
-`e2e/README.md`), live two-client specs in `e2e-live/`.
+Tests: state specs in `tests/unit/state/`, helper/pipe/service specs beside them,
+component template tripwires in `tests/unit/components/`, mocked Playwright specs in
+`e2e/` (guide in `e2e/README.md`), live two-client specs in `e2e-live/`.
 
 ## Canonical references
 
@@ -112,6 +113,13 @@ Static `toModel` / `toDto` on a class, contract DTO in, plain model out.
 `firstValueFrom(store.dispatch(...))` to await a handler, and assertions taken from
 `store.selectSnapshot(...)`. Covers both directions — local create/update/delete and a merge of
 `SyncAction.ServerChangesLoaded`.
+
+### Component template spec → `tests/unit/components/task-tile.component.spec.ts`
+
+Renders the standalone component with TestBed, sets inputs, `detectChanges()`, then
+asserts user-visible text, `@if` branches, and `[data-test]` hooks. Does not assert
+CSS classes or `should create`. `home-sync-status`, `home-bottom-panel` and
+`task-side-menu-item` next to it are the smaller variants.
 
 ### E2E spec → `e2e/create-task.spec.ts` with `e2e/utils/api-mocks.util.ts`
 

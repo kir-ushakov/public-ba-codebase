@@ -63,7 +63,7 @@ These pass lint and tests and still break things:
 
 ## 5. Tests
 
-Does the changed behaviour have coverage in the right place — integration in `backend/test/integration/` for a backend flow, a state spec in `frontend/tests/unit/state/` for state logic, a Playwright spec for a user-visible flow? Unit tests in `backend/test/unit/` are only for pure domain models and mappers.
+Does the changed behaviour have coverage in the right place — integration in `backend/test/integration/` for a backend flow, a state spec in `frontend/tests/unit/state/` for state logic, a component spec in `frontend/tests/unit/components/` for a template tripwire, a Playwright spec for a user-visible flow? Unit tests in `backend/test/unit/` are only for pure domain models and mappers. Component specs must not assert CSS or `should create`.
 
 Check the assertions, not just the presence of a spec: an integration test that never reads the document back through the model has not tested persistence.
 

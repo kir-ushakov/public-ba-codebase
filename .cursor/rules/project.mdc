@@ -79,4 +79,17 @@ If they asked to commit existing work and also to start new work, commit only wh
 
 ## Before finishing
 
-Check that the app you touched still compiles, that imports resolve, and whether existing tests in `backend/test/` or `frontend/e2e/` cover the changed behaviour.
+Check that the app you touched still compiles and that imports resolve.
+
+If you changed observable behaviour and no existing spec would fail, add a test at the right layer:
+
+- backend HTTP flow → integration spec in `backend/test/integration/`
+- backend domain / mapper → unit spec in `backend/test/unit/`
+- NGXS slice → `frontend/tests/unit/state/`
+- pure helper, pipe, or frontend service → `frontend/tests/unit/`
+- component template (title, button, `@if`, `data-test`) → `frontend/tests/unit/components/`
+- user-visible flow → Playwright in `frontend/e2e/`
+
+Do not add mocked unit tests for backend use-cases or controllers.
+Do not use `e2e-live/` for routine coverage.
+Do not assert CSS classes, spacing, or `should create`.
