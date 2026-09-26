@@ -210,30 +210,11 @@ describe('TaskScreenState', () => {
   });
 
   it('drops a removed photo and makes the next one the cover', async () => {
-    deviceCameraService.takePicture
-      .mockResolvedValueOnce('blob:first-photo')
-      .mockResolvedValueOnce('blob:second-photo');
     imageService.saveImage.mockResolvedValueOnce('second-image-id');
 
-    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
-    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
-    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
-    await firstValueFrom(
-      store.dispatch(new TaskScreenAction.DraftImageRemoved({ previewUrl: 'blob:first-photo' })),
+    const created = await saveCreatedTaskWithTwoPhotos(
+      new TaskScreenAction.DraftImageRemoved({ previewUrl: 'blob:first-photo' }),
     );
-    await firstValueFrom(
-      store.dispatch(
-        new TaskScreenAction.UpdateFormData(true, {
-          title: 'Task with the remaining photo',
-          description: null,
-        }),
-      ),
-    );
-    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
-
-    const created = store
-      .selectSnapshot(TasksState.allTasks)
-      .find(t => t.id !== existingWithPhoto.id);
 
     expect(imageService.saveImage).toHaveBeenCalledTimes(1);
     expect(imageService.saveImage).toHaveBeenCalledWith('blob:second-photo');
@@ -242,30 +223,11 @@ describe('TaskScreenState', () => {
   });
 
   it('keeps the cover when a later photo is removed', async () => {
-    deviceCameraService.takePicture
-      .mockResolvedValueOnce('blob:first-photo')
-      .mockResolvedValueOnce('blob:second-photo');
     imageService.saveImage.mockResolvedValueOnce('first-image-id');
 
-    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
-    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
-    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
-    await firstValueFrom(
-      store.dispatch(new TaskScreenAction.DraftImageRemoved({ previewUrl: 'blob:second-photo' })),
+    const created = await saveCreatedTaskWithTwoPhotos(
+      new TaskScreenAction.DraftImageRemoved({ previewUrl: 'blob:second-photo' }),
     );
-    await firstValueFrom(
-      store.dispatch(
-        new TaskScreenAction.UpdateFormData(true, {
-          title: 'Task that kept its cover',
-          description: null,
-        }),
-      ),
-    );
-    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
-
-    const created = store
-      .selectSnapshot(TasksState.allTasks)
-      .find(t => t.id !== existingWithPhoto.id);
 
     expect(created?.imageId).toBe('first-image-id');
     expect(created?.images).toEqual(['first-image-id']);
@@ -446,6 +408,30 @@ describe('TaskScreenState', () => {
     expect(updated?.imageId).toBeUndefined();
     expect(updated?.images).toEqual([]);
   });
+
+  async function saveCreatedTaskWithTwoPhotos(
+    action: TaskScreenAction.DraftImageRemoved,
+  ): Promise<Task | undefined> {
+    deviceCameraService.takePicture
+      .mockResolvedValueOnce('blob:first-photo')
+      .mockResolvedValueOnce('blob:second-photo');
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(store.dispatch(action));
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Task with photos',
+          description: null,
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    return store.selectSnapshot(TasksState.allTasks).find(task => task.id !== existingWithPhoto.id);
+  }
 });
 
 function leftoverCreateState() {
