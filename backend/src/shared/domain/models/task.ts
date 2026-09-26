@@ -20,6 +20,7 @@ export interface ITaskProps {
   title: string;
   status: ETaskStatus;
   imageId?: string;
+  images?: string[];
   description?: TaskDescriptionDoc;
   createdAt: Date;
   modifiedAt: Date;
@@ -33,6 +34,7 @@ export interface TaskPresitant {
   title: string;
   status: string;
   imageId?: string;
+  images?: string[];
   description?: TaskDescriptionDoc;
   createdAt: Date;
   modifiedAt: Date;
@@ -64,6 +66,10 @@ export class Task extends AggregateRoot<ITaskProps> {
 
   get imageId(): string | undefined {
     return this.props.imageId;
+  }
+
+  get images(): string[] | undefined {
+    return this.props.images;
   }
 
   get description(): TaskDescriptionDoc | undefined {
@@ -141,6 +147,9 @@ export class Task extends AggregateRoot<ITaskProps> {
     this.props.status = newProps.status;
     this.props.modifiedAt = newProps.modifiedAt;
     this.props.imageId = newProps.imageId;
+    if ('images' in props) {
+      this.props.images = newProps.images;
+    }
     this.props.description = newProps.description;
     return Result.ok<Task>();
   }
@@ -177,9 +186,10 @@ export class Task extends AggregateRoot<ITaskProps> {
 
   private static isValid(props: ITaskProps): Result<void, DomainError<Task, ETaskError>> {
     // Check if we have imageId - if yes, title validation is relaxed
-    const hasImageId = Guard.notEmptyString(props.imageId);
+    const hasImage =
+      Guard.notEmptyString(props.imageId) || (props.images?.some(id => id.length > 0) ?? false);
 
-    if (!hasImageId) {
+    if (!hasImage) {
       // No imageId provided - title is required and must meet length requirements
       if (!Guard.notEmptyString(props.title)) {
         return Result.fail<never, DomainError<Task, ETaskError>>(

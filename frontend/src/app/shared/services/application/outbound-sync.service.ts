@@ -37,23 +37,27 @@ export class OutboundSyncService {
         continue;
       }
 
-      const imageId = this.taskImageIdToUpload(change);
-      if (imageId) {
+      const imageIds = this.taskImageIdsToUpload(change);
+      let imageUploadBlocked = false;
+      for (const imageId of imageIds) {
         const uploadResult = await this.imageService.ensureUploaded(imageId);
         if (uploadResult === 'failed') {
-          if (entityId) {
-            blockedTaskIds.add(entityId);
-          }
-          continue;
+          imageUploadBlocked = true;
+          break;
         }
         if (uploadResult === 'missingBlob') {
+          imageUploadBlocked = true;
           if (entityId) {
-            blockedTaskIds.add(entityId);
             discards.push({ taskId: entityId, imageId });
             await this.imageService.deleteImage(imageId);
           }
-          continue;
         }
+      }
+      if (imageUploadBlocked) {
+        if (entityId) {
+          blockedTaskIds.add(entityId);
+        }
+        continue;
       }
 
       try {
@@ -86,19 +90,41 @@ export class OutboundSyncService {
     };
   }
 
-  private taskImageIdToUpload(change: Change): string | undefined {
+  private taskImageIdsToUpload(change: Change): string[] {
     if (change.entity !== EChangedEntity.Task || change.action === EChangeAction.Deleted) {
-      return undefined;
+      return [];
     }
     const object = change.object;
-    if (!object || !('imageId' in object)) {
-      return undefined;
+    if (!object) {
+      return [];
     }
-    const imageId = (object as { imageId?: unknown }).imageId;
-    return typeof imageId === 'string' && imageId.length > 0 ? imageId : undefined;
+
+    const record = object as { imageId?: unknown; images?: unknown };
+    const ids: string[] = [];
+    if (Array.isArray(record.images)) {
+      for (const imageId of record.images) {
+        if (typeof imageId === 'string' && imageId.length > 0 && !ids.includes(imageId)) {
+          ids.push(imageId);
+        }
+      }
+    }
+
+    if (
+      typeof record.imageId === 'string' &&
+      record.imageId.length > 0 &&
+      !ids.includes(record.imageId)
+    ) {
+      ids.push(record.imageId);
+    }
+
+    return ids;
   }
 
   private uniqueDiscards(discards: MissingBlobDiscard[]): MissingBlobDiscard[] {
-    return [...new Map(discards.map(discard => [discard.taskId, discard])).values()];
+    return [
+      ...new Map(
+        discards.map(discard => [`${discard.taskId}:${discard.imageId}`, discard]),
+      ).values(),
+    ];
   }
 }

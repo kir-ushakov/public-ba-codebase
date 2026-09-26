@@ -77,6 +77,35 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(String(persisted.userId)).toBe(userId);
   });
 
+  it('persists every attached image id and keeps the cover', async () => {
+    const { userId, jwtCookie } = await seedTestUser();
+
+    const dto = {
+      id: 'task-gallery',
+      type: ETaskType.Basic,
+      title: 'Task with several images',
+      status: ETaskStatus.Todo,
+      imageId: 'cover-id',
+      images: ['cover-id', 'second-id'],
+    };
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/sync/task')
+      .send({ changeableObjectDto: dto })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(201);
+
+    const responseBody: TaskDTO = res.body;
+    expect(responseBody.imageId).toBe('cover-id');
+    expect(responseBody.images).toEqual(['cover-id', 'second-id']);
+    expect(responseBody.userId).toBe(userId);
+
+    const persisted = await models.TaskModel.findById(dto.id).lean();
+    expect(persisted?.imageId).toBe('cover-id');
+    expect(persisted?.images).toEqual(['cover-id', 'second-id']);
+  });
+
   it('retried create of the same id for the same user is idempotent', async () => {
     const { userId, jwtCookie } = await seedTestUser();
 

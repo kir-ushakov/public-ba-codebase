@@ -20,6 +20,11 @@ export enum ETaskViewMode {
   View = 'TASK_VIEW_MODE_VIEW',
 }
 
+export type DraftTaskImage = {
+  previewUrl?: string;
+  imageId?: string;
+};
+
 export interface ITaskScreenStateModel {
   mode: ETaskViewMode;
   taskData: Task | DefaultTask;
@@ -28,7 +33,8 @@ export interface ITaskScreenStateModel {
     status: boolean;
   };
   isSideMenuOpened: boolean;
-  imageUrl: string | null;
+  draftImages: DraftTaskImage[];
+  coverDraftKey?: string;
 }
 
 const defaults: ITaskScreenStateModel = {
@@ -42,7 +48,7 @@ const defaults: ITaskScreenStateModel = {
   },
   taskData: defaultTask,
   isSideMenuOpened: false,
-  imageUrl: null,
+  draftImages: [],
 };
 
 @State<ITaskScreenStateModel>({
@@ -79,8 +85,13 @@ export class TaskScreenState {
   }
 
   @Selector()
-  static imageUri(state: ITaskScreenStateModel): string | null {
-    return state.imageUrl;
+  static draftImages(state: ITaskScreenStateModel): DraftTaskImage[] {
+    return state.draftImages ?? [];
+  }
+
+  @Selector()
+  static coverDraftKey(state: ITaskScreenStateModel): string | undefined {
+    return state.coverDraftKey;
   }
 
   @Selector()
@@ -106,7 +117,10 @@ export class TaskScreenState {
     if (taskId) {
       const actualTasks: Task[] = this.store.selectSnapshot(TasksState.actualTasks);
       const selectedTask = actualTasks.find(t => t.id === taskId) ?? defaultTask;
-      ctx.patchState({ taskData: selectedTask });
+      ctx.patchState({
+        taskData: selectedTask,
+        ...(mode === ETaskViewMode.Edit ? { draftImages: draftsFromTask(selectedTask) } : {}),
+      });
     }
   }
 
@@ -134,17 +148,14 @@ export class TaskScreenState {
   }
 
   private async handleCreateTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
-    const { taskData, imageUrl } = ctx.getState();
+    const { taskData, draftImages, coverDraftKey } = ctx.getState();
     const userId = this.store.selectSnapshot(UserState.userId);
     if (userId == null) {
       throw new Error('Cannot create a task without a user id');
     }
 
-    let imageId: string | undefined;
-    if (imageUrl) {
-      imageId = await this.imageService.saveImage(imageUrl);
-    }
-    const finalTaskData = { ...taskData, imageId };
+    const saved = await this.savedImagesFromDrafts(draftImages, taskData.imageId, coverDraftKey);
+    const finalTaskData = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: finalTaskData });
     ctx.dispatch(new TasksAction.CreateTask(finalTaskData, userId));
@@ -152,16 +163,13 @@ export class TaskScreenState {
   }
 
   private async handleUpdateTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
-    const { taskData, imageUrl } = ctx.getState();
+    const { taskData, draftImages, coverDraftKey } = ctx.getState();
     if (taskData.id == null) {
       return;
     }
 
-    let imageId = taskData.imageId;
-    if (imageUrl) {
-      imageId = await this.imageService.saveImage(imageUrl);
-    }
-    const changes = { ...taskData, imageId };
+    const saved = await this.savedImagesFromDrafts(draftImages, taskData.imageId, coverDraftKey);
+    const changes = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: changes });
     ctx.dispatch(
@@ -180,6 +188,8 @@ export class TaskScreenState {
     ctx.patchState({
       mode: ETaskViewMode.Edit,
       taskData: { ...task },
+      draftImages: draftsFromTask(task),
+      coverDraftKey: undefined,
       taskViewForm: {
         ...ctx.getState().taskViewForm,
         formData: { title: task.title, description: task.description ?? null },
@@ -231,7 +241,51 @@ export class TaskScreenState {
     if (!imageUri) {
       return;
     }
-    ctx.patchState({ imageUrl: imageUri });
+    const draftImages = ctx.getState().draftImages ?? [];
+    ctx.patchState({
+      draftImages: [...draftImages, { previewUrl: imageUri }],
+    });
+  }
+
+  @Action(TaskScreenAction.ImageSelectedAsCover)
+  selectImageAsCover(
+    ctx: StateContext<ITaskScreenStateModel>,
+    { image }: TaskScreenAction.ImageSelectedAsCover,
+  ): void {
+    const key = image.imageId ?? image.previewUrl;
+    if (!key) {
+      return;
+    }
+    const drafts = ctx.getState().draftImages ?? [];
+    const matches = drafts.some(draft => (draft.imageId ?? draft.previewUrl) === key);
+    if (!matches) {
+      return;
+    }
+    ctx.patchState({ coverDraftKey: key });
+  }
+
+  @Action(TaskScreenAction.DraftImageRemoved)
+  removeDraftImage(
+    ctx: StateContext<ITaskScreenStateModel>,
+    { image }: TaskScreenAction.DraftImageRemoved,
+  ): void {
+    const removedKey = draftImageKey(image);
+    if (!removedKey) {
+      return;
+    }
+    const { draftImages, taskData, coverDraftKey } = ctx.getState();
+    const drafts = draftImages ?? [];
+    const removedIndex = drafts.findIndex(draft => draftImageKey(draft) === removedKey);
+    if (removedIndex < 0) {
+      return;
+    }
+
+    const nextDrafts = drafts.filter((_, index) => index !== removedIndex);
+    const coverKey = activeCoverKey(drafts, taskData.imageId, coverDraftKey);
+    ctx.patchState({
+      draftImages: nextDrafts,
+      coverDraftKey: coverKey === removedKey ? draftImageKey(nextDrafts[0]) : coverDraftKey,
+    });
   }
 
   @Action(TaskScreenAction.SideMenuToggle)
@@ -255,6 +309,38 @@ export class TaskScreenState {
     });
   }
 
+  private async savedImagesFromDrafts(
+    drafts: DraftTaskImage[] | undefined,
+    currentCoverId?: string,
+    coverDraftKey?: string,
+  ): Promise<{ imageId?: string; images?: string[] }> {
+    const images: string[] = [];
+    let selectedCoverId: string | undefined;
+
+    for (const draft of drafts ?? []) {
+      const id =
+        draft.imageId ??
+        (draft.previewUrl ? await this.imageService.saveImage(draft.previewUrl) : undefined);
+      if (!id) {
+        continue;
+      }
+      images.push(id);
+      if (coverDraftKey && (draft.imageId ?? draft.previewUrl) === coverDraftKey) {
+        selectedCoverId = id;
+      }
+    }
+
+    if (images.length === 0) {
+      return { imageId: undefined, images: [] };
+    }
+
+    const imageId =
+      selectedCoverId ??
+      (currentCoverId && images.includes(currentCoverId) ? currentCoverId : images[0]);
+
+    return { imageId, images };
+  }
+
   private updateAndClose(
     ctx: StateContext<ITaskScreenStateModel>,
     updatedTaskData: Partial<Task>,
@@ -268,4 +354,37 @@ export class TaskScreenState {
       TaskScreenAction.Close,
     ]);
   }
+}
+
+function draftImageKey(draft: DraftTaskImage | undefined): string | undefined {
+  return draft?.imageId ?? draft?.previewUrl;
+}
+
+function activeCoverKey(
+  drafts: readonly DraftTaskImage[],
+  coverImageId: string | undefined,
+  coverDraftKey: string | undefined,
+): string | undefined {
+  if (coverDraftKey && drafts.some(draft => draftImageKey(draft) === coverDraftKey)) {
+    return coverDraftKey;
+  }
+  const savedCover = drafts.find(
+    draft => coverImageId !== undefined && draft.imageId === coverImageId,
+  );
+  if (savedCover) {
+    return draftImageKey(savedCover);
+  }
+  return draftImageKey(drafts[0]);
+}
+
+function draftsFromTask(task: Task | DefaultTask): DraftTaskImage[] {
+  if ('images' in task && task.images?.length) {
+    return task.images.map(imageId => ({ imageId }));
+  }
+
+  if (task.imageId) {
+    return [{ imageId: task.imageId }];
+  }
+
+  return [];
 }

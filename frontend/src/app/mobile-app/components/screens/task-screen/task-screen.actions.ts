@@ -1,6 +1,5 @@
 import type { ITaskEditFormData } from './task-edit/task-edit.component.interface';
-import type { ETaskViewMode } from './task-screen.state';
-import type { Task } from 'src/app/shared/models/task.model';
+import type { DraftTaskImage, ETaskViewMode } from './task-screen.state';
 
 export namespace TaskScreenAction {
   export class Opened {
@@ -45,6 +44,18 @@ export namespace TaskScreenAction {
 
   export class AddPictureBtnPressed {
     static readonly type = '[TaskScreen] Add Picture Btn Pressed';
+  }
+
+  export class ImageSelectedAsCover {
+    static readonly type = '[TaskScreen] Image Selected As Cover';
+
+    constructor(public image: DraftTaskImage) {}
+  }
+
+  export class DraftImageRemoved {
+    static readonly type = '[TaskScreen] Draft Image Removed';
+
+    constructor(public image: DraftTaskImage) {}
   }
 
   export class SideMenuToggle {

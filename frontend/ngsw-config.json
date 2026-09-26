@@ -44,7 +44,7 @@
       "installMode": "prefetch",
       "resources": {
         "urls": [
-          "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add,arrow_back,calendar_month,content_copy,delete,edit,format_bold,format_italic,format_list_bulleted,format_list_numbered,home,hub,link,logout,mic,more_vert,person,radio_button_unchecked,search,sell,settings,sync,warning&display=block"
+          "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add,arrow_back,calendar_month,content_copy,delete,edit,format_bold,format_italic,format_list_bulleted,format_list_numbered,home,hub,image,link,logout,mic,more_vert,person,radio_button_unchecked,search,sell,settings,star,sync,warning&display=block"
         ]
       }
     },

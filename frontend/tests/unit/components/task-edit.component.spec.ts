@@ -50,6 +50,11 @@ describe('TaskEditComponent title field', () => {
     );
     expect(host.querySelector('[data-test="task-description-strike-btn"]')).toBeNull();
     expect(host.querySelector('[data-test="task-description-bold-btn"]')).not.toBeNull();
+    expect(host.querySelector('[data-test="task-images-section"]')?.textContent).toContain(
+      'Images',
+    );
+    expect(host.querySelector('[data-test="add-image-btn"]')?.textContent).toContain('Add image');
+    expect(host.querySelector('[data-test="task-images-count"]')).toBeNull();
   });
 
   it('updates the character count as the title changes', () => {

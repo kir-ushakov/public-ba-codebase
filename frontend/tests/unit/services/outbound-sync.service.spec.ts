@@ -66,6 +66,21 @@ describe('OutboundSyncService', () => {
     });
   });
 
+  it('uploads every attached image before sending the task change', async () => {
+    const taskWithGallery: Change = {
+      ...photoCreate,
+      object: { ...taskWithPhoto, imageId: 'img-1', images: ['img-1', 'img-2'] },
+    };
+    imageService.ensureUploaded.mockResolvedValue('uploaded');
+
+    const result = await service.process([taskWithGallery]);
+
+    expect(imageService.ensureUploaded).toHaveBeenNthCalledWith(1, 'img-1');
+    expect(imageService.ensureUploaded).toHaveBeenNthCalledWith(2, 'img-2');
+    expect(clientChangesService.send).toHaveBeenCalledWith(taskWithGallery);
+    expect(result.sent).toEqual([taskWithGallery]);
+  });
+
   it('uploads a local image before sending the task change', async () => {
     imageService.ensureUploaded.mockResolvedValue('uploaded');
 

@@ -133,8 +133,32 @@ describe('TaskMapper', () => {
       expect(restored.id.toString()).toBe('task-123');
       expect(restored.title).toBe('Valid task title');
       expect(restored.imageId).toBe('image-1');
+      expect(restored.images).toBeUndefined();
       expect(restored.createdAt).toEqual(original.createdAt);
       expect(restored.modifiedAt).toEqual(original.modifiedAt);
+    });
+
+    it('preserves the image list through persistence and back to the DTO', () => {
+      const original = Task.create(
+        {
+          userId: 'user-1',
+          type: ETaskType.Basic,
+          title: 'Valid task title',
+          status: ETaskStatus.Todo,
+          imageId: 'cover-id',
+          images: ['cover-id', 'second-id'],
+        },
+        new UniqueEntityID('task-123'),
+      ).getValue();
+
+      const persisted = TaskMapper.toPersistence(original);
+      const restored = TaskMapper.toDomain(persisted);
+      const dto = TaskMapper.toDTO(restored);
+
+      expect(persisted.images).toEqual(['cover-id', 'second-id']);
+      expect(restored.images).toEqual(['cover-id', 'second-id']);
+      expect(dto.imageId).toBe('cover-id');
+      expect(dto.images).toEqual(['cover-id', 'second-id']);
     });
 
     it('preserves description through persistence and back to domain', () => {

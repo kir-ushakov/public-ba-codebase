@@ -15,6 +15,10 @@ export class TasksMapper {
       modifiedAt: taskDto.modifiedAt,
     };
 
+    if (taskDto.images?.length) {
+      task.images = taskDto.images;
+    }
+
     if (!isEmptyTaskDescription(taskDto.description)) {
       task.description = taskDto.description;
     }
@@ -39,6 +43,10 @@ export class TasksMapper {
       createdAt: task.createdAt,
       modifiedAt: task.modifiedAt,
     };
+
+    if (task.images?.length) {
+      dto.images = task.images;
+    }
 
     if (!isEmptyTaskDescription(task.description)) {
       dto.description = task.description;

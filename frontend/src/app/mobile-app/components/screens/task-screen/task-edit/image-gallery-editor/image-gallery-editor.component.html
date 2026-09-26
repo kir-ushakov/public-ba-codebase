@@ -1,0 +1,52 @@
+<section class="images-section" data-test="task-images-section">
+  <div class="images-header">
+    <p class="field-label">Images</p>
+    @if (countLabel(); as label) {
+      <p class="images-count" data-test="task-images-count">{{ label }}</p>
+    }
+  </div>
+  <div class="images-row">
+    <button class="add-image" type="button" data-test="add-image-btn" (click)="onAddImage()">
+      <span class="material-symbols-rounded" aria-hidden="true">image</span>
+      Add image
+    </button>
+    @for (image of images(); track image.key) {
+      <div class="image-tile" data-test="task-image-tile" [class.is-cover]="image.isCover">
+        <button
+          class="image-select"
+          type="button"
+          data-test="task-image-select"
+          [attr.aria-pressed]="image.isCover"
+          [attr.aria-label]="image.isCover ? 'Cover image' : 'Set as cover'"
+          (click)="onSelectCover(image)"
+        >
+          @if (image.previewUrl) {
+            <img class="image-preview" data-test="task-picture" alt="" [src]="image.previewUrl" />
+          } @else if (image.imageId) {
+            <img
+              class="image-preview"
+              data-test="task-picture"
+              alt=""
+              [src]="image.imageId | imageSrc"
+            />
+          }
+          @if (image.isCover) {
+            <span class="cover-badge" data-test="task-image-cover">
+              <span class="material-symbols-rounded cover-star" aria-hidden="true">star</span>
+              COVER
+            </span>
+          }
+        </button>
+        <button
+          class="image-remove"
+          type="button"
+          data-test="task-image-remove"
+          aria-label="Remove image"
+          (click)="onRemoveImage(image)"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">close</span>
+        </button>
+      </div>
+    }
+  </div>
+</section>
