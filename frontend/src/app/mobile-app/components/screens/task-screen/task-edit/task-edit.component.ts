@@ -19,7 +19,7 @@ import { clipVoiceTaskTitle } from './helpers/clip-voice-task-title.function';
 import { stripTitleNewlines } from './helpers/strip-title-newlines.function';
 import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/rich-text-editor/rich-text-editor.component';
 import { ImageGalleryEditorComponent } from './image-gallery-editor/image-gallery-editor.component';
-import { toGalleryImages } from './helpers/to-gallery-images.function';
+import { toGalleryImages, type GalleryImage } from './helpers/to-gallery-images.function';
 
 @Component({
   selector: 'ba-task-edit',
@@ -46,12 +46,13 @@ export class TaskEditComponent {
   readonly titleMaxLength = TaskConst.TITLE_MAX_LENGTH;
   titleLength = 0;
   readonly galleryImages = computed(() =>
-    toGalleryImages(this.draftImages(), this.editedTask().imageId),
+    toGalleryImages(this.draftImages(), this.editedTask().imageId, this.coverDraftKey()),
   );
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);
   private readonly draftImages = this.store.selectSignal(TaskScreenState.draftImages);
+  private readonly coverDraftKey = this.store.selectSignal(TaskScreenState.coverDraftKey);
   private readonly editedTask = this.store.selectSignal(TaskScreenState.task);
   private readonly fb = inject(FormBuilder);
   private readonly actions$ = inject(Actions);
@@ -74,6 +75,15 @@ export class TaskEditComponent {
 
   addPictureBtnPressed(): void {
     this.store.dispatch(TaskScreenAction.AddPictureBtnPressed);
+  }
+
+  imageSelectedAsCover(image: GalleryImage): void {
+    this.store.dispatch(
+      new TaskScreenAction.ImageSelectedAsCover({
+        imageId: image.imageId,
+        previewUrl: image.previewUrl,
+      }),
+    );
   }
 
   onVoiceRecordingStopped(): void {

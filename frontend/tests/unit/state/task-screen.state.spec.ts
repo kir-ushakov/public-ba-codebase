@@ -175,6 +175,40 @@ describe('TaskScreenState', () => {
     expect(created?.images).toEqual(['first-image-id', 'second-image-id']);
   });
 
+  it('saves the clicked photo as the cover without reordering attachments', async () => {
+    deviceCameraService.takePicture
+      .mockResolvedValueOnce('blob:first-photo')
+      .mockResolvedValueOnce('blob:second-photo');
+    imageService.saveImage
+      .mockResolvedValueOnce('first-image-id')
+      .mockResolvedValueOnce('second-image-id');
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.ImageSelectedAsCover({ previewUrl: 'blob:second-photo' }),
+      ),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Task with a chosen cover',
+          description: null,
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const created = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(t => t.id !== existingWithPhoto.id);
+
+    expect(created?.imageId).toBe('second-image-id');
+    expect(created?.images).toEqual(['first-image-id', 'second-image-id']);
+  });
+
   it('loads the selected task when opening view mode', async () => {
     await firstValueFrom(
       store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
@@ -257,6 +291,40 @@ describe('TaskScreenState', () => {
     expect(imageService.saveImage).toHaveBeenCalledWith('blob:third-photo');
     expect(updated?.imageId).toBe('cover-id');
     expect(updated?.images).toEqual(['cover-id', 'second-id', 'new-image-id']);
+  });
+
+  it('changes the cover to another saved image without reordering the list', async () => {
+    const withGallery: Task = {
+      ...existingWithPhoto,
+      id: 'task-gallery',
+      imageId: 'cover-id',
+      images: ['cover-id', 'second-id'],
+    };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [existingWithPhoto, withGallery] },
+    });
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Edit, withGallery.id)),
+    );
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.ImageSelectedAsCover({ imageId: 'second-id' })),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: withGallery.title,
+          description: null,
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const updated = store.selectSnapshot(TasksState.allTasks).find(t => t.id === withGallery.id);
+    expect(imageService.saveImage).not.toHaveBeenCalled();
+    expect(updated?.imageId).toBe('second-id');
+    expect(updated?.images).toEqual(['cover-id', 'second-id']);
   });
 });
 

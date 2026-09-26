@@ -47,4 +47,22 @@ describe('ImageGalleryEditorComponent', () => {
     expect(tiles[0]?.textContent).toContain('COVER');
     expect(tiles[1]?.textContent).not.toContain('COVER');
   });
+
+  it('emits the image that was clicked', () => {
+    const images: GalleryImage[] = [
+      { key: 'cover', previewUrl: 'blob:lamp', isCover: true },
+      { key: 'second', previewUrl: 'blob:person', isCover: false },
+    ];
+    const selected: GalleryImage[] = [];
+    fixture.componentInstance.selectCover.subscribe(image => selected.push(image));
+    fixture.componentRef.setInput('images', images);
+    fixture.detectChanges();
+
+    const tiles = fixture.nativeElement.querySelectorAll('[data-test="task-image-tile"]');
+    (tiles[1] as HTMLButtonElement).click();
+
+    expect(selected).toEqual([images[1]]);
+    expect(tiles[1]?.getAttribute('aria-label')).toBe('Set as cover');
+    expect(tiles[0]?.getAttribute('aria-pressed')).toBe('true');
+  });
 });

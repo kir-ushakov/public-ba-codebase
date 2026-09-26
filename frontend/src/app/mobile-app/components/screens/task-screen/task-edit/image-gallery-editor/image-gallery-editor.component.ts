@@ -13,9 +13,14 @@ import type { GalleryImage } from '../helpers/to-gallery-images.function';
 export class ImageGalleryEditorComponent {
   readonly images = input<GalleryImage[]>([]);
   readonly addImage = output<void>();
+  readonly selectCover = output<GalleryImage>();
   readonly countLabel = computed(() => formatAttachedImageCount(this.images().length));
 
   onAddImage(): void {
     this.addImage.emit();
+  }
+
+  onSelectCover(image: GalleryImage): void {
+    this.selectCover.emit(image);
   }
 }

@@ -34,6 +34,7 @@ export interface ITaskScreenStateModel {
   };
   isSideMenuOpened: boolean;
   draftImages: DraftTaskImage[];
+  coverDraftKey?: string;
 }
 
 const defaults: ITaskScreenStateModel = {
@@ -86,6 +87,11 @@ export class TaskScreenState {
   @Selector()
   static draftImages(state: ITaskScreenStateModel): DraftTaskImage[] {
     return state.draftImages ?? [];
+  }
+
+  @Selector()
+  static coverDraftKey(state: ITaskScreenStateModel): string | undefined {
+    return state.coverDraftKey;
   }
 
   @Selector()
@@ -142,13 +148,13 @@ export class TaskScreenState {
   }
 
   private async handleCreateTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
-    const { taskData, draftImages } = ctx.getState();
+    const { taskData, draftImages, coverDraftKey } = ctx.getState();
     const userId = this.store.selectSnapshot(UserState.userId);
     if (userId == null) {
       throw new Error('Cannot create a task without a user id');
     }
 
-    const saved = await this.savedImagesFromDrafts(draftImages, taskData.imageId);
+    const saved = await this.savedImagesFromDrafts(draftImages, taskData.imageId, coverDraftKey);
     const finalTaskData = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: finalTaskData });
@@ -157,12 +163,12 @@ export class TaskScreenState {
   }
 
   private async handleUpdateTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
-    const { taskData, draftImages } = ctx.getState();
+    const { taskData, draftImages, coverDraftKey } = ctx.getState();
     if (taskData.id == null) {
       return;
     }
 
-    const saved = await this.savedImagesFromDrafts(draftImages, taskData.imageId);
+    const saved = await this.savedImagesFromDrafts(draftImages, taskData.imageId, coverDraftKey);
     const changes = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: changes });
@@ -183,6 +189,7 @@ export class TaskScreenState {
       mode: ETaskViewMode.Edit,
       taskData: { ...task },
       draftImages: draftsFromTask(task),
+      coverDraftKey: undefined,
       taskViewForm: {
         ...ctx.getState().taskViewForm,
         formData: { title: task.title, description: task.description ?? null },
@@ -240,6 +247,23 @@ export class TaskScreenState {
     });
   }
 
+  @Action(TaskScreenAction.ImageSelectedAsCover)
+  selectImageAsCover(
+    ctx: StateContext<ITaskScreenStateModel>,
+    { image }: TaskScreenAction.ImageSelectedAsCover,
+  ): void {
+    const key = image.imageId ?? image.previewUrl;
+    if (!key) {
+      return;
+    }
+    const drafts = ctx.getState().draftImages ?? [];
+    const matches = drafts.some(draft => (draft.imageId ?? draft.previewUrl) === key);
+    if (!matches) {
+      return;
+    }
+    ctx.patchState({ coverDraftKey: key });
+  }
+
   @Action(TaskScreenAction.SideMenuToggle)
   sideMenuToggled(ctx: StateContext<ITaskScreenStateModel>): void {
     const isSideMenuOpened = ctx.getState().isSideMenuOpened;
@@ -264,16 +288,21 @@ export class TaskScreenState {
   private async savedImagesFromDrafts(
     drafts: DraftTaskImage[] | undefined,
     currentCoverId?: string,
+    coverDraftKey?: string,
   ): Promise<{ imageId?: string; images?: string[] }> {
     const images: string[] = [];
+    let selectedCoverId: string | undefined;
 
     for (const draft of drafts ?? []) {
-      if (draft.imageId) {
-        images.push(draft.imageId);
+      const id =
+        draft.imageId ??
+        (draft.previewUrl ? await this.imageService.saveImage(draft.previewUrl) : undefined);
+      if (!id) {
         continue;
       }
-      if (draft.previewUrl) {
-        images.push(await this.imageService.saveImage(draft.previewUrl));
+      images.push(id);
+      if (coverDraftKey && (draft.imageId ?? draft.previewUrl) === coverDraftKey) {
+        selectedCoverId = id;
       }
     }
 
@@ -281,7 +310,9 @@ export class TaskScreenState {
       return {};
     }
 
-    const imageId = currentCoverId && images.includes(currentCoverId) ? currentCoverId : images[0];
+    const imageId =
+      selectedCoverId ??
+      (currentCoverId && images.includes(currentCoverId) ? currentCoverId : images[0]);
 
     return { imageId, images };
   }

@@ -11,7 +11,15 @@
       Add image
     </button>
     @for (image of images(); track image.key) {
-      <div class="image-tile" data-test="task-image-tile" [class.is-cover]="image.isCover">
+      <button
+        class="image-tile"
+        type="button"
+        data-test="task-image-tile"
+        [class.is-cover]="image.isCover"
+        [attr.aria-pressed]="image.isCover"
+        [attr.aria-label]="image.isCover ? 'Cover image' : 'Set as cover'"
+        (click)="onSelectCover(image)"
+      >
         @if (image.previewUrl) {
           <img class="image-preview" data-test="task-picture" alt="" [src]="image.previewUrl" />
         } @else if (image.imageId) {
@@ -28,7 +36,7 @@
             COVER
           </span>
         }
-      </div>
+      </button>
     }
   </div>
 </section>

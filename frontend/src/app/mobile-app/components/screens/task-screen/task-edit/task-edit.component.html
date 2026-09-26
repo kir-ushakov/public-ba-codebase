@@ -27,6 +27,10 @@
       <p class="field-label">Description</p>
       <ba-rich-text-editor formControlName="description" />
     </div>
-    <ba-image-gallery-editor [images]="galleryImages()" (addImage)="addPictureBtnPressed()" />
+    <ba-image-gallery-editor
+      [images]="galleryImages()"
+      (addImage)="addPictureBtnPressed()"
+      (selectCover)="imageSelectedAsCover($event)"
+    />
   </form>
 </div>
