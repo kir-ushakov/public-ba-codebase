@@ -42,7 +42,10 @@ export class TasksState {
     {
       taskInitData,
       userId,
-    }: { taskInitData: Pick<Task, 'title' | 'description'> & { imageId?: string }; userId: string },
+    }: {
+      taskInitData: Pick<Task, 'title' | 'description' | 'imageId' | 'images'>;
+      userId: string;
+    },
   ): Promise<void> {
     try {
       const now = this.now();
@@ -147,11 +150,11 @@ export class TasksState {
   }
 
   private createTaskEntity(
-    taskInitData: Pick<Task, 'title' | 'description'> & { imageId?: string },
+    taskInitData: Pick<Task, 'title' | 'description' | 'imageId' | 'images'>,
     userId: string,
     timestamp: string,
   ): Task {
-    return {
+    const task: Task = {
       type: ETaskType.Basic,
       userId,
       id: uuidv4(),
@@ -164,6 +167,12 @@ export class TasksState {
       createdAt: timestamp,
       modifiedAt: timestamp,
     };
+
+    if (taskInitData.images?.length) {
+      task.images = taskInitData.images;
+    }
+
+    return task;
   }
 
   private static getSortedUserTasks(state: ITasksStateModel, userId: string | null): Task[] {

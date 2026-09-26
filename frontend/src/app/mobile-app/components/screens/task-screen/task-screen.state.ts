@@ -20,6 +20,11 @@ export enum ETaskViewMode {
   View = 'TASK_VIEW_MODE_VIEW',
 }
 
+export type DraftTaskImage = {
+  previewUrl?: string;
+  imageId?: string;
+};
+
 export interface ITaskScreenStateModel {
   mode: ETaskViewMode;
   taskData: Task | DefaultTask;
@@ -28,7 +33,7 @@ export interface ITaskScreenStateModel {
     status: boolean;
   };
   isSideMenuOpened: boolean;
-  imageUrl: string | null;
+  draftImages: DraftTaskImage[];
 }
 
 const defaults: ITaskScreenStateModel = {
@@ -42,7 +47,7 @@ const defaults: ITaskScreenStateModel = {
   },
   taskData: defaultTask,
   isSideMenuOpened: false,
-  imageUrl: null,
+  draftImages: [],
 };
 
 @State<ITaskScreenStateModel>({
@@ -79,8 +84,8 @@ export class TaskScreenState {
   }
 
   @Selector()
-  static imageUri(state: ITaskScreenStateModel): string | null {
-    return state.imageUrl;
+  static draftImages(state: ITaskScreenStateModel): DraftTaskImage[] {
+    return state.draftImages ?? [];
   }
 
   @Selector()
@@ -106,7 +111,10 @@ export class TaskScreenState {
     if (taskId) {
       const actualTasks: Task[] = this.store.selectSnapshot(TasksState.actualTasks);
       const selectedTask = actualTasks.find(t => t.id === taskId) ?? defaultTask;
-      ctx.patchState({ taskData: selectedTask });
+      ctx.patchState({
+        taskData: selectedTask,
+        ...(mode === ETaskViewMode.Edit ? { draftImages: draftsFromTask(selectedTask) } : {}),
+      });
     }
   }
 
@@ -134,17 +142,14 @@ export class TaskScreenState {
   }
 
   private async handleCreateTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
-    const { taskData, imageUrl } = ctx.getState();
+    const { taskData, draftImages } = ctx.getState();
     const userId = this.store.selectSnapshot(UserState.userId);
     if (userId == null) {
       throw new Error('Cannot create a task without a user id');
     }
 
-    let imageId: string | undefined;
-    if (imageUrl) {
-      imageId = await this.imageService.saveImage(imageUrl);
-    }
-    const finalTaskData = { ...taskData, imageId };
+    const saved = await this.savedImagesFromDrafts(draftImages, taskData.imageId);
+    const finalTaskData = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: finalTaskData });
     ctx.dispatch(new TasksAction.CreateTask(finalTaskData, userId));
@@ -152,16 +157,13 @@ export class TaskScreenState {
   }
 
   private async handleUpdateTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
-    const { taskData, imageUrl } = ctx.getState();
+    const { taskData, draftImages } = ctx.getState();
     if (taskData.id == null) {
       return;
     }
 
-    let imageId = taskData.imageId;
-    if (imageUrl) {
-      imageId = await this.imageService.saveImage(imageUrl);
-    }
-    const changes = { ...taskData, imageId };
+    const saved = await this.savedImagesFromDrafts(draftImages, taskData.imageId);
+    const changes = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: changes });
     ctx.dispatch(
@@ -180,6 +182,7 @@ export class TaskScreenState {
     ctx.patchState({
       mode: ETaskViewMode.Edit,
       taskData: { ...task },
+      draftImages: draftsFromTask(task),
       taskViewForm: {
         ...ctx.getState().taskViewForm,
         formData: { title: task.title, description: task.description ?? null },
@@ -231,7 +234,10 @@ export class TaskScreenState {
     if (!imageUri) {
       return;
     }
-    ctx.patchState({ imageUrl: imageUri });
+    const draftImages = ctx.getState().draftImages ?? [];
+    ctx.patchState({
+      draftImages: [...draftImages, { previewUrl: imageUri }],
+    });
   }
 
   @Action(TaskScreenAction.SideMenuToggle)
@@ -255,6 +261,31 @@ export class TaskScreenState {
     });
   }
 
+  private async savedImagesFromDrafts(
+    drafts: DraftTaskImage[] | undefined,
+    currentCoverId?: string,
+  ): Promise<{ imageId?: string; images?: string[] }> {
+    const images: string[] = [];
+
+    for (const draft of drafts ?? []) {
+      if (draft.imageId) {
+        images.push(draft.imageId);
+        continue;
+      }
+      if (draft.previewUrl) {
+        images.push(await this.imageService.saveImage(draft.previewUrl));
+      }
+    }
+
+    if (images.length === 0) {
+      return {};
+    }
+
+    const imageId = currentCoverId && images.includes(currentCoverId) ? currentCoverId : images[0];
+
+    return { imageId, images };
+  }
+
   private updateAndClose(
     ctx: StateContext<ITaskScreenStateModel>,
     updatedTaskData: Partial<Task>,
@@ -268,4 +299,16 @@ export class TaskScreenState {
       TaskScreenAction.Close,
     ]);
   }
+}
+
+function draftsFromTask(task: Task | DefaultTask): DraftTaskImage[] {
+  if ('images' in task && task.images?.length) {
+    return task.images.map(imageId => ({ imageId }));
+  }
+
+  if (task.imageId) {
+    return [{ imageId: task.imageId }];
+  }
+
+  return [];
 }

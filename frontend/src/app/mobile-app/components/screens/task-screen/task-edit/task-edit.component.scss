@@ -65,18 +65,6 @@
   line-height: var(--typography-caption-line-height);
 }
 
-.take-a-picture-icon-holder {
-  text-align: center;
-
-  $picture-icon-size: 6rem;
-  > mat-icon {
-    color: white;
-    font-size: $picture-icon-size;
-    height: $picture-icon-size;
-    width: $picture-icon-size;
-  }
-}
-
 .description-field {
   display: flex;
   flex-direction: column;

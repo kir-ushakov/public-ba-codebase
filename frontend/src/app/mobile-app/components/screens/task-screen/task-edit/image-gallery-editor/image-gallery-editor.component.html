@@ -1,0 +1,34 @@
+<section class="images-section" data-test="task-images-section">
+  <div class="images-header">
+    <p class="field-label">Images</p>
+    @if (countLabel(); as label) {
+      <p class="images-count" data-test="task-images-count">{{ label }}</p>
+    }
+  </div>
+  <div class="images-row">
+    <button class="add-image" type="button" data-test="add-image-btn" (click)="onAddImage()">
+      <span class="material-symbols-rounded" aria-hidden="true">image</span>
+      Add image
+    </button>
+    @for (image of images(); track image.key) {
+      <div class="image-tile" data-test="task-image-tile" [class.is-cover]="image.isCover">
+        @if (image.previewUrl) {
+          <img class="image-preview" data-test="task-picture" alt="" [src]="image.previewUrl" />
+        } @else if (image.imageId) {
+          <img
+            class="image-preview"
+            data-test="task-picture"
+            alt=""
+            [src]="image.imageId | imageSrc"
+          />
+        }
+        @if (image.isCover) {
+          <span class="cover-badge" data-test="task-image-cover">
+            <span class="material-symbols-rounded cover-star" aria-hidden="true">star</span>
+            COVER
+          </span>
+        }
+      </div>
+    }
+  </div>
+</section>

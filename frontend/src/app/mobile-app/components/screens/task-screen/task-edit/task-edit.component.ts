@@ -1,10 +1,9 @@
-import { Component, DestroyRef, inject, NgZone, output, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, NgZone, output, ViewChild } from '@angular/core';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { TaskScreenAction } from '../task-screen.actions';
 import { Actions, ofActionDispatched, Store } from '@ngxs/store';
 import type { FormGroup } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { take } from 'rxjs';
@@ -19,15 +18,17 @@ import { VoiceInputTriggerComponent } from 'src/app/shared/features/voice-input/
 import { clipVoiceTaskTitle } from './helpers/clip-voice-task-title.function';
 import { stripTitleNewlines } from './helpers/strip-title-newlines.function';
 import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/rich-text-editor/rich-text-editor.component';
+import { ImageGalleryEditorComponent } from './image-gallery-editor/image-gallery-editor.component';
+import { toGalleryImages } from './helpers/to-gallery-images.function';
 
 @Component({
   selector: 'ba-task-edit',
   imports: [
     CommonModule,
     CdkTextareaAutosize,
-    MatIconModule,
     VoiceInputTriggerComponent,
     RichTextEditorComponent,
+    ImageGalleryEditorComponent,
     ReactiveFormsModule,
   ],
   templateUrl: './task-edit.component.html',
@@ -36,7 +37,6 @@ import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/r
 export class TaskEditComponent {
   @ViewChild('titleAutosize') titleAutosize?: CdkTextareaAutosize;
   formValidStatus = output<boolean>();
-  imageUri$: Observable<string | null> = inject(Store).select(TaskScreenState.imageUri);
   voiceToTextConverting$: Observable<boolean> = inject(Store).select(
     VoiceInputState.voiceToTextConverting,
   );
@@ -45,9 +45,14 @@ export class TaskEditComponent {
   TaskScreenState = TaskScreenState;
   readonly titleMaxLength = TaskConst.TITLE_MAX_LENGTH;
   titleLength = 0;
+  readonly galleryImages = computed(() =>
+    toGalleryImages(this.draftImages(), this.editedTask().imageId),
+  );
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);
+  private readonly draftImages = this.store.selectSignal(TaskScreenState.draftImages);
+  private readonly editedTask = this.store.selectSignal(TaskScreenState.task);
   private readonly fb = inject(FormBuilder);
   private readonly actions$ = inject(Actions);
   private readonly ngZone = inject(NgZone);
@@ -95,10 +100,12 @@ export class TaskEditComponent {
       );
     });
 
-    this.imageUri$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(imageUri => {
-      const isPictureAdded = Boolean(imageUri);
-      this.updateTitleValidation(!isPictureAdded);
-    });
+    this.store
+      .select(TaskScreenState.draftImages)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(drafts => {
+        this.updateTitleValidation(drafts.length === 0);
+      });
 
     this.voiceToTextConverting$.subscribe(converting => {
       const control = this.form.get('title');

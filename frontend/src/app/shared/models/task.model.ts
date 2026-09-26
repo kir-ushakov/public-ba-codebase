@@ -8,6 +8,7 @@ export type Task = {
   type: ETaskType;
   title: string;
   imageId?: string;
+  images?: string[];
   description?: TaskDescriptionDoc;
   status: ETaskStatus;
   createdAt: string;

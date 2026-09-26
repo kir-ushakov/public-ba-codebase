@@ -67,7 +67,7 @@ describe('TaskScreenState', () => {
   it('clears a leftover camera photo when the create screen is opened', async () => {
     await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
 
-    expect(store.selectSnapshot(TaskScreenState.imageUri)).toBeNull();
+    expect(store.selectSnapshot(TaskScreenState.draftImages)).toEqual([]);
     expect(store.selectSnapshot(TaskScreenState.task).imageId).toBeUndefined();
   });
 
@@ -141,6 +141,38 @@ describe('TaskScreenState', () => {
 
     expect(imageService.saveImage).toHaveBeenCalledWith('blob:current-session-photo');
     expect(created?.imageId).toBe('new-image-id');
+    expect(created?.images).toEqual(['new-image-id']);
+  });
+
+  it('keeps the first photo as the cover when a second photo is added', async () => {
+    deviceCameraService.takePicture
+      .mockResolvedValueOnce('blob:first-photo')
+      .mockResolvedValueOnce('blob:second-photo');
+    imageService.saveImage
+      .mockResolvedValueOnce('first-image-id')
+      .mockResolvedValueOnce('second-image-id');
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Task with two photos',
+          description: null,
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const created = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(t => t.id !== existingWithPhoto.id);
+
+    expect(imageService.saveImage).toHaveBeenNthCalledWith(1, 'blob:first-photo');
+    expect(imageService.saveImage).toHaveBeenNthCalledWith(2, 'blob:second-photo');
+    expect(created?.imageId).toBe('first-image-id');
+    expect(created?.images).toEqual(['first-image-id', 'second-image-id']);
   });
 
   it('loads the selected task when opening view mode', async () => {
@@ -149,10 +181,20 @@ describe('TaskScreenState', () => {
     );
 
     expect(store.selectSnapshot(TaskScreenState.task)).toEqual(existingWithPhoto);
-    expect(store.selectSnapshot(TaskScreenState.imageUri)).toBeNull();
+    expect(store.selectSnapshot(TaskScreenState.draftImages)).toEqual([]);
   });
 
-  it('saves a new photo when applying an edit', async () => {
+  it('shows the saved image as the cover draft when edit mode opens', async () => {
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Edit, existingWithPhoto.id)),
+    );
+
+    expect(store.selectSnapshot(TaskScreenState.draftImages)).toEqual([
+      { imageId: 'old-image-id' },
+    ]);
+  });
+
+  it('keeps the existing cover when a new photo is added in edit', async () => {
     deviceCameraService.takePicture.mockResolvedValue('blob:edited-photo');
 
     await firstValueFrom(
@@ -174,7 +216,47 @@ describe('TaskScreenState', () => {
     const updated = store
       .selectSnapshot(TasksState.allTasks)
       .find(t => t.id === existingWithPhoto.id);
-    expect(updated?.imageId).toBe('new-image-id');
+    expect(updated?.imageId).toBe('old-image-id');
+    expect(updated?.images).toEqual(['old-image-id', 'new-image-id']);
+  });
+
+  it('appends a photo without replacing a cover that is already in the images list', async () => {
+    const withGallery: Task = {
+      ...existingWithPhoto,
+      id: 'task-gallery',
+      imageId: 'cover-id',
+      images: ['cover-id', 'second-id'],
+    };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [existingWithPhoto, withGallery] },
+    });
+    deviceCameraService.takePicture.mockResolvedValue('blob:third-photo');
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Edit, withGallery.id)),
+    );
+    expect(store.selectSnapshot(TaskScreenState.draftImages)).toEqual([
+      { imageId: 'cover-id' },
+      { imageId: 'second-id' },
+    ]);
+
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: withGallery.title,
+          description: null,
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const updated = store.selectSnapshot(TasksState.allTasks).find(t => t.id === withGallery.id);
+    expect(imageService.saveImage).toHaveBeenCalledTimes(1);
+    expect(imageService.saveImage).toHaveBeenCalledWith('blob:third-photo');
+    expect(updated?.imageId).toBe('cover-id');
+    expect(updated?.images).toEqual(['cover-id', 'second-id', 'new-image-id']);
   });
 });
 
@@ -187,6 +269,6 @@ function leftoverCreateState() {
     },
     taskData: { ...defaultTask, imageId: 'old-image-id' },
     isSideMenuOpened: false,
-    imageUrl: 'blob:stale-camera-photo',
+    draftImages: [{ previewUrl: 'blob:stale-camera-photo' }],
   };
 }
