@@ -1,11 +1,15 @@
 import type { TaskDescriptionDoc, TaskDescriptionNode } from '@brainassistant/contracts';
 
-export function isEmptyTaskDescription(doc: TaskDescriptionDoc | null | undefined): boolean {
+export function taskDescriptionText(doc: TaskDescriptionDoc | null | undefined): string {
   if (doc === null || doc === undefined) {
-    return true;
+    return '';
   }
 
-  return collectText(doc).trim().length === 0;
+  return collectText(doc);
+}
+
+export function isEmptyTaskDescription(doc: TaskDescriptionDoc | null | undefined): boolean {
+  return taskDescriptionText(doc).trim().length === 0;
 }
 
 function collectText(node: TaskDescriptionDoc | TaskDescriptionNode): string {
