@@ -1,35 +1,90 @@
 <div class="top-panel-holder">
-  <div class="top-panel-holder-left">
-    <div class="page-header-text">
-      <h1 class="page-title" data-test="home-title">Home</h1>
-      <p class="page-subtitle" data-test="home-item-count">{{ itemCountLabel }}</p>
-    </div>
-  </div>
-  <div class="top-panel-holder-right">
-    @if (selectors.isLoggedIn()) {
-      <div class="avatar-holder">
-        <ba-home-account-menu
-          [avatarInputData]="avatarInputData"
-          [userFullName]="selectors.userFullName()"
-          [userEmail]="selectors.userEmail()"
-        ></ba-home-account-menu>
+  <div class="top-panel-row">
+    <div class="top-panel-holder-left">
+      <div class="page-header-text">
+        <h1 class="page-title" data-test="home-title">Home</h1>
+        <p class="page-subtitle" data-test="home-item-count">{{ itemCountLabel }}</p>
       </div>
-    }
-    <div class="header-actions">
-      <button class="header-icon-btn" type="button" data-test="home-search" aria-label="Search">
-        <span class="material-symbols-rounded" aria-hidden="true">search</span>
-      </button>
-      <button class="header-icon-btn" type="button" data-test="home-more" aria-label="More options">
-        <span class="material-symbols-rounded" aria-hidden="true">more_vert</span>
-      </button>
+    </div>
+    <div class="top-panel-holder-right">
+      @if (selectors.isLoggedIn()) {
+        <div class="avatar-holder">
+          <ba-home-account-menu
+            [avatarInputData]="avatarInputData"
+            [userFullName]="selectors.userFullName()"
+            [userEmail]="selectors.userEmail()"
+          ></ba-home-account-menu>
+        </div>
+      }
+      @if (!searchOpen()) {
+        <div class="header-actions">
+          <button
+            class="header-icon-btn"
+            type="button"
+            data-test="home-search"
+            aria-label="Search"
+            (click)="openSearch()"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">search</span>
+          </button>
+          <button
+            class="header-icon-btn"
+            type="button"
+            data-test="home-more"
+            aria-label="More options"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">more_vert</span>
+          </button>
+        </div>
+      }
     </div>
   </div>
+  @if (searchOpen()) {
+    <div class="search-row">
+      <div class="search-field">
+        <span class="material-symbols-rounded search-field-icon" aria-hidden="true">search</span>
+        <input
+          class="search-field-input"
+          type="text"
+          data-test="home-search-input"
+          #searchInput
+          placeholder="Search"
+          aria-label="Search"
+          enterkeyhint="search"
+          autocomplete="off"
+          [formControl]="queryControl"
+        />
+        @if (hasQuery()) {
+          <button
+            class="search-clear"
+            type="button"
+            data-test="home-search-clear"
+            aria-label="Clear search"
+            (click)="clearSearch()"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          </button>
+        }
+      </div>
+      <button
+        class="search-cancel"
+        type="button"
+        data-test="home-search-cancel"
+        (click)="cancelSearch()"
+      >
+        Cancel
+      </button>
+    </div>
+  }
 </div>
 <div class="main-panel-holder">
   @if (selectors.isLocalAuthenticated()) {
     <ba-home-sync-status></ba-home-sync-status>
   }
-  <ba-task-tiles-panel [tasks]="selectors.tasks()"></ba-task-tiles-panel>
+  @if (showNoResults()) {
+    <p class="search-empty" data-test="home-search-empty">No results</p>
+  }
+  <ba-task-tiles-panel [tasks]="filteredTasks()"></ba-task-tiles-panel>
 </div>
 <div class="bottom-panel-holder">
   <ba-home-bottom-panel></ba-home-bottom-panel>
