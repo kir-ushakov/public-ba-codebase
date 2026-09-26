@@ -86,6 +86,15 @@ export class TaskEditComponent {
     );
   }
 
+  draftImageRemoved(image: GalleryImage): void {
+    this.store.dispatch(
+      new TaskScreenAction.DraftImageRemoved({
+        imageId: image.imageId,
+        previewUrl: image.previewUrl,
+      }),
+    );
+  }
+
   onVoiceRecordingStopped(): void {
     this.form.controls.title?.setValue('');
     this.resizeTitleField();

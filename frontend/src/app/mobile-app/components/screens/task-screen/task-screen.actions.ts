@@ -52,6 +52,12 @@ export namespace TaskScreenAction {
     constructor(public image: DraftTaskImage) {}
   }
 
+  export class DraftImageRemoved {
+    static readonly type = '[TaskScreen] Draft Image Removed';
+
+    constructor(public image: DraftTaskImage) {}
+  }
+
   export class SideMenuToggle {
     static readonly type = '[TaskScreen] Side Menu Toggle';
   }

@@ -209,6 +209,68 @@ describe('TaskScreenState', () => {
     expect(created?.images).toEqual(['first-image-id', 'second-image-id']);
   });
 
+  it('drops a removed photo and makes the next one the cover', async () => {
+    deviceCameraService.takePicture
+      .mockResolvedValueOnce('blob:first-photo')
+      .mockResolvedValueOnce('blob:second-photo');
+    imageService.saveImage.mockResolvedValueOnce('second-image-id');
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.DraftImageRemoved({ previewUrl: 'blob:first-photo' })),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Task with the remaining photo',
+          description: null,
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const created = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(t => t.id !== existingWithPhoto.id);
+
+    expect(imageService.saveImage).toHaveBeenCalledTimes(1);
+    expect(imageService.saveImage).toHaveBeenCalledWith('blob:second-photo');
+    expect(created?.imageId).toBe('second-image-id');
+    expect(created?.images).toEqual(['second-image-id']);
+  });
+
+  it('keeps the cover when a later photo is removed', async () => {
+    deviceCameraService.takePicture
+      .mockResolvedValueOnce('blob:first-photo')
+      .mockResolvedValueOnce('blob:second-photo');
+    imageService.saveImage.mockResolvedValueOnce('first-image-id');
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.DraftImageRemoved({ previewUrl: 'blob:second-photo' })),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Task that kept its cover',
+          description: null,
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const created = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(t => t.id !== existingWithPhoto.id);
+
+    expect(created?.imageId).toBe('first-image-id');
+    expect(created?.images).toEqual(['first-image-id']);
+  });
+
   it('loads the selected task when opening view mode', async () => {
     await firstValueFrom(
       store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
@@ -325,6 +387,64 @@ describe('TaskScreenState', () => {
     expect(imageService.saveImage).not.toHaveBeenCalled();
     expect(updated?.imageId).toBe('second-id');
     expect(updated?.images).toEqual(['cover-id', 'second-id']);
+  });
+
+  it('moves the cover to the first remaining image when the cover is removed', async () => {
+    const withGallery: Task = {
+      ...existingWithPhoto,
+      id: 'task-gallery',
+      imageId: 'cover-id',
+      images: ['cover-id', 'second-id'],
+    };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [existingWithPhoto, withGallery] },
+    });
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Edit, withGallery.id)),
+    );
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.DraftImageRemoved({ imageId: 'cover-id' })),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: withGallery.title,
+          description: null,
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const updated = store.selectSnapshot(TasksState.allTasks).find(t => t.id === withGallery.id);
+    expect(imageService.saveImage).not.toHaveBeenCalled();
+    expect(updated?.imageId).toBe('second-id');
+    expect(updated?.images).toEqual(['second-id']);
+  });
+
+  it('clears the task image when the last draft photo is removed', async () => {
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Edit, existingWithPhoto.id)),
+    );
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.DraftImageRemoved({ imageId: 'old-image-id' })),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: existingWithPhoto.title,
+          description: null,
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const updated = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(t => t.id === existingWithPhoto.id);
+    expect(updated?.imageId).toBeUndefined();
+    expect(updated?.images).toEqual([]);
   });
 });
 

@@ -11,32 +11,42 @@
       Add image
     </button>
     @for (image of images(); track image.key) {
-      <button
-        class="image-tile"
-        type="button"
-        data-test="task-image-tile"
-        [class.is-cover]="image.isCover"
-        [attr.aria-pressed]="image.isCover"
-        [attr.aria-label]="image.isCover ? 'Cover image' : 'Set as cover'"
-        (click)="onSelectCover(image)"
-      >
-        @if (image.previewUrl) {
-          <img class="image-preview" data-test="task-picture" alt="" [src]="image.previewUrl" />
-        } @else if (image.imageId) {
-          <img
-            class="image-preview"
-            data-test="task-picture"
-            alt=""
-            [src]="image.imageId | imageSrc"
-          />
-        }
-        @if (image.isCover) {
-          <span class="cover-badge" data-test="task-image-cover">
-            <span class="material-symbols-rounded cover-star" aria-hidden="true">star</span>
-            COVER
-          </span>
-        }
-      </button>
+      <div class="image-tile" data-test="task-image-tile" [class.is-cover]="image.isCover">
+        <button
+          class="image-select"
+          type="button"
+          data-test="task-image-select"
+          [attr.aria-pressed]="image.isCover"
+          [attr.aria-label]="image.isCover ? 'Cover image' : 'Set as cover'"
+          (click)="onSelectCover(image)"
+        >
+          @if (image.previewUrl) {
+            <img class="image-preview" data-test="task-picture" alt="" [src]="image.previewUrl" />
+          } @else if (image.imageId) {
+            <img
+              class="image-preview"
+              data-test="task-picture"
+              alt=""
+              [src]="image.imageId | imageSrc"
+            />
+          }
+          @if (image.isCover) {
+            <span class="cover-badge" data-test="task-image-cover">
+              <span class="material-symbols-rounded cover-star" aria-hidden="true">star</span>
+              COVER
+            </span>
+          }
+        </button>
+        <button
+          class="image-remove"
+          type="button"
+          data-test="task-image-remove"
+          aria-label="Remove image"
+          (click)="onRemoveImage(image)"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">close</span>
+        </button>
+      </div>
     }
   </div>
 </section>

@@ -264,6 +264,30 @@ export class TaskScreenState {
     ctx.patchState({ coverDraftKey: key });
   }
 
+  @Action(TaskScreenAction.DraftImageRemoved)
+  removeDraftImage(
+    ctx: StateContext<ITaskScreenStateModel>,
+    { image }: TaskScreenAction.DraftImageRemoved,
+  ): void {
+    const removedKey = draftImageKey(image);
+    if (!removedKey) {
+      return;
+    }
+    const { draftImages, taskData, coverDraftKey } = ctx.getState();
+    const drafts = draftImages ?? [];
+    const removedIndex = drafts.findIndex(draft => draftImageKey(draft) === removedKey);
+    if (removedIndex < 0) {
+      return;
+    }
+
+    const nextDrafts = drafts.filter((_, index) => index !== removedIndex);
+    const coverKey = activeCoverKey(drafts, taskData.imageId, coverDraftKey);
+    ctx.patchState({
+      draftImages: nextDrafts,
+      coverDraftKey: coverKey === removedKey ? draftImageKey(nextDrafts[0]) : coverDraftKey,
+    });
+  }
+
   @Action(TaskScreenAction.SideMenuToggle)
   sideMenuToggled(ctx: StateContext<ITaskScreenStateModel>): void {
     const isSideMenuOpened = ctx.getState().isSideMenuOpened;
@@ -307,7 +331,7 @@ export class TaskScreenState {
     }
 
     if (images.length === 0) {
-      return {};
+      return { imageId: undefined, images: [] };
     }
 
     const imageId =
@@ -330,6 +354,27 @@ export class TaskScreenState {
       TaskScreenAction.Close,
     ]);
   }
+}
+
+function draftImageKey(draft: DraftTaskImage | undefined): string | undefined {
+  return draft?.imageId ?? draft?.previewUrl;
+}
+
+function activeCoverKey(
+  drafts: readonly DraftTaskImage[],
+  coverImageId: string | undefined,
+  coverDraftKey: string | undefined,
+): string | undefined {
+  if (coverDraftKey && drafts.some(draft => draftImageKey(draft) === coverDraftKey)) {
+    return coverDraftKey;
+  }
+  const savedCover = drafts.find(
+    draft => coverImageId !== undefined && draft.imageId === coverImageId,
+  );
+  if (savedCover) {
+    return draftImageKey(savedCover);
+  }
+  return draftImageKey(drafts[0]);
 }
 
 function draftsFromTask(task: Task | DefaultTask): DraftTaskImage[] {

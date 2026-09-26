@@ -14,6 +14,7 @@ export class ImageGalleryEditorComponent {
   readonly images = input<GalleryImage[]>([]);
   readonly addImage = output<void>();
   readonly selectCover = output<GalleryImage>();
+  readonly removeImage = output<GalleryImage>();
   readonly countLabel = computed(() => formatAttachedImageCount(this.images().length));
 
   onAddImage(): void {
@@ -22,5 +23,9 @@ export class ImageGalleryEditorComponent {
 
   onSelectCover(image: GalleryImage): void {
     this.selectCover.emit(image);
+  }
+
+  onRemoveImage(image: GalleryImage): void {
+    this.removeImage.emit(image);
   }
 }

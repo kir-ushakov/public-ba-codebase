@@ -59,10 +59,32 @@ describe('ImageGalleryEditorComponent', () => {
     fixture.detectChanges();
 
     const tiles = fixture.nativeElement.querySelectorAll('[data-test="task-image-tile"]');
-    (tiles[1] as HTMLButtonElement).click();
+    const selectButtons = fixture.nativeElement.querySelectorAll('[data-test="task-image-select"]');
+    (selectButtons[1] as HTMLButtonElement).click();
 
     expect(selected).toEqual([images[1]]);
-    expect(tiles[1]?.getAttribute('aria-label')).toBe('Set as cover');
-    expect(tiles[0]?.getAttribute('aria-pressed')).toBe('true');
+    expect(selectButtons[1]?.getAttribute('aria-label')).toBe('Set as cover');
+    expect(selectButtons[0]?.getAttribute('aria-pressed')).toBe('true');
+    expect(tiles.length).toBe(2);
+  });
+
+  it('emits removal from the cross without selecting that image as cover', () => {
+    const images: GalleryImage[] = [
+      { key: 'cover', previewUrl: 'blob:lamp', isCover: true },
+      { key: 'second', previewUrl: 'blob:person', isCover: false },
+    ];
+    const removed: GalleryImage[] = [];
+    const selected: GalleryImage[] = [];
+    fixture.componentInstance.removeImage.subscribe(image => removed.push(image));
+    fixture.componentInstance.selectCover.subscribe(image => selected.push(image));
+    fixture.componentRef.setInput('images', images);
+    fixture.detectChanges();
+
+    const removeButtons = fixture.nativeElement.querySelectorAll('[data-test="task-image-remove"]');
+    expect(removeButtons.length).toBe(2);
+    (removeButtons[0] as HTMLButtonElement).click();
+
+    expect(removed).toEqual([images[0]]);
+    expect(selected).toEqual([]);
   });
 });
