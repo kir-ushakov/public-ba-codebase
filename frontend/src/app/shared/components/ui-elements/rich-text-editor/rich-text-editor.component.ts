@@ -12,15 +12,13 @@ import {
 } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import type { ControlValueAccessor } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
 import { Editor } from '@tiptap/core';
-import type { TaskDescriptionDoc } from '@brainassistant/contracts';
+import { TaskConst, type TaskDescriptionDoc } from '@brainassistant/contracts';
 import { createTaskDescriptionExtensions } from './helpers/create-task-description-extensions.function';
 import { EMPTY_TASK_DESCRIPTION } from './helpers/empty-task-description.const';
 
 @Component({
   selector: 'ba-rich-text-editor',
-  imports: [MatIconModule],
   templateUrl: './rich-text-editor.component.html',
   styleUrl: './rich-text-editor.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,10 +36,11 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
 
   readonly isBold = signal(false);
   readonly isItalic = signal(false);
-  readonly isStrike = signal(false);
   readonly isBulletList = signal(false);
   readonly isOrderedList = signal(false);
   readonly isLink = signal(false);
+  readonly textLength = signal(0);
+  readonly descriptionMaxTextLength = TaskConst.DESCRIPTION_MAX_TEXT_LENGTH;
 
   private readonly host = viewChild.required<ElementRef<HTMLElement>>('editorHost');
   private editor: Editor | null = null;
@@ -90,10 +89,6 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
 
   toggleItalic(): void {
     this.editor?.chain().focus().toggleItalic().run();
-  }
-
-  toggleStrike(): void {
-    this.editor?.chain().focus().toggleStrike().run();
   }
 
   toggleBulletList(): void {
@@ -149,6 +144,7 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
         },
       },
       onUpdate: ({ editor }) => {
+        this.syncTextLength();
         if (readonly) {
           return;
         }
@@ -166,6 +162,7 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
     });
 
     this.syncToolbarState();
+    this.syncTextLength();
   }
 
   private setEditorContent(value: TaskDescriptionDoc | null): void {
@@ -179,6 +176,7 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
     }
 
     this.editor.commands.setContent(next, { emitUpdate: false });
+    this.syncTextLength();
   }
 
   private syncToolbarState(): void {
@@ -189,9 +187,17 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
 
     this.isBold.set(editor.isActive('bold'));
     this.isItalic.set(editor.isActive('italic'));
-    this.isStrike.set(editor.isActive('strike'));
     this.isBulletList.set(editor.isActive('bulletList'));
     this.isOrderedList.set(editor.isActive('orderedList'));
     this.isLink.set(editor.isActive('link'));
+  }
+
+  private syncTextLength(): void {
+    const editor = this.editor;
+    if (!editor) {
+      return;
+    }
+
+    this.textLength.set(editor.getText({ blockSeparator: '' }).length);
   }
 }

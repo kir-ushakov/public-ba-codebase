@@ -12,8 +12,6 @@ import type { Observable } from 'rxjs';
 import { ETaskViewMode, TaskScreenState } from '../task-screen.state';
 import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice-input.state';
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './task-edit.component.interface';
 import { TaskConst, type TaskDescriptionDoc } from '@brainassistant/contracts';
@@ -27,8 +25,6 @@ import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/r
   imports: [
     CommonModule,
     CdkTextareaAutosize,
-    MatFormFieldModule,
-    MatInputModule,
     MatIconModule,
     VoiceInputTriggerComponent,
     RichTextEditorComponent,
@@ -48,6 +44,7 @@ export class TaskEditComponent {
 
   TaskScreenState = TaskScreenState;
   readonly titleMaxLength = TaskConst.TITLE_MAX_LENGTH;
+  titleLength = 0;
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);
@@ -86,7 +83,9 @@ export class TaskEditComponent {
         const sanitized = stripTitleNewlines(value ?? '');
         if (sanitized !== value) {
           titleControl.setValue(sanitized);
+          return;
         }
+        this.titleLength = sanitized.length;
       });
     }
 
@@ -161,5 +160,6 @@ export class TaskEditComponent {
       }),
       description: this.fb.control<TaskDescriptionDoc | null>(existingDescription),
     });
+    this.titleLength = existingTitle.length;
   }
 }

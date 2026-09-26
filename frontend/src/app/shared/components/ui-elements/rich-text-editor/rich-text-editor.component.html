@@ -5,57 +5,58 @@
         class="toolbar-btn"
         type="button"
         data-test="task-description-bold-btn"
+        aria-label="Bold"
         [class.is-active]="isBold()"
         (click)="toggleBold()"
       >
-        <mat-icon>format_bold</mat-icon>
+        <span class="material-symbols-rounded" aria-hidden="true">format_bold</span>
       </button>
       <button
         class="toolbar-btn"
         type="button"
         data-test="task-description-italic-btn"
+        aria-label="Italic"
         [class.is-active]="isItalic()"
         (click)="toggleItalic()"
       >
-        <mat-icon>format_italic</mat-icon>
-      </button>
-      <button
-        class="toolbar-btn"
-        type="button"
-        data-test="task-description-strike-btn"
-        [class.is-active]="isStrike()"
-        (click)="toggleStrike()"
-      >
-        <mat-icon>format_strikethrough</mat-icon>
+        <span class="material-symbols-rounded" aria-hidden="true">format_italic</span>
       </button>
       <button
         class="toolbar-btn"
         type="button"
         data-test="task-description-bullet-list-btn"
+        aria-label="Bulleted list"
         [class.is-active]="isBulletList()"
         (click)="toggleBulletList()"
       >
-        <mat-icon>format_list_bulleted</mat-icon>
+        <span class="material-symbols-rounded" aria-hidden="true">format_list_bulleted</span>
       </button>
       <button
         class="toolbar-btn"
         type="button"
         data-test="task-description-ordered-list-btn"
+        aria-label="Numbered list"
         [class.is-active]="isOrderedList()"
         (click)="toggleOrderedList()"
       >
-        <mat-icon>format_list_numbered</mat-icon>
+        <span class="material-symbols-rounded" aria-hidden="true">format_list_numbered</span>
       </button>
       <button
         class="toolbar-btn"
         type="button"
         data-test="task-description-link-btn"
+        aria-label="Link"
         [class.is-active]="isLink()"
         (click)="toggleLink()"
       >
-        <mat-icon>link</mat-icon>
+        <span class="material-symbols-rounded" aria-hidden="true">link</span>
       </button>
     </div>
   }
   <div class="editor-host" #editorHost data-test="task-description-editor"></div>
+  @if (!readonly()) {
+    <p class="character-count" data-test="task-description-count">
+      {{ textLength() }}/{{ descriptionMaxTextLength }}
+    </p>
+  }
 </div>

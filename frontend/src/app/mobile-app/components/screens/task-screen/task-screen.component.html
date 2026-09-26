@@ -1,14 +1,29 @@
 <mat-drawer-container class="task-view-container" hasBackdrop="fasle">
   <mat-drawer-content class="task-view-content">
-    <div class="top-panel-holder">
-      <ba-task-top-panel></ba-task-top-panel>
-    </div>
-    <div class="main-panel-holder">
-      @let mode = mode$ | async;
-      @if (mode === ETaskViewMode.Create || mode === ETaskViewMode.Edit) {
+    @let taskMode = mode();
+    @if (taskMode === ETaskViewMode.Create) {
+      <header class="page-header">
+        <button
+          class="header-icon-btn"
+          type="button"
+          data-test="create-task-back"
+          aria-label="Back"
+          (click)="goBack()"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>
+        </button>
+        <h1 class="page-title" data-test="create-task-title">Create Task</h1>
+      </header>
+    } @else {
+      <div class="top-panel-holder">
+        <ba-task-top-panel></ba-task-top-panel>
+      </div>
+    }
+    <div class="main-panel-holder" [class.is-create]="taskMode === ETaskViewMode.Create">
+      @if (taskMode === ETaskViewMode.Create || taskMode === ETaskViewMode.Edit) {
         <ba-task-edit></ba-task-edit>
       }
-      @if (mode === ETaskViewMode.View) {
+      @if (taskMode === ETaskViewMode.View) {
         <ba-task-view></ba-task-view>
       }
     </div>
