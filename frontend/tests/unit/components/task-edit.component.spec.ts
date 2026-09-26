@@ -44,6 +44,12 @@ describe('TaskEditComponent title field', () => {
     expect(host.querySelector('label')?.textContent).toContain('Title');
     expect(input?.getAttribute('placeholder')).toBe('Task title here...');
     expect(host.querySelector('[data-test="task-title-count"]')?.textContent).toContain('0/100');
+    expect(host.textContent).toContain('Description');
+    expect(host.querySelector('[data-test="task-description-count"]')?.textContent).toContain(
+      '0/4000',
+    );
+    expect(host.querySelector('[data-test="task-description-strike-btn"]')).toBeNull();
+    expect(host.querySelector('[data-test="task-description-bold-btn"]')).not.toBeNull();
   });
 
   it('updates the character count as the title changes', () => {

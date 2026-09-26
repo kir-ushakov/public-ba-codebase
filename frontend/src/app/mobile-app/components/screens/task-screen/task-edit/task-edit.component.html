@@ -23,7 +23,10 @@
         {{ titleLength }}/{{ titleMaxLength }}
       </p>
     </div>
-    <ba-rich-text-editor formControlName="description" />
+    <div class="description-field">
+      <p class="field-label">Description</p>
+      <ba-rich-text-editor formControlName="description" />
+    </div>
     @if (imageUri$ | async) {
       <div class="task-picture-holder">
         <img class="task-picture" src="{{ imageUri$ | async }}" data-test="task-picture" />

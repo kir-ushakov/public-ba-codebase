@@ -15,7 +15,7 @@ test('user can create a task with a description', async ({ page }) => {
   await editor.click();
   await page.keyboard.type('Contact supplier');
   await editor.press('Control+A');
-  await page.locator('[data-test="task-description-strike-btn"]').click();
+  await page.locator('[data-test="task-description-bold-btn"]').click();
 
   const applyButton = page.locator('[data-test="apply-changes-btn"]');
   await expect(applyButton).toBeEnabled();
@@ -30,7 +30,7 @@ test('user can create a task with a description', async ({ page }) => {
   expect(body.changeableObjectDto.title).toBe('Task with details');
   const descriptionJson = JSON.stringify(body.changeableObjectDto.description);
   expect(descriptionJson).toContain('Contact supplier');
-  expect(descriptionJson).toContain('"type":"strike"');
+  expect(descriptionJson).toContain('"type":"bold"');
 
   await page.waitForURL(/\/(home)?$/);
   await expect(
