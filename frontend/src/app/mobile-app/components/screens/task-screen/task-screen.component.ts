@@ -44,7 +44,7 @@ export class TaskScreenComponent implements OnInit, OnDestroy {
     }
   }
 
-  mode$: Observable<ETaskViewMode> = inject(Store).select(TaskScreenState.mode);
+  mode = inject(Store).selectSignal(TaskScreenState.mode);
   isSideMenuOpened$: Observable<boolean> = inject(Store).select(TaskScreenState.isSideMenuOpened);
 
   ETaskViewMode = ETaskViewMode;
@@ -65,6 +65,10 @@ export class TaskScreenComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next(true);
     this.destroy$.complete();
+  }
+
+  goBack(): void {
+    this.store.dispatch(TaskScreenAction.CancelButtonPressed);
   }
 
   private subscribeToRouteParams() {

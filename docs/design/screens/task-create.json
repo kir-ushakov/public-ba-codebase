@@ -29,24 +29,13 @@
         "action": {
           "id": "back",
           "type": "icon-button",
-          "icon": "arrow-left",
+          "icon": "arrow_back",
           "action": "navigate-back"
         },
         "title": {
           "text": "Create Task",
-          "typographyToken": "typography.styles.pageTitle"
+          "typographyToken": "typography.styles.sectionTitle"
         }
-      },
-
-      "right": {
-        "actions": [
-          {
-            "id": "more",
-            "type": "icon-button",
-            "icon": "more-vertical",
-            "ariaLabel": "More options"
-          }
-        ]
       }
     },
 
@@ -61,7 +50,7 @@
           "placeholder": "Task title here...",
           "voiceInput": {
             "enabled": true,
-            "icon": "microphone"
+            "icon": "mic"
           },
           "characterCount": true
         },
@@ -73,7 +62,6 @@
           "toolbar": [
             "bold",
             "italic",
-            "strikethrough",
             "bulleted-list",
             "numbered-list",
             "link"
@@ -178,6 +166,7 @@
       "Do not define screen-specific colors, radii or arbitrary spacing.",
       "The reference PNG is a visual target, not a source of token values. Do not measure colors, spacing, or radii from it.",
       "Create and Edit must use the same task-form composition.",
+      "Create Task has no header overflow menu. The only header action is Back.",
       "Images are attachments; the cover is a role of one attached image, not a separate image field.",
       "Teal marks the cover selection, selected status and primary action.",
       "Do not add a delete action or title-clear action to this screen."
