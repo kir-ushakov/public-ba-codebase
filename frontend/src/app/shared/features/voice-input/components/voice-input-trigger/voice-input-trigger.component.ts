@@ -1,6 +1,4 @@
 import { Component, computed, inject, output } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { createSelectMap, Store } from '@ngxs/store';
 import { VoiceRecorderComponent } from 'src/app/shared/features/voice-input/components/voice-recorder/voice-recorder.component';
 import { DialogService } from 'src/app/shared/services/utility/dialog.service';
@@ -20,7 +18,6 @@ import { AppState } from 'src/app/shared/state/app.state';
  */
 @Component({
   selector: 'ba-voice-input-trigger',
-  imports: [MatButtonModule, MatIconModule],
   templateUrl: './voice-input-trigger.component.html',
   styleUrl: './voice-input-trigger.component.scss',
   host: {

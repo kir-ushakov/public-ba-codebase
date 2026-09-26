@@ -1,26 +1,28 @@
 <div class="title-input-holder">
   <form class="task-form" [formGroup]="form">
-    <mat-form-field class="title-input-holder" floatLabel="never">
-      <textarea
-        #titleInput
-        #titleAutosize="cdkTextareaAutosize"
-        matInput
-        cdkTextareaAutosize
-        [cdkAutosizeMinRows]="1"
-        id="titleInput"
-        formControlName="title"
-        rows="1"
-        [placeholder]="(voiceToTextConverting$ | async) ? '' : 'Task title here'"
-        autocomplete="off"
-        [attr.maxlength]="titleMaxLength"
-        data-test="task-title-input"
-        (keydown.enter)="$event.preventDefault()"
-      ></textarea>
-
-      <ba-voice-input-trigger matIconSuffix (recordingStopped)="onVoiceRecordingStopped()" />
-
-      <mat-error *ngIf="false"> Task title is <strong>required</strong> </mat-error>
-    </mat-form-field>
+    <div class="title-field">
+      <label class="field-label" for="titleInput">Title</label>
+      <div class="title-control">
+        <textarea
+          class="title-input"
+          #titleAutosize="cdkTextareaAutosize"
+          id="titleInput"
+          cdkTextareaAutosize
+          [cdkAutosizeMinRows]="1"
+          formControlName="title"
+          rows="1"
+          [placeholder]="(voiceToTextConverting$ | async) ? '' : 'Task title here...'"
+          autocomplete="off"
+          [attr.maxlength]="titleMaxLength"
+          data-test="task-title-input"
+          (keydown.enter)="$event.preventDefault()"
+        ></textarea>
+        <ba-voice-input-trigger (recordingStopped)="onVoiceRecordingStopped()" />
+      </div>
+      <p class="character-count" data-test="task-title-count">
+        {{ titleLength }}/{{ titleMaxLength }}
+      </p>
+    </div>
     <ba-rich-text-editor formControlName="description" />
     @if (imageUri$ | async) {
       <div class="task-picture-holder">

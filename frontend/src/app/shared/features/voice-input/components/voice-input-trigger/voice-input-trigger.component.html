@@ -6,14 +6,13 @@
 } @else if (isAvailable()) {
   <button
     class="voice-input-trigger-button"
-    mat-icon-button
-    aria-label="Voice input"
     type="button"
+    aria-label="Voice input"
     data-test="voice-input-trigger"
+    tabindex="-1"
     (click)="onVoiceInputClick($event)"
     (mousedown)="preventInputFocus($event)"
-    tabindex="-1"
   >
-    <mat-icon class="voice-input-trigger-icon" aria-hidden="true">mic</mat-icon>
+    <span class="material-symbols-rounded" aria-hidden="true">mic</span>
   </button>
 }

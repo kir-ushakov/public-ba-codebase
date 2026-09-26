@@ -19,7 +19,7 @@
         <ba-task-top-panel></ba-task-top-panel>
       </div>
     }
-    <div class="main-panel-holder">
+    <div class="main-panel-holder" [class.is-create]="taskMode === ETaskViewMode.Create">
       @if (taskMode === ETaskViewMode.Create || taskMode === ETaskViewMode.Edit) {
         <ba-task-edit></ba-task-edit>
       }
