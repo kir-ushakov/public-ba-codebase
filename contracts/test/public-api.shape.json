@@ -87,12 +87,14 @@
         "title",
         "status",
         "imageId",
+        "images",
         "description",
         "createdAt",
         "modifiedAt"
       ],
       "optional": [
         "imageId",
+        "images",
         "description"
       ]
     },

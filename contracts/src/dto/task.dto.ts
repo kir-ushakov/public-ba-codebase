@@ -44,6 +44,7 @@ export type TaskDTO = {
   title: string;
   status: ETaskStatus;
   imageId?: string;
+  images?: string[];
   description?: TaskDescriptionDoc;
   createdAt: string;
   modifiedAt: string;

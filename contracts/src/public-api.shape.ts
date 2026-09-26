@@ -62,6 +62,7 @@ const TASK_DTO_KEYS = [
   'title',
   'status',
   'imageId',
+  'images',
   'description',
   'createdAt',
   'modifiedAt',
@@ -194,7 +195,7 @@ export const PUBLIC_API_SHAPE = {
   dto: {
     TaskDTO: {
       keys: [...TASK_DTO_KEYS],
-      optional: ['imageId', 'description'],
+      optional: ['imageId', 'images', 'description'],
     },
     TaskDescriptionDoc: {
       keys: [...TASK_DESCRIPTION_DOC_KEYS],

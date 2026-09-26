@@ -10,6 +10,7 @@ const TaskSchema = new Schema({
   title: { type: String, require: true },
   status: { type: String, require: true }, // ETaskStatus wire value
   imageId: { type: String, require: false },
+  images: { type: [String], required: false },
   description: { type: Schema.Types.Mixed, require: false },
   createdAt: { type: Date, require: true },
   modifiedAt: { type: Date, require: true },

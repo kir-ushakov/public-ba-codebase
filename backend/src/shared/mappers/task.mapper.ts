@@ -10,7 +10,18 @@ import { TaskDescription } from '../domain/values/task/task-description.js';
 
 export class TaskMapper {
   public static toDomain(raw: TaskPresitant): Task {
-    const { userId, type, title, status, imageId, description, _id, createdAt, modifiedAt } = raw;
+    const {
+      userId,
+      type,
+      title,
+      status,
+      imageId,
+      images,
+      description,
+      _id,
+      createdAt,
+      modifiedAt,
+    } = raw;
 
     return Task.reconstitute(
       {
@@ -19,6 +30,7 @@ export class TaskMapper {
         title: title ?? '',
         status: status as ETaskStatus,
         imageId,
+        images: TaskMapper.definedImages(images),
         description: TaskMapper.toValidDescription(description),
         createdAt,
         modifiedAt,
@@ -28,7 +40,8 @@ export class TaskMapper {
   }
 
   public static toPersistence(task: Task): TaskPresitant {
-    const { id, userId, type, title, status, imageId, description, createdAt, modifiedAt } = task;
+    const { id, userId, type, title, status, imageId, images, description, createdAt, modifiedAt } =
+      task;
 
     const persisted: TaskPresitant = {
       _id: id.toString(),
@@ -40,6 +53,11 @@ export class TaskMapper {
       createdAt,
       modifiedAt,
     };
+
+    const definedImages = TaskMapper.definedImages(images);
+    if (definedImages) {
+      persisted.images = definedImages;
+    }
 
     if (description !== undefined) {
       persisted.description = description;
@@ -60,11 +78,21 @@ export class TaskMapper {
       modifiedAt: task.modifiedAt.toISOString(),
     };
 
+    const definedImages = TaskMapper.definedImages(task.images);
+    if (definedImages) {
+      dto.images = definedImages;
+    }
+
     if (task.description !== undefined) {
       dto.description = task.description;
     }
 
     return dto;
+  }
+
+  private static definedImages(images: string[] | undefined): string[] | undefined {
+    const ids = images?.filter(id => id.length > 0);
+    return ids?.length ? ids : undefined;
   }
 
   private static toValidDescription(
