@@ -466,7 +466,6 @@ function leftoverCreateState() {
       status: false,
     },
     taskData: { ...defaultTask, imageId: 'old-image-id' },
-    isSideMenuOpened: false,
     draftImages: [{ previewUrl: 'blob:stale-camera-photo' }],
   };
 }
