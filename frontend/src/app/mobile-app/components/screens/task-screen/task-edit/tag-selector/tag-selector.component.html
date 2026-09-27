@@ -5,6 +5,24 @@
     <span class="tag-selector-placeholder">Add tags...</span>
     <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
   </button>
+  @if (showSelectedTags() && selectedTags().length) {
+    <div class="selected-tags" data-test="selected-tags">
+      @for (tag of selectedTags(); track tag.id) {
+        <span class="selected-tag" data-test="selected-tag">
+          {{ tag.label }}
+          <button
+            class="selected-tag-remove"
+            type="button"
+            data-test="selected-tag-remove"
+            [attr.aria-label]="'Remove ' + tag.label"
+            (click)="toggleTag(tag.id)"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          </button>
+        </span>
+      }
+    </div>
+  }
 </section>
 @if (open()) {
   <ba-bottom-sheet title="Select tags" (dismissed)="closeSheet()">

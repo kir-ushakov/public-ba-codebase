@@ -21,6 +21,25 @@ describe('TagSelectorComponent', () => {
     expect(selector?.textContent).toContain('Add tags...');
     expect(selector?.tagName).toBe('BUTTON');
     expect(host.querySelector('[data-test="bottom-sheet"]')).toBeNull();
+    expect(host.querySelector('[data-test="selected-tags"]')).toBeNull();
+  });
+
+  it('shows removable selected tags under the selector in create mode', () => {
+    fixture.componentRef.setInput('showSelectedTags', true);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const selected = host.querySelector('[data-test="selected-tags"]');
+
+    expect(selected?.textContent).toContain('Work');
+    expect(selected?.textContent).toContain('Ideas');
+    expect(selected?.textContent).not.toContain('Personal');
+
+    host.querySelector<HTMLButtonElement>('[aria-label="Remove Work"]')!.click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="selected-tags"]')?.textContent).not.toContain('Work');
+    expect(host.querySelector('[data-test="selected-tags"]')?.textContent).toContain('Ideas');
   });
 
   it('opens the selector sheet and closes it from the close button', () => {

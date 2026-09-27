@@ -33,6 +33,6 @@
       (selectCover)="imageSelectedAsCover($event)"
       (removeImage)="draftImageRemoved($event)"
     />
-    <ba-tag-selector />
+    <ba-tag-selector [showSelectedTags]="showSelectedTags()" />
   </form>
 </div>

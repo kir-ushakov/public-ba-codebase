@@ -56,6 +56,8 @@ export class TaskEditComponent {
   private readonly draftImages = this.store.selectSignal(TaskScreenState.draftImages);
   private readonly coverDraftKey = this.store.selectSignal(TaskScreenState.coverDraftKey);
   private readonly editedTask = this.store.selectSignal(TaskScreenState.task);
+  private readonly screenMode = this.store.selectSignal(TaskScreenState.mode);
+  readonly showSelectedTags = computed(() => this.screenMode() === ETaskViewMode.Create);
   private readonly fb = inject(FormBuilder);
   private readonly actions$ = inject(Actions);
   private readonly ngZone = inject(NgZone);

@@ -59,6 +59,8 @@ describe('TaskEditComponent title field', () => {
     expect(host.querySelector('[data-test="task-tags-selector"]')?.textContent).toContain(
       'Add tags...',
     );
+    expect(host.querySelector('[data-test="selected-tags"]')?.textContent).toContain('Work');
+    expect(host.querySelector('[data-test="selected-tags"]')?.textContent).toContain('Ideas');
   });
 
   it('updates the character count as the title changes', () => {

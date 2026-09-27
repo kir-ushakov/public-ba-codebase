@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { BottomSheetComponent } from 'src/app/shared/components/ui-elements/bottom-sheet/bottom-sheet.component';
 
 type TagChoice = {
@@ -32,9 +32,14 @@ const TAG_CHOICES: TagChoice[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TagSelectorComponent {
+  readonly showSelectedTags = input(false);
   readonly open = signal(false);
   readonly query = signal('');
   readonly selectedIds = signal<string[]>(['work', 'ideas']);
+  readonly selectedTags = computed(() => {
+    const selected = new Set(this.selectedIds());
+    return TAG_CHOICES.filter(tag => selected.has(tag.id));
+  });
   readonly visibleTags = computed(() => {
     const query = this.query().trim().toLowerCase();
     const selected = new Set(this.selectedIds());
