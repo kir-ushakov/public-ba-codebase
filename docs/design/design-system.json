@@ -1,7 +1,7 @@
 {
   "designSystem": {
     "name": "Brain Assistant Dark Technical",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "scope": "product",
 
     "tokenNaming": {
@@ -461,6 +461,57 @@
         "borderColor": "accent.primary",
         "outline": "none"
       }
+    },
+
+    "bottomSheet": {
+      "background": "surface.elevated",
+      "border": "border.default",
+      "borderRadiusTop": "large",
+      "horizontalPadding": "16px",
+      "topPadding": "12px",
+      "bottomPadding": "24px",
+      "sectionGap": "24px",
+
+      "handle": {
+        "enabled": true,
+        "width": "32px",
+        "height": "4px",
+        "color": "border.strong",
+        "borderRadius": "circle",
+        "alignment": "center"
+      },
+
+      "header": {
+        "titleStyle": "sectionTitle",
+        "closeIcon": "close",
+        "closeIconColor": "icon.default"
+      },
+
+      "backdrop": {
+        "enabled": true,
+        "dismissOnTap": true
+      },
+
+      "behavior": {
+        "position": "bottom",
+        "mobileFirst": true,
+        "dismissOnSwipeDown": true,
+        "dismissOnEscape": true,
+        "contentScroll": "vertical",
+        "maxHeight": "90vh"
+      },
+
+      "rules": [
+        "Use bottom sheets for contextual selection or short secondary flows on mobile.",
+        "Do not use a bottom sheet for primary page navigation.",
+        "Keep the sheet visually consistent with normal application surfaces.",
+        "Use the drag handle only when the sheet can be dismissed by dragging down.",
+        "The close action must remain available when dismissing the sheet would otherwise be unclear.",
+        "Sheet content may scroll vertically when it exceeds the available height.",
+        "Do not introduce decorative shadows, gradients or additional accent colors.",
+        "Use existing input, button, chip and typography tokens inside the sheet.",
+        "Teal is reserved for selected states and primary actions inside the sheet."
+      ]
     },
 
     "interaction": {

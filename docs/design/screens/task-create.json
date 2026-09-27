@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-create",
     "name": "Create Task",
-    "version": "1.0.0",
+    "version": "1.2.0",
 
     "purpose": "Create a new task with title, rich description, images, tags, status and due date.",
 
@@ -96,13 +96,13 @@
           "component": "tag-selector",
           "placeholder": "Add tags...",
           "multiple": true,
+          "openAction": {
+            "action": "open-tag-selector",
+            "presentation": "bottom-sheet"
+          },
           "selectedDisplay": {
             "component": "chip-list",
             "removable": true
-          },
-          "addAction": {
-            "label": "Add tag",
-            "style": "dashed-chip"
           }
         },
         {
@@ -161,6 +161,14 @@
       ]
     },
 
+    "states": {
+      "tagSelectorOpen": {
+        "trigger": "form.sections.tags",
+        "spec": "./tag-selector-open.json",
+        "referenceImage": "../references/tag-selector-open.png"
+      }
+    },
+
     "visualRules": [
       "Use global design tokens from design-system.json.",
       "Do not define screen-specific colors, radii or arbitrary spacing.",
@@ -168,6 +176,7 @@
       "Create and Edit must use the same task-form composition.",
       "Create Task has no header overflow menu. The only header action is Back.",
       "Images are attachments; the cover is a role of one attached image, not a separate image field.",
+      "Tags have a single entry point. Use the Add tags selector to add or create tags; do not render a separate Add tag action beside selected tag chips.",
       "Teal marks the cover selection, selected status and primary action.",
       "Do not add a delete action or title-clear action to this screen."
     ],
