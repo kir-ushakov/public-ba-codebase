@@ -61,7 +61,14 @@
       "component": "list-action",
       "label": "Create new tag",
       "icon": "add",
-      "action": "create-tag"
+      "action": "open-new-tag"
+    },
+
+    "states": {
+      "newTagOpen": {
+        "spec": "../states/new-tag-open.json",
+        "referenceImage": "../references/new-tag-open.png"
+      }
     },
 
     "visualRules": [

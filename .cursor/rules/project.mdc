@@ -52,6 +52,10 @@ Approved screen composition lives in `docs/design/screens/<name>.json`.
 Do not put screen-specific colors or radii there, and do not create a
 screen JSON until that screen’s design is approved.
 
+Substantial interactive states live in `docs/design/states/<name>.json`
+and are linked from the parent via `states.<name>.spec`. Same rule:
+no state-specific colors, radii, or spacing.
+
 Approved mockups live in `docs/design/references/`. PNG is a visual
 reference (composition, density, proportions), not a source of tokens.
 Do not measure colors, spacing, or radii from it. Commit only approved
