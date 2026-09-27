@@ -1,4 +1,4 @@
-import { Component, inject, Input, Signal } from '@angular/core';
+import { Component, computed, inject, Input, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { Store } from '@ngxs/store';
@@ -18,6 +18,9 @@ export class TaskBottomPanelComponent {
   @Input() enabled!: boolean;
 
   mode: Signal<ETaskViewMode> = this.store.selectSignal(TaskScreenState.mode);
+  readonly submitLabel = computed(() =>
+    this.mode() === ETaskViewMode.Edit ? 'Save Changes' : 'Create Task',
+  );
 
   isEditFormValid$: Observable<boolean> = inject(Store).select(TaskScreenState.isEditFormValid);
 

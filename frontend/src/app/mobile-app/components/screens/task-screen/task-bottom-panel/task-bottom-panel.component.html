@@ -1,22 +1,29 @@
 @if (mode() === ETaskViewMode.Create || mode() === ETaskViewMode.Edit) {
-  <div class="task-ok-panel">
-    <div class="cancel-task-btn" (click)="cancelChanges()">Cancel</div>
+  <div class="form-actions">
+    <button
+      class="form-action form-action-secondary"
+      type="button"
+      data-test="cancel-changes-btn"
+      (click)="cancelChanges()"
+    >
+      Cancel
+    </button>
     @let isEditFormValid = isEditFormValid$ | async;
     <button
-      class="create-task-btn"
+      class="form-action form-action-primary"
+      type="button"
       id="createTaskBtn"
       data-test="apply-changes-btn"
-      [ngClass]="{ enabled: isEditFormValid }"
       [disabled]="!isEditFormValid"
       (click)="applyChanges()"
     >
-      Ok
+      {{ submitLabel() }}
     </button>
   </div>
 }
 
 @if (mode() === ETaskViewMode.View) {
-  <div class="go-home-btn" (click)="goHome()" data-test="go-home-btn">
+  <div class="go-home-btn" data-test="go-home-btn" (click)="goHome()">
     <img src="assets/ui/icons/home-icon.png" />
   </div>
 }

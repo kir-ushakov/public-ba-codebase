@@ -1,0 +1,63 @@
+<section class="tags-section" data-test="task-tags-section">
+  <p class="field-label">Tags</p>
+  <button class="tag-selector" type="button" data-test="task-tags-selector" (click)="openSheet()">
+    <span class="material-symbols-rounded" aria-hidden="true">sell</span>
+    <span class="tag-selector-placeholder">Add tags...</span>
+    <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+  </button>
+  @if (showSelectedTags() && selectedTags().length) {
+    <div class="selected-tags" data-test="selected-tags">
+      @for (tag of selectedTags(); track tag.id) {
+        <span class="selected-tag" data-test="selected-tag">
+          {{ tag.label }}
+          <button
+            class="selected-tag-remove"
+            type="button"
+            data-test="selected-tag-remove"
+            [attr.aria-label]="'Remove ' + tag.label"
+            (click)="toggleTag(tag.id)"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          </button>
+        </span>
+      }
+    </div>
+  }
+</section>
+@if (open()) {
+  <ba-bottom-sheet title="Select tags" (dismissed)="closeSheet()">
+    <label class="search-field">
+      <span class="material-symbols-rounded" aria-hidden="true">search</span>
+      <input
+        class="search-input"
+        type="text"
+        data-test="tag-selector-search"
+        placeholder="Search tags..."
+        aria-label="Search tags"
+        [value]="query()"
+        (input)="onQueryInput($event)"
+      />
+    </label>
+    <div class="tag-list" data-test="tag-selector-list">
+      @for (tag of visibleTags(); track tag.id) {
+        <button
+          class="tag-chip"
+          type="button"
+          data-test="tag-chip"
+          [class.is-selected]="tag.selected"
+          [attr.aria-pressed]="tag.selected"
+          (click)="toggleTag(tag.id)"
+        >
+          @if (tag.selected) {
+            <span class="material-symbols-rounded" aria-hidden="true">check</span>
+          }
+          {{ tag.label }}
+        </button>
+      }
+    </div>
+    <button class="create-tag" type="button" data-test="create-new-tag">
+      <span class="material-symbols-rounded" aria-hidden="true">add</span>
+      Create new tag
+    </button>
+  </ba-bottom-sheet>
+}

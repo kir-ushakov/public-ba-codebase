@@ -73,10 +73,9 @@ export class TaskScreenState {
 
   @Selector()
   static showCompleteTaskBtn(state: ITaskScreenStateModel): boolean {
-    if (state.mode === ETaskViewMode.View && state.taskData.status === ETaskStatus.Todo) {
-      return true;
-    }
-    return false;
+    return (
+      state.mode === ETaskViewMode.View && TasksState.actualStatuses.includes(state.taskData.status)
+    );
   }
 
   @Selector()
@@ -138,6 +137,7 @@ export class TaskScreenState {
         ...state.taskData,
         ...formData,
         description,
+        status: formData.status ?? state.taskData.status,
       },
     });
     if (state.mode === ETaskViewMode.Create) {
@@ -192,7 +192,11 @@ export class TaskScreenState {
       coverDraftKey: undefined,
       taskViewForm: {
         ...ctx.getState().taskViewForm,
-        formData: { title: task.title, description: task.description ?? null },
+        formData: {
+          title: task.title,
+          description: task.description ?? null,
+          status: task.status,
+        },
       },
     });
   }

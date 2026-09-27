@@ -118,6 +118,30 @@ describe('TaskScreenState', () => {
 
     expect(created?.title).toBe('Task with details');
     expect(created?.description).toEqual(description);
+    expect(created?.status).toBe(ETaskStatus.Todo);
+  });
+
+  it('creates an Active task when the form status is Active', async () => {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Task in progress',
+          description: null,
+          status: ETaskStatus.Active,
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const created = store
+      .selectSnapshot(TasksState.actualTasks)
+      .find(t => t.id !== existingWithPhoto.id);
+
+    expect(created).toMatchObject({
+      title: 'Task in progress',
+      status: ETaskStatus.Active,
+    });
   });
 
   it('still saves a photo taken during the current create session', async () => {

@@ -1,0 +1,43 @@
+<button
+  class="backdrop"
+  type="button"
+  data-test="bottom-sheet-backdrop"
+  aria-label="Close"
+  (click)="onBackdropClick()"
+></button>
+<section
+  class="sheet"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="bottom-sheet-title"
+  data-test="bottom-sheet"
+  [style.--drag-offset.px]="dragOffset()"
+>
+  <div
+    class="handle-hit"
+    data-test="bottom-sheet-handle"
+    (pointerdown)="onHandlePointerDown($event)"
+    (pointermove)="onHandlePointerMove($event)"
+    (pointerup)="onHandlePointerUp()"
+    (pointercancel)="onHandlePointerUp()"
+  >
+    <span class="handle" aria-hidden="true"></span>
+  </div>
+  <header class="sheet-header">
+    <h2 class="sheet-title" id="bottom-sheet-title" data-test="bottom-sheet-title">
+      {{ title() }}
+    </h2>
+    <button
+      class="close"
+      type="button"
+      data-test="bottom-sheet-close"
+      aria-label="Close"
+      (click)="onCloseClick()"
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">close</span>
+    </button>
+  </header>
+  <div class="sheet-body">
+    <ng-content />
+  </div>
+</section>

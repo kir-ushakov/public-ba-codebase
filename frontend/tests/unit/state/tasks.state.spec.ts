@@ -99,6 +99,43 @@ describe('TasksState', () => {
     expect(store.selectSnapshot(TasksState.allTasks)[0]?.title).toBe('Renamed task title');
   });
 
+  it('keeps To do and Active tasks on the home list', () => {
+    const active: Task = {
+      ...existing,
+      id: 'task-active',
+      title: 'Active task',
+      status: ETaskStatus.Active,
+      createdAt: '2024-06-02T10:00:00.000Z',
+    };
+    const done: Task = {
+      ...existing,
+      id: 'task-done',
+      title: 'Done task',
+      status: ETaskStatus.Done,
+    };
+
+    store.reset({
+      tasks: { entities: [existing, active, done] },
+      user: {
+        userData: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          userId,
+          googleId: 'g-1',
+        },
+        authState: EUserAuthState.Authenticated,
+        authType: undefined,
+        integrations: { isAddedToSlack: undefined },
+      },
+    });
+
+    const titles = store.selectSnapshot(TasksState.actualTasks).map(task => task.title);
+
+    expect(titles).toEqual(['Active task', 'Existing task title']);
+    expect(titles).not.toContain('Done task');
+  });
+
   it('removes a task on local delete', async () => {
     await firstValueFrom(store.dispatch(new TasksAction.DeleteTask(existing.id)));
 

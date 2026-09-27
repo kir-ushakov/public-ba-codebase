@@ -55,6 +55,21 @@ describe('TaskEditComponent title field', () => {
     );
     expect(host.querySelector('[data-test="add-image-btn"]')?.textContent).toContain('Add image');
     expect(host.querySelector('[data-test="task-images-count"]')).toBeNull();
+    expect(host.querySelector('[data-test="task-tags-section"]')?.textContent).toContain('Tags');
+    expect(host.querySelector('[data-test="task-tags-selector"]')?.textContent).toContain(
+      'Add tags...',
+    );
+    expect(host.querySelector('[data-test="selected-tags"]')?.textContent).toContain('Work');
+    expect(host.querySelector('[data-test="selected-tags"]')?.textContent).toContain('Ideas');
+    expect(host.querySelector('[data-test="task-status-section"]')?.textContent).toContain(
+      'Status',
+    );
+    expect(host.querySelector('[data-test="task-status-todo"]')?.getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+    expect(
+      host.querySelector('[data-test="task-status-active"]')?.getAttribute('aria-pressed'),
+    ).toBe('false');
   });
 
   it('updates the character count as the title changes', () => {

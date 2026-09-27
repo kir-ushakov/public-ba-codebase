@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-edit",
     "name": "Edit Task",
-    "version": "1.2.0",
+    "version": "1.3.0",
 
     "purpose": "Edit an existing task using the same task-form pattern as Create Task.",
 
@@ -129,19 +129,9 @@
               "icon": "status-todo"
             },
             {
-              "id": "in-progress",
-              "label": "In progress",
-              "icon": "status-in-progress"
-            },
-            {
-              "id": "done",
-              "label": "Done",
-              "icon": "status-done"
-            },
-            {
-              "id": "cancelled",
-              "label": "Cancelled",
-              "icon": "status-cancelled"
+              "id": "active",
+              "label": "Active",
+              "icon": "status-active"
             }
           ]
         },
@@ -201,7 +191,7 @@
     },
 
     "angular": {
-      "note": "Create and Edit share task-edit today. The live screen does not yet match this spec. Same data-shape caveats as task-create.json: single imageId, no task tags or dueDate on TaskDTO, no In progress in ETaskStatus, mockup counters are not TaskConst.",
+      "note": "Create and Edit share task-edit today. The live screen does not yet match this spec. Same data-shape caveats as task-create.json: single imageId, no task tags or dueDate on TaskDTO. The form offers To do and Active. Done and Cancel remain view actions. Mockup counters are not TaskConst.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/screens/task-screen/task-edit/",
