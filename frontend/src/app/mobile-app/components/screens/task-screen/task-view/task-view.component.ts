@@ -10,10 +10,17 @@ import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/rich-text-editor/rich-text-editor.component';
+import { TaskTypeChipComponent } from '../task-type-chip/task-type-chip.component';
 
 @Component({
   selector: 'ba-task-view',
-  imports: [CommonModule, ImageSrcPipe, SpinnerComponent, RichTextEditorComponent],
+  imports: [
+    CommonModule,
+    ImageSrcPipe,
+    SpinnerComponent,
+    RichTextEditorComponent,
+    TaskTypeChipComponent,
+  ],
   templateUrl: './task-view.component.html',
   styleUrl: './task-view.component.scss',
 })
