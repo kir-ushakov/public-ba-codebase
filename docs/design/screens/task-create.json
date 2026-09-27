@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-create",
     "name": "Create Task",
-    "version": "1.2.0",
+    "version": "1.3.0",
 
     "purpose": "Create a new task with title, rich description, images, tags, status and due date.",
 
@@ -117,19 +117,9 @@
               "default": true
             },
             {
-              "id": "in-progress",
-              "label": "In progress",
-              "icon": "status-in-progress"
-            },
-            {
-              "id": "done",
-              "label": "Done",
-              "icon": "status-done"
-            },
-            {
-              "id": "cancelled",
-              "label": "Cancelled",
-              "icon": "status-cancelled"
+              "id": "active",
+              "label": "Active",
+              "icon": "status-active"
             }
           ]
         },
@@ -188,7 +178,7 @@
     },
 
     "angular": {
-      "note": "The live Create Task screen does not yet match this spec. Treat this JSON as the approved target. TaskDTO currently has a single optional imageId, no tags field, and no dueDate. ETaskStatus is Todo/Done/Cancel — In progress is a product destination, not a current wire value. Character counters in the PNG (200/1000) are visual placeholders; live limits stay in TaskConst until a separate product decision changes them.",
+      "note": "The live Create Task screen does not yet match this spec. Treat this JSON as the approved target. TaskDTO currently has a single optional imageId, no tags field, and no dueDate. The form offers To do and Active (ETaskStatus.Todo and ETaskStatus.Active). Done and Cancel remain view actions, not form options. Character counters in the PNG (200/1000) are visual placeholders; live limits stay in TaskConst until a separate product decision changes them.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/screens/task-screen/task-edit/",

@@ -1,11 +1,14 @@
 import { Task, TaskChanges } from 'src/app/shared/models/';
 
+export type TaskCreateInput = Pick<Task, 'title' | 'description' | 'imageId' | 'images'> &
+  Partial<Pick<Task, 'status'>>;
+
 export namespace TasksAction {
   export class CreateTask {
     static readonly type = '[Tasks] Create Task';
 
     constructor(
-      public taskInitData: Pick<Task, 'title' | 'description' | 'imageId' | 'images'>,
+      public taskInitData: TaskCreateInput,
       public userId: string,
     ) {}
   }

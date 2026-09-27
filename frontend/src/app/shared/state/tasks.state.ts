@@ -7,7 +7,7 @@ import { Task, ETaskStatus, ETaskType, Change, TaskChanges } from 'src/app/share
 import { UserState } from './user.state';
 import { AppAction } from './app.actions';
 import { SyncAction } from './sync.action';
-import { TasksAction } from './tasks.action';
+import { TasksAction, type TaskCreateInput } from './tasks.action';
 import { isEmptyTaskDescription } from '../helpers/is-empty-task-description.function';
 
 interface ITasksStateModel {
@@ -22,7 +22,7 @@ interface ITasksStateModel {
 })
 @Injectable()
 export class TasksState {
-  static readonly actualStatuses: Array<ETaskStatus> = [ETaskStatus.Todo];
+  static readonly actualStatuses: Array<ETaskStatus> = [ETaskStatus.Todo, ETaskStatus.Active];
 
   @Selector([TasksState, UserState.userId])
   static allTasks(state: ITasksStateModel, userId: string | null): Array<Task> {
@@ -43,7 +43,7 @@ export class TasksState {
       taskInitData,
       userId,
     }: {
-      taskInitData: Pick<Task, 'title' | 'description' | 'imageId' | 'images'>;
+      taskInitData: TaskCreateInput;
       userId: string;
     },
   ): Promise<void> {
@@ -149,11 +149,7 @@ export class TasksState {
     }
   }
 
-  private createTaskEntity(
-    taskInitData: Pick<Task, 'title' | 'description' | 'imageId' | 'images'>,
-    userId: string,
-    timestamp: string,
-  ): Task {
+  private createTaskEntity(taskInitData: TaskCreateInput, userId: string, timestamp: string): Task {
     const task: Task = {
       type: ETaskType.Basic,
       userId,
@@ -163,7 +159,7 @@ export class TasksState {
       description: isEmptyTaskDescription(taskInitData.description)
         ? undefined
         : taskInitData.description,
-      status: ETaskStatus.Todo,
+      status: taskInitData.status ?? ETaskStatus.Todo,
       createdAt: timestamp,
       modifiedAt: timestamp,
     };

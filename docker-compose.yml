@@ -14,6 +14,9 @@ services:
       # Named volume: bind-mounting ./frontend/dist is often root-owned and breaks USER node (EACCES on mkdir).
       - frontend_dist:/usr/src/app/dist
       - ./frontend/src:/usr/src/app/src
+      # Live contract edits must be visible without rebuilding the image. The package is the
+      # file:../contracts symlink at /usr/src/contracts.
+      - ./contracts:/usr/src/contracts
     environment:
       - BUILD_MODE=build-dev
 

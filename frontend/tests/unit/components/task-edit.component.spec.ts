@@ -61,6 +61,15 @@ describe('TaskEditComponent title field', () => {
     );
     expect(host.querySelector('[data-test="selected-tags"]')?.textContent).toContain('Work');
     expect(host.querySelector('[data-test="selected-tags"]')?.textContent).toContain('Ideas');
+    expect(host.querySelector('[data-test="task-status-section"]')?.textContent).toContain(
+      'Status',
+    );
+    expect(host.querySelector('[data-test="task-status-todo"]')?.getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+    expect(
+      host.querySelector('[data-test="task-status-active"]')?.getAttribute('aria-pressed'),
+    ).toBe('false');
   });
 
   it('updates the character count as the title changes', () => {

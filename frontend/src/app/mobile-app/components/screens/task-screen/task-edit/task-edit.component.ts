@@ -13,13 +13,14 @@ import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './task-edit.component.interface';
-import { TaskConst, type TaskDescriptionDoc } from '@brainassistant/contracts';
+import { ETaskStatus, TaskConst, type TaskDescriptionDoc } from '@brainassistant/contracts';
 import { VoiceInputTriggerComponent } from 'src/app/shared/features/voice-input/components/voice-input-trigger/voice-input-trigger.component';
 import { clipVoiceTaskTitle } from './helpers/clip-voice-task-title.function';
 import { stripTitleNewlines } from './helpers/strip-title-newlines.function';
 import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/rich-text-editor/rich-text-editor.component';
 import { ImageGalleryEditorComponent } from './image-gallery-editor/image-gallery-editor.component';
 import { TagSelectorComponent } from './tag-selector/tag-selector.component';
+import { StatusSelectorComponent } from './status-selector/status-selector.component';
 import { toGalleryImages, type GalleryImage } from './helpers/to-gallery-images.function';
 
 @Component({
@@ -31,6 +32,7 @@ import { toGalleryImages, type GalleryImage } from './helpers/to-gallery-images.
     RichTextEditorComponent,
     ImageGalleryEditorComponent,
     TagSelectorComponent,
+    StatusSelectorComponent,
     ReactiveFormsModule,
   ],
   templateUrl: './task-edit.component.html',
@@ -50,6 +52,7 @@ export class TaskEditComponent {
   readonly galleryImages = computed(() =>
     toGalleryImages(this.draftImages(), this.editedTask().imageId, this.coverDraftKey()),
   );
+  readonly showSelectedTags = computed(() => this.screenMode() === ETaskViewMode.Create);
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);
@@ -57,7 +60,6 @@ export class TaskEditComponent {
   private readonly coverDraftKey = this.store.selectSignal(TaskScreenState.coverDraftKey);
   private readonly editedTask = this.store.selectSignal(TaskScreenState.task);
   private readonly screenMode = this.store.selectSignal(TaskScreenState.mode);
-  readonly showSelectedTags = computed(() => this.screenMode() === ETaskViewMode.Create);
   private readonly fb = inject(FormBuilder);
   private readonly actions$ = inject(Actions);
   private readonly ngZone = inject(NgZone);
@@ -173,15 +175,11 @@ export class TaskEditComponent {
 
   private buildForm(): void {
     const mode = this.store.selectSnapshot(TaskScreenState.mode);
-    const existingTitle =
-      mode === ETaskViewMode.Edit
-        ? (this.store.selectSnapshot(TaskScreenState.task).title ?? '')
-        : '';
-
+    const existingTask = this.store.selectSnapshot(TaskScreenState.task);
+    const existingTitle = mode === ETaskViewMode.Edit ? (existingTask.title ?? '') : '';
     const existingDescription =
-      mode === ETaskViewMode.Edit
-        ? (this.store.selectSnapshot(TaskScreenState.task).description ?? null)
-        : null;
+      mode === ETaskViewMode.Edit ? (existingTask.description ?? null) : null;
+    const existingStatus = mode === ETaskViewMode.Edit ? existingTask.status : ETaskStatus.Todo;
 
     this.form = this.fb.group<FormControlsOf<ITaskEditFormData>>({
       title: this.fb.control(existingTitle, {
@@ -189,6 +187,7 @@ export class TaskEditComponent {
         nonNullable: true,
       }),
       description: this.fb.control<TaskDescriptionDoc | null>(existingDescription),
+      status: this.fb.control(existingStatus, { nonNullable: true }),
     });
     this.titleLength = existingTitle.length;
   }
