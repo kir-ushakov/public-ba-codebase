@@ -58,10 +58,6 @@ export namespace TaskScreenAction {
     constructor(public image: DraftTaskImage) {}
   }
 
-  export class SideMenuToggle {
-    static readonly type = '[TaskScreen] Side Menu Toggle';
-  }
-
   export class UpdateFormData {
     static readonly type = '[TaskScreen] Update Form';
 

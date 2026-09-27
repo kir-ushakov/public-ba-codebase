@@ -1,0 +1,25 @@
+<button
+  class="context-menu-backdrop"
+  type="button"
+  aria-label="Close menu"
+  (click)="close($event)"
+></button>
+<div class="context-menu" role="menu" [attr.data-test]="testId()" [attr.aria-label]="ariaLabel()">
+  @for (item of items(); track item.id) {
+    @if (item.separatorBefore) {
+      <div class="context-menu-separator"></div>
+    }
+    <button
+      class="context-menu-item"
+      type="button"
+      role="menuitem"
+      [class.is-danger]="item.danger"
+      [attr.data-test]="item.testId"
+      [disabled]="item.disabled"
+      (click)="selectItem($event, item)"
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">{{ item.icon }}</span>
+      {{ item.label }}
+    </button>
+  }
+</div>

@@ -319,11 +319,10 @@
     },
 
     "angular": {
-      "note": "The live Task View does not yet match this spec. It is title + optional description + single image, with a side drawer for Edit/Done/Cancel/Delete and a home icon instead of bottom navigation. Duplicate, due date, task tags, cover-vs-attachments, In progress, and the Location and Calendar task types are product destinations from the approved design, not claims that those fields, enum values, or Angular routes already exist. Live tasks are still ETaskType.Basic, shown as To do. Settings is not a Task View destination.",
+      "note": "The live Task View does not yet match this spec. It is title + optional description + single image, with a header menu for Edit task, Duplicate and Delete task, and a home icon instead of bottom navigation. Duplicate is visible and disabled until that action exists. Due date, task tags, cover-vs-attachments, In progress, and the Location and Calendar task types are product destinations from the approved design, not claims that those fields, enum values, or Angular routes already exist. Live tasks are still ETaskType.Basic, shown as To do. Settings is not a Task View destination.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/screens/task-screen/task-view/",
-        "frontend/src/app/mobile-app/components/screens/task-screen/task-side-menu/",
         "frontend/src/app/shared/components/ui-elements/rich-text-editor/",
         "frontend/src/app/mobile-app/components/screens/home-screen/home-bottom-panel/"
       ]

@@ -32,7 +32,6 @@ export interface ITaskScreenStateModel {
     formData: ITaskEditFormData;
     status: boolean;
   };
-  isSideMenuOpened: boolean;
   draftImages: DraftTaskImage[];
   coverDraftKey?: string;
 }
@@ -47,7 +46,6 @@ const defaults: ITaskScreenStateModel = {
     status: false,
   },
   taskData: defaultTask,
-  isSideMenuOpened: false,
   draftImages: [],
 };
 
@@ -79,11 +77,6 @@ export class TaskScreenState {
   @Selector()
   static coverDraftKey(state: ITaskScreenStateModel): string | undefined {
     return state.coverDraftKey;
-  }
-
-  @Selector()
-  static isSideMenuOpened(state: ITaskScreenStateModel): boolean {
-    return state.isSideMenuOpened;
   }
 
   @Selector()
@@ -277,14 +270,6 @@ export class TaskScreenState {
     ctx.patchState({
       draftImages: nextDrafts,
       coverDraftKey: coverKey === removedKey ? draftImageKey(nextDrafts[0]) : coverDraftKey,
-    });
-  }
-
-  @Action(TaskScreenAction.SideMenuToggle)
-  sideMenuToggled(ctx: StateContext<ITaskScreenStateModel>): void {
-    const isSideMenuOpened = ctx.getState().isSideMenuOpened;
-    ctx.patchState({
-      isSideMenuOpened: !isSideMenuOpened,
     });
   }
 

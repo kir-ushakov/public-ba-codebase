@@ -8,18 +8,10 @@
   overflow: hidden;
 }
 
-.task-view-container,
-.task-view-sidemenu,
-.task-view-content {
+.task-view-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-}
-
-.task-view-sidemenu {
-  background-color: #27272b;
-  border-left: 1px solid white;
-  width: 75%;
 }
 
 .page-header {
@@ -73,6 +65,11 @@
     outline-offset: var(--spacing-xs);
     border-radius: var(--radius-circle);
   }
+}
+
+.header-menu {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .main-panel-holder {

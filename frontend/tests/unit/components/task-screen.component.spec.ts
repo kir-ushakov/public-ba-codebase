@@ -1,12 +1,11 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { provideStore, Store } from '@ngxs/store';
 import { of } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { TaskScreenComponent } from 'src/app/mobile-app/components/screens/task-screen/task-screen.component';
+import { ContextMenuComponent } from 'src/app/shared/components/ui-elements/context-menu/context-menu.component';
 import { TaskScreenAction } from 'src/app/mobile-app/components/screens/task-screen/task-screen.actions';
 import {
   ETaskViewMode,
@@ -19,7 +18,7 @@ describe('TaskScreenComponent create header', () => {
   async function render(mode: ETaskViewMode): Promise<ComponentFixture<TaskScreenComponent>> {
     TestBed.overrideComponent(TaskScreenComponent, {
       set: {
-        imports: [CommonModule, MatSidenavModule],
+        imports: [CommonModule, ContextMenuComponent],
         schemas: [NO_ERRORS_SCHEMA],
       },
     });
@@ -27,7 +26,6 @@ describe('TaskScreenComponent create header', () => {
     await TestBed.configureTestingModule({
       imports: [TaskScreenComponent],
       providers: [
-        provideNoopAnimations(),
         provideStore([TaskScreenState]),
         { provide: ImageService, useValue: {} },
         { provide: DeviceCameraService, useValue: {} },
@@ -83,16 +81,50 @@ describe('TaskScreenComponent create header', () => {
     expect(host.querySelector('#completeTask')).toBeNull();
   });
 
-  it('opens task options from the menu button', async () => {
+  it('opens Edit task, Duplicate, and Delete task from the header menu', async () => {
     const fixture = await render(ETaskViewMode.View);
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.querySelector<HTMLButtonElement>('[data-test="task-options-btn"]')?.click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="task-options-menu"]')).not.toBeNull();
+    expect(host.querySelector('[data-test="task-menu-edit"]')?.textContent).toContain('Edit task');
+    const duplicate = host.querySelector<HTMLButtonElement>('[data-test="task-menu-duplicate"]');
+    expect(duplicate?.textContent).toContain('Duplicate');
+    expect(duplicate?.disabled).toBe(true);
+    expect(host.querySelector('[data-test="task-menu-delete"]')?.textContent).toContain(
+      'Delete task',
+    );
+    expect(host.textContent).not.toContain('Done');
+  });
+
+  it('edits the task from the options menu', async () => {
+    const fixture = await render(ETaskViewMode.View);
+    const host = fixture.nativeElement as HTMLElement;
     const store = TestBed.inject(Store);
     const dispatch = jest.spyOn(store, 'dispatch');
 
-    (fixture.nativeElement as HTMLElement)
-      .querySelector<HTMLButtonElement>('[data-test="task-options-btn"]')
-      ?.click();
+    host.querySelector<HTMLButtonElement>('[data-test="task-options-btn"]')?.click();
+    fixture.detectChanges();
+    host.querySelector<HTMLButtonElement>('[data-test="task-menu-edit"]')?.click();
+    fixture.detectChanges();
 
-    expect(dispatch).toHaveBeenCalledWith(TaskScreenAction.SideMenuToggle);
+    expect(dispatch).toHaveBeenCalledWith(TaskScreenAction.EditTaskOptionSelected);
+    expect(host.querySelector('[data-test="task-options-menu"]')).toBeNull();
+  });
+
+  it('deletes the task from the options menu', async () => {
+    const fixture = await render(ETaskViewMode.View);
+    const host = fixture.nativeElement as HTMLElement;
+    const store = TestBed.inject(Store);
+    const dispatch = jest.spyOn(store, 'dispatch');
+
+    host.querySelector<HTMLButtonElement>('[data-test="task-options-btn"]')?.click();
+    fixture.detectChanges();
+    host.querySelector<HTMLButtonElement>('[data-test="task-menu-delete"]')?.click();
+
+    expect(dispatch).toHaveBeenCalledWith(TaskScreenAction.DeleteTaskOptionSelected);
   });
 
   it('shows the Edit Task title and more menu', async () => {

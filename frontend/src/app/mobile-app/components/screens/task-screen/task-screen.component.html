@@ -1,44 +1,52 @@
-<mat-drawer-container class="task-view-container" hasBackdrop="fasle">
-  <mat-drawer-content class="task-view-content">
-    @let taskMode = mode();
-    <header class="page-header">
-      <div class="page-header-start">
+<div class="task-view-container">
+  @let taskMode = mode();
+  <header class="page-header">
+    <div class="page-header-start">
+      <button
+        class="header-icon-btn"
+        type="button"
+        aria-label="Back"
+        [attr.data-test]="headerBackTestId()"
+        (click)="goBack()"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>
+      </button>
+      <h1 class="page-title" [attr.data-test]="headerTitleTestId()">{{ headerTitle() }}</h1>
+    </div>
+    @if (showHeaderMenu()) {
+      <div class="header-menu">
         <button
           class="header-icon-btn"
           type="button"
-          aria-label="Back"
-          [attr.data-test]="headerBackTestId()"
-          (click)="goBack()"
-        >
-          <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>
-        </button>
-        <h1 class="page-title" [attr.data-test]="headerTitleTestId()">{{ headerTitle() }}</h1>
-      </div>
-      @if (showHeaderMenu()) {
-        <button
-          class="header-icon-btn"
-          type="button"
+          aria-haspopup="menu"
           [attr.data-test]="headerMenuTestId()"
           [attr.aria-label]="headerMenuLabel()"
+          [attr.aria-expanded]="isOptionsMenuOpen()"
           (click)="toggleMenu()"
         >
           <span class="material-symbols-rounded" aria-hidden="true">more_vert</span>
         </button>
-      }
-    </header>
-    <div class="main-panel-holder" [class.is-create]="taskMode === ETaskViewMode.Create">
-      @if (taskMode === ETaskViewMode.Create || taskMode === ETaskViewMode.Edit) {
-        <ba-task-edit></ba-task-edit>
-      }
-      @if (taskMode === ETaskViewMode.View) {
-        <ba-task-view></ba-task-view>
-      }
-    </div>
-    <div class="bottom-panel-holder">
-      <ba-task-bottom-panel></ba-task-bottom-panel>
-    </div>
-  </mat-drawer-content>
-  <mat-drawer #menuDrawer class="task-view-sidemenu" mode="over" position="end">
-    <ba-task-side-menu></ba-task-side-menu>
-  </mat-drawer>
-</mat-drawer-container>
+        @if (isOptionsMenuOpen()) {
+          <ba-context-menu
+            ariaLabel="Task options"
+            testId="task-options-menu"
+            [items]="optionsMenuItems"
+            (closed)="closeMenu()"
+            (selected)="onOptionsMenuItem($event)"
+          ></ba-context-menu>
+        }
+      </div>
+    }
+  </header>
+  <div class="main-panel-holder" [class.is-create]="taskMode === ETaskViewMode.Create">
+    @if (taskMode === ETaskViewMode.Create || taskMode === ETaskViewMode.Edit) {
+      <ba-task-edit></ba-task-edit>
+    }
+    @if (taskMode === ETaskViewMode.View) {
+      <ba-task-view></ba-task-view>
+    }
+  </div>
+  <div class="bottom-panel-holder">
+    <ba-task-bottom-panel></ba-task-bottom-panel>
+  </div>
+</div>

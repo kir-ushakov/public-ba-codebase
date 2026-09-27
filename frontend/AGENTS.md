@@ -118,8 +118,7 @@ Static `toModel` / `toDto` on a class, contract DTO in, plain model out.
 
 Renders the standalone component with TestBed, sets inputs, `detectChanges()`, then
 asserts user-visible text, `@if` branches, and `[data-test]` hooks. Does not assert
-CSS classes or `should create`. `home-sync-status`, `home-bottom-panel` and
-`task-side-menu-item` next to it are the smaller variants.
+CSS classes or `should create`. `home-sync-status` and `home-bottom-panel` next to it are the smaller variants.
 
 ### Integration spec → `tests/integration/create-task.spec.ts` with `tests/integration/utils/api-mocks.util.ts`
 

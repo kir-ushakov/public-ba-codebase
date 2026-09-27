@@ -4,21 +4,39 @@ import {
   computed,
   ElementRef,
   inject,
-  OnDestroy,
   OnInit,
+  signal,
   ViewChild,
 } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { TaskScreenAction } from './task-screen.actions';
-import { Observable, Subject } from 'rxjs';
 import { TaskScreenState, ETaskViewMode } from './task-screen.state';
 import { ActivatedRoute } from '@angular/router';
-import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { CommonModule } from '@angular/common';
+import { ContextMenuComponent } from 'src/app/shared/components/ui-elements/context-menu/context-menu.component';
+import type { ContextMenuItem } from 'src/app/shared/components/ui-elements/context-menu/context-menu-item.type';
 import { TaskEditComponent } from './task-edit/task-edit.component';
 import { TaskViewComponent } from './task-view/task-view.component';
-import { TaskSideMenuComponent } from './task-side-menu/task-side-menu.component';
 import { TaskBottomPanelComponent } from 'src/app/mobile-app/components/screens/task-screen/task-bottom-panel/task-bottom-panel.component';
+
+const optionsMenuItems: ContextMenuItem[] = [
+  { id: 'edit', label: 'Edit task', icon: 'edit', testId: 'task-menu-edit' },
+  {
+    id: 'duplicate',
+    label: 'Duplicate',
+    icon: 'content_copy',
+    testId: 'task-menu-duplicate',
+    disabled: true,
+  },
+  {
+    id: 'delete',
+    label: 'Delete task',
+    icon: 'delete',
+    testId: 'task-menu-delete',
+    danger: true,
+    separatorBefore: true,
+  },
+];
 
 @Component({
   selector: 'ba-task-screen',
@@ -26,15 +44,13 @@ import { TaskBottomPanelComponent } from 'src/app/mobile-app/components/screens/
   styleUrls: ['./task-screen.component.scss'],
   imports: [
     CommonModule,
-    MatSidenavModule,
+    ContextMenuComponent,
     TaskBottomPanelComponent,
     TaskEditComponent,
     TaskViewComponent,
-    TaskSideMenuComponent,
   ],
 })
-export class TaskScreenComponent implements OnInit, OnDestroy {
-  @ViewChild('menuDrawer') menuDrawer!: MatDrawer;
+export class TaskScreenComponent implements OnInit {
   @ViewChild('titleInput') set titleInput(titleInputElRef: ElementRef) {
     if (titleInputElRef) {
       const titleInput: HTMLInputElement = titleInputElRef.nativeElement;
@@ -81,11 +97,10 @@ export class TaskScreenComponent implements OnInit, OnDestroy {
   headerMenuTestId = computed(() =>
     this.mode() === ETaskViewMode.View ? 'task-options-btn' : 'edit-task-more',
   );
-  isSideMenuOpened$: Observable<boolean> = inject(Store).select(TaskScreenState.isSideMenuOpened);
+  readonly isOptionsMenuOpen = signal(false);
+  readonly optionsMenuItems = optionsMenuItems;
 
   ETaskViewMode = ETaskViewMode;
-
-  private destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
     private store: Store,
@@ -95,12 +110,6 @@ export class TaskScreenComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscribeToRouteParams();
-    this.subscribeToSelectors();
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next(true);
-    this.destroy$.complete();
   }
 
   goBack(): void {
@@ -108,18 +117,29 @@ export class TaskScreenComponent implements OnInit, OnDestroy {
   }
 
   toggleMenu(): void {
-    this.store.dispatch(TaskScreenAction.SideMenuToggle);
+    this.isOptionsMenuOpen.update(isOpen => !isOpen);
   }
 
-  private subscribeToRouteParams() {
+  closeMenu(): void {
+    this.isOptionsMenuOpen.set(false);
+  }
+
+  onOptionsMenuItem(id: string): void {
+    this.closeMenu();
+    if (id === 'edit') {
+      this.store.dispatch(TaskScreenAction.EditTaskOptionSelected);
+      return;
+    }
+    if (id === 'delete') {
+      this.store.dispatch(TaskScreenAction.DeleteTaskOptionSelected);
+    }
+  }
+
+  private subscribeToRouteParams(): void {
     this.route.paramMap.subscribe(params => {
       this.store.dispatch(
         new TaskScreenAction.Opened(<ETaskViewMode>params.get('mode'), params.get('id')),
       );
     });
-  }
-
-  private subscribeToSelectors() {
-    this.isSideMenuOpened$.subscribe(isSideMenuOpened => this.menuDrawer?.toggle(isSideMenuOpened));
   }
 }
