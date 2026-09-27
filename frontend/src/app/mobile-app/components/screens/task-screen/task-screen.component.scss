@@ -26,9 +26,17 @@
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: var(--spacing-md);
+  justify-content: space-between;
+  gap: var(--spacing-lg);
   padding: var(--spacing-lg);
   background-color: var(--color-background-navigation);
+}
+
+.page-header-start {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  min-width: 0;
 }
 
 .page-title {
@@ -48,12 +56,12 @@
   appearance: none;
   border: 0;
   background: transparent;
-  color: var(--color-text-primary);
+  color: var(--color-icon-default);
   cursor: pointer;
 
   .material-symbols-rounded {
     font-size: var(--icon-size-default);
-    color: var(--color-text-primary);
+    color: var(--color-icon-default);
   }
 
   &:focus {
@@ -65,11 +73,6 @@
     outline-offset: var(--spacing-xs);
     border-radius: var(--radius-circle);
   }
-}
-
-.top-panel-holder {
-  height: 42px;
-  background: bisque;
 }
 
 .main-panel-holder {

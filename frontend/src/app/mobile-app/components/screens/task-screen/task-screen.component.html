@@ -1,24 +1,31 @@
 <mat-drawer-container class="task-view-container" hasBackdrop="fasle">
   <mat-drawer-content class="task-view-content">
     @let taskMode = mode();
-    @if (taskMode === ETaskViewMode.Create) {
-      <header class="page-header">
+    <header class="page-header">
+      <div class="page-header-start">
         <button
           class="header-icon-btn"
           type="button"
-          data-test="create-task-back"
           aria-label="Back"
+          [attr.data-test]="headerBackTestId()"
           (click)="goBack()"
         >
           <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>
         </button>
-        <h1 class="page-title" data-test="create-task-title">Create Task</h1>
-      </header>
-    } @else {
-      <div class="top-panel-holder">
-        <ba-task-top-panel></ba-task-top-panel>
+        <h1 class="page-title" [attr.data-test]="headerTitleTestId()">{{ headerTitle() }}</h1>
       </div>
-    }
+      @if (showHeaderMenu()) {
+        <button
+          class="header-icon-btn"
+          type="button"
+          [attr.data-test]="headerMenuTestId()"
+          [attr.aria-label]="headerMenuLabel()"
+          (click)="toggleMenu()"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">more_vert</span>
+        </button>
+      }
+    </header>
     <div class="main-panel-holder" [class.is-create]="taskMode === ETaskViewMode.Create">
       @if (taskMode === ETaskViewMode.Create || taskMode === ETaskViewMode.Edit) {
         <ba-task-edit></ba-task-edit>

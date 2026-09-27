@@ -1,6 +1,7 @@
 import {
   ChangeDetectorRef,
   Component,
+  computed,
   ElementRef,
   inject,
   OnDestroy,
@@ -14,7 +15,6 @@ import { TaskScreenState, ETaskViewMode } from './task-screen.state';
 import { ActivatedRoute } from '@angular/router';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { CommonModule } from '@angular/common';
-import { TaskTopPanelComponent } from './task-top-panel/task-top-panel.component';
 import { TaskEditComponent } from './task-edit/task-edit.component';
 import { TaskViewComponent } from './task-view/task-view.component';
 import { TaskSideMenuComponent } from './task-side-menu/task-side-menu.component';
@@ -28,7 +28,6 @@ import { TaskBottomPanelComponent } from 'src/app/mobile-app/components/screens/
     CommonModule,
     MatSidenavModule,
     TaskBottomPanelComponent,
-    TaskTopPanelComponent,
     TaskEditComponent,
     TaskViewComponent,
     TaskSideMenuComponent,
@@ -45,6 +44,43 @@ export class TaskScreenComponent implements OnInit, OnDestroy {
   }
 
   mode = inject(Store).selectSignal(TaskScreenState.mode);
+  headerTitle = computed(() => {
+    switch (this.mode()) {
+      case ETaskViewMode.Edit:
+        return 'Edit Task';
+      case ETaskViewMode.View:
+        return 'Task';
+      default:
+        return 'Create Task';
+    }
+  });
+  headerTitleTestId = computed(() => {
+    switch (this.mode()) {
+      case ETaskViewMode.Edit:
+        return 'edit-task-title';
+      case ETaskViewMode.View:
+        return 'task-title';
+      default:
+        return 'create-task-title';
+    }
+  });
+  headerBackTestId = computed(() => {
+    switch (this.mode()) {
+      case ETaskViewMode.Edit:
+        return 'edit-task-back';
+      case ETaskViewMode.View:
+        return 'task-back';
+      default:
+        return 'create-task-back';
+    }
+  });
+  showHeaderMenu = computed(() => this.mode() !== ETaskViewMode.Create);
+  headerMenuLabel = computed(() =>
+    this.mode() === ETaskViewMode.View ? 'Task options' : 'More options',
+  );
+  headerMenuTestId = computed(() =>
+    this.mode() === ETaskViewMode.View ? 'task-options-btn' : 'edit-task-more',
+  );
   isSideMenuOpened$: Observable<boolean> = inject(Store).select(TaskScreenState.isSideMenuOpened);
 
   ETaskViewMode = ETaskViewMode;
@@ -69,6 +105,10 @@ export class TaskScreenComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.store.dispatch(TaskScreenAction.CancelButtonPressed);
+  }
+
+  toggleMenu(): void {
+    this.store.dispatch(TaskScreenAction.SideMenuToggle);
   }
 
   private subscribeToRouteParams() {

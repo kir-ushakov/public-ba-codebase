@@ -72,18 +72,6 @@ export class TaskScreenState {
   }
 
   @Selector()
-  static showCompleteTaskBtn(state: ITaskScreenStateModel): boolean {
-    return (
-      state.mode === ETaskViewMode.View && TasksState.actualStatuses.includes(state.taskData.status)
-    );
-  }
-
-  @Selector()
-  static showToggleOptionsBtn(state: ITaskScreenStateModel): boolean {
-    return state.mode === ETaskViewMode.View ? true : false;
-  }
-
-  @Selector()
   static draftImages(state: ITaskScreenStateModel): DraftTaskImage[] {
     return state.draftImages ?? [];
   }
