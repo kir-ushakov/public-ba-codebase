@@ -19,6 +19,7 @@ import { clipVoiceTaskTitle } from './helpers/clip-voice-task-title.function';
 import { stripTitleNewlines } from './helpers/strip-title-newlines.function';
 import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/rich-text-editor/rich-text-editor.component';
 import { ImageGalleryEditorComponent } from './image-gallery-editor/image-gallery-editor.component';
+import { TagSelectorComponent } from './tag-selector/tag-selector.component';
 import { toGalleryImages, type GalleryImage } from './helpers/to-gallery-images.function';
 
 @Component({
@@ -29,6 +30,7 @@ import { toGalleryImages, type GalleryImage } from './helpers/to-gallery-images.
     VoiceInputTriggerComponent,
     RichTextEditorComponent,
     ImageGalleryEditorComponent,
+    TagSelectorComponent,
     ReactiveFormsModule,
   ],
   templateUrl: './task-edit.component.html',
