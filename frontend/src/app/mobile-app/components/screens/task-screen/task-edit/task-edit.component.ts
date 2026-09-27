@@ -21,6 +21,7 @@ import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/r
 import { ImageGalleryEditorComponent } from './image-gallery-editor/image-gallery-editor.component';
 import { TagSelectorComponent } from './tag-selector/tag-selector.component';
 import { StatusSelectorComponent } from './status-selector/status-selector.component';
+import { TaskTypeChipComponent } from '../task-type-chip/task-type-chip.component';
 import { toGalleryImages, type GalleryImage } from './helpers/to-gallery-images.function';
 
 @Component({
@@ -33,6 +34,7 @@ import { toGalleryImages, type GalleryImage } from './helpers/to-gallery-images.
     ImageGalleryEditorComponent,
     TagSelectorComponent,
     StatusSelectorComponent,
+    TaskTypeChipComponent,
     ReactiveFormsModule,
   ],
   templateUrl: './task-edit.component.html',
@@ -53,6 +55,7 @@ export class TaskEditComponent {
     toGalleryImages(this.draftImages(), this.editedTask().imageId, this.coverDraftKey()),
   );
   readonly showSelectedTags = computed(() => this.screenMode() === ETaskViewMode.Create);
+  readonly taskType = computed(() => this.editedTask().type);
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);

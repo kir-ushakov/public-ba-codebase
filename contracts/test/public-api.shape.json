@@ -1,7 +1,9 @@
 {
   "enums": {
     "ETaskType": [
-      "TASK_TYPE_BASIC"
+      "TASK_TYPE_BASIC",
+      "TASK_TYPE_LOCATION",
+      "TASK_TYPE_CALENDAR"
     ],
     "ETaskStatus": [
       "TASK_STATUS_TODO",

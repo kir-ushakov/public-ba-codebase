@@ -231,11 +231,12 @@
         "timer": "timer",
         "schedule": "event_repeat",
         "location": "location_on",
+        "calendar": "calendar_month",
         "rules": [
           "The leading icon on a task card is the task type, not media presence.",
           "Do not show the type name as text on the card.",
           "Do not use check or check_circle for TODO; they read as completed.",
-          "Today only TODO is live; it maps from ETaskType.Basic (TASK_TYPE_BASIC)."
+          "To do maps from ETaskType.Basic (TASK_TYPE_BASIC). Location is TASK_TYPE_LOCATION and Calendar is TASK_TYPE_CALENDAR. Timer and schedule are not wire values yet."
         ]
       }
     },

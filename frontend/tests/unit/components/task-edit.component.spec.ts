@@ -41,6 +41,7 @@ describe('TaskEditComponent title field', () => {
     const host = fixture.nativeElement as HTMLElement;
     const input = host.querySelector<HTMLTextAreaElement>('[data-test="task-title-input"]');
 
+    expect(host.querySelector('[data-test="task-type-chip"]')?.textContent).toContain('To do');
     expect(host.querySelector('label')?.textContent).toContain('Title');
     expect(input?.getAttribute('placeholder')).toBe('Task title here...');
     expect(host.querySelector('[data-test="task-title-count"]')?.textContent).toContain('0/100');

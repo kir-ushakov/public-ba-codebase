@@ -1,5 +1,6 @@
 <div class="title-input-holder">
   <form class="task-form" [formGroup]="form">
+    <ba-task-type-chip [type]="taskType()" />
     <div class="title-field">
       <label class="field-label" for="titleInput">Title</label>
       <div class="title-control">
