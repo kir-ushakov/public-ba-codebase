@@ -110,7 +110,7 @@ Link them from the screen JSON:
 ```json
 "reference": {
   "status": "approved",
-  "image": "../references/task-view.png",
+  "image": "../references/task-view-todo.png",
   "description": "Approved visual reference for the Task View screen."
 }
 
