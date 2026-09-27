@@ -85,11 +85,14 @@ These files describe different layers. Do not duplicate values across them.
 | `docs/design/design-system.json` | WHAT | Exact tokens: colors, spacing, type, radii, component recipes |
 | `docs/design/UI_STYLE_GUIDE.md` | HOW | Principles, allowed/forbidden patterns, how to design a new screen |
 | `docs/design/screens/*.json` | SCREEN | Approved composition, behaviour, and states of a specific screen. No screen-specific colors or radii |
+| `docs/design/states/*.json` | STATE | Approved composition of a substantial interactive state: its own input, actions, or navigation. No state-specific colors, radii, or spacing |
 | `docs/design/references/*.png` | LOOK | Approved visual reference. Composition, visual weight, density, proportions |
 
 `design-system.json` is product-wide. It is not a Home-page stylesheet.
 
 Create a `screens/<name>.json` only after that screen’s design is approved. Do not invent screen JSON as part of implementing a feature.
+
+Create a `states/<name>.json` when an interactive state is substantial enough to have its own input, validation, actions, or navigation. Link it from the parent via `states.<name>.spec`. A lighter overlay stays inline on the parent and only adds `referenceImage`.
 
 The PNG is **not** a source of truth for values. `design-system.json` plus the screen JSON are. If an agent measures the PNG, it will copy accidental pixel details instead of tokens.
 
@@ -114,11 +117,17 @@ Link them from the screen JSON:
 "states": {
   "statusSelectorOpen": {
     "referenceImage": "../references/task-view-status-selector.png"
+  },
+  "newTagOpen": {
+    "spec": "../states/new-tag-open.json",
+    "referenceImage": "../references/new-tag-open.png"
   }
 }
 ```
 
-When implementing, the package is: rules → tokens → screen spec → visual reference. Read the PNG for look and density. Take every color, spacing, radius, and type value from `design-system.json`.
+`spec` is for a substantial state that has its own JSON. `referenceImage` alone is enough when the state is fully described on the parent.
+
+When implementing, the package is: rules → tokens → screen spec → state spec, when one is linked → visual reference. Read the PNG for look and density. Take every color, spacing, radius, and type value from `design-system.json`. Do not copy a product limit, such as a character maximum, off the PNG. Encode it in the state JSON only after an explicit product decision.
 
 When generating a **new mockup** (outside this repo or with an image model), attach:
 
@@ -716,7 +725,7 @@ After a mockup is approved:
 
 1. Save the composition as `docs/design/screens/<screen>.json`. That file describes structure, behaviour, and states. It must not repeat colors, radii, or spacing from `design-system.json`.
 2. Save the approved image as `docs/design/references/<screen>.png` and point `reference.image` at it.
-3. Save extra PNGs only for important interactive states, linked from `states.<name>.referenceImage`.
+3. Save a substantial interactive state as `docs/design/states/<state>.json` and its approved image as `docs/design/references/<state>.png`. Link both from the parent `states.<name>.spec` and `states.<name>.referenceImage`. A lighter state only needs the extra PNG, linked from `states.<name>.referenceImage`.
 4. Do not commit unapproved or intermediate mockups.
 
 ---

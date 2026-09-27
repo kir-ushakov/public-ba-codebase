@@ -1,0 +1,96 @@
+{
+  "state": {
+    "id": "new-tag-open",
+    "name": "Create New Tag — Open",
+    "version": "1.0.0",
+
+    "purpose": "Create a new tag while selecting tags for a task.",
+
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+
+    "status": "approved",
+    "implementationStatus": "spec-only",
+
+    "parentState": "tag-selector-open",
+
+    "presentation": {
+      "component": "bottom-sheet",
+      "designSystemPattern": "bottomSheet",
+      "dismiss": [
+        "close-button",
+        "backdrop-tap",
+        "swipe-down"
+      ]
+    },
+
+    "header": {
+      "title": "Create new tag",
+
+      "backAction": {
+        "icon": "arrow_back",
+        "action": "return-to-tag-selector"
+      },
+
+      "closeAction": {
+        "icon": "close",
+        "action": "close-tag-flow"
+      }
+    },
+
+    "form": {
+      "component": "new-tag-form",
+
+      "fields": [
+        {
+          "id": "name",
+          "label": "Tag name",
+          "component": "text-input",
+          "placeholder": "Enter tag name...",
+          "autofocus": true,
+          "characterCount": true
+        }
+      ],
+
+      "helperText": "Use a short name that helps you find this tag later."
+    },
+
+    "primaryAction": {
+      "id": "create",
+      "component": "primary-button",
+      "label": "Create tag",
+      "action": "create-tag",
+      "enabledWhen": "tag-name-valid"
+    },
+
+    "behavior": {
+      "onCreateSuccess": [
+        "create-tag",
+        "select-created-tag",
+        "return-to-tag-selector"
+      ],
+
+      "backAction": "return-to-tag-selector",
+      "closeAction": "close-tag-flow"
+    },
+
+    "visualRules": [
+      "Use the global bottomSheet pattern from design-system.json.",
+      "Use the existing global text-input and primary-button patterns.",
+      "Use Material Symbols Rounded for Back and Close.",
+      "Do not allow users to choose an icon for a tag.",
+      "Tag identity is represented by its text label.",
+      "Do not introduce a tag color selector.",
+      "Create tag is the only primary action.",
+      "Back returns to the Tag Selector without closing the entire tag flow.",
+      "Close dismisses the entire tag flow.",
+      "Do not introduce screen-specific colors, spacing or radii."
+    ],
+
+    "reference": {
+      "status": "approved",
+      "image": "../references/new-tag-open.png",
+      "description": "Approved Create New Tag bottom-sheet state opened from the task Tag Selector."
+    }
+  }
+}

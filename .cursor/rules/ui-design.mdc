@@ -11,9 +11,10 @@ Before creating or modifying UI, read:
 - `docs/design/UI_STYLE_GUIDE.md`
 - `docs/design/design-system.json`
 - `docs/design/screens/<name>.json` if one exists for this screen
+- `docs/design/states/<name>.json` when the parent links `states.<name>.spec`
 - the linked PNG under `docs/design/references/` if the spec has `reference.image`
 
-`design-system.json` and the screen JSON are the source of truth for values.
+`design-system.json` and the screen or state JSON are the source of truth for values.
 The PNG is a visual reference only.
 
 ## Hard rules
