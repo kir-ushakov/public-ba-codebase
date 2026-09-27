@@ -1,0 +1,84 @@
+{
+  "state": {
+    "id": "tag-selector-open",
+    "name": "Tag Selector — Open",
+    "version": "1.0.0",
+
+    "purpose": "Select existing tags or create a new tag while editing task tags.",
+
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+
+    "status": "approved",
+    "implementationStatus": "spec-only",
+
+    "presentation": {
+      "component": "bottom-sheet",
+      "designSystemPattern": "bottomSheet",
+      "dismiss": [
+        "close-button",
+        "backdrop-tap",
+        "swipe-down"
+      ]
+    },
+
+    "header": {
+      "title": "Select tags",
+      "closeAction": {
+        "icon": "close",
+        "action": "close-tag-selector"
+      }
+    },
+
+    "search": {
+      "component": "search-input",
+      "placeholder": "Search tags...",
+      "icon": "search",
+      "filterMode": "client-side"
+    },
+
+    "tags": {
+      "component": "selectable-chip-list",
+      "multiple": true,
+
+      "item": {
+        "content": [
+          "label"
+        ],
+        "selectedTreatment": [
+          "accent state",
+          "check icon"
+        ]
+      },
+
+      "selection": {
+        "action": "toggle-tag",
+        "persistWhileOpen": true
+      }
+    },
+
+    "createAction": {
+      "component": "list-action",
+      "label": "Create new tag",
+      "icon": "add",
+      "action": "create-tag"
+    },
+
+    "visualRules": [
+      "Use the global bottomSheet pattern from design-system.json.",
+      "Tags do not have individual icons.",
+      "Tag identity is represented by its text label.",
+      "Selected tags use the global teal selected state.",
+      "Use a check icon only to communicate selection.",
+      "Do not show Suggested or Recent sections unless those product features are explicitly introduced.",
+      "Do not duplicate the Create new tag action.",
+      "Controls inside the sheet must reuse global design-system tokens."
+    ],
+
+    "reference": {
+      "status": "approved",
+      "image": "../references/tag-selector-open.png",
+      "description": "Approved open state of the task tag selector."
+    }
+  }
+}

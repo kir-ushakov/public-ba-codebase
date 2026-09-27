@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-view",
     "name": "Task View",
-    "version": "1.1.0",
+    "version": "1.2.0",
 
     "purpose": "Read a task and perform focused task actions without entering full edit mode.",
 
@@ -260,6 +260,7 @@
       "Delete task uses the global danger semantic treatment and requires confirmation.",
       "Display the task cover image as the primary media image when one exists.",
       "Keep overlays visually subordinate to the task and consistent with the global surface hierarchy.",
+      "The status selector is a bottom sheet. Chrome, handle, backdrop and dismiss behavior come from design-system.json → bottomSheet. This state specifies only the sheet content.",
       "Bottom navigation is shared with Home: Home, Tasks, Tags. Use Material Symbols Rounded icons home, calendar_month and sell. Do not add Settings or a fourth tab.",
       "Settings, profile and integrations belong to the Home avatar account menu, not to bottom navigation."
     ],

@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-edit",
     "name": "Edit Task",
-    "version": "1.0.0",
+    "version": "1.2.0",
 
     "purpose": "Edit an existing task using the same task-form pattern as Create Task.",
 
@@ -109,13 +109,13 @@
           "component": "tag-selector",
           "placeholder": "Add tags...",
           "multiple": true,
+          "openAction": {
+            "action": "open-tag-selector",
+            "presentation": "bottom-sheet"
+          },
           "selectedDisplay": {
             "component": "chip-list",
             "removable": true
-          },
-          "addAction": {
-            "label": "Add tag",
-            "style": "dashed-chip"
           }
         },
         {
@@ -173,6 +173,14 @@
       ]
     },
 
+    "states": {
+      "tagSelectorOpen": {
+        "trigger": "form.sections.tags",
+        "spec": "./tag-selector-open.json",
+        "referenceImage": "../references/tag-selector-open.png"
+      }
+    },
+
     "visualRules": [
       "Use global design tokens from design-system.json.",
       "Do not define screen-specific colors, radii or arbitrary spacing.",
@@ -180,6 +188,7 @@
       "Edit and Create must use the same task-form composition and shared components.",
       "Populate all fields from the existing task.",
       "Images are attachments; the selected cover image is used on task tiles.",
+      "Tags have a single entry point. Use the Add tags selector to add or create tags; do not render a separate Add tag action beside selected tag chips.",
       "Do not show a trash/delete icon in the header.",
       "Do not show a clear-X control inside the title field.",
       "Deletion belongs to Task View options, not the Edit form."

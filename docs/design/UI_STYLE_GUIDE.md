@@ -515,7 +515,44 @@ Avoid glowing focus effects.
 
 ---
 
-## 16. Navigation
+## 16. Bottom Sheets
+
+Use a bottom sheet for contextual selection and short secondary flows on mobile.
+
+Typical uses:
+
+- selecting tags
+- selecting task status
+- choosing an item from a compact list
+- short contextual actions that should not navigate away from the current screen
+
+Bottom sheets:
+
+- open from the bottom of the viewport
+- use the elevated application surface
+- preserve the global spacing and typography system
+- may scroll vertically when content exceeds the available height
+- may be dismissed by tapping the backdrop or swiping down
+- should expose a close action when dismissal would otherwise be unclear
+
+Use the drag handle only when swipe-to-dismiss is supported.
+
+Do not use bottom sheets for:
+
+- primary navigation
+- large multi-step forms
+- content that deserves its own screen
+- decorative overlays
+
+Controls inside a bottom sheet must reuse existing components and tokens.
+
+Selected states use teal. Neutral actions remain neutral. Danger actions use the semantic danger color.
+
+Exact values come from `design-system.json` → `bottomSheet`.
+
+---
+
+## 17. Navigation
 
 Navigation uses the darkest surface in the application.
 
@@ -547,7 +584,7 @@ Do not animate navigation excessively.
 
 ---
 
-## 17. Header
+## 18. Header
 
 The header establishes page context.
 
@@ -567,7 +604,7 @@ Signed-in-not-synced is a status banner below the header, not a large header ico
 
 ---
 
-## 18. Content Layout
+## 19. Content Layout
 
 Brain Assistant is mobile-first.
 
@@ -594,7 +631,7 @@ Do not artificially force all cards to the same height.
 
 ---
 
-## 19. Interaction States
+## 20. Interaction States
 
 Every interactive component should support appropriate states:
 
@@ -611,7 +648,7 @@ Do not create a new visual language for individual components.
 
 ---
 
-## 20. AI Features
+## 21. AI Features
 
 AI is a capability of Brain Assistant.
 
@@ -635,7 +672,7 @@ Not to "an AI interface."
 
 ---
 
-## 21. Animation
+## 22. Animation
 
 Animations should communicate state or spatial relationships.
 
@@ -653,7 +690,7 @@ Avoid animation used purely for visual spectacle.
 
 ---
 
-## 22. How to design a new screen
+## 23. How to design a new screen
 
 When asking for a new mockup or implementing a new screen:
 
@@ -684,7 +721,7 @@ After a mockup is approved:
 
 ---
 
-## 23. DO
+## 24. DO
 
 DO:
 
@@ -702,7 +739,7 @@ DO:
 
 ---
 
-## 24. DON'T
+## 25. DON'T
 
 DON'T:
 
@@ -725,7 +762,7 @@ DON'T:
 
 ---
 
-## 25. AI Agent Rules
+## 26. AI Agent Rules
 
 When implementing or modifying UI:
 
@@ -756,7 +793,7 @@ If a genuinely new visual primitive is required, propose the addition before int
 
 ---
 
-## 26. Reference Visual Language
+## 27. Reference Visual Language
 
 The **approved** Home screen (`docs/design/screens/home.json` and `docs/design/references/home.png`) is the primary visual reference.
 
@@ -781,7 +818,7 @@ New screens should feel like they belong to the same application immediately.
 
 ---
 
-## 27. Final Check
+## 28. Final Check
 
 Before completing UI work, ask:
 
