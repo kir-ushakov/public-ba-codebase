@@ -7,7 +7,9 @@ import type { Task } from 'src/app/shared/models/task.model';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
+import { TAG_COLOR } from 'src/app/shared/models/tag.model';
 import { AppState } from 'src/app/shared/state/app.state';
+import { TagsState } from 'src/app/shared/state/tags.state';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { EUserAuthState, UserState } from 'src/app/shared/state/user.state';
 
@@ -28,6 +30,7 @@ const lampTask: Task = {
   userId,
   type: ETaskType.Basic,
   title: 'Lamp photo',
+  tagIds: ['tag-errands', 'tag-other-user'],
   status: ETaskStatus.Todo,
   createdAt: '2026-09-11T10:00:00.000Z',
   modifiedAt: '2026-09-11T10:00:00.000Z',
@@ -41,7 +44,7 @@ describe('HomeScreenComponent search', () => {
       imports: [HomeScreenComponent],
       providers: [
         provideRouter([]),
-        provideStore([AppState, TasksState, UserState]),
+        provideStore([AppState, TasksState, TagsState, UserState]),
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
         {
@@ -58,6 +61,26 @@ describe('HomeScreenComponent search', () => {
     store.reset({
       app: { online: false },
       tasks: { entities: [catTask, lampTask] },
+      tags: {
+        entities: [
+          {
+            id: 'tag-errands',
+            userId,
+            name: 'Errands',
+            color: TAG_COLOR,
+            createdAt: '2026-09-10T10:00:00.000Z',
+            modifiedAt: '2026-09-10T10:00:00.000Z',
+          },
+          {
+            id: 'tag-other-user',
+            userId: 'someone-else',
+            name: 'Secret',
+            color: TAG_COLOR,
+            createdAt: '2026-09-10T10:00:00.000Z',
+            modifiedAt: '2026-09-10T10:00:00.000Z',
+          },
+        ],
+      },
       user: {
         userData: {
           firstName: 'Test',
@@ -99,6 +122,26 @@ describe('HomeScreenComponent search', () => {
     expect(tileText(host)).not.toContain('Lamp photo');
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain('2 items');
     expect(host.querySelector('[data-test="home-search-clear"]')).not.toBeNull();
+  });
+
+  it('keeps a tile when the query matches its tag name', () => {
+    const host = openSearch(fixture);
+
+    typeQuery(fixture, 'errand');
+
+    expect(tileText(host)).toContain('Lamp photo');
+    expect(tileText(host)).not.toContain('Buy cat food');
+  });
+
+  it('ignores a tag that belongs to another user', () => {
+    const host = openSearch(fixture);
+
+    typeQuery(fixture, 'secret');
+
+    expect(host.querySelector('[data-test="task-tile"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-search-empty"]')?.textContent).toContain(
+      'No results',
+    );
   });
 
   it('shows a plain empty line when nothing matches', () => {
