@@ -118,16 +118,11 @@
         },
 
         "layout": {
-          "order": ["add-action", "images"]
+          "order": ["images"]
         },
 
         "addAction": {
-          "enabled": true,
-          "component": "add-image-tile",
-          "label": "Add photo",
-          "icon": "add",
-          "action": "add-task-image",
-          "position": "first"
+          "enabled": false
         },
 
         "image": {
@@ -137,6 +132,7 @@
 
         "cover": {
           "source": "task.coverImageId",
+          "selectableOnClick": false,
           "badge": {
             "label": "Cover"
           }
@@ -148,7 +144,7 @@
           "icon": "more_vert"
         },
 
-        "visibility": "when-images-present-or-add-action-available"
+        "visibility": "always"
       },
 
       "tags": {
@@ -360,11 +356,10 @@
       "Do not duplicate Mark as Active or Done in the header options menu.",
 
       "Images are displayed as a gallery rather than as a single cover-only media block.",
-      "The Add photo tile is always the first item in the image gallery, before all existing image attachments.",
-      "The image count includes attached images only and does not include the Add photo tile.",
+      "Task View does not show an Add photo tile. New images are added only in Edit.",
+      "The image count includes attached images only.",
       "The cover image is one of the task attachments and is identified by a Cover badge.",
-      "Task View may add images without entering full Edit mode.",
-      "Adding an image does not make the rest of Task View editable.",
+      "Clicking an image in Task View does not change the cover.",
 
       "Tags are read-only chips in Task View, but tags may be added through the dedicated Add tag action.",
 
@@ -393,7 +388,7 @@
     },
 
     "angular": {
-      "note": "The live Task View does not yet match this spec. Treat this JSON as the approved target. ETaskType.Basic stays TASK_TYPE_BASIC and is presented as To do. Location and Calendar are additional product task types represented by the same task-type chip pattern. Task type is not editable from Task View. Task View title and description are read-only. Task View has no Status section and no status selector. Mark as Active and Done are the only status actions on this screen. To do tasks do not display due-date, calendar or location-trigger information, and they omit the quick properties section. Calendar tasks display scheduling information below the title and expose Due date as a quick property. Location tasks display the configured location below the title and expose Location as a quick property. Tags, multiple image attachments, cover-image selection, Active status, Duplicate and additional task types may be product destinations rather than current wire capabilities. The Add photo tile is rendered before existing image attachments. The bottom of Task View contains task-state actions instead of the global Home/Tasks/Tags navigation.",
+      "note": "The live Task View does not yet match this spec. Treat this JSON as the approved target. ETaskType.Basic stays TASK_TYPE_BASIC and is presented as To do. Location and Calendar are additional product task types represented by the same task-type chip pattern. Task type is not editable from Task View. Task View title and description are read-only. Task View has no Status section and no status selector. Mark as Active and Done are the only status actions on this screen. To do tasks do not display due-date, calendar or location-trigger information, and they omit the quick properties section. Calendar tasks display scheduling information below the title and expose Due date as a quick property. Location tasks display the configured location below the title and expose Location as a quick property. Tags, multiple image attachments, Active status, Duplicate and additional task types may be product destinations rather than current wire capabilities. Task View does not offer Add photo or cover switching on click. The bottom of Task View contains task-state actions instead of the global Home/Tasks/Tags navigation.",
 
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
 

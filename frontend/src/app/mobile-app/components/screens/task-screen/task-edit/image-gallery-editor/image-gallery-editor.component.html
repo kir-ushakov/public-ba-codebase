@@ -6,10 +6,12 @@
     }
   </div>
   <div class="images-row">
-    <button class="add-image" type="button" data-test="add-image-btn" (click)="onAddImage()">
-      <span class="material-symbols-rounded" aria-hidden="true">{{ addIcon() }}</span>
-      {{ addLabel() }}
-    </button>
+    @if (!isView()) {
+      <button class="add-image" type="button" data-test="add-image-btn" (click)="onAddImage()">
+        <span class="material-symbols-rounded" aria-hidden="true">image</span>
+        Add image
+      </button>
+    }
     @for (image of images(); track image.key) {
       <div class="image-tile" data-test="task-image-tile" [class.is-cover]="image.isCover">
         @if (image.previewUrl) {
@@ -28,14 +30,16 @@
             COVER
           </span>
         }
-        <button
-          class="image-select"
-          type="button"
-          data-test="task-image-select"
-          [attr.aria-pressed]="image.isCover"
-          [attr.aria-label]="image.isCover ? 'Cover image' : 'Set as cover'"
-          (click)="onSelectCover(image)"
-        ></button>
+        @if (!isView()) {
+          <button
+            class="image-select"
+            type="button"
+            data-test="task-image-select"
+            [attr.aria-pressed]="image.isCover"
+            [attr.aria-label]="image.isCover ? 'Cover image' : 'Set as cover'"
+            (click)="onSelectCover(image)"
+          ></button>
+        }
         <button
           class="image-remove"
           type="button"

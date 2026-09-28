@@ -133,7 +133,7 @@ describe('TaskViewComponent title', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('[contenteditable]')).toBeNull();
   });
 
-  it('shows Add photo before the attached images', () => {
+  it('shows attached images without an add button or cover switching', () => {
     const store = TestBed.inject(Store);
     store.reset({
       tags: { entities: [] },
@@ -161,22 +161,15 @@ describe('TaskViewComponent title', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    const addButton = host.querySelector('[data-test="add-image-btn"]');
-    const firstTile = host.querySelector('[data-test="task-image-tile"]');
 
     expect(host.querySelector('[data-test="task-images-section"]')?.textContent).toContain(
       'Images (2)',
     );
-    expect(addButton?.textContent).toContain('Add photo');
+    expect(host.querySelector('[data-test="add-image-btn"]')).toBeNull();
     expect(host.querySelectorAll('[data-test="task-image-tile"]').length).toBe(2);
     expect(host.querySelector('[data-test="task-image-cover"]')?.textContent).toContain('COVER');
-    expect(host.querySelectorAll('[data-test="task-image-select"]').length).toBe(2);
+    expect(host.querySelectorAll('[data-test="task-image-select"]').length).toBe(0);
     expect(host.querySelectorAll('[data-test="task-image-remove"]').length).toBe(2);
-    expect(
-      addButton !== null &&
-        firstTile !== null &&
-        (addButton.compareDocumentPosition(firstTile) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
-    ).toBe(true);
   });
 
   it('shows read-only tags and an Add tag button instead of the create selector', () => {

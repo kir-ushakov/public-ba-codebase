@@ -47,19 +47,6 @@ export class TaskViewComponent {
     );
   }
 
-  addPhoto(): void {
-    this.store.dispatch(TaskScreenAction.AddPictureBtnPressed);
-  }
-
-  imageSelectedAsCover(image: GalleryImage): void {
-    this.store.dispatch(
-      new TaskScreenAction.ImageSelectedAsCover({
-        imageId: image.imageId,
-        previewUrl: image.previewUrl,
-      }),
-    );
-  }
-
   tagsChanged(tagIds: string[]): void {
     this.store.dispatch(new TaskScreenAction.TagIdsChanged(tagIds));
   }
