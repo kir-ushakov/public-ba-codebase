@@ -5,27 +5,28 @@ import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { distinctUntilChanged, map, tap } from 'rxjs/operators';
 import { TaskScreenState } from '../task-screen.state';
-import type { DefaultTask, Task } from 'src/app/shared/models/task.model';
+import type { DefaultTask, Task, TaskDescriptionDoc } from 'src/app/shared/models/task.model';
 import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
 import { ImageService } from 'src/app/shared/services/application/image.service';
-import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/rich-text-editor/rich-text-editor.component';
+import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-description.function';
 import { TaskTypeChipComponent } from '../task-type-chip/task-type-chip.component';
+import { renderTaskDescriptionHtml } from './helpers/render-task-description-html.function';
+
+type TaskViewContent = {
+  task: Task | DefaultTask;
+  descriptionHtml: string;
+};
 
 @Component({
   selector: 'ba-task-view',
-  imports: [
-    CommonModule,
-    ImageSrcPipe,
-    SpinnerComponent,
-    RichTextEditorComponent,
-    TaskTypeChipComponent,
-  ],
+  imports: [CommonModule, ImageSrcPipe, SpinnerComponent, TaskTypeChipComponent],
   templateUrl: './task-view.component.html',
   styleUrl: './task-view.component.scss',
 })
 export class TaskViewComponent implements OnInit {
   task$: Observable<Task | DefaultTask>;
+  view$: Observable<TaskViewContent>;
 
   private currentImageId: string | null = null;
   isImageLoading = signal(true);
@@ -36,6 +37,12 @@ export class TaskViewComponent implements OnInit {
     private imageService: ImageService,
   ) {
     this.task$ = this.store.select(TaskScreenState.task);
+    this.view$ = this.task$.pipe(
+      map(task => ({
+        task,
+        descriptionHtml: descriptionHtml(task.description),
+      })),
+    );
   }
 
   ngOnInit(): void {
@@ -67,4 +74,12 @@ export class TaskViewComponent implements OnInit {
       this.imageService.probeRemoteImage(imageId);
     }
   }
+}
+
+function descriptionHtml(description: TaskDescriptionDoc | undefined): string {
+  if (description === undefined || isEmptyTaskDescription(description)) {
+    return '';
+  }
+
+  return renderTaskDescriptionHtml(description);
 }

@@ -1,16 +1,14 @@
-@let task = task$ | async;
-@if (task) {
-  <ba-task-type-chip [type]="task.type" />
-  <h2 class="task-title" data-test="task-view-title">{{ task.title }}</h2>
-  @if (task.description; as description) {
-    <ba-rich-text-editor
-      class="task-description"
-      [readonly]="true"
-      [content]="description"
-      data-test="task-view-description"
-    />
+@let view = view$ | async;
+@if (view) {
+  <ba-task-type-chip [type]="view.task.type" />
+  <h2 class="task-title" data-test="task-view-title">{{ view.task.title }}</h2>
+  @if (view.descriptionHtml) {
+    <section class="description-card" data-test="task-view-description">
+      <p class="description-label">Description</p>
+      <div class="description-body" [innerHTML]="view.descriptionHtml"></div>
+    </section>
   }
-  @if (task.imageId; as imageId) {
+  @if (view.task.imageId; as imageId) {
     <div class="task-picture-holder">
       @if (isImageLoading()) {
         <div class="task-picture-spinner">

@@ -56,4 +56,67 @@ describe('TaskViewComponent title', () => {
     expect(title?.tagName).toBe('H2');
     expect(title?.querySelector('input, textarea')).toBeNull();
   });
+
+  it('hides the description card when the task has no description', () => {
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('[data-test="task-view-description"]'),
+    ).toBeNull();
+  });
+
+  it('shows the description as read-only text inside a card', () => {
+    const store = TestBed.inject(Store);
+    store.reset({
+      taskViewState: {
+        mode: ETaskViewMode.View,
+        taskViewForm: {
+          formData: { title: '', description: null },
+          status: false,
+        },
+        taskData: {
+          id: 'task-1',
+          userId: 'user-1',
+          type: ETaskType.Basic,
+          title: 'Buy cat food',
+          status: ETaskStatus.Todo,
+          description: {
+            type: 'doc',
+            content: [
+              {
+                type: 'paragraph',
+                content: [
+                  { type: 'text', text: 'Remember to buy the usual dry food for the cat.' },
+                ],
+              },
+              {
+                type: 'paragraph',
+                content: [
+                  {
+                    type: 'text',
+                    text: 'Check if they have the new salmon variant.',
+                    marks: [{ type: 'bold' }],
+                  },
+                ],
+              },
+            ],
+          },
+          createdAt: '2020-01-15T12:00:00.000Z',
+          modifiedAt: '2020-01-15T12:00:00.000Z',
+        },
+        draftImages: [],
+      },
+    });
+    fixture.detectChanges();
+
+    const card = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-test="task-view-description"]',
+    );
+
+    expect(card?.textContent).toContain('Description');
+    expect(card?.textContent).toContain('Remember to buy the usual dry food for the cat.');
+    expect(card?.querySelector('strong')?.textContent).toContain('salmon variant');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('[data-test="task-description-editor"]'),
+    ).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[contenteditable]')).toBeNull();
+  });
 });

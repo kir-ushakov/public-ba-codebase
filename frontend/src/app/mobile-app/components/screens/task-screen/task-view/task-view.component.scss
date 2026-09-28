@@ -6,9 +6,58 @@
   line-height: var(--typography-page-title-line-height);
 }
 
-.task-description {
-  display: block;
-  margin-top: 1rem;
+.description-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin: 0 0 var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-surface-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+}
+
+.description-label {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--typography-secondary-size);
+  font-weight: var(--typography-secondary-weight);
+  line-height: var(--typography-secondary-line-height);
+}
+
+.description-body {
+  color: var(--color-text-primary);
+  font-size: var(--typography-body-size);
+  font-weight: var(--typography-body-weight);
+  line-height: var(--typography-body-line-height);
+  overflow-wrap: break-word;
+}
+
+:host ::ng-deep .description-body {
+  p,
+  ul,
+  ol {
+    margin: 0 0 var(--spacing-sm);
+  }
+
+  p:last-child,
+  ul:last-child,
+  ol:last-child {
+    margin-bottom: 0;
+  }
+
+  li > p {
+    margin: 0;
+  }
+
+  ul,
+  ol {
+    padding-left: var(--spacing-lg);
+  }
+
+  a {
+    color: var(--color-accent-primary);
+  }
 }
 
 .task-picture-holder {
