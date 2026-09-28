@@ -105,6 +105,52 @@
   }
 }
 
+.add-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin: 0;
+  padding: var(--spacing-xs) var(--spacing-md);
+  appearance: none;
+  background: transparent;
+  border: 1px dashed var(--color-border-default);
+  border-radius: var(--radius-default);
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: var(--typography-caption-size);
+  font-weight: var(--typography-caption-weight);
+  line-height: var(--typography-caption-line-height);
+  cursor: pointer;
+
+  .material-symbols-rounded {
+    color: var(--color-icon-default);
+    font-size: var(--typography-caption-size);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--color-accent-primary);
+    outline-offset: var(--spacing-xs);
+  }
+}
+
+.tags-section.is-inline {
+  .selected-tag {
+    background: var(--color-surface-elevated);
+    border-color: transparent;
+    border-radius: var(--radius-large);
+  }
+
+  .add-tag {
+    background: transparent;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-large);
+  }
+}
+
 .search-field {
   display: flex;
   align-items: center;

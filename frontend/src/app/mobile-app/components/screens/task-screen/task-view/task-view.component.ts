@@ -9,6 +9,7 @@ import type { DefaultTask, Task, TaskDescriptionDoc } from 'src/app/shared/model
 import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-description.function';
 import { TaskTypeChipComponent } from '../task-type-chip/task-type-chip.component';
 import { ImageGalleryEditorComponent } from '../task-edit/image-gallery-editor/image-gallery-editor.component';
+import { TagSelectorComponent } from '../task-edit/tag-selector/tag-selector.component';
 import {
   toGalleryImages,
   type GalleryImage,
@@ -22,7 +23,7 @@ type TaskViewContent = {
 
 @Component({
   selector: 'ba-task-view',
-  imports: [CommonModule, TaskTypeChipComponent, ImageGalleryEditorComponent],
+  imports: [CommonModule, TaskTypeChipComponent, ImageGalleryEditorComponent, TagSelectorComponent],
   templateUrl: './task-view.component.html',
   styleUrl: './task-view.component.scss',
 })

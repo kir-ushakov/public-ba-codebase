@@ -163,4 +163,13 @@ describe('TaskViewComponent title', () => {
         (addButton.compareDocumentPosition(firstTile) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
     ).toBe(true);
   });
+
+  it('shows read-only tags and an Add tag button instead of the create selector', () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-test="task-tags-selector"]')).toBeNull();
+    expect(host.querySelector('[data-test="task-tags-add"]')?.textContent).toContain('Add tag');
+    expect(host.querySelector('[data-test="selected-tag-remove"]')).toBeNull();
+    expect(host.querySelector('[data-test="selected-tags"]')?.textContent).toContain('Work');
+  });
 });
