@@ -1,5 +1,6 @@
 import { Component, computed, inject, Input, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { Observable } from 'rxjs';
 import { Store } from '@ngxs/store';
 import { TaskScreenAction } from 'src/app/mobile-app/components/screens/task-screen/task-screen.actions';
@@ -21,14 +22,23 @@ export class TaskBottomPanelComponent {
   readonly submitLabel = computed(() =>
     this.mode() === ETaskViewMode.Edit ? 'Save Changes' : 'Create Task',
   );
+  readonly showMarkActive = computed(
+    () =>
+      this.mode() === ETaskViewMode.View &&
+      this.task().type === ETaskType.Basic &&
+      this.task().status === ETaskStatus.Todo,
+  );
+  readonly showMarkDone = computed(
+    () => this.mode() === ETaskViewMode.View && this.task().status !== ETaskStatus.Done,
+  );
 
   isEditFormValid$: Observable<boolean> = inject(Store).select(TaskScreenState.isEditFormValid);
 
   ETaskViewMode = ETaskViewMode;
 
-  constructor(private store: Store) {}
+  private readonly task = this.store.selectSignal(TaskScreenState.task);
 
-  ngOnInit() {}
+  constructor(private store: Store) {}
 
   cancelChanges(): void {
     this.store.dispatch(TaskScreenAction.CancelButtonPressed);
@@ -38,7 +48,11 @@ export class TaskBottomPanelComponent {
     this.store.dispatch(TaskScreenAction.ApplyButtonPressed);
   }
 
-  goHome() {
-    this.store.dispatch(TaskScreenAction.HomeButtonPressed);
+  markActive(): void {
+    this.store.dispatch(TaskScreenAction.MarkActiveButtonPressed);
+  }
+
+  markDone(): void {
+    this.store.dispatch(TaskScreenAction.MarkDoneButtonPressed);
   }
 }

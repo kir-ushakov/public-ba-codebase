@@ -508,6 +508,61 @@ describe('TaskScreenState', () => {
     expect(updated?.images).toEqual([]);
   });
 
+  it('marks a viewed task active and closes the view', async () => {
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.MarkActiveButtonPressed));
+
+    const updated = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => task.id === existingWithPhoto.id);
+    expect(updated?.status).toBe(ETaskStatus.Active);
+    expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.Create);
+    expect(
+      store.selectSnapshot(TasksState.actualTasks).some(task => task.id === existingWithPhoto.id),
+    ).toBe(true);
+  });
+
+  it('does not mark a calendar task active', async () => {
+    const calendarTask: Task = {
+      ...existingWithPhoto,
+      id: 'task-calendar',
+      type: ETaskType.Calendar,
+    };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [existingWithPhoto, calendarTask] },
+    });
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, calendarTask.id)),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.MarkActiveButtonPressed));
+
+    const updated = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => task.id === calendarTask.id);
+    expect(updated?.status).toBe(ETaskStatus.Todo);
+    expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.View);
+  });
+
+  it('marks a viewed task done and drops it from the active list', async () => {
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.MarkDoneButtonPressed));
+
+    const updated = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => task.id === existingWithPhoto.id);
+    expect(updated?.status).toBe(ETaskStatus.Done);
+    expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.Create);
+    expect(
+      store.selectSnapshot(TasksState.actualTasks).some(task => task.id === existingWithPhoto.id),
+    ).toBe(false);
+  });
+
   async function saveCreatedTaskWithTwoPhotos(
     action: TaskScreenAction.DraftImageRemoved,
   ): Promise<Task | undefined> {

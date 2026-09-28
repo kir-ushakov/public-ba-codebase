@@ -184,7 +184,7 @@
           "icon": "play_arrow",
           "style": "secondary",
           "action": "mark-task-active",
-          "visibility": "when-status-is-todo"
+          "visibility": "when-type-is-basic-and-status-is-todo"
         },
         {
           "id": "mark-done",
@@ -369,7 +369,10 @@
       "Tags are read-only chips in Task View, but tags may be added through the dedicated Add tag action.",
 
       "The sticky bottom action bar contains focused task-state actions rather than global application navigation.",
-      "For a task in To do status, Mark as Active is displayed on the left and Done on the right.",
+      "Mark as Active and Done save the new status and close Task View.",
+      "Mark as Active is shown only for a Basic (To do) task that is still in To do status.",
+      "Calendar and Location tasks do not show Mark as Active.",
+      "For a Basic task in To do status, Mark as Active is displayed on the left and Done on the right.",
       "Mark as Active uses the secondary action treatment.",
       "Done uses the primary action treatment.",
       "The two bottom actions share the available width.",
