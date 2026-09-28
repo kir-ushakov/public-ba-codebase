@@ -10,7 +10,7 @@
     "styleGuide": "../UI_STYLE_GUIDE.md",
 
     "status": "approved",
-    "implementationStatus": "spec-only",
+    "implementationStatus": "implemented",
 
     "parentState": "tag-selector-open",
 

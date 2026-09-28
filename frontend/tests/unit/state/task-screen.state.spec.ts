@@ -121,6 +121,26 @@ describe('TaskScreenState', () => {
     expect(created?.status).toBe(ETaskStatus.Todo);
   });
 
+  it('attaches selected tag ids when creating a task', async () => {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Tagged task',
+          description: null,
+          tagIds: ['tag-1'],
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const created = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(t => t.id !== existingWithPhoto.id);
+
+    expect(created?.tagIds).toEqual(['tag-1']);
+  });
+
   it('creates an Active task when the form status is Active', async () => {
     await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
     await firstValueFrom(

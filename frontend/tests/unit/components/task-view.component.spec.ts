@@ -8,6 +8,12 @@ import {
 } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
+import { AuthService } from 'src/app/shared/services/api/auth.service';
+import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
+import { SlackService } from 'src/app/shared/services/integrations/slack.service';
+import { TAG_COLOR } from 'src/app/shared/models/tag.model';
+import { TagsState } from 'src/app/shared/state/tags.state';
+import { UserState } from 'src/app/shared/state/user.state';
 
 describe('TaskViewComponent title', () => {
   let fixture: ComponentFixture<TaskViewComponent>;
@@ -16,14 +22,19 @@ describe('TaskViewComponent title', () => {
     await TestBed.configureTestingModule({
       imports: [TaskViewComponent],
       providers: [
-        provideStore([TaskScreenState]),
+        provideStore([TaskScreenState, TagsState, UserState]),
         { provide: ImageService, useValue: {} },
         { provide: DeviceCameraService, useValue: {} },
+        { provide: AuthService, useValue: {} },
+        { provide: SlackService, useValue: {} },
+        { provide: GoogleOAuthConsentService, useValue: {} },
       ],
     }).compileComponents();
 
     const store = TestBed.inject(Store);
     store.reset({
+      tags: { entities: [] },
+      user: viewUser(),
       taskViewState: {
         mode: ETaskViewMode.View,
         taskViewForm: {
@@ -66,6 +77,8 @@ describe('TaskViewComponent title', () => {
   it('shows the description as read-only text inside a card', () => {
     const store = TestBed.inject(Store);
     store.reset({
+      tags: { entities: [] },
+      user: viewUser(),
       taskViewState: {
         mode: ETaskViewMode.View,
         taskViewForm: {
@@ -123,6 +136,8 @@ describe('TaskViewComponent title', () => {
   it('shows Add photo before the attached images', () => {
     const store = TestBed.inject(Store);
     store.reset({
+      tags: { entities: [] },
+      user: viewUser(),
       taskViewState: {
         mode: ETaskViewMode.View,
         taskViewForm: {
@@ -170,6 +185,64 @@ describe('TaskViewComponent title', () => {
     expect(host.querySelector('[data-test="task-tags-selector"]')).toBeNull();
     expect(host.querySelector('[data-test="task-tags-add"]')?.textContent).toContain('Add tag');
     expect(host.querySelector('[data-test="selected-tag-remove"]')).toBeNull();
-    expect(host.querySelector('[data-test="selected-tags"]')?.textContent).toContain('Work');
+    expect(host.querySelector('[data-test="selected-tag"]')).toBeNull();
+  });
+
+  it('shows the tags saved on the task', () => {
+    const store = TestBed.inject(Store);
+    store.reset({
+      tags: {
+        entities: [
+          {
+            id: 'tag-errands',
+            userId: 'user-1',
+            name: 'Errands',
+            color: TAG_COLOR,
+            createdAt: '2020-01-15T12:00:00.000Z',
+            modifiedAt: '2020-01-15T12:00:00.000Z',
+          },
+        ],
+      },
+      user: viewUser(),
+      taskViewState: {
+        mode: ETaskViewMode.View,
+        taskViewForm: {
+          formData: { title: '', description: null },
+          status: false,
+        },
+        taskData: {
+          id: 'task-1',
+          userId: 'user-1',
+          type: ETaskType.Basic,
+          title: 'Buy cat food',
+          status: ETaskStatus.Todo,
+          tagIds: ['tag-errands'],
+          createdAt: '2020-01-15T12:00:00.000Z',
+          modifiedAt: '2020-01-15T12:00:00.000Z',
+        },
+        draftImages: [],
+      },
+    });
+    fixture.detectChanges();
+
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('[data-test="selected-tag"]')
+        ?.textContent,
+    ).toContain('Errands');
   });
 });
+
+function viewUser() {
+  return {
+    userData: {
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@example.com',
+      userId: 'user-1',
+      googleId: 'g-1',
+    },
+    authState: null,
+    authType: undefined,
+    integrations: { isAddedToSlack: undefined },
+  };
+}

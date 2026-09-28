@@ -15,5 +15,9 @@
     (selectCover)="imageSelectedAsCover($event)"
     (removeImage)="draftImageRemoved($event)"
   />
-  <ba-tag-selector presentation="inline" />
+  <ba-tag-selector
+    presentation="inline"
+    [selectedIds]="view.task.tagIds ?? []"
+    (selectedIdsChange)="tagsChanged($event)"
+  />
 }

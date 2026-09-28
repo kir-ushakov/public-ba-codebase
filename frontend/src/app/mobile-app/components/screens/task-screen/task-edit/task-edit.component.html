@@ -34,7 +34,11 @@
       (selectCover)="imageSelectedAsCover($event)"
       (removeImage)="draftImageRemoved($event)"
     />
-    <ba-tag-selector [showSelectedTags]="showSelectedTags()" />
+    <ba-tag-selector
+      [showSelectedTags]="showSelectedTags()"
+      [selectedIds]="tagIds()"
+      (selectedIdsChange)="onTagIdsChange($event)"
+    />
     <ba-status-selector formControlName="status" />
   </form>
 </div>

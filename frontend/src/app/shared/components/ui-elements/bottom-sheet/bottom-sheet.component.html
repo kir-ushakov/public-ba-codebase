@@ -23,8 +23,24 @@
   >
     <span class="handle" aria-hidden="true"></span>
   </div>
-  <header class="sheet-header">
-    <h2 class="sheet-title" id="bottom-sheet-title" data-test="bottom-sheet-title">
+  <header class="sheet-header" [class.has-back]="showBack()">
+    @if (showBack()) {
+      <button
+        class="close"
+        type="button"
+        data-test="bottom-sheet-back"
+        aria-label="Back"
+        (click)="onBackClick()"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>
+      </button>
+    }
+    <h2
+      class="sheet-title"
+      id="bottom-sheet-title"
+      data-test="bottom-sheet-title"
+      [class.is-centered]="showBack()"
+    >
       {{ title() }}
     </h2>
     <button

@@ -4,4 +4,5 @@ export type ITaskEditFormData = {
   title?: string;
   description?: TaskDescriptionDoc | null;
   status?: ETaskStatus;
+  tagIds?: string[];
 };

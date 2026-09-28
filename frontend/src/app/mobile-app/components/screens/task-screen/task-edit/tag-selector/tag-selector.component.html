@@ -3,7 +3,7 @@
   @if (isInline()) {
     <div class="selected-tags" data-test="selected-tags">
       @for (tag of selectedTags(); track tag.id) {
-        <span class="selected-tag" data-test="selected-tag">{{ tag.label }}</span>
+        <span class="selected-tag" data-test="selected-tag">{{ tag.name }}</span>
       }
       <button class="add-tag" type="button" data-test="task-tags-add" (click)="openSheet()">
         <span class="material-symbols-rounded" aria-hidden="true">add</span>
@@ -20,12 +20,12 @@
       <div class="selected-tags" data-test="selected-tags">
         @for (tag of selectedTags(); track tag.id) {
           <span class="selected-tag" data-test="selected-tag">
-            {{ tag.label }}
+            {{ tag.name }}
             <button
               class="selected-tag-remove"
               type="button"
               data-test="selected-tag-remove"
-              [attr.aria-label]="'Remove ' + tag.label"
+              [attr.aria-label]="'Remove ' + tag.name"
               (click)="toggleTag(tag.id)"
             >
               <span class="material-symbols-rounded" aria-hidden="true">close</span>
@@ -37,39 +37,78 @@
   }
 </section>
 @if (open()) {
-  <ba-bottom-sheet title="Select tags" (dismissed)="closeSheet()">
-    <label class="search-field">
-      <span class="material-symbols-rounded" aria-hidden="true">search</span>
-      <input
-        class="search-input"
-        type="text"
-        data-test="tag-selector-search"
-        placeholder="Search tags..."
-        aria-label="Search tags"
-        [value]="query()"
-        (input)="onQueryInput($event)"
-      />
-    </label>
-    <div class="tag-list" data-test="tag-selector-list">
-      @for (tag of visibleTags(); track tag.id) {
-        <button
-          class="tag-chip"
-          type="button"
-          data-test="tag-chip"
-          [class.is-selected]="tag.selected"
-          [attr.aria-pressed]="tag.selected"
-          (click)="toggleTag(tag.id)"
-        >
-          @if (tag.selected) {
-            <span class="material-symbols-rounded" aria-hidden="true">check</span>
-          }
-          {{ tag.label }}
-        </button>
-      }
-    </div>
-    <button class="create-tag" type="button" data-test="create-new-tag">
-      <span class="material-symbols-rounded" aria-hidden="true">add</span>
-      Create new tag
-    </button>
+  <ba-bottom-sheet
+    [title]="sheetTitle()"
+    [showBack]="creating()"
+    (dismissed)="closeSheet()"
+    (back)="closeCreate()"
+  >
+    @if (creating()) {
+      <label class="name-field">
+        <span class="field-label">Tag name</span>
+        <span class="name-control">
+          <input
+            class="name-input"
+            type="text"
+            data-test="new-tag-name"
+            placeholder="Enter tag name..."
+            autofocus
+            [attr.maxlength]="nameMaxLength"
+            [value]="draftName()"
+            (input)="onNameInput($event)"
+            (keydown)="onNameKeydown($event)"
+          />
+          <span class="character-count" data-test="new-tag-count">
+            {{ nameLength() }}/{{ nameMaxLength }}
+          </span>
+        </span>
+      </label>
+      <p class="helper" data-test="new-tag-helper">
+        Use a short name that helps you find this tag later.
+      </p>
+      <button
+        class="create-submit"
+        type="button"
+        data-test="new-tag-submit"
+        [disabled]="!nameValid()"
+        (click)="createTag()"
+      >
+        Create tag
+      </button>
+    } @else {
+      <label class="search-field">
+        <span class="material-symbols-rounded" aria-hidden="true">search</span>
+        <input
+          class="search-input"
+          type="text"
+          data-test="tag-selector-search"
+          placeholder="Search tags..."
+          aria-label="Search tags"
+          [value]="query()"
+          (input)="onQueryInput($event)"
+        />
+      </label>
+      <div class="tag-list" data-test="tag-selector-list">
+        @for (tag of visibleTags(); track tag.id) {
+          <button
+            class="tag-chip"
+            type="button"
+            data-test="tag-chip"
+            [class.is-selected]="tag.selected"
+            [attr.aria-pressed]="tag.selected"
+            (click)="toggleTag(tag.id)"
+          >
+            @if (tag.selected) {
+              <span class="material-symbols-rounded" aria-hidden="true">check</span>
+            }
+            {{ tag.name }}
+          </button>
+        }
+      </div>
+      <button class="create-tag" type="button" data-test="create-new-tag" (click)="openCreate()">
+        <span class="material-symbols-rounded" aria-hidden="true">add</span>
+        Create new tag
+      </button>
+    }
   </ba-bottom-sheet>
 }

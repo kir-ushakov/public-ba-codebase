@@ -237,6 +237,100 @@
   }
 }
 
+.name-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.name-control {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: var(--input-height);
+  padding-right: var(--spacing-md);
+  background: var(--color-surface-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+
+  &:focus-within {
+    border-color: var(--color-accent-primary);
+  }
+}
+
+.name-input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--input-height);
+  margin: 0;
+  padding: 0 var(--spacing-sm) 0 var(--spacing-md);
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: var(--typography-body-size);
+  font-weight: var(--typography-body-weight);
+  line-height: var(--typography-body-line-height);
+
+  &::placeholder {
+    color: var(--color-text-tertiary);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.character-count {
+  flex-shrink: 0;
+  margin: 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--typography-caption-size);
+  font-weight: var(--typography-caption-weight);
+  line-height: var(--typography-caption-line-height);
+}
+
+.helper {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--typography-secondary-size);
+  font-weight: var(--typography-secondary-weight);
+  line-height: var(--typography-secondary-line-height);
+}
+
+.create-submit {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--button-min-height);
+  margin: 0;
+  padding: 0 var(--spacing-lg);
+  appearance: none;
+  background: var(--color-accent-primary);
+  border: 0;
+  border-radius: var(--radius-default);
+  color: var(--color-accent-on-accent);
+  font-family: inherit;
+  font-size: var(--typography-body-size);
+  font-weight: var(--typography-body-weight);
+  line-height: var(--typography-body-line-height);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--color-accent-primary);
+    outline-offset: var(--spacing-xs);
+  }
+}
+
 .create-tag {
   display: flex;
   align-items: center;

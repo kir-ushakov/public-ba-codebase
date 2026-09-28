@@ -12,6 +12,7 @@ import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { AppState } from 'src/app/shared/state/app.state';
+import { TagsState } from 'src/app/shared/state/tags.state';
 import { UserState } from 'src/app/shared/state/user.state';
 
 describe('TaskEditComponent title field', () => {
@@ -21,7 +22,7 @@ describe('TaskEditComponent title field', () => {
     await TestBed.configureTestingModule({
       imports: [TaskEditComponent],
       providers: [
-        provideStore([TaskScreenState, VoiceInputState, UserState, AppState]),
+        provideStore([TaskScreenState, VoiceInputState, UserState, AppState, TagsState]),
         { provide: ImageService, useValue: {} },
         { provide: DeviceCameraService, useValue: {} },
         { provide: VoiceRecordingFacade, useValue: {} },
@@ -60,8 +61,7 @@ describe('TaskEditComponent title field', () => {
     expect(host.querySelector('[data-test="task-tags-selector"]')?.textContent).toContain(
       'Add tags...',
     );
-    expect(host.querySelector('[data-test="selected-tags"]')?.textContent).toContain('Work');
-    expect(host.querySelector('[data-test="selected-tags"]')?.textContent).toContain('Ideas');
+    expect(host.querySelector('[data-test="selected-tags"]')).toBeNull();
     expect(host.querySelector('[data-test="task-status-section"]')?.textContent).toContain(
       'Status',
     );

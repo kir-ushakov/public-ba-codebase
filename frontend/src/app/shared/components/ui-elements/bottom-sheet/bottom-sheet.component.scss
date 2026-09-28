@@ -56,6 +56,11 @@
   justify-content: space-between;
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
+
+  &.has-back {
+    display: grid;
+    grid-template-columns: var(--icon-size-default) minmax(0, 1fr) var(--icon-size-default);
+  }
 }
 
 .sheet-title {
@@ -64,6 +69,10 @@
   font-size: var(--typography-section-title-size);
   font-weight: var(--typography-section-title-weight);
   line-height: var(--typography-section-title-line-height);
+
+  &.is-centered {
+    text-align: center;
+  }
 }
 
 .close {

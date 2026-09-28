@@ -1,4 +1,13 @@
-import { Component, computed, DestroyRef, inject, NgZone, output, ViewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  NgZone,
+  output,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { TaskScreenAction } from '../task-screen.actions';
 import { Actions, ofActionDispatched, Store } from '@ngxs/store';
@@ -55,6 +64,7 @@ export class TaskEditComponent {
     toGalleryImages(this.draftImages(), this.editedTask().imageId, this.coverDraftKey()),
   );
   readonly showSelectedTags = computed(() => this.screenMode() === ETaskViewMode.Create);
+  readonly tagIds = signal<string[]>([]);
   readonly taskType = computed(() => this.editedTask().type);
 
   private readonly destroyRef = inject(DestroyRef);
@@ -93,6 +103,11 @@ export class TaskEditComponent {
         previewUrl: image.previewUrl,
       }),
     );
+  }
+
+  onTagIdsChange(tagIds: string[]): void {
+    this.tagIds.set(tagIds);
+    this.form.controls.tagIds?.setValue(tagIds);
   }
 
   draftImageRemoved(image: GalleryImage): void {
@@ -183,6 +198,8 @@ export class TaskEditComponent {
     const existingDescription =
       mode === ETaskViewMode.Edit ? (existingTask.description ?? null) : null;
     const existingStatus = mode === ETaskViewMode.Edit ? existingTask.status : ETaskStatus.Todo;
+    const existingTagIds = existingTask.tagIds ?? [];
+    this.tagIds.set(existingTagIds);
 
     this.form = this.fb.group<FormControlsOf<ITaskEditFormData>>({
       title: this.fb.control(existingTitle, {
@@ -191,6 +208,7 @@ export class TaskEditComponent {
       }),
       description: this.fb.control<TaskDescriptionDoc | null>(existingDescription),
       status: this.fb.control(existingStatus, { nonNullable: true }),
+      tagIds: this.fb.control(existingTagIds, { nonNullable: true }),
     });
     this.titleLength = existingTitle.length;
   }
