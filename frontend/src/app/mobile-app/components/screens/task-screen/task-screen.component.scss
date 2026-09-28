@@ -1,5 +1,4 @@
 @use 'src/scss/constants';
-@use 'src/scss/colors';
 
 :host {
   display: flex;
@@ -73,14 +72,13 @@
 }
 
 .main-panel-holder {
-  background: colors.$color-main-bg;
+  background-color: var(--color-background-app);
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   padding: constants.$main-padding;
 
   &.is-create {
-    background-color: var(--color-background-app);
     padding: var(--spacing-lg);
   }
 }

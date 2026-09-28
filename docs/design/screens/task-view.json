@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-view",
     "name": "Task View",
-    "version": "1.3.0",
+    "version": "1.5.0",
 
     "purpose": "Read a task and perform focused task actions without entering full edit mode.",
 
@@ -19,10 +19,10 @@
         "task-type",
         "task-summary",
         "description",
-        "cover-image",
+        "images",
         "tags",
         "quick-properties",
-        "bottom-navigation"
+        "bottom-actions"
       ]
     },
 
@@ -33,9 +33,10 @@
         "action": {
           "id": "back",
           "type": "icon-button",
-          "icon": "arrow-left",
+          "icon": "arrow_back",
           "action": "navigate-back"
         },
+
         "title": {
           "text": "Task",
           "typographyToken": "typography.styles.pageTitle"
@@ -47,7 +48,7 @@
           {
             "id": "more",
             "type": "icon-button",
-            "icon": "more-vertical",
+            "icon": "more_vert",
             "ariaLabel": "Task options",
             "action": "open-options-menu"
           }
@@ -57,10 +58,10 @@
 
     "content": {
       "taskType": {
-        "label": "Task type",
         "component": "type-chip",
         "source": "task.type",
-        "icon": "icons.taskType",
+        "editable": false,
+
         "examples": [
           {
             "id": "todo",
@@ -68,31 +69,29 @@
             "icon": "radio_button_unchecked"
           },
           {
-            "id": "location",
-            "label": "Location",
-            "icon": "location_on"
-          },
-          {
             "id": "calendar",
             "label": "Calendar",
             "icon": "calendar_month"
+          },
+          {
+            "id": "location",
+            "label": "Location",
+            "icon": "location_on"
           }
         ]
       },
 
       "summary": {
         "title": {
+          "component": "read-only-title",
           "source": "task.title",
-          "typographyToken": "typography.styles.pageTitle"
+          "typographyToken": "typography.styles.pageTitle",
+          "editable": false
         },
-        "status": {
-          "component": "status-chip",
-          "source": "task.status"
-        },
-        "dueDate": {
-          "component": "compact-date",
-          "source": "task.dueDate",
-          "icon": "calendar"
+
+        "metadata": {
+          "component": "task-summary-metadata",
+          "visibility": "type-dependent"
         }
       },
 
@@ -100,15 +99,56 @@
         "label": "Description",
         "component": "read-only-content-card",
         "source": "task.description",
-        "render": "rich-text"
+        "render": "rich-text",
+        "editable": false,
+        "visibility": "when-present"
       },
 
-      "coverImage": {
-        "label": "Image",
-        "component": "task-cover-image",
-        "source": "task.coverImage",
-        "fit": "cover",
-        "visibility": "when-present"
+      "images": {
+        "label": "Images",
+        "component": "task-image-gallery",
+        "source": "task.images",
+        "multiple": true,
+        "editable": false,
+
+        "count": {
+          "visible": true,
+          "pattern": "Images ({count})",
+          "includesAddTile": false
+        },
+
+        "layout": {
+          "order": ["add-action", "images"]
+        },
+
+        "addAction": {
+          "enabled": true,
+          "component": "add-image-tile",
+          "label": "Add photo",
+          "icon": "add",
+          "action": "add-task-image",
+          "position": "first"
+        },
+
+        "image": {
+          "component": "image-tile",
+          "fit": "cover"
+        },
+
+        "cover": {
+          "source": "task.coverImageId",
+          "badge": {
+            "label": "Cover"
+          }
+        },
+
+        "imageOptions": {
+          "enabled": true,
+          "trigger": "image.more",
+          "icon": "more_vert"
+        },
+
+        "visibility": "when-images-present-or-add-action-available"
       },
 
       "tags": {
@@ -117,9 +157,11 @@
         "source": "task.tags",
         "removable": false,
         "quickAdd": true,
+
         "addAction": {
           "label": "Add tag",
-          "style": "dashed-chip"
+          "style": "dashed-chip",
+          "action": "open-tag-selector"
         }
       },
 
@@ -130,59 +172,132 @@
           "label": "Status",
           "value": "{task.status}",
           "icon": "status-{task.status}",
-          "trailingIcon": "chevron-right",
+          "trailingIcon": "chevron_right",
           "action": "open-status-selector"
+        }
+      ]
+    },
+
+    "bottomActions": {
+      "component": "sticky-task-actions",
+
+      "layout": {
+        "type": "two-column",
+        "equalWidth": true,
+        "fullWidth": true
+      },
+
+      "actions": [
+        {
+          "id": "mark-active",
+          "label": "Mark as Active",
+          "icon": "play_arrow",
+          "style": "secondary",
+          "action": "mark-task-active",
+          "visibility": "when-status-is-todo"
         },
         {
-          "id": "due-date",
-          "component": "property-row",
-          "label": "Due date",
-          "value": "{task.dueDate.relative}",
-          "secondaryValue": "{task.dueDate.formatted}",
-          "icon": "calendar",
-          "trailingIcon": "chevron-right",
-          "action": "open-due-date-selector"
+          "id": "mark-done",
+          "label": "Done",
+          "icon": "check",
+          "style": "primary",
+          "action": "mark-task-done",
+          "visibility": "when-status-is-not-done"
         }
       ]
     },
 
     "states": {
       "default": {
-        "description": "Standard read-only task details. The task type chip shows To do.",
-        "referenceImage": "../references/task-view-todo.png"
-      },
+        "description": "Standard read-only Task View for a To do task. The task type chip shows To do. No calendar, due-date or location-trigger information is displayed.",
+        "referenceImage": "../references/task-view-todo.png",
 
-      "taskTypeLocation": {
-        "description": "Task type chip shows Location.",
-        "referenceImage": "../references/task-view-location.png",
         "taskType": {
-          "id": "location",
-          "label": "Location",
-          "icon": "location_on"
-        }
+          "id": "todo",
+          "label": "To do",
+          "icon": "radio_button_unchecked"
+        },
+
+        "summaryMetadata": {
+          "visible": false
+        },
+
+        "additionalQuickProperties": []
       },
 
       "taskTypeCalendar": {
-        "description": "Task type chip shows Calendar.",
+        "description": "Task View for a calendar-based task. The task type chip shows Calendar. Scheduling information is shown below the title and as a Due date quick property.",
         "referenceImage": "../references/task-view-calendar.png",
+
         "taskType": {
           "id": "calendar",
           "label": "Calendar",
           "icon": "calendar_month"
-        }
+        },
+
+        "summaryMetadata": {
+          "visible": true,
+          "component": "calendar-summary",
+          "icon": "calendar_month",
+          "primary": "{task.dueDateRelative}",
+          "secondary": "{task.dueDateFormatted}"
+        },
+
+        "additionalQuickProperties": [
+          {
+            "id": "due-date",
+            "component": "property-row",
+            "label": "Due date",
+            "value": "{task.dueDateRelative}",
+            "secondaryValue": "{task.dueDateFormatted}",
+            "icon": "calendar_month",
+            "trailingIcon": "chevron_right",
+            "action": "open-due-date-selector"
+          }
+        ]
+      },
+
+      "taskTypeLocation": {
+        "description": "Task View for a location-triggered task. The task type chip shows Location. The configured location is shown below the title and as a Location quick property.",
+        "referenceImage": "../references/task-view-location.png",
+
+        "taskType": {
+          "id": "location",
+          "label": "Location",
+          "icon": "location_on"
+        },
+
+        "summaryMetadata": {
+          "visible": true,
+          "component": "location-summary",
+          "icon": "location_on",
+          "value": "{task.location.displayName}",
+          "trailingIcon": "chevron_right"
+        },
+
+        "additionalQuickProperties": [
+          {
+            "id": "location",
+            "component": "property-row",
+            "label": "Location",
+            "value": "{task.location.displayName}",
+            "icon": "location_on",
+            "trailingIcon": "chevron_right",
+            "action": "open-location-selector"
+          }
+        ]
       },
 
       "statusSelectorOpen": {
         "trigger": "quick-properties.status",
         "referenceImage": "../references/task-view-status-selector.png",
+
         "overlay": {
           "component": "bottom-sheet",
           "title": "Set status",
-          "dismiss": [
-            "close-button",
-            "swipe-down",
-            "backdrop"
-          ],
+
+          "dismiss": ["close-button", "swipe-down", "backdrop"],
+
           "options": [
             {
               "id": "todo",
@@ -191,10 +306,10 @@
               "icon": "status-todo"
             },
             {
-              "id": "in-progress",
-              "label": "In progress",
-              "description": "Currently working on this",
-              "icon": "status-in-progress"
+              "id": "active",
+              "label": "Active",
+              "description": "Currently active",
+              "icon": "status-active"
             },
             {
               "id": "done",
@@ -209,8 +324,10 @@
               "icon": "status-cancelled"
             }
           ],
+
           "selected": "{task.status}",
           "selectionTreatment": "accent border and check icon",
+
           "primaryAction": {
             "label": "Apply",
             "style": "primary",
@@ -222,9 +339,11 @@
       "optionsMenuOpen": {
         "trigger": "header.more",
         "referenceImage": "../references/task-view-options.png",
+
         "overlay": {
           "component": "context-menu",
           "anchor": "header.more",
+
           "items": [
             {
               "id": "edit",
@@ -235,13 +354,13 @@
             {
               "id": "duplicate",
               "label": "Duplicate",
-              "icon": "copy",
+              "icon": "content_copy",
               "action": "duplicate-task"
             },
             {
               "id": "delete",
               "label": "Delete task",
-              "icon": "trash",
+              "icon": "delete",
               "semantic": "danger",
               "action": "open-delete-confirmation"
             }
@@ -251,14 +370,17 @@
 
       "deleteConfirmationOpen": {
         "trigger": "options-menu.delete",
+
         "overlay": {
           "component": "confirmation-dialog",
           "title": "Delete task?",
           "message": "This action removes the task.",
+
           "dangerAction": {
             "label": "Delete",
             "action": "delete-task"
           },
+
           "secondaryAction": {
             "label": "Cancel",
             "action": "close-dialog"
@@ -267,64 +389,71 @@
       }
     },
 
-    "bottomNavigation": {
-      "component": "bottom-navigation",
-      "iconFamily": "Material Symbols Rounded",
-      "items": [
-        {
-          "id": "home",
-          "label": "Home",
-          "icon": "home",
-          "route": "/home",
-          "active": true
-        },
-        {
-          "id": "tasks",
-          "label": "Tasks",
-          "icon": "calendar_month",
-          "route": "/tasks",
-          "active": false
-        },
-        {
-          "id": "tags",
-          "label": "Tags",
-          "icon": "sell",
-          "route": "/tags",
-          "active": false
-        }
-      ]
-    },
-
     "visualRules": [
       "Use global design tokens from design-system.json.",
       "Do not define screen-specific colors, radii or arbitrary spacing.",
-      "The reference PNG is a visual target, not a source of token values. Do not measure colors, spacing, or radii from it.",
-      "Task content is read-only in the default state; full editing opens Task Edit.",
-      "Status and due date are quick-edit property rows.",
-      "Do not duplicate Done or Cancelled actions in the options menu; status changes belong to the status selector.",
+      "The reference PNG is a visual target, not a source of token values. Do not measure colors, spacing or radii from it.",
+
+      "Task View is read-only by default.",
+      "Title and description must render as read-only content and must never render as form inputs or editors in Task View.",
+      "Full content editing is available only through Edit task in the header options menu.",
+
+      "Task type and task status are separate concepts.",
+      "Task type is displayed as a non-interactive chip.",
+      "To do task type uses radio_button_unchecked.",
+      "Calendar task type uses calendar_month.",
+      "Location task type uses location_on.",
+      "Do not use a radio selector or selected-state accent treatment for the task type chip.",
+
+      "For the To do task type, do not display calendar, due-date or location-trigger information.",
+      "Calendar-specific scheduling information belongs only to the Calendar task type design.",
+      "Location-specific trigger information belongs only to the Location task type design.",
+
+      "For Calendar tasks, show the configured date below the task title and expose Due date as an additional quick property below Status.",
+      "For Location tasks, show the configured location below the task title and expose Location as an additional quick property below Status.",
+
+      "Status remains available as a quick property row.",
+      "Do not duplicate Done or Cancelled actions in the header options menu.",
+
+      "Images are displayed as a gallery rather than as a single cover-only media block.",
+      "The Add photo tile is always the first item in the image gallery, before all existing image attachments.",
+      "The image count includes attached images only and does not include the Add photo tile.",
+      "The cover image is one of the task attachments and is identified by a Cover badge.",
+      "Task View may add images without entering full Edit mode.",
+      "Adding an image does not make the rest of Task View editable.",
+
+      "Tags are read-only chips in Task View, but tags may be added through the dedicated Add tag action.",
+
+      "The sticky bottom action bar contains focused task-state actions rather than global application navigation.",
+      "For a task in To do status, Mark as Active is displayed on the left and Done on the right.",
+      "Mark as Active uses the secondary action treatment.",
+      "Done uses the primary action treatment.",
+      "The two bottom actions share the available width.",
+      "Do not display Edit in the bottom action bar.",
+
       "The options menu contains object-level actions: Edit task, Duplicate and Delete task.",
       "Delete task uses the global danger semantic treatment and requires confirmation.",
-      "The task type is a chip with the type label and the Material Symbol from design-system.json → icons.taskType. To do uses radio_button_unchecked. Do not use check or check_circle for To do.",
-      "Display the task cover image as the primary media image when one exists.",
+
+      "The status selector is a bottom sheet. Chrome, handle, backdrop and dismiss behavior come from design-system.json.",
       "Keep overlays visually subordinate to the task and consistent with the global surface hierarchy.",
-      "The status selector is a bottom sheet. Chrome, handle, backdrop and dismiss behavior come from design-system.json → bottomSheet. This state specifies only the sheet content.",
-      "Bottom navigation is shared with Home: Home, Tasks, Tags. Use Material Symbols Rounded icons home, calendar_month and sell. Do not add Settings or a fourth tab.",
-      "Settings, profile and integrations belong to the Home avatar account menu, not to bottom navigation."
+
+      "Task View does not display the global Home, Tasks and Tags bottom navigation."
     ],
 
     "reference": {
       "status": "approved",
       "image": "../references/task-view-todo.png",
-      "description": "Approved visual reference for Task View when the task type is To do. Location and Calendar are separate references."
+      "description": "Approved visual reference for the default Task View with To do task type. Calendar and Location task types use their dedicated approved reference images."
     },
 
     "angular": {
-      "note": "The live Task View does not yet match this spec. It is a task type chip + title + optional description + single image, with a header menu for Edit task, Duplicate and Delete task, and a home icon instead of bottom navigation. Duplicate is visible and disabled until that action exists. ETaskType.Basic stays TASK_TYPE_BASIC and is shown as To do. Location and Calendar are additional wire values shown by the same chip. There is no control yet to change the type, so existing tasks stay To do. Due date, task tags, cover-vs-attachments, and In progress are product destinations from the approved design, not claims that those fields or routes already exist. Settings is not a Task View destination.",
+      "note": "The live Task View does not yet match this spec. Treat this JSON as the approved target. ETaskType.Basic stays TASK_TYPE_BASIC and is presented as To do. Location and Calendar are additional product task types represented by the same task-type chip pattern. Task type is not editable from Task View. Task View title and description are read-only. To do tasks do not display due-date, calendar or location-trigger information. Calendar tasks display scheduling information below the title and expose Due date as a quick property. Location tasks display the configured location below the title and expose Location as a quick property. Tags, multiple image attachments, cover-image selection, Active status, Duplicate and additional task types may be product destinations rather than current wire capabilities. The Add photo tile is rendered before existing image attachments. The bottom of Task View contains task-state actions instead of the global Home/Tasks/Tags navigation.",
+
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
+
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/screens/task-screen/task-view/",
-        "frontend/src/app/shared/components/ui-elements/rich-text-editor/",
-        "frontend/src/app/mobile-app/components/screens/home-screen/home-bottom-panel/"
+        "frontend/src/app/shared/components/ui-elements/rich-text-editor/"
       ]
     }
   }

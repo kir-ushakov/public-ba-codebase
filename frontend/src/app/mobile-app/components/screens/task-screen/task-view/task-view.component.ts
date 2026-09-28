@@ -1,70 +1,79 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, inject } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { Observable } from 'rxjs';
-import { distinctUntilChanged, map, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
+import type { Observable } from 'rxjs';
+import { TaskScreenAction } from '../task-screen.actions';
 import { TaskScreenState } from '../task-screen.state';
-import type { DefaultTask, Task } from 'src/app/shared/models/task.model';
-import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
-import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
-import { ImageService } from 'src/app/shared/services/application/image.service';
-import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/rich-text-editor/rich-text-editor.component';
+import type { DefaultTask, Task, TaskDescriptionDoc } from 'src/app/shared/models/task.model';
+import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-description.function';
 import { TaskTypeChipComponent } from '../task-type-chip/task-type-chip.component';
+import { ImageGalleryEditorComponent } from '../task-edit/image-gallery-editor/image-gallery-editor.component';
+import { TagSelectorComponent } from '../task-edit/tag-selector/tag-selector.component';
+import {
+  toGalleryImages,
+  type GalleryImage,
+} from '../task-edit/helpers/to-gallery-images.function';
+import { renderTaskDescriptionHtml } from './helpers/render-task-description-html.function';
+
+type TaskViewContent = {
+  task: Task | DefaultTask;
+  descriptionHtml: string;
+};
 
 @Component({
   selector: 'ba-task-view',
-  imports: [
-    CommonModule,
-    ImageSrcPipe,
-    SpinnerComponent,
-    RichTextEditorComponent,
-    TaskTypeChipComponent,
-  ],
+  imports: [CommonModule, TaskTypeChipComponent, ImageGalleryEditorComponent, TagSelectorComponent],
   templateUrl: './task-view.component.html',
   styleUrl: './task-view.component.scss',
 })
-export class TaskViewComponent implements OnInit {
-  task$: Observable<Task | DefaultTask>;
+export class TaskViewComponent {
+  readonly galleryImages = computed(() =>
+    toGalleryImages(this.draftImages(), this.task().imageId, this.coverDraftKey()),
+  );
+  readonly view$: Observable<TaskViewContent>;
 
-  private currentImageId: string | null = null;
-  isImageLoading = signal(true);
+  private readonly store = inject(Store);
+  private readonly draftImages = this.store.selectSignal(TaskScreenState.draftImages);
+  private readonly coverDraftKey = this.store.selectSignal(TaskScreenState.coverDraftKey);
+  private readonly task = this.store.selectSignal(TaskScreenState.task);
 
-  constructor(
-    private store: Store,
-    private destroyRef: DestroyRef,
-    private imageService: ImageService,
-  ) {
-    this.task$ = this.store.select(TaskScreenState.task);
+  constructor() {
+    this.view$ = this.store.select(TaskScreenState.task).pipe(
+      map(task => ({
+        task,
+        descriptionHtml: descriptionHtml(task.description),
+      })),
+    );
   }
 
-  ngOnInit(): void {
-    this.task$
-      .pipe(
-        map(task => task?.imageId ?? null),
-        distinctUntilChanged(),
-        tap(imageId => {
-          this.currentImageId = imageId;
-          this.isImageLoading.set(!!imageId);
-        }),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe();
+  addPhoto(): void {
+    this.store.dispatch(TaskScreenAction.AddPictureBtnPressed);
   }
 
-  onImageLoaded(imageId: string): void {
-    if (this.currentImageId === imageId) {
-      this.isImageLoading.set(false);
-    }
+  imageSelectedAsCover(image: GalleryImage): void {
+    this.store.dispatch(
+      new TaskScreenAction.ImageSelectedAsCover({
+        imageId: image.imageId,
+        previewUrl: image.previewUrl,
+      }),
+    );
   }
 
-  onImageError(event: Event, imageId: string): void {
-    if (this.currentImageId === imageId) {
-      this.isImageLoading.set(false);
-    }
-    const image = event.target;
-    if (image instanceof HTMLImageElement && !image.src.startsWith('blob:')) {
-      this.imageService.probeRemoteImage(imageId);
-    }
+  draftImageRemoved(image: GalleryImage): void {
+    this.store.dispatch(
+      new TaskScreenAction.DraftImageRemoved({
+        imageId: image.imageId,
+        previewUrl: image.previewUrl,
+      }),
+    );
   }
+}
+
+function descriptionHtml(description: TaskDescriptionDoc | undefined): string {
+  if (description === undefined || isEmptyTaskDescription(description)) {
+    return '';
+  }
+
+  return renderTaskDescriptionHtml(description);
 }

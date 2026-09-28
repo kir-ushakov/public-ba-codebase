@@ -99,7 +99,9 @@ export class TaskScreenState {
       const selectedTask = actualTasks.find(t => t.id === taskId) ?? defaultTask;
       ctx.patchState({
         taskData: selectedTask,
-        ...(mode === ETaskViewMode.Edit ? { draftImages: draftsFromTask(selectedTask) } : {}),
+        ...(mode === ETaskViewMode.Edit || mode === ETaskViewMode.View
+          ? { draftImages: draftsFromTask(selectedTask) }
+          : {}),
       });
     }
   }
@@ -226,17 +228,17 @@ export class TaskScreenState {
     if (!imageUri) {
       return;
     }
-    const draftImages = ctx.getState().draftImages ?? [];
-    ctx.patchState({
-      draftImages: [...draftImages, { previewUrl: imageUri }],
-    });
+    const state = ctx.getState();
+    const draftImages = [...(state.draftImages ?? []), { previewUrl: imageUri }];
+    ctx.patchState({ draftImages });
+    await this.persistViewGallery(ctx);
   }
 
   @Action(TaskScreenAction.ImageSelectedAsCover)
-  selectImageAsCover(
+  async selectImageAsCover(
     ctx: StateContext<ITaskScreenStateModel>,
     { image }: TaskScreenAction.ImageSelectedAsCover,
-  ): void {
+  ): Promise<void> {
     const key = image.imageId ?? image.previewUrl;
     if (!key) {
       return;
@@ -247,13 +249,14 @@ export class TaskScreenState {
       return;
     }
     ctx.patchState({ coverDraftKey: key });
+    await this.persistViewGallery(ctx);
   }
 
   @Action(TaskScreenAction.DraftImageRemoved)
-  removeDraftImage(
+  async removeDraftImage(
     ctx: StateContext<ITaskScreenStateModel>,
     { image }: TaskScreenAction.DraftImageRemoved,
-  ): void {
+  ): Promise<void> {
     const removedKey = draftImageKey(image);
     if (!removedKey) {
       return;
@@ -271,6 +274,7 @@ export class TaskScreenState {
       draftImages: nextDrafts,
       coverDraftKey: coverKey === removedKey ? draftImageKey(nextDrafts[0]) : coverDraftKey,
     });
+    await this.persistViewGallery(ctx);
   }
 
   @Action(TaskScreenAction.UpdateFormData)
@@ -284,6 +288,31 @@ export class TaskScreenState {
         status: valid,
       },
     });
+  }
+
+  private async persistViewGallery(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
+    const state = ctx.getState();
+    if (state.mode !== ETaskViewMode.View || state.taskData.id === null) {
+      return;
+    }
+
+    const saved = await this.savedImagesFromDrafts(
+      state.draftImages,
+      state.taskData.imageId,
+      state.coverDraftKey,
+    );
+    const changes = { ...state.taskData, ...saved };
+    ctx.patchState({
+      taskData: changes,
+      draftImages: draftsFromTask(changes),
+      coverDraftKey: undefined,
+    });
+    ctx.dispatch(
+      new TasksAction.UpdateTask({
+        taskId: state.taskData.id,
+        changes,
+      }),
+    );
   }
 
   private async savedImagesFromDrafts(

@@ -83,9 +83,9 @@
 }
 
 .image-select {
-  display: block;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   margin: 0;
   padding: 0;
   appearance: none;
@@ -94,6 +94,11 @@
   color: inherit;
   font: inherit;
   cursor: pointer;
+}
+
+.cover-badge,
+.image-remove {
+  z-index: 2;
 }
 
 .image-remove {

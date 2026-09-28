@@ -33,6 +33,7 @@ const TAG_CHOICES: TagChoice[] = [
 })
 export class TagSelectorComponent {
   readonly showSelectedTags = input(false);
+  readonly presentation = input<'field' | 'inline'>('field');
   readonly open = signal(false);
   readonly query = signal('');
   readonly selectedIds = signal<string[]>(['work', 'ideas']);
@@ -48,6 +49,7 @@ export class TagSelectorComponent {
       selected: selected.has(tag.id),
     }));
   });
+  readonly isInline = computed(() => this.presentation() === 'inline');
 
   openSheet(): void {
     this.query.set('');

@@ -12,9 +12,16 @@ import type { GalleryImage } from '../helpers/to-gallery-images.function';
 })
 export class ImageGalleryEditorComponent {
   readonly images = input<GalleryImage[]>([]);
+  readonly presentation = input<'editor' | 'view'>('editor');
   readonly addImage = output<void>();
   readonly selectCover = output<GalleryImage>();
   readonly removeImage = output<GalleryImage>();
+  readonly isView = computed(() => this.presentation() === 'view');
+  readonly heading = computed(() =>
+    this.isView() ? `Images (${this.images().length})` : 'Images',
+  );
+  readonly addLabel = computed(() => (this.isView() ? 'Add photo' : 'Add image'));
+  readonly addIcon = computed(() => (this.isView() ? 'add' : 'image'));
   readonly countLabel = computed(() => formatAttachedImageCount(this.images().length));
 
   onAddImage(): void {

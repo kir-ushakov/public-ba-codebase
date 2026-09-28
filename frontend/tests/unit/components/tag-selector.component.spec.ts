@@ -87,6 +87,32 @@ describe('TagSelectorComponent', () => {
 
     expect(chip(host, 'Travel')?.getAttribute('aria-pressed')).toBe('true');
   });
+
+  it('shows read-only tags and a dashed Add tag button that opens the same sheet', () => {
+    fixture.componentRef.setInput('presentation', 'inline');
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const chips = [...host.querySelectorAll('[data-test="selected-tag"]')];
+    const addTag = host.querySelector<HTMLButtonElement>('[data-test="task-tags-add"]');
+
+    expect(host.querySelector('[data-test="task-tags-selector"]')).toBeNull();
+    expect(host.querySelector('[data-test="selected-tag-remove"]')).toBeNull();
+    expect(chips.map(chip => chip.textContent?.trim())).toEqual(['Work', 'Ideas']);
+    expect(addTag?.textContent).toContain('Add tag');
+    expect(
+      chips.at(-1) !== undefined &&
+        addTag !== null &&
+        (chips.at(-1)!.compareDocumentPosition(addTag) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+    ).toBe(true);
+
+    addTag!.click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="bottom-sheet-title"]')?.textContent).toContain(
+      'Select tags',
+    );
+  });
 });
 
 function chip(host: HTMLElement, label: string): HTMLButtonElement | undefined {
