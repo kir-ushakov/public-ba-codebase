@@ -1,13 +1,16 @@
-import { EChangeAction, EChangedEntity, TaskDTO } from '@brainassistant/contracts';
+import { EChangeAction, EChangedEntity, TagDTO, TaskDTO } from '@brainassistant/contracts';
 import { Result } from '../../../../shared/core/result.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Action } from '../../../../shared/domain/models/actions.js';
 import { Client } from '../../../../shared/domain/models/client.js';
+import { Tag } from '../../../../shared/domain/models/tag.js';
 import { Task } from '../../../../shared/domain/models/task.js';
 import { EActionType } from '../../../../shared/infra/database/mongodb/action.model.js';
+import { TagMapper } from '../../../../shared/mappers/tag.mapper.js';
 import { TaskMapper } from '../../../../shared/mappers/task.mapper.js';
 import { ActionRepo } from '../../../../shared/repo/action.repo.js';
 import { ClientRepo } from '../../../../shared/repo/client.repo.js';
+import { TagRepoService } from '../../../../shared/repo/tag-repo.service.js';
 import { TaskRepoService } from '../../../../shared/repo/task-repo.service.js';
 import { Change } from '../../domain/values/change.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
@@ -23,11 +26,18 @@ export type GetChangesResult = Result<Change[], UseCaseError<EGetChangesUseCaseE
 export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesResult>> {
   private clientRepo: ClientRepo;
   private taskRepoService: TaskRepoService;
+  private tagRepoService: TagRepoService;
   private actionRepo: ActionRepo;
 
-  constructor(clientRepo: ClientRepo, taskRepoService: TaskRepoService, actionRepo: ActionRepo) {
+  constructor(
+    clientRepo: ClientRepo,
+    taskRepoService: TaskRepoService,
+    tagRepoService: TagRepoService,
+    actionRepo: ActionRepo,
+  ) {
     this.clientRepo = clientRepo;
     this.taskRepoService = taskRepoService;
+    this.tagRepoService = tagRepoService;
     this.actionRepo = actionRepo;
   }
 
@@ -60,6 +70,22 @@ export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesR
       );
     }
 
+    const changedTags: Tag[] = await this.tagRepoService.getChanges(
+      userId,
+      lastSyncTime ?? new Date(0),
+    );
+
+    for (const changedTag of changedTags) {
+      const tagDto: TagDTO = TagMapper.toDTO(changedTag);
+      changes.push(
+        new Change({
+          entity: EChangedEntity.Tag,
+          action: EChangeAction.Updated,
+          object: tagDto,
+        }),
+      );
+    }
+
     const deleteTaskActions: Action[] = await this.actionRepo.getActionsOccurredSince(
       userId,
       lastSyncTime,
@@ -74,6 +100,25 @@ export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesR
           object: {
             id: deleteTaskAction.entityId.toString(),
             modifiedAt: deleteTaskAction.occurredAt.toISOString(),
+          },
+        }),
+      );
+    }
+
+    const deleteTagActions: Action[] = await this.actionRepo.getActionsOccurredSince(
+      userId,
+      lastSyncTime,
+      EActionType.TagDeleted,
+    );
+
+    for (const deleteTagAction of deleteTagActions) {
+      changes.push(
+        new Change({
+          entity: EChangedEntity.Tag,
+          action: EChangeAction.Deleted,
+          object: {
+            id: deleteTagAction.entityId.toString(),
+            modifiedAt: deleteTagAction.occurredAt.toISOString(),
           },
         }),
       );

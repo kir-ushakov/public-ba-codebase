@@ -27,7 +27,7 @@ export type {
   ApiErrorDto,
   ApiSuccessDto,
 } from './dto';
-export { TaskConst } from './dto';
+export { TaskConst, TagConst } from './dto';
 
 // Enums
 export {
@@ -48,6 +48,7 @@ export {
   ERemoveFromSlackUseCaseError,
   ESlackEventReceivedUseCaseError,
   ETaskError,
+  ETagError,
   ETaskRepoServiceError,
   EImageRepoServiceError,
 } from './enums';

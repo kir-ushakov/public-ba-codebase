@@ -18,6 +18,7 @@ export class TaskMapper {
       imageId,
       images,
       description,
+      tagIds,
       _id,
       createdAt,
       modifiedAt,
@@ -32,6 +33,7 @@ export class TaskMapper {
         imageId,
         images: TaskMapper.definedImages(images),
         description: TaskMapper.toValidDescription(description),
+        tagIds: tagIds ?? [],
         createdAt,
         modifiedAt,
       },
@@ -40,8 +42,19 @@ export class TaskMapper {
   }
 
   public static toPersistence(task: Task): TaskPresitant {
-    const { id, userId, type, title, status, imageId, images, description, createdAt, modifiedAt } =
-      task;
+    const {
+      id,
+      userId,
+      type,
+      title,
+      status,
+      imageId,
+      images,
+      description,
+      tagIds,
+      createdAt,
+      modifiedAt,
+    } = task;
 
     const persisted: TaskPresitant = {
       _id: id.toString(),
@@ -50,6 +63,7 @@ export class TaskMapper {
       title,
       status,
       imageId,
+      tagIds,
       createdAt,
       modifiedAt,
     };
@@ -74,6 +88,7 @@ export class TaskMapper {
       title: task.title,
       status: task.status,
       imageId: task.imageId,
+      tagIds: task.tagIds,
       createdAt: task.createdAt.toISOString(),
       modifiedAt: task.modifiedAt.toISOString(),
     };

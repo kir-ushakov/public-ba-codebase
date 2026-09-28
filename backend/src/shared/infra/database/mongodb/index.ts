@@ -6,6 +6,7 @@ import ActionModel, { ActionDocument } from './action.model.js';
 import VerificationTokenModel, { VerificationTokenDocument } from './verification-token.model.js';
 import SlackOAuthAccessModel, { ISlackOAuthAccessDocument } from './slack-oauth-access.model.js';
 import ImageModel, { ImageDocument } from './image.model.js';
+import TagModel, { TagDocument } from './tag.model.js';
 
 export interface IDbModels {
   TaskModel: Model<TaskDocument>;
@@ -15,6 +16,7 @@ export interface IDbModels {
   SlackOAuthAccessModel: Model<ISlackOAuthAccessDocument>;
   ActionModel: Model<ActionDocument>;
   ImageModel: Model<ImageDocument>;
+  TagModel: Model<TagDocument>;
 }
 
 export const models: IDbModels = {
@@ -25,4 +27,5 @@ export const models: IDbModels = {
   SlackOAuthAccessModel,
   ActionModel,
   ImageModel,
+  TagModel,
 };

@@ -22,6 +22,7 @@ export interface ITaskProps {
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;
+  tagIds?: string[];
   createdAt: Date;
   modifiedAt: Date;
 }
@@ -36,6 +37,7 @@ export interface TaskPresitant {
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;
+  tagIds?: string[];
   createdAt: Date;
   modifiedAt: Date;
 }
@@ -76,6 +78,10 @@ export class Task extends AggregateRoot<ITaskProps> {
     return this.props.description;
   }
 
+  get tagIds(): string[] {
+    return this.props.tagIds ?? [];
+  }
+
   get createdAt(): Date {
     return this.props.createdAt;
   }
@@ -98,6 +104,7 @@ export class Task extends AggregateRoot<ITaskProps> {
     const fullProps: ITaskProps = {
       ...props,
       description: descriptionResult.getValue(),
+      tagIds: props.tagIds ?? [],
       createdAt: now,
       modifiedAt: now,
     };
@@ -149,6 +156,9 @@ export class Task extends AggregateRoot<ITaskProps> {
     this.props.imageId = newProps.imageId;
     if ('images' in props) {
       this.props.images = newProps.images;
+    }
+    if ('tagIds' in props) {
+      this.props.tagIds = newProps.tagIds ?? [];
     }
     this.props.description = newProps.description;
     return Result.ok<Task>();

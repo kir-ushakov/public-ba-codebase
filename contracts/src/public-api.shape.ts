@@ -8,6 +8,7 @@
  */
 
 import {
+  TagConst,
   TaskConst,
   type ApiErrorDto,
   type ApiSuccessDto,
@@ -41,6 +42,7 @@ import {
   ESignUpUseCaseError,
   ESlackEventReceivedUseCaseError,
   ESpeechToTextUseCaseError,
+  ETagError,
   ETaskError,
   ETaskRepoServiceError,
   ETaskStatus,
@@ -66,6 +68,7 @@ const TASK_DTO_KEYS = [
   'description',
   'createdAt',
   'modifiedAt',
+  'tagIds',
 ] as const satisfies readonly (keyof TaskDTO)[];
 const _taskDto: ExactKeys<TaskDTO, typeof TASK_DTO_KEYS> = true;
 
@@ -189,13 +192,14 @@ export const PUBLIC_API_SHAPE = {
     ERemoveFromSlackUseCaseError: Object.values(ERemoveFromSlackUseCaseError),
     ESlackEventReceivedUseCaseError: Object.values(ESlackEventReceivedUseCaseError),
     ETaskError: Object.values(ETaskError),
+    ETagError: Object.values(ETagError),
     ETaskRepoServiceError: Object.values(ETaskRepoServiceError),
     EImageRepoServiceError: Object.values(EImageRepoServiceError),
   },
   dto: {
     TaskDTO: {
       keys: [...TASK_DTO_KEYS],
-      optional: ['imageId', 'images', 'description'],
+      optional: ['imageId', 'images', 'description', 'tagIds'],
     },
     TaskDescriptionDoc: {
       keys: [...TASK_DESCRIPTION_DOC_KEYS],
@@ -237,5 +241,6 @@ export const PUBLIC_API_SHAPE = {
   },
   consts: {
     TaskConst,
+    TagConst,
   },
 };

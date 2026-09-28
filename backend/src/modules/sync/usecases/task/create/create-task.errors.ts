@@ -7,4 +7,12 @@ import { EHttpStatus } from '../../../../../shared/infra/http/models/base-contro
 export const CreateTaskErrors = {
   DataInvalid: (error: DomainError<Task, ETaskError>): Result<never, UseCaseError<ETaskError>> =>
     Result.fail(new UseCaseError<ETaskError>(error.code, error.message, EHttpStatus.BadRequest)),
+  UnknownTag: (): Result<never, UseCaseError<ETaskError>> =>
+    Result.fail(
+      new UseCaseError<ETaskError>(
+        ETaskError.UnknownTag,
+        'One or more tags are not owned by this user',
+        EHttpStatus.BadRequest,
+      ),
+    ),
 };

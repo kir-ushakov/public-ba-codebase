@@ -106,6 +106,13 @@ export class TaskRepoService {
     return null;
   }
 
+  public async removeTagIdFromUserTasks(userId: string, tagId: string): Promise<void> {
+    await this.models.TaskModel.updateMany(
+      { userId, tagIds: tagId },
+      { $pull: { tagIds: tagId }, $set: { modifiedAt: new Date() } },
+    );
+  }
+
   public async deleteTaskById(taskId: string): Promise<void> {
     const taskModel = this.models.TaskModel;
     await taskModel.deleteOne({

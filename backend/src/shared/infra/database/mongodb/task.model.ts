@@ -12,6 +12,7 @@ const TaskSchema = new Schema({
   imageId: { type: String, require: false },
   images: { type: [String], required: false },
   description: { type: Schema.Types.Mixed, require: false },
+  tagIds: { type: [String], require: false },
   createdAt: { type: Date, require: true },
   modifiedAt: { type: Date, require: true },
 });

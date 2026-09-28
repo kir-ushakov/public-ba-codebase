@@ -1,5 +1,5 @@
 import { Application } from 'express';
-import { TaskDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { TaskDTO, TagDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { authenticatedRequest } from './auth.helper.js';
 
 export type TaskSeed = {
@@ -9,6 +9,7 @@ export type TaskSeed = {
   status?: ETaskStatus;
   imageId?: string;
   description?: TaskDTO['description'];
+  tagIds?: string[];
 };
 
 /**
@@ -35,6 +36,7 @@ export async function createTaskViaApi(
     status: seed.status ?? ETaskStatus.Todo,
     ...(seed.imageId !== undefined ? { imageId: seed.imageId } : {}),
     ...(seed.description !== undefined ? { description: seed.description } : {}),
+    ...(seed.tagIds !== undefined ? { tagIds: seed.tagIds } : {}),
   };
 
   const res = await authenticatedRequest(app, jwtCookie)
@@ -47,4 +49,35 @@ export async function createTaskViaApi(
   }
 
   return res.body as TaskDTO;
+}
+
+export type TagSeed = {
+  id: string;
+  name?: string;
+  color?: string;
+  isCategory?: boolean;
+};
+
+export async function createTagViaApi(
+  app: Application,
+  jwtCookie: string,
+  seed: TagSeed,
+): Promise<TagDTO> {
+  const dto = {
+    id: seed.id,
+    name: seed.name ?? 'Work',
+    color: seed.color ?? 'teal',
+    isCategory: seed.isCategory ?? false,
+  };
+
+  const res = await authenticatedRequest(app, jwtCookie)
+    .post('/api/sync/tag')
+    .send({ changeableObjectDto: dto })
+    .set('Accept', 'application/json');
+
+  if (res.status !== 201) {
+    throw new Error(`Failed to create tag: ${res.status} ${JSON.stringify(res.body)}`);
+  }
+
+  return res.body as TagDTO;
 }

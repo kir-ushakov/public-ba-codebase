@@ -72,7 +72,13 @@
       "TASK_ERROR__TITLE_TOO_SHORT",
       "TASK_ERROR__TITLE_TOO_LONG",
       "TASK_ERROR__DESCRIPTION_INVALID",
-      "TASK_ERROR__DESCRIPTION_TOO_LONG"
+      "TASK_ERROR__DESCRIPTION_TOO_LONG",
+      "TASK_ERROR__UNKNOWN_TAG"
+    ],
+    "ETagError": [
+      "TAG_ERROR__NAME_MISSED",
+      "TAG_ERROR__NAME_TOO_LONG",
+      "TAG_ERROR__COLOR_MISSED"
     ],
     "ETaskRepoServiceError": [
       "TASK_REPO_SERVICE_ERROR__USER_TASK_NOT_FOUND"
@@ -93,12 +99,14 @@
         "images",
         "description",
         "createdAt",
-        "modifiedAt"
+        "modifiedAt",
+        "tagIds"
       ],
       "optional": [
         "imageId",
         "images",
-        "description"
+        "description",
+        "tagIds"
       ]
     },
     "TaskDescriptionDoc": {
@@ -256,6 +264,10 @@
       "DESCRIPTION_MAX_TEXT_LENGTH": 4000,
       "DESCRIPTION_MAX_JSON_BYTES": 16384,
       "DESCRIPTION_MAX_DEPTH": 8
+    },
+    "TagConst": {
+      "NAME_MIN_LENGTH": 1,
+      "NAME_MAX_LENGTH": 40
     }
   }
 }
