@@ -11,8 +11,6 @@
   <ba-image-gallery-editor
     presentation="view"
     [images]="galleryImages()"
-    (addImage)="addPhoto()"
-    (selectCover)="imageSelectedAsCover($event)"
     (removeImage)="draftImageRemoved($event)"
   />
   <ba-tag-selector

@@ -20,15 +20,21 @@ export class ImageGalleryEditorComponent {
   readonly heading = computed(() =>
     this.isView() ? `Images (${this.images().length})` : 'Images',
   );
-  readonly addLabel = computed(() => (this.isView() ? 'Add photo' : 'Add image'));
-  readonly addIcon = computed(() => (this.isView() ? 'add' : 'image'));
   readonly countLabel = computed(() => formatAttachedImageCount(this.images().length));
 
   onAddImage(): void {
+    if (this.isView()) {
+      return;
+    }
+
     this.addImage.emit();
   }
 
   onSelectCover(image: GalleryImage): void {
+    if (this.isView()) {
+      return;
+    }
+
     this.selectCover.emit(image);
   }
 
