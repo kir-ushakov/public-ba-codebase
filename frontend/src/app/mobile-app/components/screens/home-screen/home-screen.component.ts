@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Store, createSelectMap } from '@ngxs/store';
 import { AppAction } from 'src/app/shared/state/app.actions';
+import { TagsState } from 'src/app/shared/state/tags.state';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
 import { IUserAvatarInputData } from 'src/app/shared/components/ui-elements/user-avatar/user-avatar.interface';
@@ -27,6 +28,7 @@ import { filterHomeTasks } from './helpers/filter-home-tasks.function';
 export class HomeScreenComponent implements OnInit {
   selectors = createSelectMap({
     tasks: TasksState.actualTasks,
+    tags: TagsState.forCurrentUser,
     isLoggedIn: UserState.isLoggedIn,
     isLocalAuthenticated: UserState.isLocalAuthenticated,
     userFullName: UserState.userFullName,
@@ -38,7 +40,9 @@ export class HomeScreenComponent implements OnInit {
   readonly searchOpen = signal(false);
   readonly queryControl = new FormControl('', { nonNullable: true });
   readonly hasQuery = computed(() => this.query().trim().length > 0);
-  readonly filteredTasks = computed(() => filterHomeTasks(this.selectors.tasks(), this.query()));
+  readonly filteredTasks = computed(() =>
+    filterHomeTasks(this.selectors.tasks(), this.query(), this.selectors.tags()),
+  );
   readonly showNoResults = computed(
     () => this.searchOpen() && this.hasQuery() && this.filteredTasks().length === 0,
   );
