@@ -46,6 +46,7 @@ export type TaskDTO = {
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;
+  tagIds?: string[];
   createdAt: string;
   modifiedAt: string;
 };

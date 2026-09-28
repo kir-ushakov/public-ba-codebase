@@ -7,7 +7,7 @@ import { ETaskRepoServiceError } from '../../../src/shared/repo/task-repo.servic
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
-import { createTaskViaApi } from '../_setup/sync.helper.js';
+import { createTagViaApi, createTaskViaApi } from '../_setup/sync.helper.js';
 
 describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', () => {
   let app: Application;
@@ -193,5 +193,70 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
 
     const persisted = await models.TaskModel.findById(created.id).lean();
     expect(persisted?.description).toBeUndefined();
+  });
+
+  it('persists owned tag ids and leaves them when a later update omits tagIds', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const tag = await createTagViaApi(app, jwtCookie, { id: 'tag-update', name: 'Ideas' });
+    const created = await createTaskViaApi(app, jwtCookie, {
+      id: 'task-update-tags',
+      title: 'Task before tags',
+    });
+
+    const withTags = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          ...created,
+          tagIds: [tag.id],
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(withTags.status).toBe(200);
+    expect(withTags.body.tagIds).toEqual([tag.id]);
+
+    const { tagIds: _tagIds, ...withoutTagIds } = withTags.body;
+    const renamed = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          ...withoutTagIds,
+          title: 'Renamed without touching tags',
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(renamed.status).toBe(200);
+    expect(renamed.body.tagIds).toEqual([tag.id]);
+
+    const persisted = await models.TaskModel.findById(created.id).lean();
+    expect(persisted?.title).toBe('Renamed without touching tags');
+    expect(persisted?.tagIds).toEqual([tag.id]);
+  });
+
+  it('rejects a tag id the user does not own and keeps the stored ids', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const created = await createTaskViaApi(app, jwtCookie, {
+      id: 'task-update-foreign-tag',
+      title: 'Task stays untagged',
+    });
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          ...created,
+          tagIds: ['tag-not-owned'],
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(400);
+    expect(res.body.name).toBe(ETaskError.UnknownTag);
+    expect(res.body).toHaveProperty('message');
+
+    const persisted = await models.TaskModel.findById(created.id).lean();
+    expect(persisted?.tagIds ?? []).toEqual([]);
   });
 });

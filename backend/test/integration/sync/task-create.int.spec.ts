@@ -6,6 +6,7 @@ import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
+import { createTagViaApi } from '../_setup/sync.helper.js';
 
 describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', () => {
   let app: Application;
@@ -296,5 +297,55 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(res.status).toBe(400);
     expect(res.body.name).toBe(ETaskError.TitleTooLong);
     expect(res.body).toHaveProperty('message');
+  });
+
+  it('persists owned tag ids on the task', async () => {
+    const { userId, jwtCookie } = await seedTestUser();
+    const tag = await createTagViaApi(app, jwtCookie, { id: 'tag-owned', name: 'Work' });
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          id: 'task-with-tags',
+          type: ETaskType.Basic,
+          title: 'Tagged task',
+          status: ETaskStatus.Todo,
+          tagIds: [tag.id],
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(201);
+    const responseBody: TaskDTO = res.body;
+    expect(responseBody.tagIds).toEqual([tag.id]);
+    expect(responseBody.userId).toBe(userId);
+
+    const persisted = await models.TaskModel.findById('task-with-tags').lean();
+    expect(persisted?.tagIds).toEqual([tag.id]);
+  });
+
+  it('rejects a tag id the user does not own', async () => {
+    const owner = await seedTestUser({ email: 'tag-owner@example.com' });
+    const other = await seedTestUser({ email: 'tag-other@example.com' });
+    const tag = await createTagViaApi(app, owner.jwtCookie, { id: 'tag-foreign', name: 'Work' });
+
+    const res = await authenticatedRequest(app, other.jwtCookie)
+      .post('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          id: 'task-foreign-tag',
+          type: ETaskType.Basic,
+          title: 'Should not attach a foreign tag',
+          status: ETaskStatus.Todo,
+          tagIds: [tag.id],
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(400);
+    expect(res.body.name).toBe(ETaskError.UnknownTag);
+    expect(res.body).toHaveProperty('message');
+    expect(await models.TaskModel.findById('task-foreign-tag').lean()).toBeNull();
   });
 });

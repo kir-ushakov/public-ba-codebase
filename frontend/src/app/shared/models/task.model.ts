@@ -10,6 +10,7 @@ export type Task = {
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;
+  tagIds?: string[];
   status: ETaskStatus;
   createdAt: string;
   modifiedAt: string;
@@ -28,6 +29,7 @@ export const defaultTask = {
 export type DefaultTask = typeof defaultTask & {
   imageId?: string;
   description?: TaskDescriptionDoc;
+  tagIds?: string[];
 };
 
 export type TaskChanges = {

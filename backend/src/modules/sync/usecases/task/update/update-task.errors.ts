@@ -21,4 +21,12 @@ export const UpdateTaskErrors = {
     Result.fail(
       new UseCaseError<UpdateTaskErrorCode>(error.code, error.message, EHttpStatus.BadRequest),
     ),
+  UnknownTag: (): Result<never, UseCaseError<UpdateTaskErrorCode>> =>
+    Result.fail(
+      new UseCaseError<UpdateTaskErrorCode>(
+        ETaskError.UnknownTag,
+        'One or more tags are not owned by this user',
+        EHttpStatus.BadRequest,
+      ),
+    ),
 };

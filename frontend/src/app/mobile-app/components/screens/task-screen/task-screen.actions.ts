@@ -62,6 +62,12 @@ export namespace TaskScreenAction {
     constructor(public image: DraftTaskImage) {}
   }
 
+  export class TagIdsChanged {
+    static readonly type = '[TaskScreen] Tag Ids Changed';
+
+    constructor(public tagIds: string[]) {}
+  }
+
   export class UpdateFormData {
     static readonly type = '[TaskScreen] Update Form';
 

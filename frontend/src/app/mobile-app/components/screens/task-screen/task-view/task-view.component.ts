@@ -60,6 +60,10 @@ export class TaskViewComponent {
     );
   }
 
+  tagsChanged(tagIds: string[]): void {
+    this.store.dispatch(new TaskScreenAction.TagIdsChanged(tagIds));
+  }
+
   draftImageRemoved(image: GalleryImage): void {
     this.store.dispatch(
       new TaskScreenAction.DraftImageRemoved({

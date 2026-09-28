@@ -33,6 +33,7 @@ services:
       - '3443:3443'
     volumes:
       - ./backend/src:/app/backend/src
+      - ./backend/test:/app/backend/test
       - ./contracts:/app/contracts
       - files:/app/backend/files
     environment:

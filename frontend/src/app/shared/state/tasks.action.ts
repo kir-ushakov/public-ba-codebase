@@ -1,6 +1,9 @@
 import { Task, TaskChanges } from 'src/app/shared/models/';
 
-export type TaskCreateInput = Pick<Task, 'title' | 'description' | 'imageId' | 'images'> &
+export type TaskCreateInput = Pick<
+  Task,
+  'title' | 'description' | 'imageId' | 'images' | 'tagIds'
+> &
   Partial<Pick<Task, 'status'>>;
 
 export namespace TasksAction {

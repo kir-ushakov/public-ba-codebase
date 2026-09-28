@@ -106,6 +106,30 @@ export class TaskScreenState {
     }
   }
 
+  @Action(TaskScreenAction.TagIdsChanged)
+  tagIdsChanged(
+    ctx: StateContext<ITaskScreenStateModel>,
+    { tagIds }: TaskScreenAction.TagIdsChanged,
+  ): void {
+    const state = ctx.getState();
+    ctx.patchState({
+      taskData: {
+        ...state.taskData,
+        tagIds,
+      },
+    });
+    if (state.mode !== ETaskViewMode.View || !state.taskData.id) {
+      return;
+    }
+
+    ctx.dispatch(
+      new TasksAction.UpdateTask({
+        taskId: state.taskData.id,
+        changes: { tagIds },
+      }),
+    );
+  }
+
   @Action(TaskScreenAction.ApplyButtonPressed)
   async applyButtonPressed(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
     const state = ctx.getState();

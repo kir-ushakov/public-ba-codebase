@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { provideStore, Store } from '@ngxs/store';
+import { Actions, ofActionDispatched, provideStore, Store } from '@ngxs/store';
+import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
 import { firstValueFrom } from 'rxjs';
 import {
   ETaskViewMode,
@@ -11,6 +12,7 @@ import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
+import { SyncAction } from 'src/app/shared/state/sync.action';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { EUserAuthState, UserState } from 'src/app/shared/state/user.state';
 
@@ -119,6 +121,62 @@ describe('TaskScreenState', () => {
     expect(created?.title).toBe('Task with details');
     expect(created?.description).toEqual(description);
     expect(created?.status).toBe(ETaskStatus.Todo);
+  });
+
+  it('attaches selected tag ids when creating a task', async () => {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Tagged task',
+          description: null,
+          tagIds: ['tag-1'],
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const created = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(t => t.id !== existingWithPhoto.id);
+
+    expect(created?.tagIds).toEqual(['tag-1']);
+  });
+
+  it('queues a task update when view-mode tags are added or removed', async () => {
+    const synced: SyncAction.ChangeForSyncOccurred[] = [];
+    const subscription = TestBed.inject(Actions)
+      .pipe(ofActionDispatched(SyncAction.ChangeForSyncOccurred))
+      .subscribe(action => synced.push(action));
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
+    );
+    await firstValueFrom(store.dispatch(new TaskScreenAction.TagIdsChanged(['tag-1', 'tag-2'])));
+
+    expect(store.selectSnapshot(TaskScreenState.task).tagIds).toEqual(['tag-1', 'tag-2']);
+    expect(
+      store.selectSnapshot(TasksState.allTasks).find(task => task.id === existingWithPhoto.id)
+        ?.tagIds,
+    ).toEqual(['tag-1', 'tag-2']);
+    expect(synced.map(action => action.change)).toEqual([
+      expect.objectContaining({
+        entity: EChangedEntity.Task,
+        action: EChangeAction.Updated,
+        object: expect.objectContaining({
+          id: existingWithPhoto.id,
+          tagIds: ['tag-1', 'tag-2'],
+        }),
+      }),
+    ]);
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.TagIdsChanged(['tag-2'])));
+
+    expect(store.selectSnapshot(TaskScreenState.task).tagIds).toEqual(['tag-2']);
+    expect(synced[1]?.change.object).toEqual(
+      expect.objectContaining({ id: existingWithPhoto.id, tagIds: ['tag-2'] }),
+    );
+    subscription.unsubscribe();
   });
 
   it('creates an Active task when the form status is Active', async () => {

@@ -23,6 +23,10 @@ export class TasksMapper {
       task.description = taskDto.description;
     }
 
+    if (taskDto.tagIds) {
+      task.tagIds = taskDto.tagIds;
+    }
+
     return task;
   }
 
@@ -50,6 +54,10 @@ export class TasksMapper {
 
     if (!isEmptyTaskDescription(task.description)) {
       dto.description = task.description;
+    }
+
+    if (task.tagIds) {
+      dto.tagIds = task.tagIds;
     }
 
     return dto;

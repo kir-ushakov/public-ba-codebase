@@ -15,7 +15,7 @@ import { ETaskRepoLoadError } from '../../../src/shared/repo/task-repo.service.j
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
-import { allocateClientId, createTaskViaApi } from '../_setup/sync.helper.js';
+import { allocateClientId, createTagViaApi, createTaskViaApi } from '../_setup/sync.helper.js';
 
 describe('Integration: GetChanges (Controller -> UseCase -> Repo -> MongoDB)', () => {
   let app: Application;
@@ -148,6 +148,86 @@ describe('Integration: GetChanges (Controller -> UseCase -> Repo -> MongoDB)', (
     } finally {
       errorSpy.mockRestore();
     }
+  });
+
+  it('maps a task document without tagIds to an empty list', async () => {
+    const { userId, jwtCookie } = await seedTestUser();
+    const clientId = await allocateClientId(app, jwtCookie);
+
+    await models.TaskModel.create({
+      _id: 'legacy-no-tags',
+      userId,
+      type: ETaskType.Basic,
+      title: 'Legacy task without tags',
+      status: ETaskStatus.Todo,
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      modifiedAt: new Date('2024-01-02T00:00:00.000Z'),
+    });
+
+    const res = await fetchChanges(app, jwtCookie, clientId);
+    expect(res.status).toBe(200);
+    expect(res.body.changes).toEqual([
+      expect.objectContaining({
+        entity: EChangedEntity.Task,
+        action: EChangeAction.Updated,
+        object: expect.objectContaining({ id: 'legacy-no-tags', tagIds: [] }),
+      }),
+    ]);
+  });
+
+  it('reads a stored tag that still has isCategory', async () => {
+    const { userId, jwtCookie } = await seedTestUser();
+    const clientId = await allocateClientId(app, jwtCookie);
+
+    await models.TagModel.collection.insertOne({
+      _id: 'legacy-category',
+      userId,
+      isCategory: true,
+      name: 'Legacy',
+      color: 'teal',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      modifiedAt: new Date('2024-01-02T00:00:00.000Z'),
+    } as never);
+
+    const res = await fetchChanges(app, jwtCookie, clientId);
+    expect(res.status).toBe(200);
+    expect(res.body.changes).toEqual([
+      expect.objectContaining({
+        entity: EChangedEntity.Tag,
+        action: EChangeAction.Updated,
+        object: expect.objectContaining({ id: 'legacy-category', name: 'Legacy' }),
+      }),
+    ]);
+    expect(res.body.changes[0].object).not.toHaveProperty('isCategory');
+  });
+
+  it('delivers a created tag and then its deletion', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const clientId = await allocateClientId(app, jwtCookie);
+    const tag = await createTagViaApi(app, jwtCookie, { id: 'tag-changes-1', name: 'Work' });
+
+    const firstPull = await fetchChanges(app, jwtCookie, clientId);
+    expect(firstPull.status).toBe(200);
+    expect(firstPull.body.changes).toEqual([
+      expect.objectContaining({
+        entity: EChangedEntity.Tag,
+        action: EChangeAction.Updated,
+        object: expect.objectContaining({ id: tag.id, name: tag.name }),
+      }),
+    ]);
+
+    const del = await authenticatedRequest(app, jwtCookie).delete(`/api/sync/tag/${tag.id}`);
+    expect(del.status).toBe(200);
+
+    const secondPull = await fetchChanges(app, jwtCookie, clientId);
+    expect(secondPull.status).toBe(200);
+    expect(secondPull.body.changes).toEqual([
+      expect.objectContaining({
+        entity: EChangedEntity.Tag,
+        action: EChangeAction.Deleted,
+        object: expect.objectContaining({ id: tag.id }),
+      }),
+    ]);
   });
 });
 

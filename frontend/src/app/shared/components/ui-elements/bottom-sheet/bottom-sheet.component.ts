@@ -17,7 +17,9 @@ const DISMISS_DRAG_DISTANCE = 48;
 })
 export class BottomSheetComponent {
   readonly title = input.required<string>();
+  readonly showBack = input(false);
   readonly dismissed = output<void>();
+  readonly back = output<void>();
   readonly dragOffset = signal(0);
 
   private dragging = false;
@@ -34,6 +36,10 @@ export class BottomSheetComponent {
 
   onCloseClick(): void {
     this.dismissed.emit();
+  }
+
+  onBackClick(): void {
+    this.back.emit();
   }
 
   onHandlePointerDown(event: PointerEvent): void {

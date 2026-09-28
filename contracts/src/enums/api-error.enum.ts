@@ -78,6 +78,14 @@ export enum ETaskError {
   TitleTooLong = 'TASK_ERROR__TITLE_TOO_LONG',
   DescriptionInvalid = 'TASK_ERROR__DESCRIPTION_INVALID',
   DescriptionTooLong = 'TASK_ERROR__DESCRIPTION_TOO_LONG',
+  UnknownTag = 'TASK_ERROR__UNKNOWN_TAG',
+}
+
+/** Domain. Create tag sends these as JSON `name`. */
+export enum ETagError {
+  NameMissed = 'TAG_ERROR__NAME_MISSED',
+  NameTooLong = 'TAG_ERROR__NAME_TOO_LONG',
+  ColorMissed = 'TAG_ERROR__COLOR_MISSED',
 }
 
 export enum ETaskRepoServiceError {

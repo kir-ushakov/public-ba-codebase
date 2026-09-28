@@ -12,6 +12,7 @@ import { mobileRoutes } from './app/mobile-app/mobile-app.routing';
 import { AppState } from './app/shared/state/app.state';
 import { UserState } from './app/shared/state/user.state';
 import { SyncState } from './app/shared/state/sync.state';
+import { TagsState } from './app/shared/state/tags.state';
 import { TasksState } from './app/shared/state/tasks.state';
 import { HttpInterceptorService } from './app/shared/services/infrastructure/http-interceptor.service';
 import { PwaVersionUpdateService } from './app/shared/services/pwa/pwa-version-update.service';
@@ -28,7 +29,7 @@ bootstrapApplication(AppComponent, {
         keys: '*',
       }),
     ),
-    provideStates([AppState, UserState, SyncState, TasksState]),
+    provideStates([AppState, UserState, SyncState, TasksState, TagsState]),
     provideNoopAnimations(),
     provideRouter(mobileRoutes),
     importProvidersFrom(

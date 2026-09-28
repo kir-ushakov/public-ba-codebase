@@ -160,6 +160,7 @@ export class TasksState {
         ? undefined
         : taskInitData.description,
       status: taskInitData.status ?? ETaskStatus.Todo,
+      tagIds: taskInitData.tagIds ?? [],
       createdAt: timestamp,
       modifiedAt: timestamp,
     };

@@ -64,6 +64,20 @@ describe('TasksState', () => {
       status: ETaskStatus.Todo,
     });
     expect(all[0]?.id).toBeTruthy();
+    expect(all[0]?.tagIds).toEqual([]);
+  });
+
+  it('stores selected tag ids on optimistic create', async () => {
+    await firstValueFrom(
+      store.dispatch(
+        new TasksAction.CreateTask({ title: 'Tagged task', tagIds: ['tag-1'] }, userId),
+      ),
+    );
+
+    expect(store.selectSnapshot(TasksState.allTasks)[0]).toMatchObject({
+      title: 'Tagged task',
+      tagIds: ['tag-1'],
+    });
   });
 
   it('stores description on optimistic create', async () => {
