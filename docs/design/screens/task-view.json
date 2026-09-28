@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-view",
     "name": "Task View",
-    "version": "1.5.0",
+    "version": "1.6.0",
 
     "purpose": "Read a task and perform focused task actions without entering full edit mode.",
 
@@ -165,17 +165,7 @@
         }
       },
 
-      "quickProperties": [
-        {
-          "id": "status",
-          "component": "property-row",
-          "label": "Status",
-          "value": "{task.status}",
-          "icon": "status-{task.status}",
-          "trailingIcon": "chevron_right",
-          "action": "open-status-selector"
-        }
-      ]
+      "quickProperties": []
     },
 
     "bottomActions": {
@@ -209,7 +199,7 @@
 
     "states": {
       "default": {
-        "description": "Standard read-only Task View for a To do task. The task type chip shows To do. No calendar, due-date or location-trigger information is displayed.",
+        "description": "Standard read-only Task View for a To do task. The task type chip shows To do. No status section, calendar, due-date or location-trigger information is displayed.",
         "referenceImage": "../references/task-view-todo.png",
 
         "taskType": {
@@ -288,54 +278,6 @@
         ]
       },
 
-      "statusSelectorOpen": {
-        "trigger": "quick-properties.status",
-        "referenceImage": "../references/task-view-status-selector.png",
-
-        "overlay": {
-          "component": "bottom-sheet",
-          "title": "Set status",
-
-          "dismiss": ["close-button", "swipe-down", "backdrop"],
-
-          "options": [
-            {
-              "id": "todo",
-              "label": "To do",
-              "description": "Not started yet",
-              "icon": "status-todo"
-            },
-            {
-              "id": "active",
-              "label": "Active",
-              "description": "Currently active",
-              "icon": "status-active"
-            },
-            {
-              "id": "done",
-              "label": "Done",
-              "description": "Task completed",
-              "icon": "status-done"
-            },
-            {
-              "id": "cancelled",
-              "label": "Cancelled",
-              "description": "Task is no longer relevant",
-              "icon": "status-cancelled"
-            }
-          ],
-
-          "selected": "{task.status}",
-          "selectionTreatment": "accent border and check icon",
-
-          "primaryAction": {
-            "label": "Apply",
-            "style": "primary",
-            "action": "update-task-status"
-          }
-        }
-      },
-
       "optionsMenuOpen": {
         "trigger": "header.more",
         "referenceImage": "../references/task-view-options.png",
@@ -409,11 +351,13 @@
       "Calendar-specific scheduling information belongs only to the Calendar task type design.",
       "Location-specific trigger information belongs only to the Location task type design.",
 
-      "For Calendar tasks, show the configured date below the task title and expose Due date as an additional quick property below Status.",
-      "For Location tasks, show the configured location below the task title and expose Location as an additional quick property below Status.",
+      "Task View does not show a Status section and does not open a status selector.",
+      "Status changes on Task View are the sticky actions Mark as Active and Done.",
+      "A To do task has no quick properties, so that section is omitted.",
+      "For Calendar tasks, show the configured date below the task title and as a Due date quick property.",
+      "For Location tasks, show the configured location below the task title and as a Location quick property.",
 
-      "Status remains available as a quick property row.",
-      "Do not duplicate Done or Cancelled actions in the header options menu.",
+      "Do not duplicate Mark as Active or Done in the header options menu.",
 
       "Images are displayed as a gallery rather than as a single cover-only media block.",
       "The Add photo tile is always the first item in the image gallery, before all existing image attachments.",
@@ -434,7 +378,6 @@
       "The options menu contains object-level actions: Edit task, Duplicate and Delete task.",
       "Delete task uses the global danger semantic treatment and requires confirmation.",
 
-      "The status selector is a bottom sheet. Chrome, handle, backdrop and dismiss behavior come from design-system.json.",
       "Keep overlays visually subordinate to the task and consistent with the global surface hierarchy.",
 
       "Task View does not display the global Home, Tasks and Tags bottom navigation."
@@ -447,7 +390,7 @@
     },
 
     "angular": {
-      "note": "The live Task View does not yet match this spec. Treat this JSON as the approved target. ETaskType.Basic stays TASK_TYPE_BASIC and is presented as To do. Location and Calendar are additional product task types represented by the same task-type chip pattern. Task type is not editable from Task View. Task View title and description are read-only. To do tasks do not display due-date, calendar or location-trigger information. Calendar tasks display scheduling information below the title and expose Due date as a quick property. Location tasks display the configured location below the title and expose Location as a quick property. Tags, multiple image attachments, cover-image selection, Active status, Duplicate and additional task types may be product destinations rather than current wire capabilities. The Add photo tile is rendered before existing image attachments. The bottom of Task View contains task-state actions instead of the global Home/Tasks/Tags navigation.",
+      "note": "The live Task View does not yet match this spec. Treat this JSON as the approved target. ETaskType.Basic stays TASK_TYPE_BASIC and is presented as To do. Location and Calendar are additional product task types represented by the same task-type chip pattern. Task type is not editable from Task View. Task View title and description are read-only. Task View has no Status section and no status selector. Mark as Active and Done are the only status actions on this screen. To do tasks do not display due-date, calendar or location-trigger information, and they omit the quick properties section. Calendar tasks display scheduling information below the title and expose Due date as a quick property. Location tasks display the configured location below the title and expose Location as a quick property. Tags, multiple image attachments, cover-image selection, Active status, Duplicate and additional task types may be product destinations rather than current wire capabilities. The Add photo tile is rendered before existing image attachments. The bottom of Task View contains task-state actions instead of the global Home/Tasks/Tags navigation.",
 
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
 

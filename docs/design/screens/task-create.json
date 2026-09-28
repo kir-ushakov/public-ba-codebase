@@ -178,7 +178,7 @@
     },
 
     "angular": {
-      "note": "The live Create Task screen does not yet match this spec. Treat this JSON as the approved target. TaskDTO currently has a single optional imageId, no tags field, and no dueDate. The form offers To do and Active (ETaskStatus.Todo and ETaskStatus.Active). Done and Cancel remain view actions, not form options. Character counters in the PNG (200/1000) are visual placeholders; live limits stay in TaskConst until a separate product decision changes them.",
+      "note": "The live Create Task screen does not yet match this spec. Treat this JSON as the approved target. TaskDTO currently has a single optional imageId, no tags field, and no dueDate. The form offers To do and Active (ETaskStatus.Todo and ETaskStatus.Active). Mark as Active and Done are Task View actions, not form options. Task View does not show a status section. Character counters in the PNG (200/1000) are visual placeholders; live limits stay in TaskConst until a separate product decision changes them.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/screens/task-screen/task-edit/",

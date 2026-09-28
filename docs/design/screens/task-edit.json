@@ -191,7 +191,7 @@
     },
 
     "angular": {
-      "note": "Create and Edit share task-edit today. The live screen does not yet match this spec. Same data-shape caveats as task-create.json: single imageId, no task tags or dueDate on TaskDTO. The form offers To do and Active. Done and Cancel remain view actions. Mockup counters are not TaskConst.",
+      "note": "Create and Edit share task-edit today. The live screen does not yet match this spec. Same data-shape caveats as task-create.json: single imageId, no task tags or dueDate on TaskDTO. The form offers To do and Active. Mark as Active and Done are Task View actions. Task View does not show a status section. Mockup counters are not TaskConst.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/screens/task-screen/task-edit/",
