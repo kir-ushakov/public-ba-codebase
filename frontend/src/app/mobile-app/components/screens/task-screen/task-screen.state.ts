@@ -111,20 +111,20 @@ export class TaskScreenState {
     ctx: StateContext<ITaskScreenStateModel>,
     { tagIds }: TaskScreenAction.TagIdsChanged,
   ): void {
-    const taskData = ctx.getState().taskData;
+    const state = ctx.getState();
     ctx.patchState({
       taskData: {
-        ...taskData,
+        ...state.taskData,
         tagIds,
       },
     });
-    if (!taskData.id) {
+    if (state.mode !== ETaskViewMode.View || !state.taskData.id) {
       return;
     }
 
     ctx.dispatch(
       new TasksAction.UpdateTask({
-        taskId: taskData.id,
+        taskId: state.taskData.id,
         changes: { tagIds },
       }),
     );

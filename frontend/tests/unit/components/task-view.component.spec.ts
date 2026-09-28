@@ -230,6 +230,57 @@ describe('TaskViewComponent title', () => {
         ?.textContent,
     ).toContain('Errands');
   });
+
+  it('adds and removes a tag on the open task', () => {
+    const store = TestBed.inject(Store);
+    store.reset({
+      tags: {
+        entities: [
+          {
+            id: 'tag-errands',
+            userId: 'user-1',
+            name: 'Errands',
+            color: TAG_COLOR,
+            createdAt: '2020-01-15T12:00:00.000Z',
+            modifiedAt: '2020-01-15T12:00:00.000Z',
+          },
+        ],
+      },
+      user: viewUser(),
+      taskViewState: {
+        mode: ETaskViewMode.View,
+        taskViewForm: {
+          formData: { title: '', description: null },
+          status: false,
+        },
+        taskData: {
+          id: 'task-1',
+          userId: 'user-1',
+          type: ETaskType.Basic,
+          title: 'Buy cat food',
+          status: ETaskStatus.Todo,
+          tagIds: [],
+          createdAt: '2020-01-15T12:00:00.000Z',
+          modifiedAt: '2020-01-15T12:00:00.000Z',
+        },
+        draftImages: [],
+      },
+    });
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    host.querySelector<HTMLButtonElement>('[data-test="task-tags-add"]')!.click();
+    fixture.detectChanges();
+    host.querySelector<HTMLButtonElement>('[data-test="tag-chip"]')!.click();
+    fixture.detectChanges();
+
+    expect(store.selectSnapshot(TaskScreenState.task).tagIds).toEqual(['tag-errands']);
+
+    host.querySelector<HTMLButtonElement>('[data-test="tag-chip"]')!.click();
+    fixture.detectChanges();
+
+    expect(store.selectSnapshot(TaskScreenState.task).tagIds).toEqual([]);
+  });
 });
 
 function viewUser() {
