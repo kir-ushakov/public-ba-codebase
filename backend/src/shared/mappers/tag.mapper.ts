@@ -4,12 +4,11 @@ import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 
 export class TagMapper {
   public static toDomain(raw: TagPersistent): Tag {
-    const { userId, isCategory, name, color, _id, createdAt, modifiedAt } = raw;
+    const { userId, name, color, _id, createdAt, modifiedAt } = raw;
 
     return Tag.reconstitute(
       {
         userId,
-        isCategory,
         name: name ?? '',
         color: color ?? '',
         createdAt,
@@ -23,7 +22,6 @@ export class TagMapper {
     return {
       _id: tag.id.toString(),
       userId: tag.userId,
-      isCategory: tag.isCategory,
       name: tag.name,
       color: tag.color,
       createdAt: tag.createdAt,
@@ -35,7 +33,6 @@ export class TagMapper {
     return {
       id: tag.id.toString(),
       userId: tag.userId,
-      isCategory: tag.isCategory,
       name: tag.name,
       color: tag.color,
       createdAt: tag.createdAt.toISOString(),

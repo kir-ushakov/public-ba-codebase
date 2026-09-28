@@ -17,7 +17,6 @@ export class TagMapper {
     return {
       id: tag.id,
       userId: tag.userId,
-      isCategory: false,
       name: tag.name,
       color: tag.color,
       createdAt: tag.createdAt,

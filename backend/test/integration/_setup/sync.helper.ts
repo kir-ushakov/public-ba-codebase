@@ -55,7 +55,6 @@ export type TagSeed = {
   id: string;
   name?: string;
   color?: string;
-  isCategory?: boolean;
 };
 
 export async function createTagViaApi(
@@ -67,7 +66,6 @@ export async function createTagViaApi(
     id: seed.id,
     name: seed.name ?? 'Work',
     color: seed.color ?? 'teal',
-    isCategory: seed.isCategory ?? false,
   };
 
   const res = await authenticatedRequest(app, jwtCookie)

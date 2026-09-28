@@ -6,7 +6,6 @@ export interface TagDocument extends Omit<TagPersistent, '_id'>, Document<string
 const TagSchema = new Schema({
   _id: { type: String, require: true },
   userId: { type: String, require: true },
-  isCategory: { type: Boolean, require: true },
   name: { type: String, require: true },
   color: { type: String, require: true },
   createdAt: { type: Date, require: true },

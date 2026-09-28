@@ -31,7 +31,6 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
           id: 'tag-unauth',
           name: 'Should not be created',
           color: 'teal',
-          isCategory: false,
         },
       });
 
@@ -45,7 +44,6 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
       id: 'tag-123',
       name: 'Work',
       color: 'teal',
-      isCategory: false,
     };
 
     const res = await authenticatedRequest(app, jwtCookie)
@@ -59,7 +57,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
     expect(responseBody.id).toBe(dto.id);
     expect(responseBody.name).toBe(dto.name);
     expect(responseBody.color).toBe(dto.color);
-    expect(responseBody.isCategory).toBe(false);
+    expect(responseBody).not.toHaveProperty('isCategory');
     expect(responseBody.userId).toBe(userId);
     expect(responseBody.createdAt).toBeDefined();
     expect(responseBody.modifiedAt).toBeDefined();
@@ -71,7 +69,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
     }
     expect(persisted.name).toBe(dto.name);
     expect(persisted.color).toBe(dto.color);
-    expect(persisted.isCategory).toBe(false);
+    expect(persisted).not.toHaveProperty('isCategory');
     expect(String(persisted.userId)).toBe(userId);
   });
 
@@ -85,7 +83,6 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
           id: 'tag-empty-name',
           name: '',
           color: 'teal',
-          isCategory: false,
         },
       })
       .set('Accept', 'application/json');

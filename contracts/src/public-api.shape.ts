@@ -93,7 +93,6 @@ const _userDto: ExactKeys<UserDto, typeof USER_DTO_KEYS> = true;
 const TAG_DTO_KEYS = [
   'id',
   'userId',
-  'isCategory',
   'name',
   'color',
   'createdAt',

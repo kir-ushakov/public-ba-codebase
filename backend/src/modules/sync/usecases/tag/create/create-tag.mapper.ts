@@ -11,7 +11,6 @@ export function requestToUsecaseParams(
   return {
     tagProps: {
       userId,
-      isCategory: tagDto.isCategory,
       name: tagDto.name,
       color: tagDto.color,
     },

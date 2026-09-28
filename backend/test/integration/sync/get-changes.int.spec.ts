@@ -175,6 +175,32 @@ describe('Integration: GetChanges (Controller -> UseCase -> Repo -> MongoDB)', (
     ]);
   });
 
+  it('reads a stored tag that still has isCategory', async () => {
+    const { userId, jwtCookie } = await seedTestUser();
+    const clientId = await allocateClientId(app, jwtCookie);
+
+    await models.TagModel.collection.insertOne({
+      _id: 'legacy-category',
+      userId,
+      isCategory: true,
+      name: 'Legacy',
+      color: 'teal',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      modifiedAt: new Date('2024-01-02T00:00:00.000Z'),
+    } as never);
+
+    const res = await fetchChanges(app, jwtCookie, clientId);
+    expect(res.status).toBe(200);
+    expect(res.body.changes).toEqual([
+      expect.objectContaining({
+        entity: EChangedEntity.Tag,
+        action: EChangeAction.Updated,
+        object: expect.objectContaining({ id: 'legacy-category', name: 'Legacy' }),
+      }),
+    ]);
+    expect(res.body.changes[0].object).not.toHaveProperty('isCategory');
+  });
+
   it('delivers a created tag and then its deletion', async () => {
     const { jwtCookie } = await seedTestUser();
     const clientId = await allocateClientId(app, jwtCookie);

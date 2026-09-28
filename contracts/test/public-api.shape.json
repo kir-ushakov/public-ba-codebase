@@ -155,7 +155,6 @@
       "keys": [
         "id",
         "userId",
-        "isCategory",
         "name",
         "color",
         "createdAt",

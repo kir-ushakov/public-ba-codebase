@@ -9,7 +9,6 @@ export { ETagError };
 
 export type TagProps = {
   userId: string;
-  isCategory: boolean;
   name: string;
   color: string;
   createdAt: Date;
@@ -20,7 +19,6 @@ export type TagProps = {
 export type TagPersistent = {
   _id?: string;
   userId: string;
-  isCategory: boolean;
   name: string;
   color: string;
   createdAt: Date;
@@ -37,10 +35,6 @@ export class Tag extends AggregateRoot<TagProps> {
 
   get userId(): string {
     return this.props.userId;
-  }
-
-  get isCategory(): boolean {
-    return this.props.isCategory;
   }
 
   get name(): string {
