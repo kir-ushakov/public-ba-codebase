@@ -1,9 +1,7 @@
 @let task = task$ | async;
 @if (task) {
   <ba-task-type-chip [type]="task.type" />
-  <div class="title-holder">
-    <span data-test="task-view-title">{{ task.title }}</span>
-  </div>
+  <h2 class="task-title" data-test="task-view-title">{{ task.title }}</h2>
   @if (task.description; as description) {
     <ba-rich-text-editor
       class="task-description"

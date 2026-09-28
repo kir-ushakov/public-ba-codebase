@@ -1,10 +1,9 @@
-@use 'src/scss/colors' as colors;
-
-.title-holder {
-  text-align: center;
-  color: colors.$color-main-text;
-  font-size: 20px;
-  font-style: italic;
+.task-title {
+  margin: 0 0 var(--spacing-md);
+  color: var(--color-text-primary);
+  font-size: var(--typography-page-title-size);
+  font-weight: var(--typography-page-title-weight);
+  line-height: var(--typography-page-title-line-height);
 }
 
 .task-description {
