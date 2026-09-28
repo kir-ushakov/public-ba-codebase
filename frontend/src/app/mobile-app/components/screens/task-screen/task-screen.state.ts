@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import type { StateContext } from '@ngxs/store';
 import { State, Action, Selector, Store } from '@ngxs/store';
 import type { DefaultTask, Task } from 'src/app/shared/models/task.model';
-import { ETaskStatus, defaultTask } from 'src/app/shared/models/task.model';
+import { ETaskStatus, ETaskType, defaultTask } from 'src/app/shared/models/task.model';
 import { TaskScreenAction } from './task-screen.actions';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
@@ -217,9 +217,17 @@ export class TaskScreenState {
     ctx.setState(defaults);
   }
 
-  @Action(TaskScreenAction.HomeButtonPressed)
-  homeButtonPressed(ctx: StateContext<ITaskScreenStateModel>): void {
-    ctx.dispatch([TaskScreenAction.Close, AppAction.NavigateToHomeScreen]);
+  @Action(TaskScreenAction.MarkActiveButtonPressed)
+  markActive(ctx: StateContext<ITaskScreenStateModel>): void {
+    if (ctx.getState().taskData.type !== ETaskType.Basic) {
+      return;
+    }
+    this.updateAndClose(ctx, { status: ETaskStatus.Active });
+  }
+
+  @Action(TaskScreenAction.MarkDoneButtonPressed)
+  markDone(ctx: StateContext<ITaskScreenStateModel>): void {
+    this.updateAndClose(ctx, { status: ETaskStatus.Done });
   }
 
   @Action(TaskScreenAction.AddPictureBtnPressed)

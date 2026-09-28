@@ -18,8 +18,12 @@ export namespace TaskScreenAction {
     static readonly type = '[TaskScreen] Cancel Button Pressed';
   }
 
-  export class HomeButtonPressed {
-    static readonly type = '[TaskScreen] Home Button Pressed';
+  export class MarkActiveButtonPressed {
+    static readonly type = '[TaskScreen] Mark Active Button Pressed';
+  }
+
+  export class MarkDoneButtonPressed {
+    static readonly type = '[TaskScreen] Mark Done Button Pressed';
   }
 
   export class Close {

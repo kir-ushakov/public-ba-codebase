@@ -32,7 +32,7 @@ test('user can edit a task title', async ({ page }) => {
 
   await expect(page.locator('[data-test="task-view-title"]')).toHaveText('Edited task title');
 
-  await page.click('[data-test="go-home-btn"]');
+  await page.click('[data-test="task-back"]');
   await page.waitForURL(/\/(home)?$/);
   await expect(
     page.locator('[data-test="task-tile"]', { hasText: 'Edited task title' }),

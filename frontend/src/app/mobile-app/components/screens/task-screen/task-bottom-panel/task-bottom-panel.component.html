@@ -22,8 +22,29 @@
   </div>
 }
 
-@if (mode() === ETaskViewMode.View) {
-  <div class="go-home-btn" data-test="go-home-btn" (click)="goHome()">
-    <img src="assets/ui/icons/home-icon.png" />
+@if (mode() === ETaskViewMode.View && (showMarkActive() || showMarkDone())) {
+  <div class="form-actions" data-test="task-view-actions">
+    @if (showMarkActive()) {
+      <button
+        class="form-action form-action-secondary"
+        type="button"
+        data-test="mark-task-active-btn"
+        (click)="markActive()"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">play_arrow</span>
+        Mark as Active
+      </button>
+    }
+    @if (showMarkDone()) {
+      <button
+        class="form-action form-action-primary"
+        type="button"
+        data-test="mark-task-done-btn"
+        (click)="markDone()"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">check</span>
+        Done
+      </button>
+    }
   </div>
 }
