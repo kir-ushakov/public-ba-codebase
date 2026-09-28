@@ -5,8 +5,10 @@ services:
     build:
       context: .
       dockerfile: ./frontend/Dockerfile
-    volumes:
-    - frontend_dist:/usr/src/app/dist
+    # Dev compose bind-mounts host src and contracts over the image.
+    # The host contracts tree has no dist, so ng build fails and nginx 500s.
+    volumes: !override
+      - frontend_dist:/usr/src/app/dist
     environment:
       - BUILD_MODE=build-prod
       # Cap Angular's Node heap so ng build cannot eat the whole 3GB VDS.
