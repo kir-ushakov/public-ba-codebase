@@ -115,8 +115,8 @@ Link them from the screen JSON:
 }
 
 "states": {
-  "statusSelectorOpen": {
-    "referenceImage": "../references/task-view-status-selector.png"
+  "optionsMenuOpen": {
+    "referenceImage": "../references/task-view-options.png"
   },
   "newTagOpen": {
     "spec": "../states/new-tag-open.json",
@@ -531,7 +531,6 @@ Use a bottom sheet for contextual selection and short secondary flows on mobile.
 Typical uses:
 
 - selecting tags
-- selecting task status
 - choosing an item from a compact list
 - short contextual actions that should not navigate away from the current screen
 
