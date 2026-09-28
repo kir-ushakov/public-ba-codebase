@@ -29,6 +29,9 @@ services:
       - KEY_PATH=/usr/ssl/brainassistant.app.key
 
   db:
+    # Host 27017 is taken by another Mongo on this VDS. Backend reaches this db by
+    # the compose service name, so the container does not need a published port.
+    ports: !override []
     # Default WiredTiger cache on a 3GB host is ~512MB plus overhead. 256MB is Mongo's minimum
     # and is enough for a personal task DB.
     command: ["--wiredTigerCacheSizeGB", "0.25"]
