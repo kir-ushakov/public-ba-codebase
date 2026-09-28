@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-view",
     "name": "Task View",
-    "version": "1.4.0",
+    "version": "1.5.0",
 
     "purpose": "Read a task and perform focused task actions without entering full edit mode.",
 
@@ -58,7 +58,6 @@
 
     "content": {
       "taskType": {
-        "label": "Task type",
         "component": "type-chip",
         "source": "task.type",
         "editable": false,
@@ -88,6 +87,11 @@
           "source": "task.title",
           "typographyToken": "typography.styles.pageTitle",
           "editable": false
+        },
+
+        "metadata": {
+          "component": "task-summary-metadata",
+          "visibility": "type-dependent"
         }
       },
 
@@ -109,7 +113,21 @@
 
         "count": {
           "visible": true,
-          "pattern": "Images ({count})"
+          "pattern": "Images ({count})",
+          "includesAddTile": false
+        },
+
+        "layout": {
+          "order": ["add-action", "images"]
+        },
+
+        "addAction": {
+          "enabled": true,
+          "component": "add-image-tile",
+          "label": "Add photo",
+          "icon": "add",
+          "action": "add-task-image",
+          "position": "first"
         },
 
         "image": {
@@ -122,14 +140,6 @@
           "badge": {
             "label": "Cover"
           }
-        },
-
-        "addAction": {
-          "enabled": true,
-          "component": "add-image-tile",
-          "label": "Add photo",
-          "icon": "add",
-          "action": "add-task-image"
         },
 
         "imageOptions": {
@@ -199,36 +209,83 @@
 
     "states": {
       "default": {
-        "description": "Standard read-only Task View for a To do task. The task type chip shows To do. No calendar or due-date information is displayed.",
+        "description": "Standard read-only Task View for a To do task. The task type chip shows To do. No calendar, due-date or location-trigger information is displayed.",
         "referenceImage": "../references/task-view-todo.png",
 
         "taskType": {
           "id": "todo",
           "label": "To do",
           "icon": "radio_button_unchecked"
-        }
-      },
+        },
 
-      "taskTypeLocation": {
-        "description": "Task View for a location-triggered task. The task type chip shows Location.",
-        "referenceImage": "../references/task-view-location.png",
+        "summaryMetadata": {
+          "visible": false
+        },
 
-        "taskType": {
-          "id": "location",
-          "label": "Location",
-          "icon": "location_on"
-        }
+        "additionalQuickProperties": []
       },
 
       "taskTypeCalendar": {
-        "description": "Task View for a calendar-based task. The task type chip shows Calendar.",
+        "description": "Task View for a calendar-based task. The task type chip shows Calendar. Scheduling information is shown below the title and as a Due date quick property.",
         "referenceImage": "../references/task-view-calendar.png",
 
         "taskType": {
           "id": "calendar",
           "label": "Calendar",
           "icon": "calendar_month"
-        }
+        },
+
+        "summaryMetadata": {
+          "visible": true,
+          "component": "calendar-summary",
+          "icon": "calendar_month",
+          "primary": "{task.dueDateRelative}",
+          "secondary": "{task.dueDateFormatted}"
+        },
+
+        "additionalQuickProperties": [
+          {
+            "id": "due-date",
+            "component": "property-row",
+            "label": "Due date",
+            "value": "{task.dueDateRelative}",
+            "secondaryValue": "{task.dueDateFormatted}",
+            "icon": "calendar_month",
+            "trailingIcon": "chevron_right",
+            "action": "open-due-date-selector"
+          }
+        ]
+      },
+
+      "taskTypeLocation": {
+        "description": "Task View for a location-triggered task. The task type chip shows Location. The configured location is shown below the title and as a Location quick property.",
+        "referenceImage": "../references/task-view-location.png",
+
+        "taskType": {
+          "id": "location",
+          "label": "Location",
+          "icon": "location_on"
+        },
+
+        "summaryMetadata": {
+          "visible": true,
+          "component": "location-summary",
+          "icon": "location_on",
+          "value": "{task.location.displayName}",
+          "trailingIcon": "chevron_right"
+        },
+
+        "additionalQuickProperties": [
+          {
+            "id": "location",
+            "component": "property-row",
+            "label": "Location",
+            "value": "{task.location.displayName}",
+            "icon": "location_on",
+            "trailingIcon": "chevron_right",
+            "action": "open-location-selector"
+          }
+        ]
       },
 
       "statusSelectorOpen": {
@@ -239,11 +296,7 @@
           "component": "bottom-sheet",
           "title": "Set status",
 
-          "dismiss": [
-            "close-button",
-            "swipe-down",
-            "backdrop"
-          ],
+          "dismiss": ["close-button", "swipe-down", "backdrop"],
 
           "options": [
             {
@@ -352,14 +405,19 @@
       "Location task type uses location_on.",
       "Do not use a radio selector or selected-state accent treatment for the task type chip.",
 
-      "For the To do task type, do not display calendar or due-date information.",
-      "Calendar-specific scheduling information belongs to the Calendar task type design.",
-      "Location-specific trigger information belongs to the Location task type design.",
+      "For the To do task type, do not display calendar, due-date or location-trigger information.",
+      "Calendar-specific scheduling information belongs only to the Calendar task type design.",
+      "Location-specific trigger information belongs only to the Location task type design.",
+
+      "For Calendar tasks, show the configured date below the task title and expose Due date as an additional quick property below Status.",
+      "For Location tasks, show the configured location below the task title and expose Location as an additional quick property below Status.",
 
       "Status remains available as a quick property row.",
       "Do not duplicate Done or Cancelled actions in the header options menu.",
 
       "Images are displayed as a gallery rather than as a single cover-only media block.",
+      "The Add photo tile is always the first item in the image gallery, before all existing image attachments.",
+      "The image count includes attached images only and does not include the Add photo tile.",
       "The cover image is one of the task attachments and is identified by a Cover badge.",
       "Task View may add images without entering full Edit mode.",
       "Adding an image does not make the rest of Task View editable.",
@@ -367,7 +425,7 @@
       "Tags are read-only chips in Task View, but tags may be added through the dedicated Add tag action.",
 
       "The sticky bottom action bar contains focused task-state actions rather than global application navigation.",
-      "For a To do task in To do status, Mark as Active is displayed on the left and Done on the right.",
+      "For a task in To do status, Mark as Active is displayed on the left and Done on the right.",
       "Mark as Active uses the secondary action treatment.",
       "Done uses the primary action treatment.",
       "The two bottom actions share the available width.",
@@ -385,11 +443,11 @@
     "reference": {
       "status": "approved",
       "image": "../references/task-view-todo.png",
-      "description": "Approved visual reference for Task View with To do task type. The screen is read-only, contains no calendar or due-date information, and uses Mark as Active and Done as the sticky bottom actions. Location and Calendar task types have separate visual references."
+      "description": "Approved visual reference for the default Task View with To do task type. Calendar and Location task types use their dedicated approved reference images."
     },
 
     "angular": {
-      "note": "The live Task View does not yet match this spec. Treat this JSON as the approved target. ETaskType.Basic stays TASK_TYPE_BASIC and is presented as To do. Location and Calendar are additional product task types represented by the same task-type chip pattern. Task type is not editable from Task View. Task View title and description are read-only. To do tasks do not display due-date or calendar information. Tags, multiple image attachments, cover-image selection, Active status, Duplicate and additional task types may be product destinations rather than current wire capabilities. The bottom of Task View contains task-state actions instead of the global Home/Tasks/Tags navigation.",
+      "note": "The live Task View does not yet match this spec. Treat this JSON as the approved target. ETaskType.Basic stays TASK_TYPE_BASIC and is presented as To do. Location and Calendar are additional product task types represented by the same task-type chip pattern. Task type is not editable from Task View. Task View title and description are read-only. To do tasks do not display due-date, calendar or location-trigger information. Calendar tasks display scheduling information below the title and expose Due date as a quick property. Location tasks display the configured location below the title and expose Location as a quick property. Tags, multiple image attachments, cover-image selection, Active status, Duplicate and additional task types may be product destinations rather than current wire capabilities. The Add photo tile is rendered before existing image attachments. The bottom of Task View contains task-state actions instead of the global Home/Tasks/Tags navigation.",
 
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
 
