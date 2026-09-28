@@ -119,4 +119,48 @@ describe('TaskViewComponent title', () => {
     ).toBeNull();
     expect((fixture.nativeElement as HTMLElement).querySelector('[contenteditable]')).toBeNull();
   });
+
+  it('shows Add photo before the attached images', () => {
+    const store = TestBed.inject(Store);
+    store.reset({
+      taskViewState: {
+        mode: ETaskViewMode.View,
+        taskViewForm: {
+          formData: { title: '', description: null },
+          status: false,
+        },
+        taskData: {
+          id: 'task-1',
+          userId: 'user-1',
+          type: ETaskType.Basic,
+          title: 'Buy cat food',
+          status: ETaskStatus.Todo,
+          imageId: 'cover-id',
+          images: ['cover-id', 'second-id'],
+          createdAt: '2020-01-15T12:00:00.000Z',
+          modifiedAt: '2020-01-15T12:00:00.000Z',
+        },
+        draftImages: [{ imageId: 'cover-id' }, { imageId: 'second-id' }],
+      },
+    });
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const addButton = host.querySelector('[data-test="add-image-btn"]');
+    const firstTile = host.querySelector('[data-test="task-image-tile"]');
+
+    expect(host.querySelector('[data-test="task-images-section"]')?.textContent).toContain(
+      'Images (2)',
+    );
+    expect(addButton?.textContent).toContain('Add photo');
+    expect(host.querySelectorAll('[data-test="task-image-tile"]').length).toBe(2);
+    expect(host.querySelector('[data-test="task-image-cover"]')?.textContent).toContain('COVER');
+    expect(host.querySelectorAll('[data-test="task-image-select"]').length).toBe(2);
+    expect(host.querySelectorAll('[data-test="task-image-remove"]').length).toBe(2);
+    expect(
+      addButton !== null &&
+        firstTile !== null &&
+        (addButton.compareDocumentPosition(firstTile) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+    ).toBe(true);
+  });
 });

@@ -263,7 +263,82 @@ describe('TaskScreenState', () => {
     );
 
     expect(store.selectSnapshot(TaskScreenState.task)).toEqual(existingWithPhoto);
-    expect(store.selectSnapshot(TaskScreenState.draftImages)).toEqual([]);
+    expect(store.selectSnapshot(TaskScreenState.draftImages)).toEqual([
+      { imageId: 'old-image-id' },
+    ]);
+  });
+
+  it('saves a photo added from task view without leaving the view', async () => {
+    deviceCameraService.takePicture.mockResolvedValue('blob:view-photo');
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.AddPictureBtnPressed));
+
+    expect(imageService.saveImage).toHaveBeenCalledWith('blob:view-photo');
+    const updated = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(t => t.id === existingWithPhoto.id);
+    expect(updated?.imageId).toBe('old-image-id');
+    expect(updated?.images).toEqual(['old-image-id', 'new-image-id']);
+    expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.View);
+    expect(store.selectSnapshot(TaskScreenState.draftImages)).toEqual([
+      { imageId: 'old-image-id' },
+      { imageId: 'new-image-id' },
+    ]);
+  });
+
+  it('saves a cover chosen from task view', async () => {
+    const withGallery: Task = {
+      ...existingWithPhoto,
+      id: 'task-gallery',
+      imageId: 'cover-id',
+      images: ['cover-id', 'second-id'],
+    };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [existingWithPhoto, withGallery] },
+    });
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, withGallery.id)),
+    );
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.ImageSelectedAsCover({ imageId: 'second-id' })),
+    );
+
+    const updated = store.selectSnapshot(TasksState.allTasks).find(t => t.id === withGallery.id);
+    expect(imageService.saveImage).not.toHaveBeenCalled();
+    expect(updated?.imageId).toBe('second-id');
+    expect(updated?.images).toEqual(['cover-id', 'second-id']);
+    expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.View);
+  });
+
+  it('saves a removed photo from task view and keeps the next image as cover', async () => {
+    const withGallery: Task = {
+      ...existingWithPhoto,
+      id: 'task-gallery',
+      imageId: 'cover-id',
+      images: ['cover-id', 'second-id'],
+    };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [existingWithPhoto, withGallery] },
+    });
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, withGallery.id)),
+    );
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.DraftImageRemoved({ imageId: 'cover-id' })),
+    );
+
+    const updated = store.selectSnapshot(TasksState.allTasks).find(t => t.id === withGallery.id);
+    expect(imageService.saveImage).not.toHaveBeenCalled();
+    expect(updated?.imageId).toBe('second-id');
+    expect(updated?.images).toEqual(['second-id']);
+    expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.View);
   });
 
   it('shows the saved image as the cover draft when edit mode opens', async () => {

@@ -59,38 +59,3 @@
     color: var(--color-accent-primary);
   }
 }
-
-.task-picture-holder {
-  display: flex;
-  justify-content: center;
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1; // Reserve space so absolute spinner can't overflow while image is not loaded.
-  overflow-x: visible; // allow spinner to be wider than container
-  overflow-y: hidden; // keep vertical clipping
-}
-
-.task-picture-spinner {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.task-picture-spinner > ba-spinner {
-  width: 50vw;
-}
-
-.task-picture {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.task-picture.is-loading {
-  opacity: 0;
-}

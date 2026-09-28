@@ -87,4 +87,44 @@ describe('ImageGalleryEditorComponent', () => {
     expect(removed).toEqual([images[0]]);
     expect(selected).toEqual([]);
   });
+
+  it('uses the same cover and remove controls in view', () => {
+    const images: GalleryImage[] = [
+      { key: 'cover', previewUrl: 'blob:lamp', isCover: true },
+      { key: 'second', previewUrl: 'blob:person', isCover: false },
+    ];
+    const selected: GalleryImage[] = [];
+    const removed: GalleryImage[] = [];
+    fixture.componentInstance.selectCover.subscribe(image => selected.push(image));
+    fixture.componentInstance.removeImage.subscribe(image => removed.push(image));
+    fixture.componentRef.setInput('presentation', 'view');
+    fixture.componentRef.setInput('images', images);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const addButton = host.querySelector('[data-test="add-image-btn"]');
+    const firstTile = host.querySelector('[data-test="task-image-tile"]');
+    const selectButtons = host.querySelectorAll('[data-test="task-image-select"]');
+    const removeButtons = host.querySelectorAll('[data-test="task-image-remove"]');
+
+    expect(host.textContent).toContain('Images (2)');
+    expect(host.querySelector('[data-test="task-images-count"]')?.textContent).toContain(
+      '2 images',
+    );
+    expect(addButton?.textContent).toContain('Add photo');
+    expect(host.querySelector('[data-test="task-image-cover"]')?.textContent).toContain('COVER');
+    expect(selectButtons.length).toBe(2);
+    expect(removeButtons.length).toBe(2);
+    expect(
+      addButton !== null &&
+        firstTile !== null &&
+        (addButton.compareDocumentPosition(firstTile) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+    ).toBe(true);
+
+    (selectButtons[1] as HTMLButtonElement).click();
+    (removeButtons[0] as HTMLButtonElement).click();
+
+    expect(selected).toEqual([images[1]]);
+    expect(removed).toEqual([images[0]]);
+  });
 });

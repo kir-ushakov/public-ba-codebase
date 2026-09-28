@@ -8,20 +8,11 @@
       <div class="description-body" [innerHTML]="view.descriptionHtml"></div>
     </section>
   }
-  @if (view.task.imageId; as imageId) {
-    <div class="task-picture-holder">
-      @if (isImageLoading()) {
-        <div class="task-picture-spinner">
-          <ba-spinner></ba-spinner>
-        </div>
-      }
-      <img
-        class="task-picture"
-        [class.is-loading]="isImageLoading()"
-        [src]="imageId | imageSrc"
-        (load)="onImageLoaded(imageId)"
-        (error)="onImageError($event, imageId)"
-      />
-    </div>
-  }
+  <ba-image-gallery-editor
+    presentation="view"
+    [images]="galleryImages()"
+    (addImage)="addPhoto()"
+    (selectCover)="imageSelectedAsCover($event)"
+    (removeImage)="draftImageRemoved($event)"
+  />
 }
