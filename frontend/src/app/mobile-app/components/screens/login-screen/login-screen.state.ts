@@ -5,11 +5,12 @@ import { UserAction } from 'src/app/shared/state/user.actions';
 
 interface ILoginScreenStateModel {
   authErrMessage: string | null;
+  submitting: boolean;
 }
 
 @State<ILoginScreenStateModel>({
   name: 'loginScreenState',
-  defaults: { authErrMessage: null },
+  defaults: { authErrMessage: null, submitting: false },
 })
 @Injectable()
 export class LoginScreenState {
@@ -18,18 +19,47 @@ export class LoginScreenState {
     return state.authErrMessage;
   }
 
+  @Selector()
+  static submitting(state: ILoginScreenStateModel): boolean {
+    return state.submitting === true;
+  }
+
   @Action(UserAction.AuthFailed)
-  authFailed(ctx: StateContext<ILoginScreenStateModel>, { message }: UserAction.AuthFailed) {
+  authFailed(ctx: StateContext<ILoginScreenStateModel>, { message }: UserAction.AuthFailed): void {
     ctx.patchState({
       authErrMessage: message,
+      submitting: false,
     });
   }
 
   @Action(LoginScreenAction.Opened)
-  @Action(LoginScreenAction.FieldValuesChanged)
-  removeErrMessage(ctx: StateContext<ILoginScreenStateModel>) {
+  screenOpened(ctx: StateContext<ILoginScreenStateModel>): void {
     ctx.patchState({
       authErrMessage: null,
+      submitting: false,
+    });
+  }
+
+  @Action(LoginScreenAction.FieldValuesChanged)
+  removeErrMessage(ctx: StateContext<ILoginScreenStateModel>): void {
+    ctx.patchState({
+      authErrMessage: null,
+    });
+  }
+
+  @Action(LoginScreenAction.LoginUser)
+  beginSubmit(ctx: StateContext<ILoginScreenStateModel>): void {
+    ctx.patchState({
+      authErrMessage: null,
+      submitting: true,
+    });
+  }
+
+  @Action(LoginScreenAction.LoginSettled)
+  @Action(UserAction.UserLoggedInWithPassword)
+  finishSubmit(ctx: StateContext<ILoginScreenStateModel>): void {
+    ctx.patchState({
+      submitting: false,
     });
   }
 }

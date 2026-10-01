@@ -1,54 +1,109 @@
-<div class="logo-holder">
-  <img class="logo-image" src="assets/ui/main/ba_logo.png" />
+<div class="login-brand">
+  <img class="login-logo" src="assets/ui/main/ba_logo.png" alt="Brain Assistant" />
 </div>
-<div class="login-form-holder">
-  <form [formGroup]="form" class="login-form" (ngSubmit)="onSubmit()">
-    <mat-form-field class="login-form__email" floatLabel="never">
+
+<form class="login-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="field">
+    <label class="field-label" for="emailInput">Email</label>
+    <div class="field-control" [class.is-invalid]="emailErrorVisible()">
+      <span class="material-symbols-rounded field-icon" aria-hidden="true">mail</span>
       <input
+        class="field-input"
         id="emailInput"
         data-test="login-email"
-        autofocus
-        matInput
+        type="email"
         placeholder="Email"
-        formControlName="email"
         autocomplete="email"
+        formControlName="email"
+        [attr.aria-invalid]="emailErrorVisible() ? true : null"
+        [attr.aria-describedby]="emailErrorVisible() ? 'login-email-error' : null"
+        (blur)="onEmailBlur()"
       />
-      <mat-error *ngIf="form.get('email')?.invalid"> Please input correct email </mat-error>
-    </mat-form-field>
+    </div>
+    @if (emailErrorVisible()) {
+      <p class="field-error" id="login-email-error" data-test="login-email-error" role="alert">
+        <span class="material-symbols-rounded" aria-hidden="true">error</span>
+        Please enter a valid email address.
+      </p>
+    }
+  </div>
 
-    <mat-form-field class="login-form__password" floatLabel="never">
+  <div class="field">
+    <label class="field-label" for="passwordInput">Password</label>
+    <div class="field-control" [class.is-invalid]="passwordErrorVisible()">
+      <span class="material-symbols-rounded field-icon" aria-hidden="true">lock</span>
       <input
+        class="field-input"
         id="passwordInput"
         data-test="login-password"
-        type="password"
-        matInput
-        placeholder="Password"
         formControlName="password"
-        autocomplete="off"
+        autocomplete="current-password"
+        [type]="passwordVisible() ? 'text' : 'password'"
+        [attr.aria-invalid]="passwordErrorVisible() ? true : null"
+        [attr.aria-describedby]="passwordErrorVisible() ? 'login-password-error' : null"
+        (blur)="onPasswordBlur()"
       />
-      <mat-error *ngIf="form.get('password')?.invalid">
-        Please input password, not less than 8 symbols
-      </mat-error>
-    </mat-form-field>
-    <button
-      id="submitBtn"
-      data-test="login-submit"
-      class="login-form__btn green-btn"
-      type="submit"
-      [disabled]="form.invalid"
-    >
-      Login
-    </button>
-  </form>
-  @if (authError()) {
-    <div class="auth-failed-msg">
-      {{ authError() }}
+      <button
+        class="visibility-toggle"
+        type="button"
+        data-test="login-password-visibility"
+        [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'"
+        (click)="togglePasswordVisibility()"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">{{
+          passwordVisible() ? 'visibility' : 'visibility_off'
+        }}</span>
+      </button>
     </div>
-  }
-  <div class="google-btn-holder">
-    <ba-sign-in-with-google-btn></ba-sign-in-with-google-btn>
+    @if (passwordErrorVisible()) {
+      <p
+        class="field-error"
+        id="login-password-error"
+        data-test="login-password-error"
+        role="alert"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">error</span>
+        Please input password, not less than 8 symbols
+      </p>
+    }
   </div>
+
+  <button
+    class="login-submit"
+    type="submit"
+    id="submitBtn"
+    data-test="login-submit"
+    [disabled]="submitting()"
+    [attr.aria-busy]="submitting() ? true : null"
+  >
+    @if (submitting()) {
+      <span class="material-symbols-rounded login-spinner" aria-hidden="true"
+        >progress_activity</span
+      >
+    }
+    Login
+  </button>
+</form>
+
+@if (authError(); as message) {
+  <p class="auth-error" data-test="login-auth-error" role="alert">{{ message }}</p>
+}
+
+<div class="auth-separator">
+  <span>OR</span>
 </div>
-<div class="signup-link-holder">
-  <div id="signup-link" class="signup-link" (click)="onSingUpClick()">Sing Up</div>
-</div>
+
+<ba-sign-in-with-google-btn></ba-sign-in-with-google-btn>
+
+<p class="signup-prompt">
+  <span>Don’t have an account?</span>
+  <button
+    class="signup-link"
+    type="button"
+    id="signup-link"
+    data-test="login-signup"
+    (click)="onSignUpClick()"
+  >
+    Sign Up
+  </button>
+</p>
