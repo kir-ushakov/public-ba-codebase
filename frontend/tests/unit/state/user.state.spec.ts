@@ -90,10 +90,11 @@ describe('UserState', () => {
     expect(store.selectSnapshot(UserState.needsGoogleReconsent)).toBe(false);
   });
 
-  it('settles the login screen after a password login request finishes', async () => {
-    authService.login.mockReturnValue(
-      throwError(() => new HttpErrorResponse({ status: 500, error: { message: 'unavailable' } })),
-    );
+  function recordLoginOutcome(): {
+    settled: LoginScreenAction.LoginSettled[];
+    failed: UserAction.AuthFailed[];
+    stop: () => void;
+  } {
     const settled: LoginScreenAction.LoginSettled[] = [];
     const failed: UserAction.AuthFailed[] = [];
     const settledSub = actions$
@@ -103,13 +104,28 @@ describe('UserState', () => {
       .pipe(ofActionDispatched(UserAction.AuthFailed))
       .subscribe(action => failed.push(action));
 
+    return {
+      settled,
+      failed,
+      stop(): void {
+        settledSub.unsubscribe();
+        failedSub.unsubscribe();
+      },
+    };
+  }
+
+  it('settles the login screen after a password login request finishes', async () => {
+    authService.login.mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 500, error: { message: 'unavailable' } })),
+    );
+    const outcome = recordLoginOutcome();
+
     await firstValueFrom(store.dispatch(new LoginScreenAction.LoginUser('a@b.co', 'password1')));
     await new Promise<void>(resolve => queueMicrotask(resolve));
-    settledSub.unsubscribe();
-    failedSub.unsubscribe();
+    outcome.stop();
 
-    expect(settled).toHaveLength(1);
-    expect(failed).toHaveLength(0);
+    expect(outcome.settled).toHaveLength(1);
+    expect(outcome.failed).toHaveLength(0);
   });
 
   it('reports invalid credentials and settles the login screen', async () => {
@@ -118,23 +134,15 @@ describe('UserState', () => {
         () => new HttpErrorResponse({ status: 401, error: { message: 'Invalid credentials' } }),
       ),
     );
-    const settled: LoginScreenAction.LoginSettled[] = [];
-    const failed: UserAction.AuthFailed[] = [];
-    const settledSub = actions$
-      .pipe(ofActionDispatched(LoginScreenAction.LoginSettled))
-      .subscribe(action => settled.push(action));
-    const failedSub = actions$
-      .pipe(ofActionDispatched(UserAction.AuthFailed))
-      .subscribe(action => failed.push(action));
+    const outcome = recordLoginOutcome();
 
     await firstValueFrom(store.dispatch(new LoginScreenAction.LoginUser('a@b.co', 'password1')));
     await new Promise<void>(resolve => queueMicrotask(resolve));
-    settledSub.unsubscribe();
-    failedSub.unsubscribe();
+    outcome.stop();
 
-    expect(failed).toHaveLength(1);
-    expect(failed[0].message).toBe('Invalid credentials');
-    expect(settled).toHaveLength(1);
+    expect(outcome.failed).toHaveLength(1);
+    expect(outcome.failed[0].message).toBe('Invalid credentials');
+    expect(outcome.settled).toHaveLength(1);
   });
 
   it('clears the session after home account menu sign out', async () => {
