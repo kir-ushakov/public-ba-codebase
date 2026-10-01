@@ -14,4 +14,8 @@ export namespace LoginScreenAction {
       public password: string,
     ) {}
   }
+
+  export class LoginSettled {
+    static readonly type = '[LoginScreen] Login Settled';
+  }
 }

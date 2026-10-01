@@ -12,7 +12,7 @@ import { GoogleOAuthConsentService } from '../services/integrations/google-oauth
 import { LoginScreenAction } from 'src/app/mobile-app/components/screens/login-screen/login-screen.actions';
 import { SyncScreenAction } from 'src/app/mobile-app/components/screens/sync-screen/sync-screen.actions';
 import { SlackAPIAction } from '../services/integrations/slack.api.actions';
-import { EMPTY, catchError, tap } from 'rxjs';
+import { EMPTY, catchError, finalize, tap } from 'rxjs';
 import { UserAction } from './user.actions';
 
 interface IUserIntegrations {
@@ -248,6 +248,12 @@ export class UserState {
             console.log(err);
           }
           return EMPTY;
+        }),
+        finalize(() => {
+          // Run after every LoginUser handler, including a synchronous failure.
+          queueMicrotask(() => {
+            ctx.dispatch(LoginScreenAction.LoginSettled);
+          });
         }),
       )
       .subscribe();

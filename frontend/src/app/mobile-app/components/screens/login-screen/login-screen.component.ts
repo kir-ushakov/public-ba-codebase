@@ -1,55 +1,112 @@
-import { Component, OnInit, Signal } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { Component, effect, inject, OnInit, signal, Signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngxs/store';
-import { AppAction } from 'src/app/shared/state/app.actions';
-import { LoginScreenState } from './login-screen.state';
-import { LoginScreenAction } from './login-screen.actions';
 import { SignInWithGoogleBtnComponent } from 'src/app/shared/components/ui-elements/sign-in-with-google-btn/sign-in-with-google-btn.component';
-import { CommonModule } from '@angular/common';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
+import { AppAction } from 'src/app/shared/state/app.actions';
+import { LoginScreenAction } from './login-screen.actions';
+import { LoginScreenState } from './login-screen.state';
+
+const minPasswordLength = 8;
+
+type LoginFormValue = {
+  email: string;
+  password: string;
+};
+
 @Component({
-  selector: 'app-login',
+  selector: 'ba-login',
   templateUrl: './login-screen.component.html',
   styleUrls: ['./login-screen.component.scss'],
-  imports: [
-    CommonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    ReactiveFormsModule,
-    SignInWithGoogleBtnComponent,
-  ],
+  imports: [ReactiveFormsModule, SignInWithGoogleBtnComponent],
 })
 export class LoginScreenComponent implements OnInit {
-  authError: Signal<string | null> = this.store.selectSignal(LoginScreenState.authError);
-
-  public form: UntypedFormGroup = new UntypedFormGroup({
-    email: new UntypedFormControl('', [Validators.required, Validators.email]),
-    password: new UntypedFormControl('', [Validators.required, Validators.minLength(8)]),
+  readonly passwordVisible = signal(false);
+  readonly emailErrorVisible = signal(false);
+  readonly passwordErrorVisible = signal(false);
+  readonly form = new FormGroup<FormControlsOf<LoginFormValue>>({
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(minPasswordLength)],
+    }),
   });
+  readonly authError: Signal<string | null>;
+  readonly submitting: Signal<boolean>;
 
-  constructor(private store: Store) {}
+  private readonly store = inject(Store);
+  private submitAttempted = false;
 
-  ngOnInit() {
-    this.subscribeToForm();
+  constructor() {
+    this.authError = this.store.selectSignal(LoginScreenState.authError);
+    this.submitting = this.store.selectSignal(LoginScreenState.submitting);
+
+    effect(() => {
+      if (this.submitting()) {
+        this.form.disable({ emitEvent: false });
+      } else if (this.form.disabled) {
+        this.form.enable({ emitEvent: false });
+      }
+    });
+
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.store.dispatch(LoginScreenAction.FieldValuesChanged);
+      this.syncValidationMessages();
+    });
+
+    this.form.statusChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.syncValidationMessages();
+    });
+  }
+
+  ngOnInit(): void {
     this.store.dispatch(LoginScreenAction.Opened);
   }
 
-  onSubmit() {
-    const formValues = this.form.value;
-    const email = formValues.email;
-    const password = formValues.password;
+  onSubmit(): void {
+    this.submitAttempted = true;
+    this.form.markAllAsTouched();
+    this.syncValidationMessages();
+
+    if (this.form.invalid || this.submitting()) {
+      return;
+    }
+
+    const { email, password } = this.form.getRawValue();
     this.store.dispatch(new LoginScreenAction.LoginUser(email, password));
   }
 
-  onSingUpClick() {
+  onEmailBlur(): void {
+    this.form.controls.email.markAsTouched();
+    this.syncValidationMessages();
+  }
+
+  onPasswordBlur(): void {
+    this.form.controls.password.markAsTouched();
+    this.syncValidationMessages();
+  }
+
+  togglePasswordVisibility(): void {
+    this.passwordVisible.update(visible => !visible);
+  }
+
+  onSignUpClick(): void {
     this.store.dispatch(AppAction.NavigateToSingUpScreen);
   }
 
-  private subscribeToForm() {
-    this.form.valueChanges.subscribe(() => {
-      this.store.dispatch(LoginScreenAction.FieldValuesChanged);
-    });
+  private syncValidationMessages(): void {
+    const email = this.form.controls.email;
+    const password = this.form.controls.password;
+    const showEmailError =
+      email.enabled && email.invalid && (email.touched || this.submitAttempted);
+    const showPasswordError =
+      password.enabled && password.invalid && (password.touched || this.submitAttempted);
+
+    this.emailErrorVisible.set(showEmailError);
+    this.passwordErrorVisible.set(showPasswordError);
   }
 }

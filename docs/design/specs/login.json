@@ -1,0 +1,218 @@
+{
+  "screen": {
+    "id": "login",
+    "name": "Login",
+    "version": "1.0.0",
+
+    "purpose": "Authenticate an existing user using email and password or Google authentication.",
+
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+
+    "status": "approved",
+    "implementationStatus": "implemented",
+
+    "layout": {
+      "type": "mobile",
+      "structure": [
+        "brand",
+        "login-form",
+        "alternative-auth",
+        "signup-link"
+      ]
+    },
+
+    "content": {
+      "brand": {
+        "component": "auth-brand",
+        "alignment": "center",
+        "logo": {
+          "source": "brain-assistant-logo",
+          "ariaLabel": "Brain Assistant"
+        }
+      },
+
+      "form": {
+        "component": "login-form",
+
+        "fields": [
+          {
+            "id": "email",
+            "type": "email",
+            "label": "Email",
+            "placeholder": "Email",
+            "leadingIcon": "mail",
+            "autocomplete": "email",
+            "required": true,
+
+            "validation": {
+              "invalidEmail": {
+                "message": "Please enter a valid email address.",
+                "semantic": "danger"
+              }
+            }
+          },
+          {
+            "id": "password",
+            "type": "password",
+            "label": "Password",
+            "leadingIcon": "lock",
+            "autocomplete": "current-password",
+            "required": true,
+
+            "visibilityToggle": {
+              "enabled": true,
+              "hiddenIcon": "visibility_off",
+              "visibleIcon": "visibility",
+              "ariaLabelHidden": "Show password",
+              "ariaLabelVisible": "Hide password"
+            }
+          }
+        ],
+
+        "primaryAction": {
+          "id": "login",
+          "label": "Login",
+          "component": "button",
+          "style": "primary",
+          "fullWidth": true,
+          "action": "login-with-email"
+        }
+      },
+
+      "alternativeAuth": {
+        "component": "alternative-auth",
+
+        "separator": {
+          "label": "OR"
+        },
+
+        "providers": [
+          {
+            "id": "google",
+            "label": "Sign in with Google",
+            "component": "auth-provider-button",
+            "provider": "google",
+            "providerIcon": "google",
+            "style": "secondary",
+            "fullWidth": true,
+            "action": "login-with-google"
+          }
+        ]
+      },
+
+      "signup": {
+        "component": "auth-navigation-prompt",
+        "alignment": "center",
+
+        "text": "Don’t have an account?",
+
+        "action": {
+          "label": "Sign Up",
+          "action": "navigate-signup",
+          "style": "text-link"
+        }
+      }
+    },
+
+    "states": {
+      "default": {
+        "description": "Default login screen with empty email and password fields."
+      },
+
+      "emailInvalid": {
+        "description": "Login screen when the entered email address is invalid.",
+
+        "field": "email",
+
+        "treatment": {
+          "semantic": "danger",
+          "showErrorMessage": true,
+          "message": "Please enter a valid email address."
+        }
+      },
+
+      "passwordHidden": {
+        "field": "password",
+        "masked": true,
+        "trailingIcon": "visibility_off"
+      },
+
+      "passwordVisible": {
+        "field": "password",
+        "masked": false,
+        "trailingIcon": "visibility"
+      },
+
+      "submitting": {
+        "description": "Authentication request is in progress.",
+
+        "primaryAction": {
+          "disabled": true,
+          "loading": true
+        },
+
+        "fields": {
+          "disabled": true
+        }
+      }
+    },
+
+    "visualRules": [
+      "Use global design tokens from design-system.json.",
+      "Do not define screen-specific colors, radii, typography or arbitrary spacing.",
+      "The reference PNG is a visual target, not a source of token values.",
+
+      "Use the Brain Assistant dark technical minimalism visual language.",
+      "The screen uses the standard application background.",
+      "Keep the authentication layout visually calm and focused.",
+      "Do not add decorative gradients, glow effects, glassmorphism or unnecessary cards.",
+
+      "The brand mark is centered above the authentication form.",
+      "The logo must remain visually separate from the form and must not compete with the primary action.",
+
+      "Email and password use the shared input treatment.",
+      "Inputs use dark surfaces and subtle borders.",
+      "Focus uses the primary teal accent.",
+      "Validation errors use the global danger semantic treatment.",
+      "Do not use teal for validation errors.",
+
+      "Use Material Symbols Rounded for input and interface icons.",
+      "Use mail for the email field.",
+      "Use lock for the password field.",
+      "Use visibility and visibility_off for password visibility.",
+
+      "Login is the single dominant primary action.",
+      "The Login button uses the global primary button treatment.",
+      "Google authentication is visually secondary to Login.",
+      "Do not use the primary teal button treatment for Google authentication.",
+
+      "Separate primary authentication and provider authentication with a restrained OR divider.",
+
+      "The signup prompt is secondary navigation.",
+      "The Sign Up action may use the primary accent as a text link but must remain visually subordinate to Login.",
+
+      "Maintain the standard mobile horizontal padding and the global 4px spacing grid.",
+      "Use typography hierarchy and spacing rather than additional surfaces to structure the screen."
+    ],
+
+    "reference": {
+      "status": "approved",
+      "image": "../references/login.png",
+      "description": "Approved visual reference for the Brain Assistant Login screen. Dark technical minimalism with email/password authentication, Google authentication and navigation to Sign Up."
+    },
+
+    "angular": {
+      "note": "The existing Login screen should be redesigned to match this specification and the approved reference. Reuse the existing authentication behavior and Google authentication integration. Replace legacy styling and icons with the current Brain Assistant design system and Material Symbols Rounded.",
+
+      "implementationRules": [
+        "Preserve existing authentication behavior.",
+        "Preserve existing email validation behavior.",
+        "Preserve existing Google authentication behavior.",
+        "Use shared design-system tokens instead of screen-specific values.",
+        "Do not copy legacy colors or Material-derived styling from the existing Login screen.",
+        "Do not hard-code colors, spacing or radii in the Login component."
+      ]
+    }
+  }
+}
