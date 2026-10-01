@@ -21,6 +21,12 @@ Each of the three has an `AGENTS.md` describing its layout, the canonical code t
 
 The dev environment is Windows PowerShell. Do not chain commands with `&&` and do not use bash-only syntax; use `;` or separate commands.
 
+## Remote server
+
+Never change the production server. No SSH write, no editing files on the host, no `docker`, `git`, `systemctl`, or other commands that mutate the VDS.
+
+Read-only checks are not a reason to fix it remotely. Change the repo, open a PR, and give the user the commands to run themselves.
+
 ## Shared contracts
 
 - API request/response types belong in `contracts/`, not duplicated per app.

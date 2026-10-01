@@ -14,6 +14,7 @@ When this session created or is actively fixing a PR, **do not stop at “pushed
 3. Read the actual failing check log before changing code. Fix within PR scope; do not weaken CI config just to go green.
 4. Before each push: run the narrowest check that proves the fix (failing test / lint / `tsc`), then push. Batch known fixes into one push when possible.
 5. Never force-push, never merge the PR yourself, never enable auto-merge. Report readiness when green.
+6. Never change the production server. CI and review fixes stay in the repo.
 
 ## Ask the user only when blocked
 
