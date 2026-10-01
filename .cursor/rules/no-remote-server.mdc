@@ -1,0 +1,17 @@
+---
+description: Never change the production server; only change the repo and hand the user the commands
+alwaysApply: true
+---
+
+# Remote server
+
+Never change the production server. This includes the VDS at `/var/public-ba-codebase` and any other host reached by SSH.
+
+Do not:
+
+- edit, create, or delete files on the server
+- run `docker`, `docker compose`, `git`, `systemctl`, package installs, or any other command that changes server state
+- restart, recreate, or deploy containers
+- apply a hotfix over SSH and leave the repo behind
+
+Reading logs or `docker ps` does not permit a remote fix. Change the repository, open a PR when the user asked for one, and give the user the exact commands to run.
