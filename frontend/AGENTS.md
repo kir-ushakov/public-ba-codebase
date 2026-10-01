@@ -15,7 +15,8 @@ Before creating or modifying UI, read:
 
 - `/docs/design/UI_STYLE_GUIDE.md`
 - `/docs/design/design-system.json`
-- `/docs/design/screens/<name>.json` if that screen already has an approved spec
+- `/docs/design/specs/<name>.json` if that screen already has an approved spec
+- `/docs/design/specs/<name>.json` when the parent links `states.<name>.spec`
 - `/docs/design/references/<name>.png` if that spec links a visual reference
 
 `design-system.json` and the screen JSON are the source of truth for values.

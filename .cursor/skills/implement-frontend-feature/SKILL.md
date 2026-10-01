@@ -28,7 +28,8 @@ If the work touches UI (template, SCSS, layout, or a new screen), read first:
 
 - `docs/design/UI_STYLE_GUIDE.md`
 - `docs/design/design-system.json`
-- `docs/design/screens/<name>.json` if that screen already has an approved spec
+- `docs/design/specs/<name>.json` if that screen already has an approved spec
+- `docs/design/specs/<name>.json` when the parent links `states.<name>.spec`
 - `docs/design/references/<name>.png` if that spec links a visual reference
 
 Do not invent colors, spacing, radii, or typography. Do not measure token values from the PNG. Reuse existing UI components before creating new ones.
@@ -37,7 +38,7 @@ Do not invent colors, spacing, radii, or typography. Do not measure token values
 
 `mobile-app/` is the live shell. `desktop-app/` exists but is not routed from `main.ts` — do not add features there unless asked explicitly.
 
-The live Home screen may still lag behind `docs/design/screens/home.json`. For visual language, follow the approved spec and the style guide, not the older Material-derived palette.
+The live Home screen may still lag behind `docs/design/specs/home.json`. For visual language, follow the approved spec and the style guide, not the older Material-derived palette.
 
 ## 2. Decide which state layer owns this
 

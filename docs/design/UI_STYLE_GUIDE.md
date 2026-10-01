@@ -84,15 +84,16 @@ These files describe different layers. Do not duplicate values across them.
 |---|---|---|
 | `docs/design/design-system.json` | WHAT | Exact tokens: colors, spacing, type, radii, component recipes |
 | `docs/design/UI_STYLE_GUIDE.md` | HOW | Principles, allowed/forbidden patterns, how to design a new screen |
-| `docs/design/screens/*.json` | SCREEN | Approved composition, behaviour, and states of a specific screen. No screen-specific colors or radii |
-| `docs/design/states/*.json` | STATE | Approved composition of a substantial interactive state: its own input, actions, or navigation. No state-specific colors, radii, or spacing |
+| `docs/design/specs/<name>.json` | SPEC | Approved composition of a screen or a substantial interactive state. Root key is `screen` or `state`. No colors, radii, or spacing |
 | `docs/design/references/*.png` | LOOK | Approved visual reference. Composition, visual weight, density, proportions |
 
 `design-system.json` is product-wide. It is not a Home-page stylesheet.
 
-Create a `screens/<name>.json` only after that screen’s design is approved. Do not invent screen JSON as part of implementing a feature.
+Screens and substantial states live together in `specs/`. A screen file has root key `screen`. A state file has root key `state`.
 
-Create a `states/<name>.json` when an interactive state is substantial enough to have its own input, validation, actions, or navigation. Link it from the parent via `states.<name>.spec`. A lighter overlay stays inline on the parent and only adds `referenceImage`.
+Create a `specs/<name>.json` only after that screen’s design is approved. Do not invent a spec as part of implementing a feature.
+
+Add a state file in the same folder when an interactive state is substantial enough to have its own input, validation, actions, or navigation. Link it from the parent via `states.<name>.spec`. A lighter overlay stays inline on the parent and only adds `referenceImage`.
 
 The PNG is **not** a source of truth for values. `design-system.json` plus the screen JSON are. If an agent measures the PNG, it will copy accidental pixel details instead of tokens.
 
@@ -119,7 +120,7 @@ Link them from the screen JSON:
     "referenceImage": "../references/task-view-options.png"
   },
   "newTagOpen": {
-    "spec": "../states/new-tag-open.json",
+    "spec": "./new-tag-open.json",
     "referenceImage": "../references/new-tag-open.png"
   }
 }
@@ -703,7 +704,7 @@ Avoid animation used purely for visual spectacle.
 When asking for a new mockup or implementing a new screen:
 
 1. Read this file and `design-system.json`.
-2. If `docs/design/screens/<screen>.json` exists, that composition is already approved — implement it, do not restyle it. If it links a PNG under `docs/design/references/`, use that image as the visual target and still take token values from `design-system.json`.
+2. If `docs/design/specs/<screen>.json` exists, that composition is already approved — implement it, do not restyle it. If it links a PNG under `docs/design/references/`, use that image as the visual target and still take token values from `design-system.json`.
 3. Inspect existing shared UI components.
 4. Inspect at least one similar existing screen **and** the Home visual reference. Prefer the approved Home language over older Material-derived screens.
 5. Reuse existing components whenever possible.
@@ -722,9 +723,9 @@ Optionally attach a screenshot of Home.
 
 After a mockup is approved:
 
-1. Save the composition as `docs/design/screens/<screen>.json`. That file describes structure, behaviour, and states. It must not repeat colors, radii, or spacing from `design-system.json`.
+1. Save the composition as `docs/design/specs/<screen>.json`. That file describes structure, behaviour, and states. It must not repeat colors, radii, or spacing from `design-system.json`.
 2. Save the approved image as `docs/design/references/<screen>.png` and point `reference.image` at it.
-3. Save a substantial interactive state as `docs/design/states/<state>.json` and its approved image as `docs/design/references/<state>.png`. Link both from the parent `states.<name>.spec` and `states.<name>.referenceImage`. A lighter state only needs the extra PNG, linked from `states.<name>.referenceImage`.
+3. Save a substantial interactive state as `docs/design/specs/<state>.json` and its approved image as `docs/design/references/<state>.png`. Link both from the parent `states.<name>.spec` and `states.<name>.referenceImage`. A lighter state only needs the extra PNG, linked from `states.<name>.referenceImage`.
 4. Do not commit unapproved or intermediate mockups.
 
 ---
@@ -776,7 +777,7 @@ When implementing or modifying UI:
 
 1. Read this file.
 2. Read `docs/design/design-system.json`.
-3. Read `docs/design/screens/<screen>.json` if one exists for the screen being changed.
+3. Read `docs/design/specs/<screen>.json` if one exists for the screen being changed. Read `docs/design/specs/<state>.json` when the parent links `states.<name>.spec`.
 4. Look at the linked reference PNG if present — for composition and density only, never as a source of token values.
 5. Inspect existing shared UI components.
 6. Inspect at least one similar existing screen.
@@ -803,7 +804,7 @@ If a genuinely new visual primitive is required, propose the addition before int
 
 ## 27. Reference Visual Language
 
-The **approved** Home screen (`docs/design/screens/home.json` and `docs/design/references/home.png`) is the primary visual reference.
+The **approved** Home screen (`docs/design/specs/home.json` and `docs/design/references/home.png`) is the primary visual reference.
 
 The live Angular Home screen may still lag behind that spec. Treat the approved spec and this guide as the target language, not whichever older screen happens to be nearby.
 
