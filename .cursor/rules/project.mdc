@@ -10,7 +10,7 @@ alwaysApply: true
 - `frontend/` — Angular 19 PWA, standalone components, NGXS state.
 - `backend/` — Express + Mongoose API, ESM, use-case architecture.
 - `contracts/` — `@brainassistant/contracts`, shared API types linked into both apps as `file:../contracts`.
-- `docs/design/` — product visual system: tokens, UI style guide, approved screen specs.
+- `docs/design/` — product visual system: tokens, UI style guide, approved specs.
 - `db/`, `nginx/`, `scripts/`, `docker-compose.yml` — infrastructure.
 
 `frontend`, `backend` and `contracts` are separate npm packages. Run `npm`/`ng` commands from inside the relevant folder, not from the repo root.
@@ -48,13 +48,11 @@ If the existing design system cannot represent a required UI state,
 propose an extension to the design system instead of silently introducing
 a new visual convention.
 
-Approved screen composition lives in `docs/design/screens/<name>.json`.
-Do not put screen-specific colors or radii there, and do not create a
-screen JSON until that screen’s design is approved.
-
-Substantial interactive states live in `docs/design/states/<name>.json`
-and are linked from the parent via `states.<name>.spec`. Same rule:
-no state-specific colors, radii, or spacing.
+Approved screen and state composition lives in `docs/design/specs/<name>.json`.
+A screen file has root key `screen`. A substantial interactive state has
+root key `state` and is linked from the parent via `states.<name>.spec`.
+Do not put colors, radii, or spacing there, and do not create a spec
+until that design is approved.
 
 Approved mockups live in `docs/design/references/`. PNG is a visual
 reference (composition, density, proportions), not a source of tokens.
