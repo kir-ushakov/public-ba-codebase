@@ -73,7 +73,7 @@
     "@angular-eslint/eslint-plugin-template": "^20.7.0",
     "@angular-eslint/schematics": "^20.7.0",
     "@angular-eslint/template-parser": "^20.7.0",
-    "@angular/cli": "^20.3.36",
+    "@angular/cli": "^20.3.39",
     "@angular/compiler-cli": "^20.3.30",
     "@emnapi/core": "1.11.3",
     "@emnapi/runtime": "1.11.3",
