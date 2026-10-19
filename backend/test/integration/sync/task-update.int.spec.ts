@@ -53,6 +53,8 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
         changeableObjectDto: {
           ...created,
           title: 'Updated task title',
+          createdAt: '2019-01-01T00:00:00.000Z',
+          modifiedAt: '2024-06-01T08:00:00.000Z',
         },
       })
       .set('Accept', 'application/json');
@@ -66,8 +68,7 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       status: created.status,
     });
     expect(res.body.createdAt).toBe(created.createdAt);
-    expect(typeof res.body.modifiedAt).toBe('string');
-    expect(res.body.modifiedAt).not.toBe(created.modifiedAt);
+    expect(res.body.modifiedAt).toBe('2024-06-01T08:00:00.000Z');
 
     const persisted = await models.TaskModel.findById(created.id).lean();
     expect(persisted).toMatchObject({
@@ -79,6 +80,7 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       throw new Error('expected persisted task');
     }
     expect(new Date(persisted.createdAt).toISOString()).toBe(created.createdAt);
+    expect(new Date(persisted.modifiedAt).toISOString()).toBe('2024-06-01T08:00:00.000Z');
   });
 
   it('returns 404 when the task does not exist', async () => {

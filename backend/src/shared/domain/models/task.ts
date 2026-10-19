@@ -91,7 +91,10 @@ export class Task extends AggregateRoot<ITaskProps> {
   }
 
   public static create(
-    props: Omit<ITaskProps, 'createdAt' | 'modifiedAt'>,
+    props: Omit<ITaskProps, 'createdAt' | 'modifiedAt'> & {
+      createdAt?: Date;
+      modifiedAt?: Date;
+    },
     id?: UniqueEntityID,
   ): Result<Task | never, DomainError<Task, ETaskError>> {
     const now = new Date();
@@ -105,8 +108,8 @@ export class Task extends AggregateRoot<ITaskProps> {
       ...props,
       description: descriptionResult.getValue(),
       tagIds: props.tagIds ?? [],
-      createdAt: now,
-      modifiedAt: now,
+      createdAt: Task.instantOrNow(props.createdAt, now),
+      modifiedAt: Task.instantOrNow(props.modifiedAt, now),
     };
 
     const validationResult = Task.isValid(fullProps);
@@ -128,7 +131,7 @@ export class Task extends AggregateRoot<ITaskProps> {
   }
 
   public update(
-    props: Partial<Omit<ITaskProps, 'createdAt' | 'modifiedAt'>>,
+    props: Partial<Omit<ITaskProps, 'createdAt'>>,
   ): Result<Task | never, DomainError<Task, ETaskError>> {
     const descriptionResult =
       'description' in props
@@ -142,7 +145,8 @@ export class Task extends AggregateRoot<ITaskProps> {
       ...this.props,
       ...props,
       description: descriptionResult.getValue(),
-      modifiedAt: new Date(),
+      createdAt: this.props.createdAt,
+      modifiedAt: Task.instantOrNow(props.modifiedAt, new Date()),
     };
 
     const validationResult = Task.isValid(newProps);
@@ -166,6 +170,13 @@ export class Task extends AggregateRoot<ITaskProps> {
 
   private constructor(props: ITaskProps, id?: UniqueEntityID) {
     super(props, id);
+  }
+
+  private static instantOrNow(value: Date | undefined, now: Date): Date {
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      return value;
+    }
+    return now;
   }
 
   private static normalizeDescription(

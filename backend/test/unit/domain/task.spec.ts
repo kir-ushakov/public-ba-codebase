@@ -133,6 +133,22 @@ describe('Task', () => {
       expect(result.error.code).toBe(ETaskError.DescriptionInvalid);
     });
 
+    it('keeps createdAt and modifiedAt sent by the device', () => {
+      const createdAt = new Date('2020-03-01T10:00:00.000Z');
+      const modifiedAt = new Date('2020-03-01T10:05:00.000Z');
+
+      const result = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        createdAt,
+        modifiedAt,
+      });
+
+      expect(result.isSuccess).toBe(true);
+      expect(result.getValue().createdAt).toEqual(createdAt);
+      expect(result.getValue().modifiedAt).toEqual(modifiedAt);
+    });
+
     it('preserves a provided id', () => {
       const result = Task.create(
         {
@@ -159,6 +175,28 @@ describe('Task', () => {
 
       expect(updateResult.isFailure).toBe(true);
       expect(updateResult.error.code).toBe(ETaskError.TitleMissed);
+    });
+
+    it('stores the device modifiedAt and keeps the original createdAt', () => {
+      const createdAt = new Date('2020-03-01T10:00:00.000Z');
+      const createResult = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        createdAt,
+        modifiedAt: createdAt,
+      });
+      const task = createResult.getValue();
+      const editedAt = new Date('2020-03-02T09:00:00.000Z');
+
+      const updateResult = task.update({
+        title: 'Renamed task',
+        modifiedAt: editedAt,
+      });
+
+      expect(updateResult.isSuccess).toBe(true);
+      expect(task.title).toBe('Renamed task');
+      expect(task.modifiedAt).toEqual(editedAt);
+      expect(task.createdAt).toEqual(createdAt);
     });
 
     it('updates description and can clear it with an empty document', () => {
