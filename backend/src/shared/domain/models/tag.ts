@@ -54,14 +54,17 @@ export class Tag extends AggregateRoot<TagProps> {
   }
 
   public static create(
-    props: Omit<TagProps, 'createdAt' | 'modifiedAt'>,
+    props: Omit<TagProps, 'createdAt' | 'modifiedAt'> & {
+      createdAt?: Date;
+      modifiedAt?: Date;
+    },
     id?: UniqueEntityID,
   ): Result<Tag | never, DomainError<Tag, ETagError>> {
     const now = new Date();
     const fullProps: TagProps = {
       ...props,
-      createdAt: now,
-      modifiedAt: now,
+      createdAt: Tag.instantOrNow(props.createdAt, now),
+      modifiedAt: Tag.instantOrNow(props.modifiedAt, now),
     };
 
     const validationResult = Tag.isValid(fullProps);
@@ -83,6 +86,13 @@ export class Tag extends AggregateRoot<TagProps> {
 
   private constructor(props: TagProps, id?: UniqueEntityID) {
     super(props, id);
+  }
+
+  private static instantOrNow(value: Date | undefined, now: Date): Date {
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      return value;
+    }
+    return now;
   }
 
   private static isValid(props: TagProps): Result<void, DomainError<Tag, ETagError>> {

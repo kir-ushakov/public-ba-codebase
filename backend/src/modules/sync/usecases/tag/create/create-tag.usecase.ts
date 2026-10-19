@@ -10,7 +10,10 @@ import { CreateTagErrors } from './create-tag.errors.js';
 export type CreateTagResult = Result<Tag, UseCaseError<ETagError>>;
 
 export type CreateTagParams = {
-  tagProps: Omit<TagProps, 'createdAt' | 'modifiedAt'>;
+  tagProps: Omit<TagProps, 'createdAt' | 'modifiedAt'> & {
+    createdAt?: Date;
+    modifiedAt?: Date;
+  };
   id?: UniqueEntityID;
 };
 

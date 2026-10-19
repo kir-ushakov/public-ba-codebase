@@ -48,6 +48,8 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
       title: 'Integration Test Task',
       status: ETaskStatus.Todo,
       imageId: 'image-456',
+      createdAt: '2020-05-01T10:00:00.000Z',
+      modifiedAt: '2020-05-01T10:00:00.000Z',
     };
 
     const res = await authenticatedRequest(app, jwtCookie)
@@ -65,8 +67,8 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(responseBody.status).toBe(dto.status);
     expect(responseBody.imageId).toBe(dto.imageId);
     expect(responseBody.userId).toBe(userId);
-    expect(responseBody.createdAt).toBeDefined();
-    expect(responseBody.modifiedAt).toBeDefined();
+    expect(responseBody.createdAt).toBe(dto.createdAt);
+    expect(responseBody.modifiedAt).toBe(dto.modifiedAt);
 
     const persisted = await models.TaskModel.findById(dto.id).lean();
     expect(persisted).not.toBeNull();
@@ -76,6 +78,8 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(persisted.title).toBe(dto.title);
     expect(persisted.imageId).toBe(dto.imageId);
     expect(String(persisted.userId)).toBe(userId);
+    expect(new Date(persisted.createdAt).toISOString()).toBe(dto.createdAt);
+    expect(new Date(persisted.modifiedAt).toISOString()).toBe(dto.modifiedAt);
   });
 
   it('persists every attached image id and keeps the cover', async () => {

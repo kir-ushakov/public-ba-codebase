@@ -13,6 +13,8 @@ export function requestToUsecaseParams(
       userId,
       name: tagDto.name,
       color: tagDto.color,
+      createdAt: new Date(tagDto.createdAt),
+      modifiedAt: new Date(tagDto.modifiedAt),
     },
     id: tagDto.id ? new UniqueEntityID(tagDto.id) : undefined,
   };

@@ -44,6 +44,8 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
       id: 'tag-123',
       name: 'Work',
       color: 'teal',
+      createdAt: '2020-05-01T10:00:00.000Z',
+      modifiedAt: '2020-05-01T10:05:00.000Z',
     };
 
     const res = await authenticatedRequest(app, jwtCookie)
@@ -59,8 +61,8 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
     expect(responseBody.color).toBe(dto.color);
     expect(responseBody).not.toHaveProperty('isCategory');
     expect(responseBody.userId).toBe(userId);
-    expect(responseBody.createdAt).toBeDefined();
-    expect(responseBody.modifiedAt).toBeDefined();
+    expect(responseBody.createdAt).toBe(dto.createdAt);
+    expect(responseBody.modifiedAt).toBe(dto.modifiedAt);
 
     const persisted = await models.TagModel.findById(dto.id).lean();
     expect(persisted).not.toBeNull();
@@ -71,6 +73,8 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
     expect(persisted.color).toBe(dto.color);
     expect(persisted).not.toHaveProperty('isCategory');
     expect(String(persisted.userId)).toBe(userId);
+    expect(new Date(persisted.createdAt).toISOString()).toBe(dto.createdAt);
+    expect(new Date(persisted.modifiedAt).toISOString()).toBe(dto.modifiedAt);
   });
 
   it('empty name -> 400 and error payload', async () => {
