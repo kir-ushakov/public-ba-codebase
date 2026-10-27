@@ -43,6 +43,7 @@ export {
   EGoogleAuthUseCaseError,
   ESpeechToTextUseCaseError,
   EVerifyEmailUseCaseError,
+  ERefreshSessionUseCaseError,
   ERemoveFromSlackUseCaseError,
   ESlackEventReceivedUseCaseError,
   ETaskError,
@@ -56,5 +57,6 @@ export {
   UploadImageContract,
   SendChangeContract,
   GetChangesContract,
+  RefreshSessionContract,
 } from './contracts';
 

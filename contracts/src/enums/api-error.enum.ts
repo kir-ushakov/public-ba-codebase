@@ -54,6 +54,10 @@ export enum EVerifyEmailUseCaseError {
   VerificationFailed = 'VERIFY_EMAIL_ERROR__VERIFICATION_FAILED',
 }
 
+export enum ERefreshSessionUseCaseError {
+  Invalid = 'REFRESH_SESSION_USECASE_ERROR__INVALID',
+}
+
 export enum ERemoveFromSlackUseCaseError {
   SlackOAuthAccessNotFound = 'REMOVE_FROM_SLACK_ERROR_CODE__SLACK_OAUTH_ACCESS_NOT_FOUND',
 }

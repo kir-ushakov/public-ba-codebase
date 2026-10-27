@@ -29,6 +29,7 @@ import {
 } from './dto';
 import {
   GetChangesContract,
+  RefreshSessionContract,
   SendChangeContract,
   UploadImageContract,
 } from './contracts';
@@ -40,6 +41,7 @@ import {
   EGoogleAuthUseCaseError,
   EImageRepoServiceError,
   ELoginUseCaseError,
+  ERefreshSessionUseCaseError,
   ERemoveFromSlackUseCaseError,
   ESignUpUseCaseError,
   ESlackEventReceivedUseCaseError,
@@ -152,6 +154,14 @@ const GET_CHANGES_RESPONSE_KEYS = [
 ] as const satisfies readonly (keyof GetChangesContract.Response)[];
 const _getChangesRes: ExactKeys<GetChangesContract.Response, typeof GET_CHANGES_RESPONSE_KEYS> = true;
 
+const REFRESH_SESSION_RESPONSE_KEYS = [
+  'refreshed',
+] as const satisfies readonly (keyof RefreshSessionContract.Response)[];
+const _refreshSessionRes: ExactKeys<
+  RefreshSessionContract.Response,
+  typeof REFRESH_SESSION_RESPONSE_KEYS
+> = true;
+
 const SEND_CHANGE_REQUEST_KEYS = [
   'changeableObjectDto',
 ] as const satisfies readonly (keyof SendChangeContract.Request)[];
@@ -177,6 +187,7 @@ void _uploadReq;
 void _uploadRes;
 void _getChangesReq;
 void _getChangesRes;
+void _refreshSessionRes;
 void _sendChangeReq;
 
 export const PUBLIC_API_SHAPE = {
@@ -193,6 +204,7 @@ export const PUBLIC_API_SHAPE = {
     EGoogleAuthUseCaseError: Object.values(EGoogleAuthUseCaseError),
     ESpeechToTextUseCaseError: Object.values(ESpeechToTextUseCaseError),
     EVerifyEmailUseCaseError: Object.values(EVerifyEmailUseCaseError),
+    ERefreshSessionUseCaseError: Object.values(ERefreshSessionUseCaseError),
     ERemoveFromSlackUseCaseError: Object.values(ERemoveFromSlackUseCaseError),
     ESlackEventReceivedUseCaseError: Object.values(ESlackEventReceivedUseCaseError),
     ETaskError: Object.values(ETaskError),
@@ -237,6 +249,10 @@ export const PUBLIC_API_SHAPE = {
     GetChangesContract: {
       request: [...GET_CHANGES_REQUEST_KEYS],
       response: [...GET_CHANGES_RESPONSE_KEYS],
+    },
+    RefreshSessionContract: {
+      request: 'cookie',
+      response: [...REFRESH_SESSION_RESPONSE_KEYS],
     },
     SendChangeContract: {
       request: [...SEND_CHANGE_REQUEST_KEYS],

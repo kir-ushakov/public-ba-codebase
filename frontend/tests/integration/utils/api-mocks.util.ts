@@ -1,9 +1,11 @@
 import { Page } from '@playwright/test';
 import {
   EApiError,
+  ERefreshSessionUseCaseError,
   EUploadImageUseCaseError,
   type ApiErrorDto,
   type GetChangesContract,
+  type RefreshSessionContract,
   type SendChangeContract,
   type TaskDTO,
   type UploadImageContract,
@@ -52,6 +54,20 @@ export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = 
     const request = route.request();
     const url = request.url();
     const method = request.method();
+
+    if (url.includes('/api/auth/refresh') && method === 'POST') {
+      if (options.unauthorizedChanges) {
+        const body: ApiErrorDto = {
+          name: ERefreshSessionUseCaseError.Invalid,
+          message: 'Refresh session is invalid',
+        };
+        await route.fulfill(json(401, body));
+        return;
+      }
+      const body: RefreshSessionContract.Response = { refreshed: true };
+      await route.fulfill(json(200, body));
+      return;
+    }
 
     if (url.includes('/api/sync/changes') && method === 'GET') {
       if (options.unauthorizedChanges) {

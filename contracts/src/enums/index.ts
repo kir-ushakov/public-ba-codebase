@@ -16,6 +16,7 @@ export {
   EGoogleAuthUseCaseError,
   ESpeechToTextUseCaseError,
   EVerifyEmailUseCaseError,
+  ERefreshSessionUseCaseError,
   ERemoveFromSlackUseCaseError,
   ESlackEventReceivedUseCaseError,
   ETaskError,
