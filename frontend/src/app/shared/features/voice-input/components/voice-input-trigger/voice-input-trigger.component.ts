@@ -13,8 +13,9 @@ import { AppState } from 'src/app/shared/state/app.state';
  * voice-input state, reflects processing via UI state/animation, and emits a
  * completion event back to the parent.
  *
- * Shown only when the user is logged in and the app is online — speech-to-text
- * needs both a session and the network.
+ * Shown only when the user is logged in on the server and the app is online.
+ * Speech-to-text needs a server session, so a locally signed-in user who is
+ * not synced does not see the control even while the device is online.
  */
 @Component({
   selector: 'ba-voice-input-trigger',
@@ -31,10 +32,16 @@ export class VoiceInputTriggerComponent {
   readonly selectors = createSelectMap({
     voiceToTextConverting: VoiceInputState.voiceToTextConverting,
     isLoggedIn: UserState.isLoggedIn,
+    isLocalAuthenticated: UserState.isLocalAuthenticated,
     online: AppState.online,
   });
 
-  readonly isAvailable = computed(() => this.selectors.isLoggedIn() && this.selectors.online());
+  readonly isAvailable = computed(
+    () =>
+      this.selectors.isLoggedIn() &&
+      !this.selectors.isLocalAuthenticated() &&
+      this.selectors.online(),
+  );
 
   readonly isVisible = computed(() => this.selectors.voiceToTextConverting() || this.isAvailable());
 

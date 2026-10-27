@@ -61,6 +61,6 @@ That starts `npm run start:integration` (see `playwright.config.js`) and runs th
 - **home-task-menu** — Home card overflow: Edit, disabled Duplicate/Add to tags, Delete
 - **home-sync-status** — 401 on GET `/api/sync/changes` shows the signed-in-not-synced banner; Sync now goes to `/sync`
 - **sync-error** — POST fails with 500; the task stays on home (offline queue)
-- **voice-input-visibility** — mic button is shown when signed in and online, hidden when offline
+- **voice-input-visibility** — mic button is shown when synced and online; hidden when offline or signed in but not synced
 
 Assert what the user can see and the outgoing request payload (`waitForResponse` then `request().postDataJSON()`). Do not reach into NGXS or component internals. Do not use `page.waitForTimeout()`.
