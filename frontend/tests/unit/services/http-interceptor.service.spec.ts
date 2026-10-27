@@ -74,15 +74,62 @@ describe('HttpInterceptorService', () => {
     expect(store.dispatch).toHaveBeenCalledWith(expect.any(AppAction.GoogleRefreshTokenInvalid));
   });
 
-  it('dispatches UserNotAuthenticated on 401', async () => {
+  async function nextTick(): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 0));
+  }
+
+  it('retries a 401 after refresh and does not mark the user signed out', async () => {
     const pending = firstValueFrom(http.get('/api/sync/changes'));
-    const req = httpTesting.expectOne('/api/sync/changes');
-    req.flush(
-      { name: 'UNEXPECTED_ERROR', message: 'Unauthorized' },
-      { status: 401, statusText: 'Unauthorized' },
-    );
+    httpTesting
+      .expectOne('/api/sync/changes')
+      .flush(
+        { name: 'USER_NOT_AUTHENTICATED', message: 'User not authenticated' },
+        { status: 401, statusText: 'Unauthorized' },
+      );
+    await nextTick();
+    httpTesting
+      .expectOne('/api/auth/refresh')
+      .flush({ refreshed: true }, { status: 200, statusText: 'OK' });
+    await nextTick();
+    httpTesting
+      .expectOne('/api/sync/changes')
+      .flush({ changes: [], syncRevision: 0 }, { status: 200, statusText: 'OK' });
+
+    await expect(pending).resolves.toEqual({ changes: [], syncRevision: 0 });
+    expect(store.dispatch).not.toHaveBeenCalledWith(AppAction.UserNotAuthenticated);
+  });
+
+  it('dispatches UserNotAuthenticated when refresh also returns 401', async () => {
+    const pending = firstValueFrom(http.get('/api/sync/changes'));
+    httpTesting
+      .expectOne('/api/sync/changes')
+      .flush(
+        { name: 'USER_NOT_AUTHENTICATED', message: 'User not authenticated' },
+        { status: 401, statusText: 'Unauthorized' },
+      );
+    await nextTick();
+    httpTesting
+      .expectOne('/api/auth/refresh')
+      .flush(
+        { name: 'REFRESH_SESSION_USECASE_ERROR__INVALID', message: 'Refresh session is invalid' },
+        { status: 401, statusText: 'Unauthorized' },
+      );
 
     await expect(pending).rejects.toBeTruthy();
     expect(store.dispatch).toHaveBeenCalledWith(AppAction.UserNotAuthenticated);
+  });
+
+  it('does not refresh a 401 from login', async () => {
+    const pending = firstValueFrom(http.post('/api/auth/login', {}));
+    httpTesting
+      .expectOne('/api/auth/login')
+      .flush(
+        { name: 'LOGIN_USECASE_ERROR__AUTHENTICATION_FAILED', message: 'Authorization failed!' },
+        { status: 401, statusText: 'Unauthorized' },
+      );
+
+    await expect(pending).rejects.toBeTruthy();
+    expect(store.dispatch).toHaveBeenCalledWith(AppAction.UserNotAuthenticated);
+    httpTesting.expectNone('/api/auth/refresh');
   });
 });

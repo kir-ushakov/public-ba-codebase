@@ -54,6 +54,9 @@
       "VERIFY_EMAIL_ERROR__GIVEN_TOKEN_DOES_NOT_EXIST",
       "VERIFY_EMAIL_ERROR__VERIFICATION_FAILED"
     ],
+    "ERefreshSessionUseCaseError": [
+      "REFRESH_SESSION_USECASE_ERROR__INVALID"
+    ],
     "ERemoveFromSlackUseCaseError": [
       "REMOVE_FROM_SLACK_ERROR_CODE__SLACK_OAUTH_ACCESS_NOT_FOUND"
     ],
@@ -242,6 +245,12 @@
       "response": [
         "changes",
         "syncRevision"
+      ]
+    },
+    "RefreshSessionContract": {
+      "request": "cookie",
+      "response": [
+        "refreshed"
       ]
     },
     "SendChangeContract": {

@@ -79,12 +79,23 @@ export function authenticatedRequest(
   };
 }
 
-export function jwtCookieFromResponse(res: { headers: Record<string, unknown> }): string {
+export function namedCookieFromResponse(
+  res: { headers: Record<string, unknown> },
+  name: string,
+): string {
   const raw = res.headers['set-cookie'];
   const list = Array.isArray(raw) ? raw : typeof raw === 'string' ? [raw] : [];
-  const jwtSetCookie = list.find((cookie: string) => cookie.startsWith('jwt='));
-  if (!jwtSetCookie) {
-    throw new Error(`No jwt Set-Cookie in: ${JSON.stringify(list)}`);
+  const setCookie = list.find((cookie: string) => cookie.startsWith(`${name}=`));
+  if (!setCookie) {
+    throw new Error(`No ${name} Set-Cookie in: ${JSON.stringify(list)}`);
   }
-  return jwtSetCookie.split(';')[0];
+  return setCookie.split(';')[0];
+}
+
+export function jwtCookieFromResponse(res: { headers: Record<string, unknown> }): string {
+  return namedCookieFromResponse(res, 'jwt');
+}
+
+export function refreshCookieFromResponse(res: { headers: Record<string, unknown> }): string {
+  return namedCookieFromResponse(res, 'refresh');
 }
