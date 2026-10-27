@@ -56,11 +56,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
 
         const user = userOrError.getValue();
 
-        const loginResponseDto = await this.loginService.login(
-          user,
-          request.context.req,
-          request.context.res,
-        );
+        const loginResponseDto = await this.loginService.login(user, request.context.res);
 
         return resolve(Result.ok(loginResponseDto));
       };
@@ -68,6 +64,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
       try {
         this.passport.authenticate(
           'google',
+          { session: false },
           (err: unknown, res: GoogleProfileWithTokens | false) => {
             handleGoogleCallback(err, res).catch((callbackErr: unknown) => {
               reject(

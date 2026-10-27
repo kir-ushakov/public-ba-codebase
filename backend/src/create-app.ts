@@ -1,13 +1,11 @@
 import express, { Application } from 'express';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
-import session from 'express-session';
 import { apiRouters } from './shared/infra/http/api/index.js';
 import UserModel from './shared/infra/database/mongodb/user.model.js';
 import { googleStrategy, jwtStrategy } from './shared/infra/auth/index.js';
 import { unexpectedErrorHandler } from './shared/infra/http/utils/unexpected-error.middleware.js';
 import { LoggerService } from './shared/services/logger/logger.service.js';
-import { requiredEnv } from './config/index.js';
 
 /**
  * Builds the Express app (middleware, Passport, routers) without connecting
@@ -18,30 +16,10 @@ export function createApp(): Application {
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json());
-
-  const secret = requiredEnv('SESSION_SECRET');
-  app.use(
-    session({
-      secret,
-      resave: false,
-      saveUninitialized: false,
-    }),
-  );
-
   app.use(cookieParser());
 
-  if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
-    app.use(passport.initialize());
-    app.use(passport.session());
-    passport.serializeUser(UserModel.serializeUser() as never);
-    passport.deserializeUser(UserModel.deserializeUser() as never);
-  }
-
-  if (process.env.AUTHENTICATION_STRATEGY === 'JWT') {
-    app.use(passport.initialize());
-    passport.use(jwtStrategy);
-  }
-
+  app.use(passport.initialize());
+  passport.use(jwtStrategy);
   passport.use(UserModel.createStrategy());
   passport.use(googleStrategy);
 
