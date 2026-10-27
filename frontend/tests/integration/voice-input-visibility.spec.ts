@@ -20,3 +20,14 @@ test('voice input is shown when signed in and online, and hidden when offline', 
   await page.context().setOffline(false);
   await expect(voiceInput).toBeVisible();
 });
+
+test('voice input is hidden when signed in but not synced, even while online', async ({ page }) => {
+  await setupApiMocks(page, { unauthorizedChanges: true });
+  await signIn(page);
+  await expect(page.locator('[data-test="home-sync-status"]')).toBeVisible();
+
+  await page.click('[data-test="new-task-btn"]');
+  await page.waitForURL('/task/TASK_VIEW_MODE_CREATE');
+
+  await expect(page.locator('[data-test="voice-input-trigger"]')).toBeHidden();
+});
