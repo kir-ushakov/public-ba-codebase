@@ -1,13 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Action, State, StateContext } from '@ngxs/store';
 import { EChangeAction } from '@brainassistant/contracts';
-import { ClientIdService } from 'src/app/shared/services/api/client-id.service';
 import { AppAction } from './app.actions';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Change } from '../models/change.model';
 import { append, patch, removeItem } from '@ngxs/store/operators';
 import { ServerChangesService } from '../services/api/server-changes.service';
-import { Observable, lastValueFrom, tap } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 import { SyncAction } from './sync.action';
 import { UserAction } from './user.actions';
 import {
@@ -17,7 +15,6 @@ import {
 import { TasksAction } from './tasks.action';
 
 export interface SyncStateModel {
-  clientId: string | null;
   lastTime: Date | null;
   changes: Change[];
   syncedRevision: number;
@@ -30,7 +27,6 @@ export interface SyncStateModel {
 @Injectable()
 export class SyncState {
   static readonly defaults: SyncStateModel = {
-    clientId: null,
     lastTime: null,
     changes: [],
     syncedRevision: 0,
@@ -40,7 +36,6 @@ export class SyncState {
   private intervalId: null | ReturnType<typeof setTimeout> = null;
 
   constructor(
-    private readonly clientIdSerivce: ClientIdService,
     private readonly serverChangesService: ServerChangesService,
     private readonly outboundSyncService: OutboundSyncService,
   ) {}
@@ -85,23 +80,13 @@ export class SyncState {
 
   @Action(SyncAction.Synchronize)
   async synchronize(ctx: StateContext<SyncStateModel>): Promise<void> {
-    if (!ctx.getState().clientId) {
-      const clientId: string = await lastValueFrom(this.getClientIdAPICall(ctx));
-      ctx.patchState({ clientId });
-    }
     try {
       await this.fetchServerChanges(ctx);
       await this.syncPendingChanges(ctx);
 
       ctx.patchState({ lastTime: new Date() });
-    } catch (err) {
-      // TODO: Don't rely only on HTTP status code - check error name from backend response
-      // TICKET: https://brainas.atlassian.net/browse/BA-258
-      if (err instanceof HttpErrorResponse && err.status === 404) {
-        this.handleClientIdNotFoundError(ctx);
-      } else {
-        ctx.dispatch(new SyncAction.SyncinhriniziationWasFailed());
-      }
+    } catch {
+      ctx.dispatch(new SyncAction.SyncinhriniziationWasFailed());
     }
   }
 
@@ -145,28 +130,6 @@ export class SyncState {
     ctx.patchState({
       changes: ctx.getState().changes.filter(change => change.object?.id !== entityId),
     });
-  }
-
-  private getClientIdAPICall(ctx: StateContext<SyncStateModel>): Observable<string> {
-    return this.clientIdSerivce.releaseClientId().pipe(
-      tap({
-        next: clientId => {
-          ctx.patchState({ clientId: clientId });
-        },
-        error: err => {
-          console.log(err);
-          return err;
-        },
-      }),
-    );
-  }
-
-  private handleClientIdNotFoundError(ctx: StateContext<SyncStateModel>): void {
-    ctx.patchState({
-      clientId: null,
-      lastTime: null,
-    });
-    ctx.dispatch(new SyncAction.Synchronize());
   }
 
   private async handleEntityNotFoundError(

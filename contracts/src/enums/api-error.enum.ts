@@ -28,10 +28,6 @@ export enum EGetImageUseCaseError {
   GoogleDriveRequestFailed = 'GET_IMAGE_ERROR__GOOGLE_DRIVE_REQUEST_FAILED',
 }
 
-export enum EGetChangesUseCaseError {
-  ClientNotFound = 'GET_CHANGES_ERROR_CODE__CLIENT_NOT_FOUND',
-}
-
 export enum ELoginUseCaseError {
   LoginFailed = 'LOGIN_USECASE_ERROR__AUTHENTICATION_FAILED',
   UserAccountNotVerified = 'LOGIN_USECASE_ERROR__ACCOUNT_NOT_VERIFIED',
@@ -56,10 +52,6 @@ export enum ESpeechToTextUseCaseError {
 export enum EVerifyEmailUseCaseError {
   GivenTokenDoesNotExist = 'VERIFY_EMAIL_ERROR__GIVEN_TOKEN_DOES_NOT_EXIST',
   VerificationFailed = 'VERIFY_EMAIL_ERROR__VERIFICATION_FAILED',
-}
-
-export enum EReleaseClientIdUseCaseError {
-  UserDoesNotExist = 'RELEASE_CLIENT_ID_USECASE_ERROR__USER_DOES_NOT_EXIST',
 }
 
 export enum ERemoveFromSlackUseCaseError {

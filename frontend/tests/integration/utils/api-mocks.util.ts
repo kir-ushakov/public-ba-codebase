@@ -20,8 +20,6 @@ export type SetupApiMocksOptions = {
   failImageUpload?: boolean;
 };
 
-type ReleaseClientIdResponse = { clientId: string };
-
 function json(status: number, body: unknown) {
   return {
     status,
@@ -54,12 +52,6 @@ export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = 
     const request = route.request();
     const url = request.url();
     const method = request.method();
-
-    if (url.includes('/api/sync/release-client-id')) {
-      const body: ReleaseClientIdResponse = { clientId: 'mock-client-id-123' };
-      await route.fulfill(json(200, body));
-      return;
-    }
 
     if (url.includes('/api/sync/changes') && method === 'GET') {
       if (options.unauthorizedChanges) {

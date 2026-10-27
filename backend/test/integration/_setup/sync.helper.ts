@@ -12,18 +12,6 @@ export type TaskSeed = {
   tagIds?: string[];
 };
 
-/**
- * Allocates a new sync client via GET /api/sync/release-client-id.
- * The production path is named "release", but it creates a client and returns its id.
- */
-export async function allocateClientId(app: Application, jwtCookie: string): Promise<string> {
-  const res = await authenticatedRequest(app, jwtCookie).get('/api/sync/release-client-id');
-  if (res.status !== 200 || typeof res.body?.clientId !== 'string') {
-    throw new Error(`Failed to allocate clientId: ${res.status} ${JSON.stringify(res.body)}`);
-  }
-  return res.body.clientId;
-}
-
 export async function createTaskViaApi(
   app: Application,
   jwtCookie: string,

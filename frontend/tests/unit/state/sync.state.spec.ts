@@ -5,7 +5,6 @@ import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
 import { firstValueFrom, of, throwError } from 'rxjs';
 import { Change } from 'src/app/shared/models/change.model';
 import { ETaskStatus, ETaskType, Task } from 'src/app/shared/models/task.model';
-import { ClientIdService } from 'src/app/shared/services/api/client-id.service';
 import { ServerChangesService } from 'src/app/shared/services/api/server-changes.service';
 import {
   OutboundSyncResult,
@@ -19,7 +18,6 @@ import { TasksState } from 'src/app/shared/state/tasks.state';
 describe('SyncState', () => {
   let store: Store;
   let actions$: Actions;
-  let clientIdService: { releaseClientId: jest.Mock };
   let serverChangesService: { fetch: jest.Mock };
   let outboundSyncService: { process: jest.Mock };
 
@@ -37,7 +35,6 @@ describe('SyncState', () => {
   };
 
   beforeEach(() => {
-    clientIdService = { releaseClientId: jest.fn(() => of('client-1')) };
     serverChangesService = {
       fetch: jest.fn(() => of({ changes: [], syncRevision: 0 })),
     };
@@ -48,7 +45,6 @@ describe('SyncState', () => {
     TestBed.configureTestingModule({
       providers: [
         provideStore([SyncState, TasksState]),
-        { provide: ClientIdService, useValue: clientIdService },
         { provide: ServerChangesService, useValue: serverChangesService },
         { provide: OutboundSyncService, useValue: outboundSyncService },
       ],
@@ -64,7 +60,7 @@ describe('SyncState', () => {
   });
 
   it('stores the revision after applying server changes', async () => {
-    resetState({ clientId: 'client-1', lastTime: null, changes: [], syncedRevision: 0 });
+    resetState({ lastTime: null, changes: [], syncedRevision: 0 });
     serverChangesService.fetch.mockReturnValue(of({ changes: [], syncRevision: 4 }));
 
     await firstValueFrom(store.dispatch(new SyncAction.Synchronize()));
@@ -74,7 +70,7 @@ describe('SyncState', () => {
   });
 
   it('keeps a newer local revision when an older response arrives', async () => {
-    resetState({ clientId: 'client-1', lastTime: null, changes: [], syncedRevision: 10 });
+    resetState({ lastTime: null, changes: [], syncedRevision: 10 });
     serverChangesService.fetch.mockReturnValue(of({ changes: [], syncRevision: 4 }));
 
     await firstValueFrom(store.dispatch(new SyncAction.Synchronize()));
@@ -84,7 +80,7 @@ describe('SyncState', () => {
   });
 
   it('starts a sync cycle immediately when the app opens', async () => {
-    resetState({ clientId: 'client-1', lastTime: null, changes: [] });
+    resetState({ lastTime: null, changes: [] });
 
     await firstValueFrom(store.dispatch(new AppAction.Opened()));
 
@@ -94,7 +90,7 @@ describe('SyncState', () => {
 
   it('repeats the sync cycle on the interval after the app opens', async () => {
     jest.useFakeTimers();
-    resetState({ clientId: 'client-1', lastTime: null, changes: [] });
+    resetState({ lastTime: null, changes: [] });
 
     await firstValueFrom(store.dispatch(new AppAction.Opened()));
     expect(serverChangesService.fetch).toHaveBeenCalledTimes(1);
@@ -105,7 +101,7 @@ describe('SyncState', () => {
   });
 
   it('enqueues a local change and removes it after outbound sync reports it sent', async () => {
-    resetState({ clientId: 'client-1', lastTime: null, changes: [pendingChange] });
+    resetState({ lastTime: null, changes: [pendingChange] });
 
     await firstValueFrom(store.dispatch(new SyncAction.Synchronize()));
 
@@ -115,7 +111,7 @@ describe('SyncState', () => {
 
   it('keeps the queue and reports failure when outbound sync cannot send', async () => {
     outboundSyncService.process.mockResolvedValue({ ...emptyResult, sendFailed: true });
-    resetState({ clientId: 'client-1', lastTime: null, changes: [pendingChange] });
+    resetState({ lastTime: null, changes: [pendingChange] });
 
     const failed: SyncAction.SyncinhriniziationWasFailed[] = [];
     const sub = actions$
@@ -157,7 +153,7 @@ describe('SyncState', () => {
       }
       return { ...emptyResult, sent: changes };
     });
-    resetState({ clientId: 'client-1', lastTime: null, changes: [photoCreate] }, [taskWithPhoto]);
+    resetState({ lastTime: null, changes: [photoCreate] }, [taskWithPhoto]);
 
     const errors: AppAction.ShowErrorInUI[] = [];
     const sub = actions$
@@ -178,28 +174,29 @@ describe('SyncState', () => {
     ).toBe(false);
   });
 
-  it('clears clientId on fetch 404 and allocates a new one on the retry', async () => {
-    resetState({ clientId: 'stale-client', lastTime: null, changes: [] });
+  it('reports sync failure when fetching changes returns 404', async () => {
+    resetState({ lastTime: null, changes: [] });
+    serverChangesService.fetch.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 404,
+            statusText: 'Not Found',
+            url: '/api/sync/changes',
+          }),
+      ),
+    );
 
-    serverChangesService.fetch
-      .mockReturnValueOnce(
-        throwError(
-          () =>
-            new HttpErrorResponse({
-              status: 404,
-              statusText: 'Not Found',
-              url: '/api/sync/changes',
-            }),
-        ),
-      )
-      .mockReturnValue(of({ changes: [], syncRevision: 0 }));
-    clientIdService.releaseClientId.mockReturnValue(of('client-2'));
+    const failed: SyncAction.SyncinhriniziationWasFailed[] = [];
+    const sub = actions$
+      .pipe(ofActionDispatched(SyncAction.SyncinhriniziationWasFailed))
+      .subscribe(action => failed.push(action));
 
     await firstValueFrom(store.dispatch(new SyncAction.Synchronize()));
+    sub.unsubscribe();
 
-    expect(clientIdService.releaseClientId).toHaveBeenCalled();
-    expect(syncSnapshot().clientId).toBe('client-2');
-    expect(serverChangesService.fetch).toHaveBeenCalledWith(0);
+    expect(failed).toHaveLength(1);
+    expect(serverChangesService.fetch).toHaveBeenCalledTimes(1);
   });
 
   function resetState(

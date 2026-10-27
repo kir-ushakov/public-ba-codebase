@@ -9,8 +9,7 @@ import { TagRepoService } from '../../../../shared/repo/tag-repo.service.js';
 import { TaskRepoService } from '../../../../shared/repo/task-repo.service.js';
 import { SyncRevisionService } from '../../../../shared/repo/sync-revision.service.js';
 import { Change } from '../../domain/values/change.js';
-import { UseCaseError } from '../../../../shared/core/use-case-error.js';
-import { EGetChangesUseCaseError } from './get-changes.errors.js';
+import { GetChangesError } from './get-changes.errors.js';
 
 export type GetChangesParams = {
   userId: string;
@@ -27,7 +26,7 @@ type RevisionRow = {
   change: Change | null;
 };
 
-export type GetChangesResult = Result<GetChangesPayload, UseCaseError<EGetChangesUseCaseError>>;
+export type GetChangesResult = Result<GetChangesPayload, GetChangesError>;
 
 export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesResult>> {
   private taskRepoService: TaskRepoService;

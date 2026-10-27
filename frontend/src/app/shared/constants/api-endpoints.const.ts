@@ -8,7 +8,6 @@ export const API_ENDPOINTS = {
     VERIFY_EMAIL: BASE_URL + 'auth/verify-email',
   },
   SYNC: {
-    RELEASE_CLIENTID: BASE_URL + 'sync/release-client-id',
     CHANGES: BASE_URL + 'sync/changes',
     TASK: BASE_URL + 'sync/task',
     TAG: BASE_URL + 'sync/tag',
