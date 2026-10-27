@@ -5,7 +5,6 @@ import { updateTaskController } from '../usecases/task/update/index.js';
 import { deleteTaskController } from '../usecases/task/delete/index.js';
 import { createTagController } from '../usecases/tag/create/index.js';
 import { deleteTagController } from '../usecases/tag/delete/index.js';
-import { releaseClientIdController } from '../usecases/release-client-id/index.js';
 import { getChnagesController } from '../usecases/get-changes/_index.js';
 
 const syncRouter: Router = Router();
@@ -23,10 +22,6 @@ syncRouter.delete(
   asyncHandler(deleteTagController.execute.bind(deleteTagController)),
 );
 
-syncRouter.get(
-  '/release-client-id',
-  asyncHandler(releaseClientIdController.execute.bind(releaseClientIdController)),
-);
 syncRouter.get('/changes', asyncHandler(getChnagesController.execute.bind(getChnagesController)));
 
 export { syncRouter };

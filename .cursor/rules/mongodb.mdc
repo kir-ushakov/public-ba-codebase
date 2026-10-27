@@ -43,7 +43,7 @@ The existing schemas define no indexes at all. When adding a query that filters 
 
 Id types are not uniform here, so be explicit about which entity you are querying:
 
-- `Task` and `Client` store a **string** `_id` (an ObjectId hex string produced by `UniqueEntityID`).
+- `Task` stores a **string** `_id` (an ObjectId hex string produced by `UniqueEntityID`).
 - `User` uses a real `ObjectId`; `user.repo.ts` converts `string` to `ObjectId` before querying.
 
 Reject malformed ids explicitly instead of passing them into a query.

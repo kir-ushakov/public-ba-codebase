@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Compose smoke: signup → verify in Mongo → login → create task → task in Mongo,
- * then two sync clientIds both see the new task via GetChanges.
+ * then GetChanges returns that task.
  *
  * Expects docker compose smoke stack already up (see run.mjs / README).
  */
@@ -158,19 +158,6 @@ async function main() {
     fail(`login response missing userId: ${login.text}`);
   }
 
-  log('allocate two sync clientIds');
-  const clientARes = await request('GET', '/api/sync/release-client-id', {
-    cookie: jwtCookie,
-  });
-  const clientBRes = await request('GET', '/api/sync/release-client-id', {
-    cookie: jwtCookie,
-  });
-  if (clientARes.status !== 200 || clientBRes.status !== 200) {
-    fail(`release-client-id failed: ${clientARes.status}/${clientBRes.status}`);
-  }
-  const clientA = clientARes.body.clientId;
-  const clientB = clientBRes.body.clientId;
-
   log('create task', TASK_ID);
   const create = await request('POST', '/api/sync/task', {
     cookie: jwtCookie,
@@ -196,33 +183,21 @@ async function main() {
     fail(`expected 1 task in Mongo, got ${taskCount}`);
   }
 
-  const changesA = await request(
-    'GET',
-    `/api/sync/changes?afterRevision=0`,
-    { cookie: jwtCookie },
-  );
-  const changesB = await request(
-    'GET',
-    `/api/sync/changes?afterRevision=0`,
-    { cookie: jwtCookie },
-  );
-  if (changesA.status !== 200 || changesB.status !== 200) {
-    fail(`get-changes failed: ${changesA.status}/${changesB.status}`);
+  const changes = await request('GET', '/api/sync/changes?afterRevision=0', {
+    cookie: jwtCookie,
+  });
+  if (changes.status !== 200) {
+    fail(`get-changes failed: ${changes.status}`);
   }
 
-  const aHasTask = (changesA.body?.changes ?? []).some(
+  const hasTask = (changes.body?.changes ?? []).some(
     c => c?.object?.id === TASK_ID || c?.object?.title === TASK_TITLE,
   );
-  const bHasTask = (changesB.body?.changes ?? []).some(
-    c => c?.object?.id === TASK_ID || c?.object?.title === TASK_TITLE,
-  );
-  if (!aHasTask || !bHasTask) {
-    fail(
-      `both clients should see the task; A=${JSON.stringify(changesA.body)} B=${JSON.stringify(changesB.body)}`,
-    );
+  if (!hasTask) {
+    fail(`GetChanges should return the task; body=${JSON.stringify(changes.body)}`);
   }
 
-  log('OK', 'signup → task in Mongo → two clientIds see GetChanges');
+  log('OK', 'signup → task in Mongo → GetChanges returns the task');
 }
 
 main().catch(err => {
