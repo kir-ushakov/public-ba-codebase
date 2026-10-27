@@ -6,9 +6,7 @@ import fs from 'fs';
 import path from 'path';
 
 process.env.NODE_ENV = 'test';
-process.env.AUTHENTICATION_STRATEGY = 'JWT';
 process.env.JWT_SECRET = 'test-jwt-secret-min-32-chars-long!!';
-process.env.SESSION_SECRET = 'test-session-secret';
 // One directory per worker. Suites share a process-wide multer dest, and one
 // spec replaces that directory with a file to test the write failure.
 const uploadRoot = path.resolve(

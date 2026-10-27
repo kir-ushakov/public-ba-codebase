@@ -57,9 +57,7 @@ services:
       CRT_PATH: /tmp/ssl/server.crt
       KEY_PATH: /tmp/ssl/server.key
       FILES_UPLOAD_PATH: /app/backend/files
-      SESSION_SECRET: smoke-session-secret
       JWT_SECRET: smoke-jwt-secret-min-32-chars-long!!
-      AUTHENTICATION_STRATEGY: JWT
       EMAIL_DOMAIN: example.com
       HOST: localhost
       SENDGRID_API_KEY: SG.smoke

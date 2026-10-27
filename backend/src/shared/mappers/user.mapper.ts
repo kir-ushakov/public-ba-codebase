@@ -1,7 +1,6 @@
 import { User, UserPersistent } from '../domain/models/user.js';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 import { UserEmail } from '../domain/values/user/user-email.js';
-import UserModel, { UserDocument } from '../infra/database/mongodb/user.model.js';
 
 export class UserMapper {
   public static toDomain(raw: UserPersistent): User {
@@ -39,20 +38,5 @@ export class UserMapper {
       googleRefreshToken: user.googleRefreshToken,
       googleAccessToken: user.googleAccessToken,
     };
-  }
-
-  public static toDatabaseEntity(user: User): UserDocument {
-    // TODO: pass DBModel as dependency to make method db agnostic
-    const DBModel = UserModel;
-    return new DBModel({
-      id: user.id.toValue(),
-      username: user.username.value,
-      firstName: user.firstname,
-      lastName: user.lastname,
-      verified: user.verified,
-      googleId: user.googleId,
-      googleRefreshToken: user.googleRefreshToken,
-      googleAccessToken: user.googleAccessToken,
-    });
   }
 }

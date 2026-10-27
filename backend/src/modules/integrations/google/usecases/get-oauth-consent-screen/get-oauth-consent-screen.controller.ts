@@ -36,6 +36,7 @@ export class GetOAuthConsentScreenController extends BaseController {
 
       this._passport.authenticate('google', {
         ...authOptions,
+        session: false,
       })(req, res, next);
     } catch (err) {
       this.fail(res, err);

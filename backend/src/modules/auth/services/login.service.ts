@@ -1,9 +1,8 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserDto } from '../dto/user.dto.js';
 import { LoginResponseDTO } from '../usecases/login/login.dto.js';
 import { User } from '../../../shared/domain/models/user.js';
-import { UserMapper } from '../../../shared/mappers/user.mapper.js';
 import { requiredEnv } from '../../../config/index.js';
 
 export class LoginService {
@@ -23,31 +22,16 @@ export class LoginService {
     });
   }
 
-  public login(user: User, req: Request, res: Response): Promise<LoginResponseDTO> {
-    return new Promise((resolve, reject) => {
-      const userDto: UserDto = {
-        firstName: user.firstname,
-        lastName: user.lastname,
-        email: user.username.value,
-        userId: user.id.toString(),
-      };
+  public login(user: User, res: Response): Promise<LoginResponseDTO> {
+    const userDto: UserDto = {
+      firstName: user.firstname,
+      lastName: user.lastname,
+      email: user.username.value,
+      userId: user.id.toString(),
+    };
 
-      const loginResponseDto: LoginResponseDTO = { user: userDto };
-
-      if (process.env.AUTHENTICATION_STRATEGY === 'SESSION') {
-        const userDBEnity = UserMapper.toDatabaseEntity(user);
-        req.logIn(userDBEnity, err => {
-          if (err) {
-            return reject(err instanceof Error ? err : new Error('Unknown login error'));
-          }
-          return resolve(loginResponseDto);
-        });
-      }
-
-      if (process.env.AUTHENTICATION_STRATEGY === 'JWT') {
-        LoginService.setJwtCookie(res, loginResponseDto);
-        return resolve(loginResponseDto);
-      }
-    });
+    const loginResponseDto: LoginResponseDTO = { user: userDto };
+    LoginService.setJwtCookie(res, loginResponseDto);
+    return Promise.resolve(loginResponseDto);
   }
 }
