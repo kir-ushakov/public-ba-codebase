@@ -20,6 +20,7 @@ export interface SyncStateModel {
   clientId: string | null;
   lastTime: Date | null;
   changes: Change[];
+  syncedRevision: number;
 }
 
 @State<SyncStateModel>({
@@ -32,6 +33,7 @@ export class SyncState {
     clientId: null,
     lastTime: null,
     changes: [],
+    syncedRevision: 0,
   };
 
   readonly SYNC_PERIOD = 1000 * 20; // sync interval 20 sec;
@@ -104,12 +106,13 @@ export class SyncState {
   }
 
   private async fetchServerChanges(ctx: StateContext<SyncStateModel>): Promise<void> {
-    const clientId = ctx.getState().clientId;
-    if (!clientId) {
-      return;
+    const afterRevision = ctx.getState().syncedRevision ?? 0;
+    const page = await lastValueFrom(this.serverChangesService.fetch(afterRevision));
+    await ctx.dispatch(new SyncAction.ServerChangesLoaded(page.changes));
+    const current = ctx.getState().syncedRevision ?? 0;
+    if (page.syncRevision > current) {
+      ctx.patchState({ syncedRevision: page.syncRevision });
     }
-    const changes = await lastValueFrom(this.serverChangesService.fetch(clientId));
-    await ctx.dispatch(new SyncAction.ServerChangesLoaded(changes));
   }
 
   private async syncPendingChanges(ctx: StateContext<SyncStateModel>): Promise<void> {

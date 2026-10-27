@@ -7,7 +7,6 @@ export class ClientMapper {
     const clientOrError = Client.create(
       {
         userId: raw.userId,
-        syncTime: raw.syncTime,
       },
       new UniqueEntityID(raw._id),
     );
@@ -23,7 +22,6 @@ export class ClientMapper {
     return {
       _id: client.id.toString(),
       userId: client.userId,
-      syncTime: client.syncTime,
     };
   }
 }

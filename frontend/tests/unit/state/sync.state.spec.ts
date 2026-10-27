@@ -38,7 +38,9 @@ describe('SyncState', () => {
 
   beforeEach(() => {
     clientIdService = { releaseClientId: jest.fn(() => of('client-1')) };
-    serverChangesService = { fetch: jest.fn(() => of([])) };
+    serverChangesService = {
+      fetch: jest.fn(() => of({ changes: [], syncRevision: 0 })),
+    };
     outboundSyncService = {
       process: jest.fn(async (changes: Change[]) => ({ ...emptyResult, sent: changes })),
     };
@@ -61,12 +63,32 @@ describe('SyncState', () => {
     jest.useRealTimers();
   });
 
+  it('stores the revision after applying server changes', async () => {
+    resetState({ clientId: 'client-1', lastTime: null, changes: [], syncedRevision: 0 });
+    serverChangesService.fetch.mockReturnValue(of({ changes: [], syncRevision: 4 }));
+
+    await firstValueFrom(store.dispatch(new SyncAction.Synchronize()));
+
+    expect(serverChangesService.fetch).toHaveBeenCalledWith(0);
+    expect(syncSnapshot().syncedRevision).toBe(4);
+  });
+
+  it('keeps a newer local revision when an older response arrives', async () => {
+    resetState({ clientId: 'client-1', lastTime: null, changes: [], syncedRevision: 10 });
+    serverChangesService.fetch.mockReturnValue(of({ changes: [], syncRevision: 4 }));
+
+    await firstValueFrom(store.dispatch(new SyncAction.Synchronize()));
+
+    expect(serverChangesService.fetch).toHaveBeenCalledWith(10);
+    expect(syncSnapshot().syncedRevision).toBe(10);
+  });
+
   it('starts a sync cycle immediately when the app opens', async () => {
     resetState({ clientId: 'client-1', lastTime: null, changes: [] });
 
     await firstValueFrom(store.dispatch(new AppAction.Opened()));
 
-    expect(serverChangesService.fetch).toHaveBeenCalledWith('client-1');
+    expect(serverChangesService.fetch).toHaveBeenCalledWith(0);
     expect(outboundSyncService.process).toHaveBeenCalledWith([]);
   });
 
@@ -170,19 +192,22 @@ describe('SyncState', () => {
             }),
         ),
       )
-      .mockReturnValue(of([]));
+      .mockReturnValue(of({ changes: [], syncRevision: 0 }));
     clientIdService.releaseClientId.mockReturnValue(of('client-2'));
 
     await firstValueFrom(store.dispatch(new SyncAction.Synchronize()));
 
     expect(clientIdService.releaseClientId).toHaveBeenCalled();
     expect(syncSnapshot().clientId).toBe('client-2');
-    expect(serverChangesService.fetch).toHaveBeenCalledWith('client-2');
+    expect(serverChangesService.fetch).toHaveBeenCalledWith(0);
   });
 
-  function resetState(sync: SyncStateModel, tasks: Task[] = []): void {
+  function resetState(
+    sync: Omit<SyncStateModel, 'syncedRevision'> & { syncedRevision?: number },
+    tasks: Task[] = [],
+  ): void {
     store.reset({
-      sync,
+      sync: { syncedRevision: 0, ...sync },
       tasks: { entities: tasks },
     });
   }

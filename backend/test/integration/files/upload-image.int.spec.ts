@@ -15,6 +15,14 @@ import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
 
+function uploadRoot(): string {
+  const root = process.env.FILES_UPLOAD_PATH;
+  if (!root) {
+    throw new Error('FILES_UPLOAD_PATH is not set');
+  }
+  return root;
+}
+
 describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', () => {
   let app: Application;
   const TEST_IMAGE_PATH = path.join(process.cwd(), 'test/integration/_fixtures/test-img.jpg');
@@ -25,13 +33,13 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
   beforeAll(async () => {
     await startInMemoryMongo();
     // eslint-disable-next-line security/detect-non-literal-fs-filename -- local test upload fixture dir
-    await fsp.mkdir(path.join(process.cwd(), 'test-uploads/tmp'), { recursive: true });
+    await fsp.mkdir(path.join(uploadRoot(), 'tmp'), { recursive: true });
     app = buildTestApp().app;
   }, 30_000);
 
   afterAll(async () => {
     await stopInMemoryMongo();
-    await fsp.rm(path.join(process.cwd(), 'test-uploads'), { recursive: true, force: true });
+    await fsp.rm(uploadRoot(), { recursive: true, force: true });
   });
 
   beforeEach(async () => {
@@ -73,7 +81,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
   it('should reject unsupported file types', async () => {
     const { jwtCookie } = await seedTestUser();
     const imageId = 'image-invalid';
-    const invalidFilePath = path.join(process.cwd(), 'test-uploads/tmp/test-file.txt');
+    const invalidFilePath = path.join(uploadRoot(), 'tmp', 'test-file.txt');
     // eslint-disable-next-line security/detect-non-literal-fs-filename -- local test fixture write
     await fsp.writeFile(invalidFilePath, 'This is a text file');
 
@@ -164,7 +172,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
 
   it('returns UNEXPECTED_ERROR when multer cannot write the upload temp dir', async () => {
     const { jwtCookie } = await seedTestUser();
-    const tmpDir = path.join(process.cwd(), 'test-uploads/tmp');
+    const tmpDir = path.join(uploadRoot(), 'tmp');
     await fsp.rm(tmpDir, { recursive: true, force: true });
     // eslint-disable-next-line security/detect-non-literal-fs-filename -- local test fixture
     await fsp.writeFile(tmpDir, 'not-a-directory');

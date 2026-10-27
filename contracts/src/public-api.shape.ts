@@ -27,7 +27,11 @@ import {
   type UserDto,
   type VerifyEmailResponseDTO,
 } from './dto';
-import { GetChangesContract, SendChangeContract, UploadImageContract } from './contracts';
+import {
+  GetChangesContract,
+  SendChangeContract,
+  UploadImageContract,
+} from './contracts';
 import {
   EApiError,
   EChangeAction,
@@ -139,10 +143,15 @@ const _uploadReq: ExactKeys<UploadImageContract.Request, typeof UPLOAD_REQUEST_K
 const UPLOAD_RESPONSE_KEYS = ['imageId'] as const satisfies readonly (keyof UploadImageContract.Response)[];
 const _uploadRes: ExactKeys<UploadImageContract.Response, typeof UPLOAD_RESPONSE_KEYS> = true;
 
-const GET_CHANGES_REQUEST_KEYS = ['clientId'] as const satisfies readonly (keyof GetChangesContract.Request)[];
+const GET_CHANGES_REQUEST_KEYS = [
+  'afterRevision',
+] as const satisfies readonly (keyof GetChangesContract.Request)[];
 const _getChangesReq: ExactKeys<GetChangesContract.Request, typeof GET_CHANGES_REQUEST_KEYS> = true;
 
-const GET_CHANGES_RESPONSE_KEYS = ['changes'] as const satisfies readonly (keyof GetChangesContract.Response)[];
+const GET_CHANGES_RESPONSE_KEYS = [
+  'changes',
+  'syncRevision',
+] as const satisfies readonly (keyof GetChangesContract.Response)[];
 const _getChangesRes: ExactKeys<GetChangesContract.Response, typeof GET_CHANGES_RESPONSE_KEYS> = true;
 
 const SEND_CHANGE_REQUEST_KEYS = [

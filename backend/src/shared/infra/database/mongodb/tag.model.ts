@@ -10,7 +10,10 @@ const TagSchema = new Schema({
   color: { type: String, require: true },
   createdAt: { type: Date, require: true },
   modifiedAt: { type: Date, require: true },
+  syncRevision: { type: Number, required: false },
 });
+
+TagSchema.index({ userId: 1, syncRevision: 1 });
 
 const TagModel = mongoose.model<TagDocument>('Tag', TagSchema);
 

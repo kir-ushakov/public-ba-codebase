@@ -7,6 +7,7 @@ import VerificationTokenModel, { VerificationTokenDocument } from './verificatio
 import SlackOAuthAccessModel, { ISlackOAuthAccessDocument } from './slack-oauth-access.model.js';
 import ImageModel, { ImageDocument } from './image.model.js';
 import TagModel, { TagDocument } from './tag.model.js';
+import SyncCounterModel, { SyncCounterDocument } from './sync-counter.model.js';
 
 export interface IDbModels {
   TaskModel: Model<TaskDocument>;
@@ -17,6 +18,7 @@ export interface IDbModels {
   ActionModel: Model<ActionDocument>;
   ImageModel: Model<ImageDocument>;
   TagModel: Model<TagDocument>;
+  SyncCounterModel: Model<SyncCounterDocument>;
 }
 
 export const models: IDbModels = {
@@ -28,4 +30,5 @@ export const models: IDbModels = {
   ActionModel,
   ImageModel,
   TagModel,
+  SyncCounterModel,
 };
