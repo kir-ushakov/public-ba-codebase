@@ -185,7 +185,7 @@ export class TaskScreenState {
         changes,
       }),
     );
-    ctx.patchState({ mode: ETaskViewMode.View });
+    ctx.dispatch(TaskScreenAction.Close);
   }
 
   @Action(TaskScreenAction.EditTaskOptionSelected)

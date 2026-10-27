@@ -30,9 +30,6 @@ test('user can edit a task title', async ({ page }) => {
   expect(patchBody.changeableObjectDto).toBeTruthy();
   expect(patchBody.changeableObjectDto.title).toBe('Edited task title');
 
-  await expect(page.locator('[data-test="task-view-title"]')).toHaveText('Edited task title');
-
-  await page.click('[data-test="task-back"]');
   await page.waitForURL(/\/(home)?$/);
   await expect(
     page.locator('[data-test="task-tile"]', { hasText: 'Edited task title' }),

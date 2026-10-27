@@ -399,6 +399,28 @@ describe('TaskScreenState', () => {
     expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.View);
   });
 
+  it('closes the screen after saving an edit', async () => {
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Edit, existingWithPhoto.id)),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Edited title',
+          description: null,
+        }),
+      ),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const updated = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => task.id === existingWithPhoto.id);
+    expect(updated?.title).toBe('Edited title');
+    expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.Create);
+    expect(store.selectSnapshot(TaskScreenState.task).id).toBeNull();
+  });
+
   it('shows the saved image as the cover draft when edit mode opens', async () => {
     await firstValueFrom(
       store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Edit, existingWithPhoto.id)),
