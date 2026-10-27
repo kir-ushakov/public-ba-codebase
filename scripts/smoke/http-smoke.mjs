@@ -198,12 +198,12 @@ async function main() {
 
   const changesA = await request(
     'GET',
-    `/api/sync/changes?clientId=${encodeURIComponent(clientA)}`,
+    `/api/sync/changes?afterRevision=0`,
     { cookie: jwtCookie },
   );
   const changesB = await request(
     'GET',
-    `/api/sync/changes?clientId=${encodeURIComponent(clientB)}`,
+    `/api/sync/changes?afterRevision=0`,
     { cookie: jwtCookie },
   );
   if (changesA.status !== 200 || changesB.status !== 200) {

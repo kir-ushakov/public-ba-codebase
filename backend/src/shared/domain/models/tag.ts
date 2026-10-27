@@ -23,6 +23,7 @@ export type TagPersistent = {
   color: string;
   createdAt: Date;
   modifiedAt: Date;
+  syncRevision?: number;
 };
 
 export class Tag extends AggregateRoot<TagProps> {

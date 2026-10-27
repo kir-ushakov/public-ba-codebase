@@ -3,14 +3,12 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IClientPersistent {
   _id?: string;
   userId: string;
-  syncTime: Date | null;
 }
 
 export interface ClientDocument extends Omit<IClientPersistent, '_id'>, Document<string> {}
 
 const ClientSchema = new Schema({
   userId: { type: String, require: true },
-  syncTime: { type: Date, default: null },
 });
 
 const ClientModel = mongoose.model<ClientDocument>('Client', ClientSchema);

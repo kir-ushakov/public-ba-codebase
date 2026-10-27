@@ -54,5 +54,9 @@ export {
 } from './enums';
 
 // Contracts
-export { UploadImageContract, SendChangeContract, GetChangesContract } from './contracts';
+export {
+  UploadImageContract,
+  SendChangeContract,
+  GetChangesContract,
+} from './contracts';
 

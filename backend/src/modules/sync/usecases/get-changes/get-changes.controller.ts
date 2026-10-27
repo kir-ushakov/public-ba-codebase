@@ -4,7 +4,6 @@ import { UserPersistent } from '../../../../shared/domain/models/user.js';
 import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
 import { GetChanges, GetChangesParams, GetChangesResult } from './get-changes.usecase.js';
 import { ChangeMapper } from '../../../../shared/mappers/change.mapper.js';
-import { Change } from '../../domain/values/change.js';
 
 export class GetChnagesController extends BaseController {
   private _useCase: GetChanges;
@@ -47,15 +46,28 @@ export class GetChnagesController extends BaseController {
     userId: string,
   ): GetChangesParams {
     return {
-      clientId: payload.clientId,
       userId,
+      afterRevision: this.parseAfterRevision(payload.afterRevision),
     };
   }
 
+  private parseAfterRevision(raw: string | undefined): number {
+    if (raw === undefined || raw === '') {
+      return 0;
+    }
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 0) {
+      return 0;
+    }
+    return parsed;
+  }
+
   private usecaseResultToResponse(result: GetChangesResult): GetChangesContract.Response {
-    const changes: Change[] = result.getValue();
-    return {
-      changes: changes.map(change => ChangeMapper.toDTO(change)),
+    const payload = result.getValue();
+    const response: GetChangesContract.Response = {
+      changes: payload.changes.map(change => ChangeMapper.toDTO(change)),
+      syncRevision: payload.syncRevision,
     };
+    return response;
   }
 }

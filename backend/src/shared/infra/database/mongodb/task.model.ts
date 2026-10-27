@@ -15,7 +15,10 @@ const TaskSchema = new Schema({
   tagIds: { type: [String], require: false },
   createdAt: { type: Date, require: true },
   modifiedAt: { type: Date, require: true },
+  syncRevision: { type: Number, required: false },
 });
+
+TaskSchema.index({ userId: 1, syncRevision: 1 });
 
 const TaskModel = mongoose.model<TaskDocument>('Task', TaskSchema);
 

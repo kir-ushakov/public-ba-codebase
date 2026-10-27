@@ -54,7 +54,6 @@ export class ReleaseClientId implements UseCase<ReleaseClientIdParams, Promise<R
   private async createNewCleintInDB(userId: string): Promise<Result<Client, never>> {
     const clientProps: IClientProps = {
       userId: userId,
-      syncTime: null,
     };
 
     const clientOrError: Result<Client, never> = Client.create(clientProps);

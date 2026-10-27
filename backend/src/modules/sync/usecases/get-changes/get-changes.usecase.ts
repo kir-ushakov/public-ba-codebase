@@ -1,138 +1,119 @@
-import { EChangeAction, EChangedEntity, TagDTO, TaskDTO } from '@brainassistant/contracts';
+import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
 import { Result } from '../../../../shared/core/result.js';
 import { UseCase } from '../../../../shared/core/UseCase.js';
-import { Action } from '../../../../shared/domain/models/actions.js';
-import { Client } from '../../../../shared/domain/models/client.js';
-import { Tag } from '../../../../shared/domain/models/tag.js';
-import { Task } from '../../../../shared/domain/models/task.js';
-import { EActionType } from '../../../../shared/infra/database/mongodb/action.model.js';
+import { EActionType } from '../../../../shared/domain/models/action-type.enum.js';
 import { TagMapper } from '../../../../shared/mappers/tag.mapper.js';
 import { TaskMapper } from '../../../../shared/mappers/task.mapper.js';
 import { ActionRepo } from '../../../../shared/repo/action.repo.js';
-import { ClientRepo } from '../../../../shared/repo/client.repo.js';
 import { TagRepoService } from '../../../../shared/repo/tag-repo.service.js';
 import { TaskRepoService } from '../../../../shared/repo/task-repo.service.js';
+import { SyncRevisionService } from '../../../../shared/repo/sync-revision.service.js';
 import { Change } from '../../domain/values/change.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
-import { EGetChangesUseCaseError, GetChangesErrors } from './get-changes.errors.js';
+import { EGetChangesUseCaseError } from './get-changes.errors.js';
 
 export type GetChangesParams = {
   userId: string;
-  clientId: string;
+  afterRevision: number;
 };
 
-export type GetChangesResult = Result<Change[], UseCaseError<EGetChangesUseCaseError>>;
+export type GetChangesPayload = {
+  changes: Change[];
+  syncRevision: number;
+};
+
+type RevisionRow = {
+  syncRevision: number;
+  change: Change | null;
+};
+
+export type GetChangesResult = Result<GetChangesPayload, UseCaseError<EGetChangesUseCaseError>>;
 
 export class GetChanges implements UseCase<GetChangesParams, Promise<GetChangesResult>> {
-  private clientRepo: ClientRepo;
   private taskRepoService: TaskRepoService;
   private tagRepoService: TagRepoService;
   private actionRepo: ActionRepo;
+  private revisions: SyncRevisionService;
 
   constructor(
-    clientRepo: ClientRepo,
     taskRepoService: TaskRepoService,
     tagRepoService: TagRepoService,
     actionRepo: ActionRepo,
+    revisions: SyncRevisionService,
   ) {
-    this.clientRepo = clientRepo;
     this.taskRepoService = taskRepoService;
     this.tagRepoService = tagRepoService;
     this.actionRepo = actionRepo;
+    this.revisions = revisions;
   }
 
   public async execute(params: GetChangesParams): Promise<GetChangesResult> {
-    const { userId, clientId } = params;
-    const changes: Change[] = [];
-    let client: Client;
+    return this.pullByRevision(params.userId, params.afterRevision);
+  }
 
-    try {
-      client = await this.clientRepo.find(userId, clientId);
-    } catch (err) {
-      console.error(`Failed to find client (userId: ${userId}, clientId: ${clientId})`, err);
-      return GetChangesErrors.ClientNotFoundError(userId, clientId);
+  private async pullByRevision(userId: string, afterRevision: number): Promise<GetChangesResult> {
+    await this.revisions.numberMissing(userId);
+    const rows = await this.revisionRows(userId, afterRevision);
+    const syncRevision = rows.reduce((max, row) => Math.max(max, row.syncRevision), afterRevision);
+    const changes = rows.flatMap(row => (row.change ? [row.change] : []));
+    return Result.ok({ changes, syncRevision });
+  }
+
+  private async revisionRows(userId: string, last: number): Promise<RevisionRow[]> {
+    const rows: RevisionRow[] = [];
+    const tasks = await this.taskRepoService.getSinceRevision(userId, last);
+    for (const row of tasks) {
+      rows.push({
+        syncRevision: row.syncRevision,
+        change: row.task
+          ? new Change({
+              entity: EChangedEntity.Task,
+              action: EChangeAction.Updated,
+              object: TaskMapper.toDTO(row.task),
+            })
+          : null,
+      });
     }
 
-    const lastSyncTime = client.syncTime;
-    const changedTasks: Task[] = await this.taskRepoService.getChanges(
-      userId,
-      lastSyncTime ?? new Date(0),
-    );
-
-    for (const changedTask of changedTasks) {
-      const taskDto: TaskDTO = TaskMapper.toDTO(changedTask);
-      changes.push(
-        new Change({
-          entity: EChangedEntity.Task,
-          action: EChangeAction.Updated,
-          object: taskDto,
-        }),
-      );
+    const tags = await this.tagRepoService.getSinceRevision(userId, last);
+    for (const row of tags) {
+      rows.push({
+        syncRevision: row.syncRevision,
+        change: row.tag
+          ? new Change({
+              entity: EChangedEntity.Tag,
+              action: EChangeAction.Updated,
+              object: TagMapper.toDTO(row.tag),
+            })
+          : null,
+      });
     }
 
-    const changedTags: Tag[] = await this.tagRepoService.getChanges(
-      userId,
-      lastSyncTime ?? new Date(0),
-    );
-
-    for (const changedTag of changedTags) {
-      const tagDto: TagDTO = TagMapper.toDTO(changedTag);
-      changes.push(
-        new Change({
-          entity: EChangedEntity.Tag,
-          action: EChangeAction.Updated,
-          object: tagDto,
-        }),
-      );
-    }
-
-    const deleteTaskActions: Action[] = await this.actionRepo.getActionsOccurredSince(
-      userId,
-      lastSyncTime,
-      EActionType.TaskDeleted,
-    );
-
-    for (const deleteTaskAction of deleteTaskActions) {
-      changes.push(
-        new Change({
-          entity: EChangedEntity.Task,
+    const actions = await this.actionRepo.getSinceRevision(userId, last);
+    for (const row of actions) {
+      const deleted =
+        row.action.type === EActionType.TaskDeleted
+          ? EChangedEntity.Task
+          : row.action.type === EActionType.TagDeleted
+            ? EChangedEntity.Tag
+            : null;
+      if (!deleted) {
+        rows.push({ syncRevision: row.syncRevision, change: null });
+        continue;
+      }
+      rows.push({
+        syncRevision: row.syncRevision,
+        change: new Change({
+          entity: deleted,
           action: EChangeAction.Deleted,
           object: {
-            id: deleteTaskAction.entityId.toString(),
-            modifiedAt: deleteTaskAction.occurredAt.toISOString(),
+            id: row.action.entityId.toString(),
+            modifiedAt: row.action.occurredAt.toISOString(),
           },
         }),
-      );
+      });
     }
 
-    const deleteTagActions: Action[] = await this.actionRepo.getActionsOccurredSince(
-      userId,
-      lastSyncTime,
-      EActionType.TagDeleted,
-    );
-
-    for (const deleteTagAction of deleteTagActions) {
-      changes.push(
-        new Change({
-          entity: EChangedEntity.Tag,
-          action: EChangeAction.Deleted,
-          object: {
-            id: deleteTagAction.entityId.toString(),
-            modifiedAt: deleteTagAction.occurredAt.toISOString(),
-          },
-        }),
-      );
-    }
-
-    // TODO: do not save time here
-    // we need to send server time of sync to client in response DTO
-    // and wait confirm of successful sync request from client
-    // after we need to set sync time of Client
-    // during handle this second `confirm` request
-    // TICKET: https://brainas.atlassian.net/browse/BA-76
-    client.updateSyncTime(new Date());
-    await this.clientRepo.save(client);
-
-    return Result.ok(changes);
+    return rows.sort((left, right) => left.syncRevision - right.syncRevision);
   }
 }

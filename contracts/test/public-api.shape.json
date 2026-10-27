@@ -243,10 +243,11 @@
     },
     "GetChangesContract": {
       "request": [
-        "clientId"
+        "afterRevision"
       ],
       "response": [
-        "changes"
+        "changes",
+        "syncRevision"
       ]
     },
     "SendChangeContract": {

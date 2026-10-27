@@ -70,7 +70,7 @@ export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = 
         await route.fulfill(json(401, body));
         return;
       }
-      const body: GetChangesContract.Response = { changes: [] };
+      const body: GetChangesContract.Response = { changes: [], syncRevision: 0 };
       await route.fulfill(json(200, body));
       return;
     }

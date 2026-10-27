@@ -40,6 +40,7 @@ export interface TaskPresitant {
   tagIds?: string[];
   createdAt: Date;
   modifiedAt: Date;
+  syncRevision?: number;
 }
 
 export class Task extends AggregateRoot<ITaskProps> {
