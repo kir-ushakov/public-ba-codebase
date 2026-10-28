@@ -69,5 +69,6 @@ export {
   SendChangeContract,
   GetChangesContract,
   RefreshSessionContract,
+  SyncAvailableContract,
 } from './contracts';
 

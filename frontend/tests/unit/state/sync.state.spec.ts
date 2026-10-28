@@ -7,6 +7,7 @@ import { Change } from 'src/app/shared/models/change.model';
 import { OutboxEntry } from 'src/app/shared/models/outbox-entry.type';
 import { ETaskStatus, ETaskType, Task } from 'src/app/shared/models/task.model';
 import { ServerChangesService } from 'src/app/shared/services/api/server-changes.service';
+import { ServerSyncSignalService } from 'src/app/shared/services/api/server-sync-signal.service';
 import {
   OutboundSyncResult,
   OutboundSyncService,
@@ -82,6 +83,10 @@ describe('SyncState', () => {
         { provide: ServerChangesService, useValue: serverChangesService },
         { provide: OutboundSyncService, useValue: outboundSyncService },
         { provide: LocalStore, useValue: localStore },
+        {
+          provide: ServerSyncSignalService,
+          useValue: { start: () => undefined, stop: () => undefined },
+        },
       ],
     });
 
@@ -130,7 +135,7 @@ describe('SyncState', () => {
     await firstValueFrom(store.dispatch(new AppAction.Opened()));
     expect(serverChangesService.fetch).toHaveBeenCalledTimes(1);
 
-    await jest.advanceTimersByTimeAsync(20_000);
+    await jest.advanceTimersByTimeAsync(60_000);
 
     expect(serverChangesService.fetch).toHaveBeenCalledTimes(2);
   });

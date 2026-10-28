@@ -343,6 +343,11 @@
         "changeableObjectDto"
       ],
       "response": "entity-or-void"
+    },
+    "SyncAvailableContract": {
+      "event": [
+        "version"
+      ]
     }
   },
   "consts": {
