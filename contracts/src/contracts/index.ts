@@ -7,4 +7,5 @@ export { UploadImageContract } from './files.contract';
 export { SendChangeContract } from './send-change.contract';
 export { GetChangesContract } from './get-changes.contract';
 export { RefreshSessionContract } from './refresh-session.contract';
+export { SyncAvailableContract } from './sync-available.contract';
 

@@ -1,18 +1,33 @@
+import mongoose, { type ClientSession } from 'mongoose';
+import { ServiceError } from '../core/service-error.js';
+import { ServiceErrorLevel } from '../core/service-error-level.enum.js';
+import { serviceFail } from '../core/service-fail.factory.js';
 import { IDbModels } from '../infra/database/mongodb/index.js';
+import { isMongoNamespaceExistsError } from '../infra/database/mongodb/mongo-error.js';
+import { noteCommittedRevision } from '../infra/sync-signal/sync-notification.js';
+import { ESyncRevisionServiceError } from './sync-revision.service.error.js';
 
 type StampTarget = {
   findOne(filter: { _id: string; userId: string }): {
-    select(fields: '_id'): {
-      lean(): Promise<{ _id?: string } | null>;
+    session(session: ClientSession): {
+      select(fields: '_id'): {
+        lean(): Promise<{ _id?: string } | null>;
+      };
     };
   };
   updateOne(
     filter: { _id: string; userId: string },
     update: { $set: { syncRevision: number } },
-  ): Promise<unknown>;
+    options: { session: ClientSession },
+  ): Promise<{ matchedCount: number }>;
 };
 
 const userWriteTail = new Map<string, Promise<void>>();
+let counterCollectionReady = false;
+
+mongoose.connection.on('close', () => {
+  counterCollectionReady = false;
+});
 
 function withUserWriteLock<T>(userId: string, work: () => Promise<T>): Promise<T> {
   const previous = userWriteTail.get(userId) ?? Promise.resolve();
@@ -76,21 +91,82 @@ export class SyncRevisionService {
 
   private async stamp(model: StampTarget, userId: string, id: string): Promise<void> {
     await withUserWriteLock(userId, async () => {
-      const existing = await model.findOne({ _id: id, userId }).select('_id').lean();
-      if (!existing) {
-        return;
+      await this.ensureCounterCollection();
+      const session = await mongoose.startSession();
+      try {
+        let committedRevision: number | null = null;
+        await session.withTransaction(async () => {
+          committedRevision = null;
+          const existing = await model
+            .findOne({ _id: id, userId })
+            .session(session)
+            .select('_id')
+            .lean();
+          if (!existing) {
+            return;
+          }
+          const revision = await this.claim(userId, session);
+          const updated = await model.updateOne(
+            { _id: id, userId },
+            { $set: { syncRevision: revision } },
+            { session },
+          );
+          if (updated.matchedCount !== 1) {
+            throw this.abortStamp(
+              'sync revision was not stored',
+              ESyncRevisionServiceError.RevisionNotStored,
+              userId,
+            );
+          }
+          committedRevision = revision;
+        });
+        if (committedRevision !== null) {
+          noteCommittedRevision(userId, committedRevision);
+        }
+      } finally {
+        await session.endSession();
       }
-      const revision = await this.claim(userId);
-      await model.updateOne({ _id: id, userId }, { $set: { syncRevision: revision } });
     });
   }
 
-  private async claim(userId: string): Promise<number> {
+  private async claim(userId: string, session: ClientSession): Promise<number> {
     const counter = await this.models.SyncCounterModel.findOneAndUpdate(
       { _id: userId },
       { $inc: { value: 1 } },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
+      { upsert: true, new: true, setDefaultsOnInsert: true, session },
     );
+    if (typeof counter?.value !== 'number') {
+      throw this.abortStamp(
+        'sync counter did not return a revision',
+        ESyncRevisionServiceError.CounterMissingValue,
+        userId,
+      );
+    }
     return counter.value;
+  }
+
+  private abortStamp(
+    message: string,
+    code: ESyncRevisionServiceError,
+    userId: string,
+  ): ServiceError<ESyncRevisionServiceError> {
+    return serviceFail(message, code, {
+      level: ServiceErrorLevel.High,
+      metadata: { userId },
+    }).error;
+  }
+
+  private async ensureCounterCollection(): Promise<void> {
+    if (counterCollectionReady) {
+      return;
+    }
+    try {
+      await this.models.SyncCounterModel.createCollection();
+    } catch (error) {
+      if (!isMongoNamespaceExistsError(error)) {
+        throw error;
+      }
+    }
+    counterCollectionReady = true;
   }
 }

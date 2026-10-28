@@ -1,13 +1,27 @@
 // test/integration/setup/mongo-memory.ts
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 
-let mongoServer: MongoMemoryServer | null = null;
+let mongoServer: MongoMemoryReplSet | null = null;
+let uri: string | null = null;
 
 export async function startInMemoryMongo(): Promise<string> {
-  mongoServer = await MongoMemoryServer.create();
-  const uri = mongoServer.getUri();
-  await mongoose.connect(uri);
+  if (!mongoServer) {
+    mongoServer = await MongoMemoryReplSet.create({
+      replSet: {
+        count: 1,
+        storageEngine: 'wiredTiger',
+        args: ['--wiredTigerCacheSizeGB', '0.25'],
+      },
+    });
+    uri = mongoServer.getUri();
+  }
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(uri ?? '');
+  }
+  if (!uri) {
+    throw new Error('in-memory replica set did not return a uri');
+  }
   return uri;
 }
 
@@ -15,10 +29,6 @@ export async function stopInMemoryMongo(): Promise<void> {
   if (mongoose.connection.readyState !== 0) {
     await mongoose.connection.dropDatabase();
     await mongoose.connection.close();
-  }
-  if (mongoServer) {
-    await mongoServer.stop();
-    mongoServer = null;
   }
 }
 

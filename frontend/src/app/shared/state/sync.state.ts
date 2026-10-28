@@ -5,6 +5,7 @@ import { AppAction } from './app.actions';
 import { Change } from '../models/change.model';
 import { append, patch, removeItem } from '@ngxs/store/operators';
 import { ServerChangesService } from '../services/api/server-changes.service';
+import { ServerSyncSignalService } from '../services/api/server-sync-signal.service';
 import { lastValueFrom } from 'rxjs';
 import { SyncAction } from './sync.action';
 import { UserAction } from './user.actions';
@@ -32,12 +33,13 @@ export class SyncState {
     syncedRevision: 0,
   };
 
-  readonly SYNC_PERIOD = 1000 * 20; // sync interval 20 sec;
+  readonly SYNC_PERIOD = 1000 * 60;
   private intervalId: null | ReturnType<typeof setTimeout> = null;
 
   constructor(
     private readonly serverChangesService: ServerChangesService,
     private readonly outboundSyncService: OutboundSyncService,
+    private readonly serverSyncSignal: ServerSyncSignalService,
   ) {}
 
   @Action(SyncAction.ChangeForSyncOccurred)
@@ -66,6 +68,7 @@ export class SyncState {
   @Action(AppAction.Opened)
   updateSyncTimer(ctx: StateContext<SyncStateModel>) {
     clearInterval(this.intervalId ?? undefined);
+    this.serverSyncSignal.start();
     this.intervalId = setInterval(() => {
       ctx.dispatch(new SyncAction.Synchronize());
     }, this.SYNC_PERIOD);
@@ -76,6 +79,7 @@ export class SyncState {
   @Action(AppAction.UserNotAuthenticated)
   clearTimer(): void {
     clearInterval(this.intervalId ?? undefined);
+    this.serverSyncSignal.stop();
   }
 
   @Action(SyncAction.Synchronize)
