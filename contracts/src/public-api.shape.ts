@@ -31,6 +31,7 @@ import {
   GetChangesContract,
   RefreshSessionContract,
   SendChangeContract,
+  SyncAvailableContract,
   UploadImageContract,
 } from './contracts';
 import {
@@ -167,6 +168,12 @@ const SEND_CHANGE_REQUEST_KEYS = [
 ] as const satisfies readonly (keyof SendChangeContract.Request)[];
 const _sendChangeReq: ExactKeys<SendChangeContract.Request, typeof SEND_CHANGE_REQUEST_KEYS> = true;
 
+const SYNC_AVAILABLE_EVENT_KEYS = [
+  'version',
+] as const satisfies readonly (keyof SyncAvailableContract.Event)[];
+const _syncAvailableEvent: ExactKeys<SyncAvailableContract.Event, typeof SYNC_AVAILABLE_EVENT_KEYS> =
+  true;
+
 void _taskDto;
 void _taskDescriptionDoc;
 void _taskDescriptionNode;
@@ -189,6 +196,7 @@ void _getChangesReq;
 void _getChangesRes;
 void _refreshSessionRes;
 void _sendChangeReq;
+void _syncAvailableEvent;
 
 export const PUBLIC_API_SHAPE = {
   enums: {
@@ -257,6 +265,9 @@ export const PUBLIC_API_SHAPE = {
     SendChangeContract: {
       request: [...SEND_CHANGE_REQUEST_KEYS],
       response: 'entity-or-void',
+    },
+    SyncAvailableContract: {
+      event: [...SYNC_AVAILABLE_EVENT_KEYS],
     },
   },
   consts: {

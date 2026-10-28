@@ -40,6 +40,18 @@ syncRouter.post('/task', (req, res) => createTaskController.execute(req, res));
 
 Use-cases and repos return `Result` (`shared/core/result.ts`) and fail with a typed error from `*.errors.ts` or `serviceFail()` for outcomes that layer **understands**. Do not add `Unexpected` to a use-case error union — that is already `BaseController.fail()` / `EApiError.Unexpected` on an uncaught exception. There is no centralized Express error middleware — never write code that assumes one exists.
 
+Three outcomes, and they are not interchangeable:
+
+| Outcome | What to do |
+|---|---|
+| This layer understands it (not found, invalid row, duplicate it treats as success, notification transport down) | `serviceFail(message, Code, { level })`. The code is an enum next to that service (`task-repo.service.error.ts`), internal unless it is also a wire `name`. Pick `ServiceErrorLevel`: `Low` for a skipped poison row, `Medium` for a failed side effect that does not lose the write, `High` for a broken invariant on one user, `Critical` for auth, data loss, or a failure that takes the process down. |
+| A Mongo driver code this layer has a branch for (`EMongoErrorCode`) | Handle it in that `catch`. `NamespaceExists` and `DuplicateKey` live in `shared/infra/database/mongodb/mongo-error.ts` because every collection shares them. Do not copy that enum next to one service. |
+| Anything else (network, auth to the database, an unrecognized driver error) | Rethrow the original value. Do not wrap it in `new Error(...)`, do not invent a service code, do not `console.error` it. The controller `catch` turns it into `500 UNEXPECTED_ERROR`. |
+
+`serviceFail` records the level for later log routing. A bare `throw new Error` or `console.error` does not.
+
+A Mongo transaction aborts only when the callback throws. An understood failure inside `withTransaction` still calls `serviceFail` first, then throws that `ServiceError` so the `$inc` rolls back. Do not catch that error and return success.
+
 Controllers branch on `result.isSuccess` and respond via `BaseController.jsonResponse(res, error.httpCode, { name, message })`, keeping the `try/catch` in `executeImpl` like neighbouring controllers.
 
 HTTP request/response shapes come from `@brainassistant/contracts`. Keep explicit `FooContract.Request` / `FooContract.Response` annotations at the controller boundary even when TypeScript could infer them — they document the public API, they are not noise. Do not delete them as “redundant”.

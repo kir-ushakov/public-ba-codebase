@@ -34,6 +34,7 @@ const config: Config = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   setupFiles: ['<rootDir>/test/setup-env.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test/integration/_setup/mongo-preload.ts'],
   // createApp() leaves open handles (Passport); exit after the suite.
   forceExit: true,
 };

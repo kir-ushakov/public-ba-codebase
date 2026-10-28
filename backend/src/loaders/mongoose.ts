@@ -5,7 +5,7 @@ const DB_CONTAINER = process.env.DB_CONTAINER;
 const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD;
 
-const DB_URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${DB_CONTAINER}:${DB_PORT}/ba?authSource=admin`;
+const DB_URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${DB_CONTAINER}:${DB_PORT}/ba?authSource=admin&replicaSet=rs0`;
 
 export function connectToDb(client: string): Promise<Mongoose> {
   return new Promise<Mongoose>((resolve, reject) => {
