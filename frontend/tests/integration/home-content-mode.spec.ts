@@ -76,7 +76,8 @@ test('home opens on Active and switches to the mode of a saved task', async ({ p
   await expect(page.locator('[data-test="task-tile-type-icon"]')).toHaveText('article');
 
   await page.click('[data-test="home-mode-active"]');
-  await expect(page.locator('[data-test="home-item-count"]')).toHaveText('0 active items');
+  await expect(page.locator('[data-test="home-item-count"]')).toHaveText('1 active item');
+  await expect(page.locator('[data-test="task-tile"]', { hasText: 'Current work' })).toBeVisible();
   await expect(page.locator('[data-test="task-tile"]', { hasText: 'Saved article' })).toHaveCount(
     0,
   );
