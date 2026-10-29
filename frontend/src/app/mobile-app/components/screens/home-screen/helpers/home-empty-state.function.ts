@@ -14,7 +14,7 @@ const EMPTY_STATES: Record<HomeContentMode, HomeEmptyState> = {
     title: 'Nothing active right now.',
     body: 'Pick a task from your to do list or create a new one to get started.',
     symbol: `${EMPTY_SPRITE}#empty-active`,
-    viewBox: '0 0 218 150',
+    viewBox: '0 0 640 440',
   },
   todo: {
     title: 'Your to-do list is empty.',
