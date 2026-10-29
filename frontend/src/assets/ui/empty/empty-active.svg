@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 250" fill="none">
+  <ellipse cx="158" cy="226" rx="102" ry="11" fill="#000" opacity="0.4"/>
+  <g transform="translate(132 28) rotate(16)">
+    <path d="M104 100c14 16 18 38 6 50" stroke="#90EE90" stroke-width="16" stroke-linecap="round"/>
+    <rect width="116" height="108" rx="26" fill="#90EE90"/>
+    <g fill="#111111" font-family="Georgia, 'Times New Roman', serif" font-size="38">
+      <text x="14" y="50" transform="rotate(-16 32 42)">B</text>
+      <text x="64" y="54">A</text>
+    </g>
+    <path d="M28 78c20-16 40-12 60 2" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
+  </g>
+  <rect x="28" y="132" width="112" height="68" rx="7" fill="#14242B" stroke="#69767E" stroke-width="3.5"/>
+  <rect x="40" y="144" width="88" height="44" rx="3" fill="#071219"/>
+  <path d="M14 202h142l-12 16H26z" fill="#182A31" stroke="#69767E" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M96 126c12 4 26 6 28-2" stroke="#90EE90" stroke-width="13" stroke-linecap="round"/>
+  <path d="M236 22c8 5 9 12 2 16 8 2 11 9 4 14" stroke="#AAB3B8" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

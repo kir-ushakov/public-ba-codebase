@@ -12,6 +12,14 @@ test('home opens on Active and switches to the mode of a saved task', async ({ p
     'true',
   );
   await expect(page.locator('[data-test="home-item-count"]')).toHaveText('0 active items');
+  await expect(page.locator('[data-test="home-empty-title"]')).toHaveText(
+    'Nothing active right now.',
+  );
+  await expect(page.locator('[data-test="home-empty-art"]')).toHaveAttribute(
+    'src',
+    /empty-active\.svg$/,
+  );
+  await expect(page.locator('[data-test="new-task-btn"]')).toBeVisible();
 
   await page.click('[data-test="new-task-btn"]');
   await page.waitForURL('/task/TASK_VIEW_MODE_CREATE');
@@ -30,9 +38,18 @@ test('home opens on Active and switches to the mode of a saved task', async ({ p
   expect(activeBody.changeableObjectDto.status).toBe(ETaskStatus.Active);
   await page.waitForURL(/\/(home)?$/);
   await expect(page.locator('[data-test="task-tile"]', { hasText: 'Current work' })).toBeVisible();
+  await expect(page.locator('[data-test="home-empty"]')).toHaveCount(0);
   await expect(page.locator('[data-test="home-item-count"]')).toHaveText('1 active item');
 
   await page.click('[data-test="home-mode-todo"]');
+  await expect(page.locator('[data-test="home-empty-title"]')).toHaveText(
+    'Your to-do list is empty.',
+  );
+  await expect(page.locator('[data-test="home-empty-art"]')).toHaveAttribute(
+    'src',
+    /empty-todo\.svg$/,
+  );
+  await expect(page.locator('[data-test="task-tile"]', { hasText: 'Current work' })).toHaveCount(0);
   await page.click('[data-test="new-task-btn"]');
   await page.waitForURL('/task/TASK_VIEW_MODE_CREATE');
   await expect(page.locator('[data-test="task-status-todo"]')).toHaveAttribute(
@@ -53,6 +70,11 @@ test('home opens on Active and switches to the mode of a saved task', async ({ p
   await expect(page.locator('[data-test="home-item-count"]')).toHaveText('1 to do item');
 
   await page.click('[data-test="home-mode-notes"]');
+  await expect(page.locator('[data-test="home-empty-title"]')).toHaveText('No notes yet.');
+  await expect(page.locator('[data-test="home-empty-art"]')).toHaveAttribute(
+    'src',
+    /empty-notes\.svg$/,
+  );
   await page.click('[data-test="new-task-btn"]');
   await page.waitForURL('/task/TASK_VIEW_MODE_CREATE');
   await page.fill('[data-test="task-title-input"]', 'Saved article');
@@ -73,6 +95,7 @@ test('home opens on Active and switches to the mode of a saved task', async ({ p
   await expect(page.locator('[data-test="home-item-count"]')).toHaveText('1 note');
   await expect(page.locator('[data-test="home-mode-count-notes"]')).toHaveText('1');
   await expect(page.locator('[data-test="task-tile"]', { hasText: 'Saved article' })).toBeVisible();
+  await expect(page.locator('[data-test="home-empty"]')).toHaveCount(0);
   await expect(page.locator('[data-test="task-tile-type-icon"]')).toHaveText('article');
 
   await page.click('[data-test="home-mode-active"]');
