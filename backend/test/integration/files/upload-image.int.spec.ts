@@ -1,6 +1,8 @@
-import { EApiError, EUploadImageUseCaseError } from '@brainassistant/contracts';
+import { randomFillSync } from 'crypto';
+import { EApiError, EUploadImageUseCaseError, ImageConst } from '@brainassistant/contracts';
 import path from 'path';
 import { promises as fsp } from 'fs';
+import sharp from 'sharp';
 import { Application } from 'express';
 import request from 'supertest';
 import { googleDriveService } from '../../../src/modules/integrations/google/services/index.js';
@@ -14,6 +16,29 @@ import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
+
+async function readStoredUpload(uploadFile: jest.Mock): Promise<{
+  filePath: string;
+  format: string | undefined;
+  width: number;
+  height: number;
+  bytes: number;
+}> {
+  const filePath = uploadFile.mock.calls.at(-1)?.[1];
+  if (typeof filePath !== 'string') {
+    throw new Error('uploadFile was not called with a path');
+  }
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- test upload path returned by the Drive stub
+  const file = await fsp.readFile(filePath);
+  const meta = await sharp(file).metadata();
+  return {
+    filePath,
+    format: meta.format,
+    width: meta.width ?? 0,
+    height: meta.height ?? 0,
+    bytes: file.length,
+  };
+}
 
 function uploadRoot(): string {
   const root = process.env.FILES_UPLOAD_PATH;
@@ -39,8 +64,13 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
 
   afterAll(async () => {
     await stopInMemoryMongo();
-    await fsp.rm(uploadRoot(), { recursive: true, force: true });
-  });
+    await fsp.rm(uploadRoot(), {
+      recursive: true,
+      force: true,
+      maxRetries: 5,
+      retryDelay: 100,
+    });
+  }, 15_000);
 
   beforeEach(async () => {
     await clearDatabase();
@@ -76,7 +106,88 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       userId,
       storageType: 'googleDrive',
     });
+
+    const stored = await readStoredUpload(drive.uploadFile);
+    expect(stored.filePath.endsWith('.webp')).toBe(true);
+    expect(stored.format).toBe('webp');
+    expect(Math.max(stored.width, stored.height)).toBeLessThanOrEqual(ImageConst.MAX_LONG_EDGE_PX);
+    expect(stored.bytes).toBeLessThanOrEqual(ImageConst.MAX_BYTES);
   });
+
+  it('stores a wide jpeg as webp at the long-edge limit', async () => {
+    const { jwtCookie } = await seedTestUser();
+    drive.uploadFile.mockResolvedValue(Result.ok('drive-wide'));
+    const wide = await sharp({
+      create: {
+        width: 2400,
+        height: 1200,
+        channels: 3,
+        background: { r: 20, g: 40, b: 80 },
+      },
+    })
+      .jpeg()
+      .toBuffer();
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/files/image')
+      .field('imageId', 'image-wide')
+      .attach('file', wide, { filename: 'wide.jpg', contentType: 'image/jpeg' });
+
+    expect(res.status).toBe(200);
+    const stored = await readStoredUpload(drive.uploadFile);
+    expect(stored.format).toBe('webp');
+    expect(stored.width).toBe(ImageConst.MAX_LONG_EDGE_PX);
+    expect(stored.height).toBe(800);
+    expect(stored.bytes).toBeLessThanOrEqual(ImageConst.MAX_BYTES);
+  });
+
+  it('keeps a webp that is already inside the store limits', async () => {
+    const { jwtCookie } = await seedTestUser();
+    drive.uploadFile.mockResolvedValue(Result.ok('drive-webp'));
+    const webp = await sharp({
+      create: {
+        width: 40,
+        height: 30,
+        channels: 3,
+        background: { r: 10, g: 20, b: 30 },
+      },
+    })
+      .webp({ quality: ImageConst.WEBP_QUALITY })
+      .toBuffer();
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/files/image')
+      .field('imageId', 'image-webp')
+      .attach('file', webp, { filename: 'small.webp', contentType: 'image/webp' });
+
+    expect(res.status).toBe(200);
+    const stored = await readStoredUpload(drive.uploadFile);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- test upload path returned by the Drive stub
+    expect(await fsp.readFile(stored.filePath)).toEqual(webp);
+  });
+
+  it('stores noisy camera-sized input under the byte cap', async () => {
+    const { jwtCookie } = await seedTestUser();
+    drive.uploadFile.mockResolvedValue(Result.ok('drive-noise'));
+    const width = 1400;
+    const height = 1400;
+    const raw = Buffer.alloc(width * height * 3);
+    randomFillSync(raw);
+    const jpeg = await sharp(raw, { raw: { width, height, channels: 3 } })
+      .jpeg({ quality: 90 })
+      .toBuffer();
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/files/image')
+      .field('imageId', 'image-noise')
+      .attach('file', jpeg, { filename: 'noise.jpg', contentType: 'image/jpeg' });
+
+    expect(res.status).toBe(200);
+    const stored = await readStoredUpload(drive.uploadFile);
+    expect(stored.format).toBe('webp');
+    expect(Math.max(stored.width, stored.height)).toBeLessThanOrEqual(ImageConst.MAX_LONG_EDGE_PX);
+    expect(stored.bytes).toBeLessThanOrEqual(ImageConst.MAX_BYTES);
+  }, 30_000);
 
   it('should reject unsupported file types', async () => {
     const { jwtCookie } = await seedTestUser();

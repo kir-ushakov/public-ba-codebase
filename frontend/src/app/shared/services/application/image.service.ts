@@ -57,12 +57,9 @@ export class ImageService {
     ).catch(() => undefined);
   }
 
-  public async convertBlobUriToBlob(imageUri: string, quality: number = 0.6): Promise<Blob> {
+  public async convertBlobUriToBlob(imageUri: string): Promise<Blob> {
     const blob = await this.fetchService.fetchBlob(imageUri);
-
-    const reducedBlob = await this.imageOptimizerService.optimizeImage(blob, quality);
-
-    return reducedBlob;
+    return this.imageOptimizerService.optimizeImage(blob);
   }
 
   public ensureUploaded(imageId: string): Promise<EnsureUploadedResult> {

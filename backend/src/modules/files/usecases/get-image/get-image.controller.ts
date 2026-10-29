@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { ImageConst } from '@brainassistant/contracts';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
 import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
 import { GetImageRequest, GetImageResult, GetImageUsecase } from './get-image.usecase.js';
@@ -15,11 +16,10 @@ export class GetImageController extends BaseController {
   protected async executeImpl(req: Request, res: Response): Promise<void> {
     const authenticatedUser: UserPersistent = req.user as UserPersistent;
 
-    const MAX_IMAGE_WIDTH = 1000;
     let imageWidth = req.query.width ? parseInt(req.query.width as string) : undefined;
 
-    if (imageWidth && imageWidth > MAX_IMAGE_WIDTH) {
-      imageWidth = MAX_IMAGE_WIDTH;
+    if (imageWidth && imageWidth > ImageConst.MAX_LONG_EDGE_PX) {
+      imageWidth = ImageConst.MAX_LONG_EDGE_PX;
     }
 
     try {

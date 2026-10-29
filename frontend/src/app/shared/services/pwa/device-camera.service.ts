@@ -6,11 +6,11 @@ import { IDeviceCameraService } from './device-camera.service.interface';
   providedIn: 'root',
 })
 export class DeviceCameraService implements IDeviceCameraService {
-  public async takePicture(quality = 90): Promise<string | null> {
+  public async takePicture(quality = 100): Promise<string | null> {
     if (quality < 0 || quality > 100) {
       throw new Error('Quality must be between 0 and 100');
     }
-    
+
     try {
       const image = await Camera.getPhoto({
         quality,

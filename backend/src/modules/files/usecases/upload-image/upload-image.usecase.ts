@@ -12,8 +12,6 @@ import { Image } from '../../../../shared/domain/models/image.js';
 import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
 import { ImageResizeService } from '../../services/image-resize.service.js';
 
-const MAX_IMAGE_STORE_SIZE = 1000; // TODO: move to config
-
 export type UploadImageParams = {
   imageId: string;
   file: Express.Multer.File;
@@ -26,7 +24,7 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
   private googleDriveService: GoogleDriveService;
   private readonly imageRepoService: ImageRepoService;
   private readonly imageResizeService: ImageResizeService;
-  private allowedTypes = ['png', 'jpeg', 'jpg']; // TODO: move to responsible service
+  private allowedTypes = ['png', 'jpeg', 'jpg', 'webp']; // TODO: move to responsible service
 
   constructor(
     googleDriveService: GoogleDriveService,
@@ -100,12 +98,12 @@ export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<Up
     // eslint-disable-next-line security/detect-non-literal-fs-filename -- move from multer temp into user upload dir
     await fsp.rename(tempPath, pathToFile);
 
-    // Resize the image to allowed maximum width
-    await this.imageResizeService.resizeImageToMaxSize(pathToFile, MAX_IMAGE_STORE_SIZE);
+    const storedPath = await this.imageResizeService.prepareForStore(pathToFile);
+    const extension = path.extname(storedPath).toLowerCase().replace('.', '');
 
     return Result.ok<{ pathToFile: string; extension: string }>({
-      pathToFile,
-      extension: fileType,
+      pathToFile: storedPath,
+      extension,
     });
   }
 }

@@ -261,6 +261,32 @@
     }
   },
   "consts": {
+    "ImageConst": {
+      "MAX_LONG_EDGE_PX": 1600,
+      "FALLBACK_LONG_EDGE_PX": 1280,
+      "MIN_LONG_EDGE_PX": 640,
+      "LONG_EDGE_DROP_PX": 160,
+      "MAX_BYTES": 512000,
+      "WEBP_QUALITY": 80,
+      "WEBP_QUALITY_STEP_2": 75,
+      "WEBP_QUALITY_STEP_3": 68,
+      "MIN_WEBP_QUALITY": 40,
+      "WEBP_QUALITY_DROP": 8,
+      "ENCODE_PLAN": [
+        [1600, 80],
+        [1600, 75],
+        [1600, 68],
+        [1280, 75],
+        [1280, 67],
+        [1280, 59],
+        [1280, 51],
+        [1280, 43],
+        [1120, 40],
+        [960, 40],
+        [800, 40],
+        [640, 40]
+      ]
+    },
     "TaskConst": {
       "TITLE_MIN_LENGTH": 1,
       "TITLE_MAX_LENGTH": 100,
