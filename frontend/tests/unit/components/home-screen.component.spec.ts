@@ -283,8 +283,8 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-empty-body"]')?.textContent).toContain(
       'Add a new task, capture an idea or move something from notes.',
     );
-    expect(host.querySelector('[data-test="home-empty-art"]')?.getAttribute('src')).toContain(
-      'empty-todo.svg',
+    expect(host.querySelector('[data-test="home-empty-art"] use')?.getAttribute('href')).toContain(
+      'empty-states.svg#empty-todo',
     );
     expect(host.querySelector('[data-test="task-tile"]')).toBeNull();
     expect(host.querySelector('[data-test="new-task-btn"]')).not.toBeNull();
@@ -298,8 +298,8 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-empty-title"]')?.textContent).toContain(
       'No notes yet.',
     );
-    expect(host.querySelector('[data-test="home-empty-art"]')?.getAttribute('src')).toContain(
-      'empty-notes.svg',
+    expect(host.querySelector('[data-test="home-empty-art"] use')?.getAttribute('href')).toContain(
+      'empty-states.svg#empty-notes',
     );
 
     (host.querySelector('[data-test="home-mode-active"]') as HTMLButtonElement).click();

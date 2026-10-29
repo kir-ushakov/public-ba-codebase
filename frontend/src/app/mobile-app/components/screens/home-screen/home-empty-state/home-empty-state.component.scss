@@ -15,11 +15,12 @@
 }
 
 .home-empty-art {
+  display: block;
   width: 100%;
   max-width: var(--empty-state-illustration-max-width);
+  height: auto;
   max-height: var(--empty-state-illustration-max-height);
   margin-bottom: var(--spacing-xl);
-  object-fit: contain;
 }
 
 .home-empty-title {
