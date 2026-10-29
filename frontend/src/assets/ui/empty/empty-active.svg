@@ -1,17 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 250" fill="none">
-  <ellipse cx="158" cy="226" rx="102" ry="11" fill="#000" opacity="0.4"/>
-  <g transform="translate(132 28) rotate(16)">
-    <path d="M104 100c14 16 18 38 6 50" stroke="#90EE90" stroke-width="16" stroke-linecap="round"/>
-    <rect width="116" height="108" rx="26" fill="#90EE90"/>
-    <g fill="#111111" font-family="Georgia, 'Times New Roman', serif" font-size="38">
-      <text x="14" y="50" transform="rotate(-16 32 42)">B</text>
-      <text x="64" y="54">A</text>
-    </g>
-    <path d="M28 78c20-16 40-12 60 2" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 440" role="img" aria-labelledby="title desc">
+  <title id="title">Brain Assistant waiting at laptop</title>
+  <desc id="desc">Mint green BA mascot looking bored, resting its head on a hand behind a laptop.</desc>
+  <ellipse cx="325" cy="377" rx="242" ry="18" fill="#123A39" opacity=".55"/>
+  <!-- Boredom swirl -->
+  <g fill="none" stroke="#8297A4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M407 74c-22-20 8-38 44-33 37 4 52 23 27 36-17 9-57 2-60 18-3 16 36 14 48 25 12 12-4 26-24 25"/>
+    <path d="M435 152c23 7 25 18 8 23"/>
   </g>
-  <rect x="28" y="132" width="112" height="68" rx="7" fill="#14242B" stroke="#69767E" stroke-width="3.5"/>
-  <rect x="40" y="144" width="88" height="44" rx="3" fill="#071219"/>
-  <path d="M14 202h142l-12 16H26z" fill="#182A31" stroke="#69767E" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M96 126c12 4 26 6 28-2" stroke="#90EE90" stroke-width="13" stroke-linecap="round"/>
-  <path d="M236 22c8 5 9 12 2 16 8 2 11 9 4 14" stroke="#AAB3B8" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Mascot body and tilted face -->
+  <path d="M278 306c-2 28 12 55 42 63 25 6 48-6 56-26l22-55" fill="#82E88A" stroke="#071B1D" stroke-width="7" stroke-linejoin="round"/>
+  <g transform="rotate(15 350 213)">
+    <rect x="254" y="119" width="202" height="198" rx="35" fill="#8BEF91"/>
+    <text x="291" y="207" font-family="Georgia, 'Times New Roman', serif" font-size="63" fill="#06191B">B</text>
+    <text x="375" y="207" font-family="Georgia, 'Times New Roman', serif" font-size="63" fill="#06191B">A</text>
+    <path d="M308 269Q352 222 400 266" fill="none" stroke="#06191B" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <!-- arm holding cheek -->
+  <path d="M390 354c-12-18-10-40 3-54 8-8 16-10 19-20 4-15 14-23 23-18 11 6 8 20 2 31 11-6 21-2 22 8 1 8-6 15-15 21-2 21-3 40-22 46-14 5-25-2-32-14z" fill="#8BEF91" stroke="#071B1D" stroke-width="7" stroke-linejoin="round"/>
+  <!-- Laptop -->
+  <g stroke="#8297A4" stroke-width="6" stroke-linejoin="round">
+    <path d="M144 248h147c9 0 15 6 17 15l27 103H179c-6 0-11-4-13-10l-30-95c-2-7 1-13 8-13z" fill="#10252C"/>
+    <path d="M180 366h192l-11 13H196z" fill="#1A333B"/>
+  </g>
 </svg>

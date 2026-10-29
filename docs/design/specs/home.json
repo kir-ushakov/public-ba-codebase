@@ -457,21 +457,21 @@
       ],
       "modes": {
         "active": {
-          "illustration": "../assets/empty-active.svg",
+          "illustration": "../assets/empty-states.svg#empty-active",
           "expression": "bored",
           "scene": "Sitting at a laptop, with a faint sigh. The smile is a crooked line and one letter is slightly tilted.",
           "title": "Nothing active right now.",
           "body": "Pick a task from your to do list or create a new one to get started."
         },
         "todo": {
-          "illustration": "../assets/empty-todo.svg",
+          "illustration": "../assets/empty-states.svg#empty-todo",
           "expression": "puzzled",
           "scene": "Looking at an empty list, with a question mark beside it.",
           "title": "Your to-do list is empty.",
           "body": "Add a new task, capture an idea or move something from notes."
         },
         "notes": {
-          "illustration": "../assets/empty-notes.svg",
+          "illustration": "../assets/empty-states.svg#empty-notes",
           "expression": "waiting",
           "scene": "Resting on a stack of notes, with a thought bubble overhead.",
           "title": "No notes yet.",

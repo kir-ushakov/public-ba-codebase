@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="empty-active" viewBox="0 0 640 440">
+  <title id="title">Brain Assistant waiting at laptop</title>
+  <desc id="desc">Mint green BA mascot looking bored, resting its head on a hand behind a laptop.</desc>
+  <ellipse cx="325" cy="377" rx="242" ry="18" fill="#123A39" opacity=".55"/>
+  <!-- Boredom swirl -->
+  <g fill="none" stroke="#8297A4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M407 74c-22-20 8-38 44-33 37 4 52 23 27 36-17 9-57 2-60 18-3 16 36 14 48 25 12 12-4 26-24 25"/>
+    <path d="M435 152c23 7 25 18 8 23"/>
+  </g>
+  <!-- Mascot body and tilted face -->
+  <path d="M278 306c-2 28 12 55 42 63 25 6 48-6 56-26l22-55" fill="#82E88A" stroke="#071B1D" stroke-width="7" stroke-linejoin="round"/>
+  <g transform="rotate(15 350 213)">
+    <rect x="254" y="119" width="202" height="198" rx="35" fill="#8BEF91"/>
+    <text x="291" y="207" font-family="Georgia, 'Times New Roman', serif" font-size="63" fill="#06191B">B</text>
+    <text x="375" y="207" font-family="Georgia, 'Times New Roman', serif" font-size="63" fill="#06191B">A</text>
+    <path d="M308 269Q352 222 400 266" fill="none" stroke="#06191B" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <!-- arm holding cheek -->
+  <path d="M390 354c-12-18-10-40 3-54 8-8 16-10 19-20 4-15 14-23 23-18 11 6 8 20 2 31 11-6 21-2 22 8 1 8-6 15-15 21-2 21-3 40-22 46-14 5-25-2-32-14z" fill="#8BEF91" stroke="#071B1D" stroke-width="7" stroke-linejoin="round"/>
+  <!-- Laptop -->
+  <g stroke="#8297A4" stroke-width="6" stroke-linejoin="round">
+    <path d="M144 248h147c9 0 15 6 17 15l27 103H179c-6 0-11-4-13-10l-30-95c-2-7 1-13 8-13z" fill="#10252C"/>
+    <path d="M180 366h192l-11 13H196z" fill="#1A333B"/>
+  </g>
+  </symbol>
+  <symbol id="empty-todo" viewBox="0 0 640 440">
+<title id="title">Brain Assistant — empty to-do list</title>
+<desc id="desc">A puzzled mint green BA mascot beside an empty checklist, with a question mark.</desc>
+<ellipse cx="316" cy="387" rx="206" ry="16" fill="#001015" opacity=".4"/>
+<g transform="rotate(10 257 220)">
+<rect x="125" y="92" width="266" height="244" rx="44" fill="#8DEB8C" stroke="#061820" stroke-width="9"/>
+<path d="M150 282 Q104 299 113 347 Q123 381 151 353 Q137 342 146 323" fill="#8DEB8C" stroke="#061820" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M367 284 Q416 294 407 348 Q396 379 370 357 Q387 340 376 322" fill="#8DEB8C" stroke="#061820" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="179" y="203" font-family="Georgia,serif" font-size="71" font-weight="bold" fill="#061820">B</text>
+<text x="289" y="203" font-family="Georgia,serif" font-size="71" font-weight="bold" fill="#061820">A</text>
+<path d="M219 270 Q265 223 320 267" fill="none" stroke="#061820" stroke-width="10" stroke-linecap="round"/>
+</g>
+<g transform="rotate(5 477 284)">
+<rect x="405" y="190" width="170" height="190" rx="23" fill="#102129" stroke="#8297A3" stroke-width="7"/>
+<g fill="none" stroke="#8297A3" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+<rect x="427" y="220" width="26" height="26" rx="5"/><path d="M468 234h80"/>
+<rect x="427" y="270" width="26" height="26" rx="5"/><path d="M468 284h80"/>
+<rect x="427" y="320" width="26" height="26" rx="5"/><path d="M468 334h80"/>
+</g>
+</g>
+<path d="M369 85 C369 45 424 37 443 70 C457 99 424 111 414 130" fill="none" stroke="#AAB9C3" stroke-width="8" stroke-linecap="round"/>
+<circle cx="412" cy="151" r="5" fill="#AAB9C3"/>
+<path d="M482 120l16-20M511 141l23-9" fill="none" stroke="#AAB9C3" stroke-width="6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="empty-notes" viewBox="0 0 520 400">
+  <ellipse cx="255" cy="345" rx="180" ry="13" fill="#07312F" opacity=".5"/>
+  <g fill="none" stroke="#8B9DA8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M340 104c-16-17-8-38 12-44 8-26 43-34 60-12 26-8 51 11 49 36 19 16 14 43-9 51-13 19-37 20-53 9-25 12-51-1-59-20-13-3-18-12-18-20z"/>
+    <circle cx="303" cy="158" r="4" fill="#8B9DA8" stroke="none"/><circle cx="319" cy="143" r="6" fill="#8B9DA8" stroke="none"/>
+    <path d="M390 80c-10 0-18 8-18 18 0 8 4 12 8 17v8h20v-8c5-5 8-10 8-17 0-10-8-18-18-18zM380 129h20m-17 6h14" stroke-width="4"/>
+  </g>
+  <g stroke="#8B9DA8" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" fill="#10232A">
+    <path d="M278 281h112l-15 19H264z"/><path d="M265 301h118l-9 19H265z"/><path d="M269 322h112l-10 18H265z"/>
+  </g>
+  <g transform="rotate(11 204 235)">
+    <rect x="110" y="135" width="196" height="177" rx="33" fill="#8FEF8C" stroke="#06151B" stroke-width="9"/>
+    <text x="147" y="218" font-family="Georgia,serif" font-size="65" font-weight="bold" fill="#06151B">B</text>
+    <text x="237" y="224" font-family="Georgia,serif" font-size="65" font-weight="bold" fill="#06151B">A</text>
+    <path d="M177 263q40-43 82 0" fill="none" stroke="#06151B" stroke-width="9" stroke-linecap="round"/>
+  </g>
+  <path d="M136 271q-28 8-30 38-2 14 13 16" fill="none" stroke="#8FEF8C" stroke-width="20" stroke-linecap="round"/>
+  <path d="M290 287q21 12 46 3" fill="none" stroke="#8FEF8C" stroke-width="19" stroke-linecap="round"/>
+  </symbol>
+</svg>

@@ -1,11 +1,12 @@
 <div class="home-empty" data-test="home-empty">
-  <img
+  <svg
     class="home-empty-art"
     data-test="home-empty-art"
-    alt=""
     aria-hidden="true"
-    [src]="copy().illustration"
-  />
+    [attr.viewBox]="copy().viewBox"
+  >
+    <use [attr.href]="copy().symbol"></use>
+  </svg>
   <h2 class="home-empty-title" data-test="home-empty-title">{{ copy().title }}</h2>
   <p class="home-empty-body" data-test="home-empty-body">{{ copy().body }}</p>
 </div>

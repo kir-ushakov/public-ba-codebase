@@ -1,25 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 250" fill="none">
-  <ellipse cx="138" cy="226" rx="96" ry="11" fill="#000" opacity="0.4"/>
-  <g transform="translate(62 46) rotate(-6)">
-    <path d="M22 104c-8 20-2 34 8 36" stroke="#90EE90" stroke-width="16" stroke-linecap="round"/>
-    <path d="M96 104c10 18 6 34-6 38" stroke="#90EE90" stroke-width="16" stroke-linecap="round"/>
-    <rect width="116" height="108" rx="26" fill="#90EE90"/>
-    <g fill="#111111" font-family="Georgia, 'Times New Roman', serif" font-size="38">
-      <text x="14" y="50" transform="rotate(-16 32 42)">B</text>
-      <text x="64" y="54">A</text>
-    </g>
-    <path d="M28 78c20-16 40-12 60 2" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
-  </g>
-  <g transform="translate(196 18)" fill="none" stroke="#AAB3B8" stroke-width="3" stroke-linecap="round">
-    <path d="M6 20c0-9 7-15 15-15s15 6 15 14c0 8-6 12-11 16-3 2-4 4-4 8"/>
-    <circle cx="21" cy="50" r="2.3" fill="#AAB3B8" stroke="none"/>
-  </g>
-  <g transform="translate(198 118)">
-    <rect width="84" height="96" rx="8" fill="#101E25" stroke="#AAB3B8" stroke-width="2.5"/>
-    <g stroke="#69767E" stroke-width="3" stroke-linecap="round">
-      <path d="M16 28h52"/>
-      <path d="M16 46h52"/>
-      <path d="M16 64h40"/>
-    </g>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 440" role="img" aria-labelledby="title desc">
+<title id="title">Brain Assistant — empty to-do list</title>
+<desc id="desc">A puzzled mint green BA mascot beside an empty checklist, with a question mark.</desc>
+<ellipse cx="316" cy="387" rx="206" ry="16" fill="#001015" opacity=".4"/>
+<g transform="rotate(10 257 220)">
+<rect x="125" y="92" width="266" height="244" rx="44" fill="#8DEB8C" stroke="#061820" stroke-width="9"/>
+<path d="M150 282 Q104 299 113 347 Q123 381 151 353 Q137 342 146 323" fill="#8DEB8C" stroke="#061820" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M367 284 Q416 294 407 348 Q396 379 370 357 Q387 340 376 322" fill="#8DEB8C" stroke="#061820" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="179" y="203" font-family="Georgia,serif" font-size="71" font-weight="bold" fill="#061820">B</text>
+<text x="289" y="203" font-family="Georgia,serif" font-size="71" font-weight="bold" fill="#061820">A</text>
+<path d="M219 270 Q265 223 320 267" fill="none" stroke="#061820" stroke-width="10" stroke-linecap="round"/>
+</g>
+<g transform="rotate(5 477 284)">
+<rect x="405" y="190" width="170" height="190" rx="23" fill="#102129" stroke="#8297A3" stroke-width="7"/>
+<g fill="none" stroke="#8297A3" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+<rect x="427" y="220" width="26" height="26" rx="5"/><path d="M468 234h80"/>
+<rect x="427" y="270" width="26" height="26" rx="5"/><path d="M468 284h80"/>
+<rect x="427" y="320" width="26" height="26" rx="5"/><path d="M468 334h80"/>
+</g>
+</g>
+<path d="M369 85 C369 45 424 37 443 70 C457 99 424 111 414 130" fill="none" stroke="#AAB9C3" stroke-width="8" stroke-linecap="round"/>
+<circle cx="412" cy="151" r="5" fill="#AAB9C3"/>
+<path d="M482 120l16-20M511 141l23-9" fill="none" stroke="#AAB9C3" stroke-width="6" stroke-linecap="round"/>
 </svg>

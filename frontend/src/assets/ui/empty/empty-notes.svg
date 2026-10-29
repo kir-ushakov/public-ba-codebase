@@ -1,26 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 250" fill="none">
-  <ellipse cx="160" cy="228" rx="104" ry="11" fill="#000" opacity="0.4"/>
-  <g stroke="#AAB3B8" stroke-width="7" stroke-linecap="round">
-    <path d="M188 186h72"/>
-    <path d="M180 202h80"/>
-    <path d="M188 218h72"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 400" role="img" aria-label="Brain Assistant waiting for an idea">
+  <ellipse cx="255" cy="345" rx="180" ry="13" fill="#07312F" opacity=".5"/>
+  <g fill="none" stroke="#8B9DA8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M340 104c-16-17-8-38 12-44 8-26 43-34 60-12 26-8 51 11 49 36 19 16 14 43-9 51-13 19-37 20-53 9-25 12-51-1-59-20-13-3-18-12-18-20z"/>
+    <circle cx="303" cy="158" r="4" fill="#8B9DA8" stroke="none"/><circle cx="319" cy="143" r="6" fill="#8B9DA8" stroke="none"/>
+    <path d="M390 80c-10 0-18 8-18 18 0 8 4 12 8 17v8h20v-8c5-5 8-10 8-17 0-10-8-18-18-18zM380 129h20m-17 6h14" stroke-width="4"/>
   </g>
-  <g transform="translate(78 58) rotate(12)">
-    <path d="M18 102c-14 14-16 32-4 40" stroke="#90EE90" stroke-width="16" stroke-linecap="round"/>
-    <path d="M100 104c18 10 34 8 42 2" stroke="#90EE90" stroke-width="16" stroke-linecap="round"/>
-    <rect width="116" height="108" rx="26" fill="#90EE90"/>
-    <g fill="#111111" font-family="Georgia, 'Times New Roman', serif" font-size="38">
-      <text x="14" y="50" transform="rotate(-16 32 42)">B</text>
-      <text x="64" y="54">A</text>
-    </g>
-    <path d="M28 78c20-16 40-12 60 2" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
+  <g stroke="#8B9DA8" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" fill="#10232A">
+    <path d="M278 281h112l-15 19H264z"/><path d="M265 301h118l-9 19H265z"/><path d="M269 322h112l-10 18H265z"/>
   </g>
-  <circle cx="214" cy="72" r="3" fill="#AAB3B8"/>
-  <circle cx="228" cy="56" r="4.5" fill="#AAB3B8"/>
-  <path d="M236 18c2-9 12-14 20-12 5-9 16-11 24-3 9-5 18 0 20 8 9 1 14 9 11 17 7 6 4 16-5 19-1 8-11 13-20 9-6 7-17 5-23-2-9-1-16-8-16-16 0-7 5-13 9-16z" stroke="#AAB3B8" stroke-width="2.5" stroke-linejoin="round"/>
-  <g transform="translate(258 24)" fill="none" stroke="#AAB3B8" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="16" cy="12" r="8"/>
-    <path d="M10 20h12l-2 5h-8z"/>
-    <path d="M11 27h10"/>
+  <g transform="rotate(11 204 235)">
+    <rect x="110" y="135" width="196" height="177" rx="33" fill="#8FEF8C" stroke="#06151B" stroke-width="9"/>
+    <text x="147" y="218" font-family="Georgia,serif" font-size="65" font-weight="bold" fill="#06151B">B</text>
+    <text x="237" y="224" font-family="Georgia,serif" font-size="65" font-weight="bold" fill="#06151B">A</text>
+    <path d="M177 263q40-43 82 0" fill="none" stroke="#06151B" stroke-width="9" stroke-linecap="round"/>
   </g>
+  <path d="M136 271q-28 8-30 38-2 14 13 16" fill="none" stroke="#8FEF8C" stroke-width="20" stroke-linecap="round"/>
+  <path d="M290 287q21 12 46 3" fill="none" stroke="#8FEF8C" stroke-width="19" stroke-linecap="round"/>
 </svg>
