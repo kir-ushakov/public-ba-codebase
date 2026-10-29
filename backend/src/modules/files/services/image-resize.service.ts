@@ -4,7 +4,6 @@ import { Readable, PassThrough } from 'stream';
 import probe from 'probe-image-size';
 import { promises as fsp } from 'fs';
 import { ImageConst } from '@brainassistant/contracts';
-import { imageStoreEncodePlan } from './image-store-encode-plan.function.js';
 
 export class ImageResizeService {
   public async resizeImage(
@@ -43,15 +42,15 @@ export class ImageResizeService {
     const tempPath = `${destination}.encoding`;
 
     try {
-      for (const attempt of imageStoreEncodePlan()) {
+      for (const [longEdge, quality] of ImageConst.ENCODE_PLAN) {
         await fsp.rm(tempPath, { force: true });
         await sharp(filePath)
           .rotate()
-          .resize(attempt.longEdge, attempt.longEdge, {
+          .resize(longEdge, longEdge, {
             fit: 'inside',
             withoutEnlargement: true,
           })
-          .webp({ quality: attempt.quality })
+          .webp({ quality })
           .toFile(tempPath);
 
         // eslint-disable-next-line security/detect-non-literal-fs-filename -- upload pipeline path under controlled temp dir

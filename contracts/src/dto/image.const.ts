@@ -8,6 +8,7 @@
  * LONG_EDGE_DROP_PX down to MIN_LONG_EDGE_PX.
  * A WebP already within MAX_LONG_EDGE_PX and MAX_BYTES is stored as-is.
  *
+ * ENCODE_PLAN is that sequence as [longEdgePx, quality] pairs.
  * Numbers only — no validation, no clipping, no Guard.
  */
 export const ImageConst = {
@@ -22,4 +23,18 @@ export const ImageConst = {
   WEBP_QUALITY_STEP_3: 68,
   MIN_WEBP_QUALITY: 40,
   WEBP_QUALITY_DROP: 8,
+  ENCODE_PLAN: [
+    [1600, 80],
+    [1600, 75],
+    [1600, 68],
+    [1280, 75],
+    [1280, 67],
+    [1280, 59],
+    [1280, 51],
+    [1280, 43],
+    [1120, 40],
+    [960, 40],
+    [800, 40],
+    [640, 40],
+  ],
 } as const;
