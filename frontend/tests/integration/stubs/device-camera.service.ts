@@ -12,7 +12,7 @@ import { IDeviceCameraService } from '../../../src/app/shared/services/pwa/devic
 export class DeviceCameraService implements IDeviceCameraService {
   private readonly TEST_IMAGE_PATH = 'tests/integration/assets/test-img.jpg';
 
-  public async takePicture(quality = 90): Promise<string | null> {
+  public async takePicture(quality = 100): Promise<string | null> {
     console.log('[integration] DeviceCameraService.takePicture() called - returning test image');
 
     await new Promise(resolve => setTimeout(resolve, 100));

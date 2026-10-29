@@ -1,6 +1,7 @@
-import { EGetImageUseCaseError } from '@brainassistant/contracts';
+import { EGetImageUseCaseError, ImageConst } from '@brainassistant/contracts';
 import path from 'path';
 import { createReadStream } from 'fs';
+import { Readable } from 'stream';
 import { Application } from 'express';
 import request from 'supertest';
 import sharp from 'sharp';
@@ -92,6 +93,40 @@ describe('Integration: GetImage (Controller -> UseCase -> Repo -> MongoDB)', () 
     const meta = await sharp(res.body).metadata();
     expect(meta.width).toBe(requestedWidth);
     expect(original.width).toBeGreaterThan(requestedWidth);
+  });
+
+  it('clamps a requested width to the store long edge', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const imageId = 'image-get-width-cap';
+    await uploadFixture(app, jwtCookie, imageId);
+
+    const wide = await sharp({
+      create: {
+        width: 2400,
+        height: 1200,
+        channels: 3,
+        background: { r: 20, g: 40, b: 80 },
+      },
+    })
+      .jpeg()
+      .toBuffer();
+
+    drive.getImageById.mockResolvedValue(
+      Result.ok({
+        data: Readable.from(wide),
+        headers: { 'content-type': 'image/jpeg' },
+        status: 200,
+        statusText: 'OK',
+        config: {},
+      }),
+    );
+
+    const res = await getImageBuffer(app, jwtCookie, imageId, 4000);
+
+    expect(res.status).toBe(200);
+    const meta = await sharp(res.body).metadata();
+    expect(meta.width).toBe(ImageConst.MAX_LONG_EDGE_PX);
+    expect(meta.height).toBe(800);
   });
 
   it('returns 403 when Google rejects the refresh token', async () => {

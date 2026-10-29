@@ -13,6 +13,7 @@ export type {
   TaskDescriptionNodeType,
 } from './task.dto';
 export { TaskConst } from './task.const';
+export { ImageConst } from './image.const';
 
 // User DTOs
 export type { UserDto } from './user.dto';

@@ -8,6 +8,7 @@
  */
 
 import {
+  ImageConst,
   TagConst,
   TaskConst,
   type ApiErrorDto,
@@ -244,6 +245,7 @@ export const PUBLIC_API_SHAPE = {
     },
   },
   consts: {
+    ImageConst,
     TaskConst,
     TagConst,
   },

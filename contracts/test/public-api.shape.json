@@ -252,6 +252,18 @@
     }
   },
   "consts": {
+    "ImageConst": {
+      "MAX_LONG_EDGE_PX": 1600,
+      "FALLBACK_LONG_EDGE_PX": 1280,
+      "MIN_LONG_EDGE_PX": 640,
+      "LONG_EDGE_DROP_PX": 160,
+      "MAX_BYTES": 512000,
+      "WEBP_QUALITY": 80,
+      "WEBP_QUALITY_STEP_2": 75,
+      "WEBP_QUALITY_STEP_3": 68,
+      "MIN_WEBP_QUALITY": 40,
+      "WEBP_QUALITY_DROP": 8
+    },
     "TaskConst": {
       "TITLE_MIN_LENGTH": 1,
       "TITLE_MAX_LENGTH": 100,
