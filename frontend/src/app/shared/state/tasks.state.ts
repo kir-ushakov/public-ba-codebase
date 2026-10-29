@@ -22,7 +22,11 @@ interface ITasksStateModel {
 })
 @Injectable()
 export class TasksState {
-  static readonly actualStatuses: Array<ETaskStatus> = [ETaskStatus.Todo, ETaskStatus.Active];
+  static readonly actualStatuses: Array<ETaskStatus> = [
+    ETaskStatus.Todo,
+    ETaskStatus.Active,
+    ETaskStatus.Notes,
+  ];
 
   @Selector([TasksState, UserState.userId])
   static allTasks(state: ITasksStateModel, userId: string | null): Array<Task> {

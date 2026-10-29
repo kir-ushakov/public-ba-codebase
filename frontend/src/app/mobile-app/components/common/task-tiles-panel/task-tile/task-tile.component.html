@@ -14,7 +14,12 @@
     </div>
   }
   <div class="task-tile-body">
-    <span class="material-symbols-rounded type-icon" aria-hidden="true">{{ typeIcon }}</span>
+    <span
+      class="material-symbols-rounded type-icon"
+      data-test="task-tile-type-icon"
+      aria-hidden="true"
+      >{{ typeIcon }}</span
+    >
     <div class="task-tile-text">
       <div class="task-tile-title-row">
         <span class="task-tile-title">{{ task.title }}</span>

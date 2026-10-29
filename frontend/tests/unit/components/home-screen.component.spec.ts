@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { provideStore, Store } from '@ngxs/store';
 import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { HomeScreenComponent } from 'src/app/mobile-app/components/screens/home-screen/home-screen.component';
+import { HomeContentModeService } from 'src/app/mobile-app/components/screens/home-screen/home-content-mode.service';
 import type { Task } from 'src/app/shared/models/task.model';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
@@ -20,7 +21,7 @@ const catTask: Task = {
   userId,
   type: ETaskType.Basic,
   title: 'Buy cat food',
-  status: ETaskStatus.Todo,
+  status: ETaskStatus.Active,
   createdAt: '2026-09-12T10:00:00.000Z',
   modifiedAt: '2026-09-12T10:00:00.000Z',
 };
@@ -31,7 +32,7 @@ const lampTask: Task = {
   type: ETaskType.Basic,
   title: 'Lamp photo',
   tagIds: ['tag-errands', 'tag-other-user'],
-  status: ETaskStatus.Todo,
+  status: ETaskStatus.Active,
   createdAt: '2026-09-11T10:00:00.000Z',
   modifiedAt: '2026-09-11T10:00:00.000Z',
 };
@@ -95,6 +96,7 @@ describe('HomeScreenComponent search', () => {
       },
     });
 
+    TestBed.inject(HomeContentModeService).select('active');
     fixture = TestBed.createComponent(HomeScreenComponent);
     fixture.detectChanges();
   });
@@ -120,7 +122,9 @@ describe('HomeScreenComponent search', () => {
 
     expect(tileText(host)).toContain('Buy cat food');
     expect(tileText(host)).not.toContain('Lamp photo');
-    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain('2 items');
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '2 active items',
+    );
     expect(host.querySelector('[data-test="home-search-clear"]')).not.toBeNull();
   });
 
@@ -153,7 +157,9 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-search-empty"]')?.textContent).toContain(
       'No results',
     );
-    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain('2 items');
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '2 active items',
+    );
   });
 
   it('clears the query without leaving search', () => {
@@ -182,6 +188,82 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-more"]')).not.toBeNull();
     expect(tileText(host)).toContain('Buy cat food');
     expect(tileText(host)).toContain('Lamp photo');
+  });
+
+  it('defaults to Active and filters the grid when another mode is selected', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const store = TestBed.inject(Store);
+    const todo: Task = {
+      ...catTask,
+      id: 'task-todo',
+      title: 'Write the brief',
+      status: ETaskStatus.Todo,
+    };
+    const notes: Task = {
+      ...catTask,
+      id: 'task-notes',
+      title: 'Saved article',
+      status: ETaskStatus.Notes,
+    };
+    const done: Task = {
+      ...catTask,
+      id: 'task-done',
+      title: 'Finished task',
+      status: ETaskStatus.Done,
+    };
+
+    store.reset({
+      app: { online: false },
+      tasks: { entities: [catTask, todo, notes, done] },
+      tags: { entities: [] },
+      user: {
+        userData: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          userId,
+          googleId: 'g-1',
+        },
+        authState: EUserAuthState.Authenticated,
+        authType: undefined,
+        integrations: { isAddedToSlack: undefined },
+      },
+    });
+    fixture.detectChanges();
+
+    expect(
+      host.querySelector('[data-test="home-mode-active"]')?.getAttribute('aria-selected'),
+    ).toBe('true');
+    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-mode-count-notes"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '1 active item',
+    );
+    expect(tileText(host)).toContain('Buy cat food');
+    expect(tileText(host)).not.toContain('Write the brief');
+    expect(tileText(host)).not.toContain('Saved article');
+    expect(tileText(host)).not.toContain('Finished task');
+
+    (host.querySelector('[data-test="home-mode-todo"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-mode-todo"]')?.getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '1 to do item',
+    );
+    expect(tileText(host)).toContain('Write the brief');
+    expect(tileText(host)).not.toContain('Buy cat food');
+    expect(tileText(host)).not.toContain('Finished task');
+
+    (host.querySelector('[data-test="home-mode-notes"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain('1 note');
+    expect(tileText(host)).toContain('Saved article');
+    expect(tileText(host)).not.toContain('Finished task');
   });
 });
 

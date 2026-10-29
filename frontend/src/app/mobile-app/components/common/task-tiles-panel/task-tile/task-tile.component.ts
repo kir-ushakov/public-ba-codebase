@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { TaskTileAction } from './task-tile.actions';
 import { ETaskViewMode } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
-import { Task } from 'src/app/shared/models/task.model';
+import { ETaskStatus, Task } from 'src/app/shared/models/task.model';
 import { ContextMenuComponent } from 'src/app/shared/components/ui-elements/context-menu/context-menu.component';
 import type { ContextMenuItem } from 'src/app/shared/components/ui-elements/context-menu/context-menu-item.type';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
@@ -73,6 +73,9 @@ export class TaskTileComponent {
   ) {}
 
   get typeIcon(): string {
+    if (this.task.status === ETaskStatus.Notes) {
+      return 'article';
+    }
     return taskTypeIcon(this.task.type);
   }
 

@@ -6,6 +6,7 @@ import { createTaskWithTitle, signIn } from './utils/task-flow.util';
 test('user can mark a viewed task active and then done', async ({ page }) => {
   await setupApiMocks(page);
   await signIn(page);
+  await page.click('[data-test="home-mode-todo"]');
   await createTaskWithTitle(page, 'Buy cat food');
 
   await page.locator('[data-test="task-tile"]', { hasText: 'Buy cat food' }).click();

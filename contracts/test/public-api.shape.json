@@ -9,7 +9,8 @@
       "TASK_STATUS_TODO",
       "TASK_STATUS_ACTIVE",
       "TASK_STATUS_DONE",
-      "TASK_STATUS_CANCEL"
+      "TASK_STATUS_CANCEL",
+      "TASK_STATUS_NOTES"
     ],
     "EChangedEntity": [
       "CHANGED_ENTITY_TASK",

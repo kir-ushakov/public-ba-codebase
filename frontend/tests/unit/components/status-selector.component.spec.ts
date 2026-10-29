@@ -21,6 +21,10 @@ describe('StatusSelectorComponent', () => {
     );
     expect(host.querySelector('[data-test="task-status-todo"]')?.textContent).toContain('To do');
     expect(host.querySelector('[data-test="task-status-active"]')?.textContent).toContain('Active');
+    expect(host.querySelector('[data-test="task-status-notes"]')?.textContent).toContain('Notes');
+    expect(
+      host.querySelector('[data-test="task-status-notes"]')?.getAttribute('aria-pressed'),
+    ).toBe('false');
     expect(host.querySelector('[data-test="task-status-todo"]')?.getAttribute('aria-pressed')).toBe(
       'true',
     );
@@ -41,6 +45,9 @@ describe('StatusSelectorComponent', () => {
     expect(host.querySelector('[data-test="task-status-todo"]')?.getAttribute('aria-pressed')).toBe(
       'false',
     );
+    expect(
+      host.querySelector('[data-test="task-status-notes"]')?.getAttribute('aria-pressed'),
+    ).toBe('false');
 
     host.querySelector<HTMLButtonElement>('[data-test="task-status-active"]')!.click();
     fixture.detectChanges();

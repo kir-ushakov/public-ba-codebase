@@ -8,7 +8,7 @@ test('home search filters tiles and cancel restores the list', async ({ page }) 
   await createTaskWithTitle(page, 'Buy cat food');
   await createTaskWithTitle(page, 'Lamp photo');
 
-  await expect(page.locator('[data-test="home-item-count"]')).toHaveText('2 items');
+  await expect(page.locator('[data-test="home-item-count"]')).toHaveText('2 active items');
 
   await page.click('[data-test="home-search"]');
   await expect(page.locator('[data-test="home-search-input"]')).toBeVisible();
@@ -18,7 +18,7 @@ test('home search filters tiles and cancel restores the list', async ({ page }) 
 
   await expect(page.locator('[data-test="task-tile"]', { hasText: 'Buy cat food' })).toBeVisible();
   await expect(page.locator('[data-test="task-tile"]', { hasText: 'Lamp photo' })).toHaveCount(0);
-  await expect(page.locator('[data-test="home-item-count"]')).toHaveText('2 items');
+  await expect(page.locator('[data-test="home-item-count"]')).toHaveText('2 active items');
 
   await page.click('[data-test="home-search-cancel"]');
 

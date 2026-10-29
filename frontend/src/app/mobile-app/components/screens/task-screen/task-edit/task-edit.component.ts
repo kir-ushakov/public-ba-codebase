@@ -32,6 +32,8 @@ import { TagSelectorComponent } from './tag-selector/tag-selector.component';
 import { StatusSelectorComponent } from './status-selector/status-selector.component';
 import { TaskTypeChipComponent } from '../task-type-chip/task-type-chip.component';
 import { toGalleryImages, type GalleryImage } from './helpers/to-gallery-images.function';
+import { statusForHomeMode } from '../../home-screen/helpers/home-content-mode.function';
+import { HomeContentModeService } from '../../home-screen/home-content-mode.service';
 
 @Component({
   selector: 'ba-task-edit',
@@ -76,6 +78,7 @@ export class TaskEditComponent {
   private readonly fb = inject(FormBuilder);
   private readonly actions$ = inject(Actions);
   private readonly ngZone = inject(NgZone);
+  private readonly homeContentMode = inject(HomeContentModeService);
 
   private readonly baseTitleValidators = [Validators.maxLength(TaskConst.TITLE_MAX_LENGTH)];
   private readonly requiredTitleValidators = [Validators.required, ...this.baseTitleValidators];
@@ -197,7 +200,12 @@ export class TaskEditComponent {
     const existingTitle = mode === ETaskViewMode.Edit ? (existingTask.title ?? '') : '';
     const existingDescription =
       mode === ETaskViewMode.Edit ? (existingTask.description ?? null) : null;
-    const existingStatus = mode === ETaskViewMode.Edit ? existingTask.status : ETaskStatus.Todo;
+    const existingStatus =
+      mode === ETaskViewMode.Edit
+        ? existingTask.status
+        : mode === ETaskViewMode.Create
+          ? statusForHomeMode(this.homeContentMode.mode())
+          : ETaskStatus.Todo;
     const existingTagIds = existingTask.tagIds ?? [];
     this.tagIds.set(existingTagIds);
 

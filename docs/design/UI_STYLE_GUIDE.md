@@ -199,6 +199,8 @@ Use it for:
 
 Do not use teal simply as decoration.
 
+For compact selection controls, prefer a subtle selected surface and a thin accent border over a solid primary accent background. Reserve solid teal fills for primary action buttons and the floating action button.
+
 ### Dark surfaces
 
 The application uses several closely related dark surfaces.
@@ -804,7 +806,7 @@ If a genuinely new visual primitive is required, propose the addition before int
 
 ## 27. Reference Visual Language
 
-The **approved** Home screen (`docs/design/specs/home.json` and `docs/design/references/home.png`) is the primary visual reference.
+The **approved** Home screen (`docs/design/specs/home.json` and `docs/design/references/home.jpg`) is the primary visual reference.
 
 The live Angular Home screen may still lag behind that spec. Treat the approved spec and this guide as the target language, not whichever older screen happens to be nearby.
 

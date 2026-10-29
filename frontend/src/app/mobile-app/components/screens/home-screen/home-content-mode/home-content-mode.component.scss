@@ -1,0 +1,103 @@
+:host {
+  display: block;
+}
+
+.mode-switcher {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  padding: var(--spacing-xs);
+  background: var(--color-surface-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-large);
+}
+
+.mode-segment {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: var(--button-min-height);
+  margin: 0;
+  padding: 0 var(--spacing-sm);
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-large);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  cursor: pointer;
+
+  .material-symbols-rounded {
+    flex-shrink: 0;
+    font-size: var(--icon-size-small);
+    font-variation-settings:
+      'FILL' var(--icon-fill),
+      'wght' var(--icon-weight),
+      'GRAD' var(--icon-grade),
+      'opsz' var(--icon-optical-size);
+    color: var(--color-icon-default);
+  }
+
+  &.has-divider {
+    box-shadow: inset 1px 0 0 var(--color-border-separator);
+  }
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--color-accent-primary);
+    outline-offset: calc(var(--spacing-xs) * -1);
+    z-index: 1;
+  }
+
+  &.is-selected {
+    background: var(--color-surface-selected);
+    border-color: var(--color-accent-primary);
+    color: var(--color-text-primary);
+
+    .material-symbols-rounded {
+      color: var(--color-icon-active);
+    }
+
+    &:hover,
+    &:active {
+      background: var(--color-surface-selected);
+      border-color: var(--color-accent-primary);
+    }
+  }
+}
+
+.mode-label {
+  overflow: hidden;
+  font-size: var(--typography-secondary-size);
+  font-weight: var(--typography-secondary-weight);
+  line-height: var(--typography-secondary-line-height);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mode-count {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--icon-size-small);
+  height: var(--icon-size-small);
+  padding: 0 var(--spacing-xs);
+  border-radius: var(--radius-circle);
+  background: var(--color-background-content);
+  color: var(--color-text-primary);
+  font-size: var(--typography-caption-size);
+  font-weight: var(--typography-caption-weight);
+  line-height: var(--typography-caption-line-height);
+}

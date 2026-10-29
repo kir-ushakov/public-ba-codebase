@@ -113,13 +113,20 @@ describe('TasksState', () => {
     expect(store.selectSnapshot(TasksState.allTasks)[0]?.title).toBe('Renamed task title');
   });
 
-  it('keeps To do and Active tasks on the home list', () => {
+  it('keeps To do, Active and Notes tasks on the home list', () => {
     const active: Task = {
       ...existing,
       id: 'task-active',
       title: 'Active task',
       status: ETaskStatus.Active,
       createdAt: '2024-06-02T10:00:00.000Z',
+    };
+    const notes: Task = {
+      ...existing,
+      id: 'task-notes',
+      title: 'Notes task',
+      status: ETaskStatus.Notes,
+      createdAt: '2024-06-03T10:00:00.000Z',
     };
     const done: Task = {
       ...existing,
@@ -129,7 +136,7 @@ describe('TasksState', () => {
     };
 
     store.reset({
-      tasks: { entities: [existing, active, done] },
+      tasks: { entities: [existing, active, notes, done] },
       user: {
         userData: {
           firstName: 'Test',
@@ -146,7 +153,7 @@ describe('TasksState', () => {
 
     const titles = store.selectSnapshot(TasksState.actualTasks).map(task => task.title);
 
-    expect(titles).toEqual(['Active task', 'Existing task title']);
+    expect(titles).toEqual(['Notes task', 'Active task', 'Existing task title']);
     expect(titles).not.toContain('Done task');
   });
 

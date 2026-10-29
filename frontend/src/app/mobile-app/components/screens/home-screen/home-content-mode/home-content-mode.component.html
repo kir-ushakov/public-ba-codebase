@@ -1,0 +1,20 @@
+<div class="mode-switcher" role="tablist" aria-label="Home content" data-test="home-content-mode">
+  @for (option of options; track option.id) {
+    <button
+      class="mode-segment"
+      type="button"
+      role="tab"
+      [attr.data-test]="'home-mode-' + option.id"
+      [class.is-selected]="selected() === option.id"
+      [class.has-divider]="hasDivider(option.id)"
+      [attr.aria-selected]="selected() === option.id"
+      (click)="select(option.id)"
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">{{ option.icon }}</span>
+      <span class="mode-label">{{ option.label }}</span>
+      <span class="mode-count" [attr.data-test]="'home-mode-count-' + option.id">{{
+        counts()[option.id]
+      }}</span>
+    </button>
+  }
+</div>

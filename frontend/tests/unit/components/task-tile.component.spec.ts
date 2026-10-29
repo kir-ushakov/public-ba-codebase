@@ -44,6 +44,9 @@ describe('TaskTileComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
 
     expect(host.textContent).toContain('Buy milk');
+    expect(host.querySelector('[data-test="task-tile-type-icon"]')?.textContent).toContain(
+      'radio_button_unchecked',
+    );
     expect(host.querySelector('[data-test="task-tile-more"]')).not.toBeNull();
   });
 
@@ -61,6 +64,16 @@ describe('TaskTileComponent', () => {
     expect(host.querySelector('[data-test="task-tile-menu-edit"]')?.textContent).toContain('Edit');
     expect(host.querySelector('[data-test="task-tile-menu-delete"]')?.textContent).toContain(
       'Delete',
+    );
+  });
+
+  it('uses the Notes icon on a Notes card', () => {
+    fixture.componentRef.setInput('task', { ...task, status: ETaskStatus.Notes });
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('[data-test="task-tile-type-icon"]')?.textContent).toContain(
+      'article',
     );
   });
 });
