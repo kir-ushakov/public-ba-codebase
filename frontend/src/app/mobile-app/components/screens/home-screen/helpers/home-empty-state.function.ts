@@ -20,13 +20,13 @@ const EMPTY_STATES: Record<HomeContentMode, HomeEmptyState> = {
     title: 'Your to-do list is empty.',
     body: 'Add a new task, capture an idea or move something from notes.',
     symbol: `${EMPTY_SPRITE}#empty-todo`,
-    viewBox: '0 0 320 250',
+    viewBox: '0 0 218 150',
   },
   notes: {
     title: 'No notes yet.',
     body: 'Capture ideas, links, images or anything you want to remember for later.',
     symbol: `${EMPTY_SPRITE}#empty-notes`,
-    viewBox: '0 0 320 250',
+    viewBox: '0 0 195 150',
   },
 };
 
