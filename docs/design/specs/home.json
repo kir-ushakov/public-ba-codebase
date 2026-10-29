@@ -2,7 +2,7 @@
   "screen": {
     "id": "home",
     "name": "Home",
-    "version": "1.6.0",
+    "version": "1.7.0",
 
     "purpose": "Main overview screen displaying the user's recent content and providing quick access to primary application areas.",
 
@@ -323,7 +323,13 @@
       "Active and To do are workflow-status filters, while Notes is a content category; do not confuse these with task type To do / Calendar / Location.",
       "Task cards retain their task-type icons; Notes cards use Material Symbols Rounded article.",
       "Use Google Material Symbols Rounded article for the Notes tab, with FILL 0, weight 400, optical size 24. Do not use notes, subject, menu, or a generic list icon. Render the exact Material Symbol, not a Lucide or custom SVG substitute.",
-      "The attached Home mockup is a visual reference for the segmented control, not a literal data contract: sample cards shown there do not override filtering rules."
+      "The attached Home mockup is a visual reference for the segmented control, not a literal data contract: sample cards shown there do not override filtering rules.",
+      "When the selected mode count is 0, replace the masonry grid with that mode's empty state. The header, segmented switcher, sync banner, floating create action and bottom navigation stay.",
+      "Emptiness follows the selected mode count, not the total number of tasks. Switching Active, To do or Notes changes both the mascot and the copy.",
+      "A search that hides cards does not show the empty state while that mode's count is still greater than 0.",
+      "At zero the header still names the mode: \"0 active items\", \"0 to do items\", \"0 notes\".",
+      "The empty state has no button of its own. The floating create action is the only create control on Home.",
+      "The mascot is a small centered illustration. Keep the surrounding area empty. Do not add confetti, a large scene, or a second accent color."
     ],
 
     "states": {
@@ -345,6 +351,24 @@
       "notesSelected": {
         "selectedMode": "notes",
         "description": "Notes tab highlighted in teal; grid displays Notes cards."
+      },
+      "activeEmpty": {
+        "selectedMode": "active",
+        "visibleWhen": "home.counts.active is 0",
+        "referenceImage": "../references/home-empty-active.png",
+        "description": "Active count is 0. The bored mascot replaces the grid. Header, switcher, sync banner, floating create action and bottom navigation stay."
+      },
+      "todoEmpty": {
+        "selectedMode": "todo",
+        "visibleWhen": "home.counts.todo is 0",
+        "referenceImage": "../references/home-empty-todo.png",
+        "description": "To do count is 0. The puzzled mascot replaces the grid. The rest of the screen chrome stays."
+      },
+      "notesEmpty": {
+        "selectedMode": "notes",
+        "visibleWhen": "home.counts.notes is 0",
+        "referenceImage": "../references/home-empty-notes.png",
+        "description": "Notes count is 0. The waiting mascot replaces the grid. The rest of the screen chrome stays."
       }
     },
 
@@ -384,10 +408,11 @@
         "switchAction": "set-home-content-mode",
         "updates": [
           "content-grid",
+          "empty-state",
           "header.item-count"
         ],
         "preserveSelectionWhileOnHome": true,
-        "countSemantics": "Counts reflect all items in each mode, not only visible grid cards."
+        "countSemantics": "Counts reflect all items in each mode, not only visible grid cards. The empty state appears only when the selected mode count is 0."
       },
       "visual": {
         "componentRecipe": "segmentedControl",
@@ -416,8 +441,47 @@
       }
     },
 
+    "emptyState": {
+      "id": "home-empty",
+      "component": "empty-state",
+      "componentRecipe": "emptyState",
+      "replaces": "content-grid",
+      "visibleWhen": "selected mode count is 0",
+      "inlineAction": "none",
+      "preserves": [
+        "header",
+        "content-mode-switcher",
+        "sync-status-banner",
+        "floating-create-action",
+        "bottom-navigation"
+      ],
+      "modes": {
+        "active": {
+          "illustration": "../assets/empty-active.svg",
+          "expression": "bored",
+          "scene": "Sitting at a laptop, with a faint sigh. The smile is a crooked line and one letter is slightly tilted.",
+          "title": "Nothing active right now.",
+          "body": "Pick a task from your to do list or create a new one to get started."
+        },
+        "todo": {
+          "illustration": "../assets/empty-todo.svg",
+          "expression": "puzzled",
+          "scene": "Looking at an empty list, with a question mark beside it.",
+          "title": "Your to-do list is empty.",
+          "body": "Add a new task, capture an idea or move something from notes."
+        },
+        "notes": {
+          "illustration": "../assets/empty-notes.svg",
+          "expression": "waiting",
+          "scene": "Resting on a stack of notes, with a thought bubble overhead.",
+          "title": "No notes yet.",
+          "body": "Capture ideas, links, images or anything you want to remember for later."
+        }
+      }
+    },
+
     "angular": {
-      "note": "The live Home screen does not yet match this spec. Treat this JSON as the approved target, not a description of the current implementation. Bottom-nav destinations /tasks and /tags are product destinations from the approved design; they are not a claim that those Angular routes already exist. The Active / To do / Notes switcher filters ETaskStatus.Active, ETaskStatus.Todo and ETaskStatus.Notes. Done and Cancel stay off Home.",
+      "note": "The live Home screen does not yet match this spec. Treat this JSON as the approved target, not a description of the current implementation. Bottom-nav destinations /tasks and /tags are product destinations from the approved design; they are not a claim that those Angular routes already exist. The Active / To do / Notes switcher filters ETaskStatus.Active, ETaskStatus.Todo and ETaskStatus.Notes. Done and Cancel stay off Home. An empty selected mode shows that mode's mascot empty state instead of the grid and does not add a second create button.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/home-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/common/task-tiles-panel/",

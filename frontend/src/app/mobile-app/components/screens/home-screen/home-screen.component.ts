@@ -20,6 +20,7 @@ import { HomeBottomPanelComponent } from './home-bottom-panel/home-bottom-panel.
 import { HomeAccountMenuComponent } from './home-account-menu/home-account-menu.component';
 import { HomeContentModeComponent } from './home-content-mode/home-content-mode.component';
 import { HomeContentModeService } from './home-content-mode.service';
+import { HomeEmptyStateComponent } from './home-empty-state/home-empty-state.component';
 import { HomeSyncStatusComponent } from './home-sync-status/home-sync-status.component';
 import { TaskTilesPanelComponent } from '../../common/task-tiles-panel/task-tiles-panel.component';
 import { filterHomeTasks } from './helpers/filter-home-tasks.function';
@@ -40,6 +41,7 @@ import {
     HomeAccountMenuComponent,
     HomeBottomPanelComponent,
     HomeContentModeComponent,
+    HomeEmptyStateComponent,
     HomeSyncStatusComponent,
     TaskTilesPanelComponent,
   ],
@@ -71,8 +73,13 @@ export class HomeScreenComponent implements OnInit {
   readonly itemCountLabel = computed(() =>
     homeModeItemLabel(this.contentMode(), this.modeCounts()[this.contentMode()]),
   );
+  readonly showEmptyState = computed(() => this.modeCounts()[this.contentMode()] === 0);
   readonly showNoResults = computed(
-    () => this.searchOpen() && this.hasQuery() && this.filteredTasks().length === 0,
+    () =>
+      !this.showEmptyState() &&
+      this.searchOpen() &&
+      this.hasQuery() &&
+      this.filteredTasks().length === 0,
   );
 
   private readonly contentModeService = inject(HomeContentModeService);

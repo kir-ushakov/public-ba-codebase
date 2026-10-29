@@ -157,6 +157,7 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-search-empty"]')?.textContent).toContain(
       'No results',
     );
+    expect(host.querySelector('[data-test="home-empty"]')).toBeNull();
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
       '2 active items',
     );
@@ -264,6 +265,48 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain('1 note');
     expect(tileText(host)).toContain('Saved article');
     expect(tileText(host)).not.toContain('Finished task');
+  });
+
+  it('replaces an empty mode with its mascot and keeps the create button', () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-test="home-empty"]')).toBeNull();
+    expect(tileText(host)).toContain('Buy cat food');
+    expect(host.querySelector('[data-test="new-task-btn"]')).not.toBeNull();
+
+    (host.querySelector('[data-test="home-mode-todo"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-empty-title"]')?.textContent).toContain(
+      'Your to-do list is empty.',
+    );
+    expect(host.querySelector('[data-test="home-empty-body"]')?.textContent).toContain(
+      'Add a new task, capture an idea or move something from notes.',
+    );
+    expect(host.querySelector('[data-test="home-empty-art"]')?.getAttribute('src')).toContain(
+      'empty-todo.svg',
+    );
+    expect(host.querySelector('[data-test="task-tile"]')).toBeNull();
+    expect(host.querySelector('[data-test="new-task-btn"]')).not.toBeNull();
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '0 to do items',
+    );
+
+    (host.querySelector('[data-test="home-mode-notes"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-empty-title"]')?.textContent).toContain(
+      'No notes yet.',
+    );
+    expect(host.querySelector('[data-test="home-empty-art"]')?.getAttribute('src')).toContain(
+      'empty-notes.svg',
+    );
+
+    (host.querySelector('[data-test="home-mode-active"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-empty"]')).toBeNull();
+    expect(tileText(host)).toContain('Buy cat food');
   });
 });
 

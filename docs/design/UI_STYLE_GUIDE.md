@@ -454,6 +454,10 @@ Examples:
 - Close: `close`
 - Done: `check`
 
+Empty states may use the Brain Assistant mascot with subtle emotional expressions. Mascot illustrations are product-specific SVG assets, not interface icons. Keep them minimal, restrained and consistent with the application's visual language.
+
+Material Symbols Rounded remain the interface icons. Do not replace the mascot with a Material Symbol, and do not use the mascot as an icon in buttons, navigation or cards. Size, spacing and typography for an empty state come from `design-system.json` → `emptyState`.
+
 ---
 
 ## 13. Buttons

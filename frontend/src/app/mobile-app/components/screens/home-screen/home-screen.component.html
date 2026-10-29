@@ -92,10 +92,14 @@
   @if (selectors.isLocalAuthenticated()) {
     <ba-home-sync-status></ba-home-sync-status>
   }
-  @if (showNoResults()) {
-    <p class="search-empty" data-test="home-search-empty">No results</p>
+  @if (showEmptyState()) {
+    <ba-home-empty-state [mode]="contentMode()"></ba-home-empty-state>
+  } @else {
+    @if (showNoResults()) {
+      <p class="search-empty" data-test="home-search-empty">No results</p>
+    }
+    <ba-task-tiles-panel [tasks]="filteredTasks()"></ba-task-tiles-panel>
   }
-  <ba-task-tiles-panel [tasks]="filteredTasks()"></ba-task-tiles-panel>
 </div>
 <div class="bottom-panel-holder">
   <ba-home-bottom-panel></ba-home-bottom-panel>

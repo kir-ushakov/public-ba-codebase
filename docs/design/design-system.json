@@ -1,7 +1,7 @@
 {
   "designSystem": {
     "name": "Brain Assistant Dark Technical",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "scope": "product",
 
     "tokenNaming": {
@@ -222,6 +222,7 @@
         "Do not create custom SVG icons when an equivalent Material Symbol exists",
         "Do not mix Material Symbols with legacy PNG icons on redesigned screens",
         "Custom SVG icons are allowed only when the required product-specific icon does not exist in Material Symbols",
+        "The Brain Assistant mascot is an illustration defined by emptyState, not an interface icon",
         "Inactive icons use neutral gray",
         "Active navigation icons use the primary teal accent"
       ],
@@ -257,7 +258,7 @@
 
       "rules": [
         "Use whitespace to separate logical groups",
-        "Do not fill empty areas with decorative content",
+        "Do not fill empty areas with decorative content. An empty collection may use the emptyState mascot in place of its list or grid",
         "Cards may have different heights when content requires it",
         "Maintain consistent horizontal alignment"
       ]
@@ -564,6 +565,53 @@
       ]
     },
 
+    "emptyState": {
+      "layout": {
+        "alignment": "center",
+        "placement": "centered in the free content area",
+        "paddingToken": "spacing.screen.horizontalPadding",
+        "illustrationToTitle": "spacing.scale.xl",
+        "titleToBody": "spacing.scale.sm"
+      },
+
+      "illustration": {
+        "maxWidth": "192px",
+        "maxHeight": "160px",
+        "fit": "contain"
+      },
+
+      "title": {
+        "style": "sectionTitle",
+        "alignment": "center",
+        "color": "text.primary"
+      },
+
+      "body": {
+        "style": "secondary",
+        "alignment": "center",
+        "color": "text.secondary"
+      },
+
+      "action": {
+        "optional": true,
+        "maxCount": 1,
+        "omitWhen": "the screen already has a floating create action"
+      },
+
+      "rules": [
+        "Show the empty state for the collection that is actually empty. Switching collections changes both the illustration and the copy.",
+        "Emptiness follows that collection's count, not a global item total.",
+        "The Brain Assistant mascot may look lightly bored, puzzled or waiting. Do not make it distressed.",
+        "Mascot illustrations are product SVG assets. They are not Material Symbols and are not recolored to accent.primary.",
+        "The mascot fill matches the existing Brain Assistant logo. Props use existing surface, text and icon colors.",
+        "Keep the illustration small and leave the surrounding area empty.",
+        "Do not add confetti, patterns, gradients or an extra accent color.",
+        "Do not add an inline primary button when the screen already has a floating create action.",
+        "The title is the accessible name. The illustration is decorative.",
+        "Keep the screen header, filters, status banner, floating action and navigation in place."
+      ]
+    },
+
     "interaction": {
       "primaryAction": "accent.primary",
       "selectedState": "accent.primary",
@@ -610,7 +658,7 @@
       "random accent colors",
       "purple AI aesthetics",
       "oversized cards without functional reason",
-      "decorative empty-state graphics unless useful",
+      "decorative empty-state graphics other than the Brain Assistant mascot defined by emptyState",
       "mixing multiple icon styles",
       "unnecessary animations"
     ]
