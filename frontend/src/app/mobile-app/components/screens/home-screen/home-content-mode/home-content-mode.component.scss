@@ -13,6 +13,7 @@
 }
 
 .mode-segment {
+  position: relative;
   display: flex;
   flex: 1;
   align-items: center;
@@ -24,7 +25,7 @@
   margin: 0;
   padding: 0 var(--spacing-sm);
   appearance: none;
-  border: 1px solid transparent;
+  border: none;
   border-radius: var(--radius-large);
   background: transparent;
   color: var(--color-text-secondary);
@@ -40,10 +41,14 @@
       'GRAD' var(--icon-grade),
       'opsz' var(--icon-optical-size);
     color: var(--color-icon-default);
-  }
 
-  &.has-divider {
-    box-shadow: inset 1px 0 0 var(--color-border-separator);
+    &.is-filled {
+      font-variation-settings:
+        'FILL' var(--icon-fill-solid),
+        'wght' var(--icon-weight),
+        'GRAD' var(--icon-grade),
+        'opsz' var(--icon-optical-size);
+    }
   }
 
   &:hover {
@@ -61,23 +66,37 @@
   }
 
   &.is-selected {
+    z-index: 1;
     background: var(--color-surface-selected);
-    border-color: var(--color-accent-primary);
+    box-shadow: inset 0 0 0 1px var(--color-accent-primary);
     color: var(--color-text-primary);
 
     .material-symbols-rounded {
       color: var(--color-icon-active);
     }
 
+    .mode-count {
+      background: var(--color-accent-muted);
+    }
+
     &:hover,
     &:active {
       background: var(--color-surface-selected);
-      border-color: var(--color-accent-primary);
     }
   }
 }
 
+.mode-divider {
+  position: absolute;
+  top: var(--spacing-sm);
+  bottom: var(--spacing-sm);
+  left: 0;
+  width: 1px;
+  background: var(--color-border-separator);
+}
+
 .mode-label {
+  min-width: 0;
   overflow: hidden;
   font-size: var(--typography-secondary-size);
   font-weight: var(--typography-secondary-weight);
@@ -95,7 +114,7 @@
   height: var(--icon-size-small);
   padding: 0 var(--spacing-xs);
   border-radius: var(--radius-circle);
-  background: var(--color-background-content);
+  background: var(--color-surface-elevated);
   color: var(--color-text-primary);
   font-size: var(--typography-caption-size);
   font-weight: var(--typography-caption-weight);

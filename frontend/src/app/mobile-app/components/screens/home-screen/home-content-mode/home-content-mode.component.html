@@ -6,11 +6,18 @@
       role="tab"
       [attr.data-test]="'home-mode-' + option.id"
       [class.is-selected]="selected() === option.id"
-      [class.has-divider]="hasDivider(option.id)"
       [attr.aria-selected]="selected() === option.id"
       (click)="select(option.id)"
     >
-      <span class="material-symbols-rounded" aria-hidden="true">{{ option.icon }}</span>
+      @if (hasDivider(option.id)) {
+        <span class="mode-divider" data-test="home-mode-divider" aria-hidden="true"></span>
+      }
+      <span
+        class="material-symbols-rounded"
+        [class.is-filled]="option.iconFill === 1"
+        aria-hidden="true"
+        >{{ option.icon }}</span
+      >
       <span class="mode-label">{{ option.label }}</span>
       <span class="mode-count" [attr.data-test]="'home-mode-count-' + option.id">{{
         counts()[option.id]

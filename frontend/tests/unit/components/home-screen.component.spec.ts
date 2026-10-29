@@ -238,6 +238,14 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('1');
     expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
     expect(host.querySelector('[data-test="home-mode-count-notes"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-mode-active"]')?.textContent).toContain(
+      'play_arrow',
+    );
+    expect(host.querySelector('[data-test="home-mode-todo"]')?.textContent).toContain(
+      'radio_button_unchecked',
+    );
+    expect(host.querySelector('[data-test="home-mode-notes"]')?.textContent).toContain('article');
+    expect(host.querySelectorAll('[data-test="home-mode-divider"]')).toHaveLength(1);
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
       '1 active item',
     );
@@ -252,6 +260,7 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-mode-todo"]')?.getAttribute('aria-selected')).toBe(
       'true',
     );
+    expect(host.querySelectorAll('[data-test="home-mode-divider"]')).toHaveLength(0);
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
       '1 to do item',
     );
@@ -263,6 +272,7 @@ describe('HomeScreenComponent search', () => {
     fixture.detectChanges();
 
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain('1 note');
+    expect(host.querySelectorAll('[data-test="home-mode-divider"]')).toHaveLength(1);
     expect(tileText(host)).toContain('Saved article');
     expect(tileText(host)).not.toContain('Finished task');
   });

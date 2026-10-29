@@ -1,7 +1,7 @@
 {
   "designSystem": {
     "name": "Brain Assistant Dark Technical",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "scope": "product",
 
     "tokenNaming": {
@@ -78,6 +78,7 @@
         "hover": "#00BFA5",
         "pressed": "#008C79",
         "subtle": "rgba(0,169,145,0.15)",
+        "muted": "rgba(0,169,145,0.35)",
         "onAccent": "#FFFFFF"
       },
 
@@ -525,10 +526,18 @@
       "segment": {
         "layout": "equal-width",
         "alignment": "center",
+        "gap": "spacing.scale.xs",
         "iconSize": "small",
         "iconFill": 0,
         "iconWeight": 400,
-        "minHeight": "44px"
+        "iconGrade": 0,
+        "opticalSize": 24,
+        "minHeight": "44px",
+        "filledIcons": {
+          "play_arrow": {
+            "fill": 1
+          }
+        }
       },
       "selected": {
         "background": "surface.selected",
@@ -546,21 +555,31 @@
       "countBadge": {
         "shape": "pill",
         "radius": "circle",
-        "background": "background.content",
-        "textColor": "text.primary"
+        "textColor": "text.primary",
+        "default": {
+          "background": "surface.elevated"
+        },
+        "selected": {
+          "background": "accent.muted"
+        }
       },
       "divider": {
         "color": "border.separator",
         "width": "1px",
-        "placement": "between unselected segments only"
+        "placement": "between unselected segments only",
+        "inset": "spacing.scale.sm"
       },
       "rules": [
         "A segmented control is one shared surface, not a row of separate buttons.",
         "For compact selection controls, prefer a subtle selected surface and a thin accent border over a solid primary accent background.",
         "Reserve solid teal fills for primary action buttons and the floating action button.",
         "Selected and unselected segments share one height, icon size and weight.",
-        "Icons use Material Symbols Rounded at fill 0 and weight 400.",
-        "Count badges stay visually separate from the label.",
+        "Inactive segments have no border. Only the selected segment has the accent outline.",
+        "Draw one vertical divider between two adjacent unselected segments. Do not draw a divider against the selected outline. Inset the divider from the container's top and bottom edges.",
+        "Icons use Material Symbols Rounded at fill 0, weight 400, grade 0 and optical size 24. play_arrow is the exception and uses fill 1.",
+        "Do not apply fill 1 to every icon in the control.",
+        "Count badges stay visually separate from the label and have no border. Unselected badges use a blue-gray surface. The selected badge uses a teal-tinted fill.",
+        "Group the icon, label and count in the center of the segment with a spacing-scale gap. Do not stretch them apart.",
         "Do not use drop shadows, thick borders, or different segment heights."
       ]
     },

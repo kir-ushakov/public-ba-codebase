@@ -52,7 +52,7 @@ No excessive rounded corners.
 **Icons**
 
 - Google Material Symbols Rounded.
-- Simple geometric/outline icons (`FILL` 0).
+- Simple geometric/outline icons (`FILL` 0). The Home Active `play_arrow` is the exception and uses `FILL` 1.
 - 24px standard size.
 - Teal only for active/primary actions.
 
@@ -415,6 +415,7 @@ Rules:
   does not exist in Material Symbols.
 - Standard icon size: use the icon size tokens from `design-system.json`.
 - Icon color must use design-system color tokens.
+- Default fill is 0. The Home segmented Active `play_arrow` uses fill 1 from `segmentedControl.segment.filledIcons`. Do not set fill 1 on the other segments.
 
 Do not use `mat-icon` (Material Icons) for new UI. Render a symbol with:
 
