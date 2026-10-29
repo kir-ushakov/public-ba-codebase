@@ -2,7 +2,7 @@
   "screen": {
     "id": "home",
     "name": "Home",
-    "version": "1.7.0",
+    "version": "1.7.1",
 
     "purpose": "Main overview screen displaying the user's recent content and providing quick access to primary application areas.",
 
@@ -313,7 +313,9 @@
       "Current live type is TODO (ETaskType.Basic) using radio_button_unchecked. Do not use check or check_circle.",
       "The card overflow menu is Edit, Duplicate, Add to tags and Delete. Duplicate and Add to tags are visible but disabled until those features exist.",
       "Place the Active / To do / Notes segmented switcher immediately under the Home header and above the optional sync banner.",
-      "Active is the default selected mode. The selected segment uses the segmentedControl recipe: dark selected surface, thin teal outline and a teal icon. Inactive segments stay transparent inside the shared container.",
+      "Active is the default selected mode. The selected segment uses the segmentedControl recipe: dark selected surface, thin teal outline and a teal icon. Inactive segments stay transparent inside the shared container and have no border of their own.",
+      "One vertical divider sits between adjacent unselected segments. It does not touch the selected outline.",
+      "Active uses play_arrow at the segmentedControl filled-icon exception. To do and Notes stay outline icons.",
       "Each segment shows an icon, a label and a count. Counts update from live data.",
       "Switching modes filters the existing two-column masonry grid without changing bottom navigation.",
       "A horizontal swipe on the content moves one mode. Active, To do and Notes stay in that order.",
@@ -420,11 +422,10 @@
         "segments": "three equal-width adjacent segments",
         "selectedTreatment": "subtle dark teal background with thin teal outline",
         "unselectedTreatment": "transparent background, muted text and icons",
-        "countBadge": "small separate rounded badge",
+        "countBadge": "small separate rounded badge from segmentedControl.countBadge",
         "icons": {
           "family": "Material Symbols Rounded",
-          "fill": 0,
-          "weight": 400,
+          "treatment": "segmentedControl",
           "names": [
             "play_arrow",
             "radio_button_unchecked",

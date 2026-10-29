@@ -5,12 +5,13 @@ type HomeContentModeOption = {
   id: HomeContentMode;
   label: string;
   icon: string;
+  iconFill: 0 | 1;
 };
 
 const HOME_CONTENT_MODE_OPTIONS: HomeContentModeOption[] = [
-  { id: 'active', label: 'Active', icon: 'play_arrow' },
-  { id: 'todo', label: 'To do', icon: 'radio_button_unchecked' },
-  { id: 'notes', label: 'Notes', icon: 'article' },
+  { id: 'active', label: 'Active', icon: 'play_arrow', iconFill: 1 },
+  { id: 'todo', label: 'To do', icon: 'radio_button_unchecked', iconFill: 0 },
+  { id: 'notes', label: 'Notes', icon: 'article', iconFill: 0 },
 ];
 
 @Component({
