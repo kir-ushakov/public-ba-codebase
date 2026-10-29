@@ -1,7 +1,7 @@
 {
   "designSystem": {
     "name": "Brain Assistant Dark Technical",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "scope": "product",
 
     "tokenNaming": {
@@ -515,6 +515,55 @@
       ]
     },
 
+    "segmentedControl": {
+      "container": {
+        "background": "surface.default",
+        "border": "border.default",
+        "borderRadius": "large"
+      },
+      "segment": {
+        "layout": "equal-width",
+        "alignment": "center",
+        "iconSize": "small",
+        "iconFill": 0,
+        "iconWeight": 400,
+        "minHeight": "44px"
+      },
+      "selected": {
+        "background": "surface.selected",
+        "border": "accent.primary",
+        "borderWidth": "1px",
+        "textColor": "text.primary",
+        "iconColor": "icon.active"
+      },
+      "unselected": {
+        "background": "transparent",
+        "border": "none",
+        "textColor": "text.secondary",
+        "iconColor": "icon.default"
+      },
+      "countBadge": {
+        "shape": "pill",
+        "radius": "circle",
+        "background": "background.content",
+        "textColor": "text.primary"
+      },
+      "divider": {
+        "color": "border.separator",
+        "width": "1px",
+        "placement": "between unselected segments only"
+      },
+      "rules": [
+        "A segmented control is one shared surface, not a row of separate buttons.",
+        "For compact selection controls, prefer a subtle selected surface and a thin accent border over a solid primary accent background.",
+        "Reserve solid teal fills for primary action buttons and the floating action button.",
+        "Selected and unselected segments share one height, icon size and weight.",
+        "Icons use Material Symbols Rounded at fill 0 and weight 400.",
+        "Count badges stay visually separate from the label.",
+        "Do not use drop shadows, thick borders, or different segment heights."
+      ]
+    },
+
     "interaction": {
       "primaryAction": "accent.primary",
       "selectedState": "accent.primary",
@@ -522,6 +571,7 @@
 
       "rules": [
         "Teal represents action, selection and success",
+        "For compact selection controls, prefer a subtle selected surface and a thin accent border over a solid primary accent background. Reserve solid teal fills for primary action buttons and the floating action button.",
         "Do not use teal simply as decoration",
         "Interactive elements must have clear pressed and disabled states",
         "Dangerous actions must use semantic danger color rather than teal"

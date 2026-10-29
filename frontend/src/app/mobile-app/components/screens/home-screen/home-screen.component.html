@@ -3,7 +3,7 @@
     <div class="top-panel-holder-left">
       <div class="page-header-text">
         <h1 class="page-title" data-test="home-title">Home</h1>
-        <p class="page-subtitle" data-test="home-item-count">{{ itemCountLabel }}</p>
+        <p class="page-subtitle" data-test="home-item-count">{{ itemCountLabel() }}</p>
       </div>
     </div>
     <div class="top-panel-holder-right">
@@ -77,7 +77,18 @@
     </div>
   }
 </div>
-<div class="main-panel-holder">
+<div class="content-mode-holder">
+  <ba-home-content-mode
+    [selected]="contentMode()"
+    [counts]="modeCounts()"
+    (modeChange)="selectContentMode($event)"
+  ></ba-home-content-mode>
+</div>
+<div
+  class="main-panel-holder"
+  (touchstart)="onContentTouchStart($event)"
+  (touchend)="onContentTouchEnd($event)"
+>
   @if (selectors.isLocalAuthenticated()) {
     <ba-home-sync-status></ba-home-sync-status>
   }

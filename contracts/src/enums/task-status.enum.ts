@@ -7,4 +7,5 @@ export enum ETaskStatus {
   Active = 'TASK_STATUS_ACTIVE',
   Done = 'TASK_STATUS_DONE',
   Cancel = 'TASK_STATUS_CANCEL',
+  Notes = 'TASK_STATUS_NOTES',
 }

@@ -11,6 +11,7 @@ import { ETaskStatus, ETaskType, Task, defaultTask } from 'src/app/shared/models
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
+import { HomeContentModeService } from 'src/app/mobile-app/components/screens/home-screen/home-content-mode.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 import { SyncAction } from 'src/app/shared/state/sync.action';
 import { TasksState } from 'src/app/shared/state/tasks.state';
@@ -48,6 +49,7 @@ describe('TaskScreenState', () => {
     });
 
     store = TestBed.inject(Store);
+    TestBed.inject(HomeContentModeService).select('active');
     store.reset({
       taskViewState: leftoverCreateState(),
       tasks: { entities: [existingWithPhoto] },
@@ -120,7 +122,8 @@ describe('TaskScreenState', () => {
 
     expect(created?.title).toBe('Task with details');
     expect(created?.description).toEqual(description);
-    expect(created?.status).toBe(ETaskStatus.Todo);
+    expect(created?.status).toBe(ETaskStatus.Active);
+    expect(TestBed.inject(HomeContentModeService).mode()).toBe('active');
   });
 
   it('attaches selected tag ids when creating a task', async () => {

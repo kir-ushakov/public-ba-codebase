@@ -189,6 +189,11 @@
   }
 }
 
+.content-mode-holder {
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
+  background-color: var(--color-background-app);
+}
+
 .main-panel-holder {
   background-color: var(--color-background-app);
   display: flex;

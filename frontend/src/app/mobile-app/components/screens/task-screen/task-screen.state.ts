@@ -13,6 +13,8 @@ import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
 import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-description.function';
+import { statusForHomeMode } from '../home-screen/helpers/home-content-mode.function';
+import { HomeContentModeService } from '../home-screen/home-content-mode.service';
 
 export enum ETaskViewMode {
   Create = 'TASK_VIEW_MODE_CREATE',
@@ -58,6 +60,7 @@ export class TaskScreenState {
   private readonly store = inject(Store);
   private readonly deviceCameraService = inject(DeviceCameraService);
   private readonly imageService = inject(ImageService);
+  private readonly homeContentMode = inject(HomeContentModeService);
 
   @Selector()
   static mode(state: ITaskScreenStateModel): ETaskViewMode {
@@ -90,9 +93,13 @@ export class TaskScreenState {
     { mode, taskId }: TaskScreenAction.Opened,
   ): void {
     ctx.dispatch(new VoiceInputAction.Reset());
+    const createStatus = statusForHomeMode(this.homeContentMode.mode());
     ctx.setState({
       ...defaults,
       mode,
+      ...(mode === ETaskViewMode.Create
+        ? { taskData: { ...defaults.taskData, status: createStatus } }
+        : {}),
     });
     if (taskId) {
       const actualTasks: Task[] = this.store.selectSnapshot(TasksState.actualTasks);
@@ -165,6 +172,7 @@ export class TaskScreenState {
     const finalTaskData = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: finalTaskData });
+    this.homeContentMode.showStatus(finalTaskData.status);
     ctx.dispatch(new TasksAction.CreateTask(finalTaskData, userId));
     ctx.dispatch(TaskScreenAction.Close);
   }
@@ -179,6 +187,7 @@ export class TaskScreenState {
     const changes = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: changes });
+    this.homeContentMode.showStatus(changes.status);
     ctx.dispatch(
       new TasksAction.UpdateTask({
         taskId: taskData.id,
@@ -387,6 +396,7 @@ export class TaskScreenState {
     if (taskId == null) {
       return;
     }
+    this.homeContentMode.showStatus(updatedTaskData.status ?? ctx.getState().taskData.status);
     ctx.dispatch([
       new TasksAction.UpdateTask({ taskId, changes: updatedTaskData }),
       TaskScreenAction.Close,

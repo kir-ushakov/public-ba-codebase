@@ -2,7 +2,7 @@
   "screen": {
     "id": "home",
     "name": "Home",
-    "version": "1.5.0",
+    "version": "1.6.0",
 
     "purpose": "Main overview screen displaying the user's recent content and providing quick access to primary application areas.",
 
@@ -16,6 +16,7 @@
       "type": "mobile",
       "structure": [
         "header",
+        "content-mode-switcher",
         "sync-status-banner",
         "content-grid",
         "floating-create-action",
@@ -41,7 +42,7 @@
 
         "subtitle": {
           "type": "item-count",
-          "pattern": "{count} items",
+          "pattern": "{count} active items",
           "typographyToken": "typography.styles.secondary"
         }
       },
@@ -66,7 +67,7 @@
           {
             "id": "more",
             "type": "icon-button",
-            "icon": "more-vertical",
+            "icon": "more_vert",
             "ariaLabel": "More options"
           }
         ]
@@ -310,7 +311,19 @@
       "Do not print TODO, TIMER, SCHEDULE or LOCATION as text on the card.",
       "Presence of an image does not change the leading icon.",
       "Current live type is TODO (ETaskType.Basic) using radio_button_unchecked. Do not use check or check_circle.",
-      "The card overflow menu is Edit, Duplicate, Add to tags and Delete. Duplicate and Add to tags are visible but disabled until those features exist."
+      "The card overflow menu is Edit, Duplicate, Add to tags and Delete. Duplicate and Add to tags are visible but disabled until those features exist.",
+      "Place the Active / To do / Notes segmented switcher immediately under the Home header and above the optional sync banner.",
+      "Active is the default selected mode. The selected segment uses the segmentedControl recipe: dark selected surface, thin teal outline and a teal icon. Inactive segments stay transparent inside the shared container.",
+      "Each segment shows an icon, a label and a count. Counts update from live data.",
+      "Switching modes filters the existing two-column masonry grid without changing bottom navigation.",
+      "A horizontal swipe on the content moves one mode. Active, To do and Notes stay in that order.",
+      "The header count names the selected mode: \"3 active items\", \"8 to do items\", \"12 notes\".",
+      "Counts reflect every item in that mode, including cards hidden by search.",
+      "Done and Cancel stay off Home. Home is the working set: Active, To do and Notes.",
+      "Active and To do are workflow-status filters, while Notes is a content category; do not confuse these with task type To do / Calendar / Location.",
+      "Task cards retain their task-type icons; Notes cards use Material Symbols Rounded article.",
+      "Use Google Material Symbols Rounded article for the Notes tab, with FILL 0, weight 400, optical size 24. Do not use notes, subject, menu, or a generic list icon. Render the exact Material Symbol, not a Lucide or custom SVG substitute.",
+      "The attached Home mockup is a visual reference for the segmented control, not a literal data contract: sample cards shown there do not override filtering rules."
     ],
 
     "states": {
@@ -319,17 +332,92 @@
       },
       "signedInNotSynced": {
         "referenceImage": "../references/home-signed-in-not-synced.jpg"
+      },
+      "activeSelected": {
+        "selectedMode": "active",
+        "referenceImage": "../references/home.jpg",
+        "description": "Default state: Active tab highlighted in teal, counts displayed on all three segments; masonry shows only Active tasks."
+      },
+      "todoSelected": {
+        "selectedMode": "todo",
+        "description": "To do tab highlighted in teal; grid displays To do tasks."
+      },
+      "notesSelected": {
+        "selectedMode": "notes",
+        "description": "Notes tab highlighted in teal; grid displays Notes cards."
       }
     },
 
     "reference": {
       "status": "approved",
-      "image": "../references/home.png",
-      "description": "Dark two-column masonry Home screen with media-dominant cards, task-type leading icons, compact metadata, teal primary actions and persistent bottom navigation."
+      "image": "../references/home.jpg",
+      "description": "Home with Active / To do / Notes segmented filter (Active selected by default), sync banner, two-column masonry, FAB and Home/Tasks/Tags bottom navigation."
+    },
+
+    "contentModeSwitcher": {
+      "id": "home-content-mode",
+      "component": "segmented-control",
+      "placement": "below-header-above-sync-status-banner",
+      "selection": "single",
+      "defaultValue": "active",
+      "options": [
+        {
+          "id": "active",
+          "label": "Active",
+          "icon": "play_arrow",
+          "countSource": "home.counts.active"
+        },
+        {
+          "id": "todo",
+          "label": "To do",
+          "icon": "radio_button_unchecked",
+          "countSource": "home.counts.todo"
+        },
+        {
+          "id": "notes",
+          "label": "Notes",
+          "icon": "article",
+          "countSource": "home.counts.notes"
+        }
+      ],
+      "behavior": {
+        "switchAction": "set-home-content-mode",
+        "updates": [
+          "content-grid",
+          "header.item-count"
+        ],
+        "preserveSelectionWhileOnHome": true,
+        "countSemantics": "Counts reflect all items in each mode, not only visible grid cards."
+      },
+      "visual": {
+        "componentRecipe": "segmentedControl",
+        "layout": "single shared container",
+        "segments": "three equal-width adjacent segments",
+        "selectedTreatment": "subtle dark teal background with thin teal outline",
+        "unselectedTreatment": "transparent background, muted text and icons",
+        "countBadge": "small separate rounded badge",
+        "icons": {
+          "family": "Material Symbols Rounded",
+          "fill": 0,
+          "weight": 400,
+          "names": [
+            "play_arrow",
+            "radio_button_unchecked",
+            "article"
+          ]
+        },
+        "prohibited": [
+          "solid bright teal selected background",
+          "independent floating buttons",
+          "thick borders",
+          "drop shadows",
+          "different segment heights"
+        ]
+      }
     },
 
     "angular": {
-      "note": "The live Home screen does not yet match this spec. Treat this JSON as the approved target, not a description of the current implementation. Bottom-nav destinations /tasks and /tags are product destinations from the approved design; they are not a claim that those Angular routes already exist.",
+      "note": "The live Home screen does not yet match this spec. Treat this JSON as the approved target, not a description of the current implementation. Bottom-nav destinations /tasks and /tags are product destinations from the approved design; they are not a claim that those Angular routes already exist. The Active / To do / Notes switcher filters ETaskStatus.Active, ETaskStatus.Todo and ETaskStatus.Notes. Done and Cancel stay off Home.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/home-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/common/task-tiles-panel/",
