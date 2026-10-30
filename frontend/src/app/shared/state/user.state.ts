@@ -11,8 +11,10 @@ import { SlackService } from '../services/integrations/slack.service';
 import { LoginScreenAction } from 'src/app/mobile-app/components/screens/login-screen/login-screen.actions';
 import { SyncScreenAction } from 'src/app/mobile-app/components/screens/sync-screen/sync-screen.actions';
 import { SlackAPIAction } from '../services/integrations/slack.api.actions';
-import { EMPTY, catchError, finalize, tap } from 'rxjs';
+import { EMPTY, catchError, finalize, firstValueFrom, tap } from 'rxjs';
 import { UserAction } from './user.actions';
+import { LocalSessionService } from '../services/infrastructure/local-session.service';
+import { SyncAction } from './sync.action';
 
 interface IUserIntegrations {
   isAddedToSlack: boolean | undefined;
@@ -50,6 +52,7 @@ export class UserState {
   constructor(
     private _authService: AuthService,
     private _slackService: SlackService,
+    private readonly localSession: LocalSessionService,
   ) {}
 
   @Selector()
@@ -106,10 +109,10 @@ export class UserState {
 
   @Action(UserAction.UserLoggedInWithPassword)
   @Action(UserAction.UserAuthenticatedWithGoogle)
-  loggedIn(
+  async loggedIn(
     ctx: StateContext<IUserStateModel>,
     action: UserAction.UserLoggedInWithPassword | UserAction.UserAuthenticatedWithGoogle,
-  ): void {
+  ): Promise<void> {
     const { userData } = action;
 
     ctx.patchState({
@@ -120,6 +123,15 @@ export class UserState {
           ? EUserAuthType.Google
           : EUserAuthType.Password,
     });
+
+    try {
+      const snapshot = await this.localSession.openAndLoad(userData.userId);
+      await firstValueFrom(ctx.dispatch(new SyncAction.LocalDataHydrated(snapshot)));
+    } catch {
+      ctx.dispatch(
+        new AppAction.ShowErrorInUI('Could not open saved tasks on this device.', 'Not saved'),
+      );
+    }
 
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
@@ -137,8 +149,7 @@ export class UserState {
       )
       .subscribe(() => {
         ctx.setState(patch({ userData: null }));
-        ctx.dispatch(UserAction.LoggedOut);
-        ctx.dispatch(AppAction.NavigateToLoginScreen);
+        void this.releaseDevice(ctx);
       });
   }
 
@@ -223,5 +234,11 @@ export class UserState {
         }),
       )
       .subscribe();
+  }
+
+  private async releaseDevice(ctx: StateContext<IUserStateModel>): Promise<void> {
+    await firstValueFrom(ctx.dispatch(UserAction.LoggedOut));
+    await this.localSession.close();
+    ctx.dispatch(AppAction.NavigateToLoginScreen);
   }
 }

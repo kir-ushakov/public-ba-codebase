@@ -12,6 +12,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Store, createSelectMap } from '@ngxs/store';
 import { AppAction } from 'src/app/shared/state/app.actions';
+import { AppState } from 'src/app/shared/state/app.state';
 import { TagsState } from 'src/app/shared/state/tags.state';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
@@ -52,6 +53,7 @@ export class HomeScreenComponent implements OnInit {
     tags: TagsState.forCurrentUser,
     isLoggedIn: UserState.isLoggedIn,
     isLocalAuthenticated: UserState.isLocalAuthenticated,
+    uiError: AppState.uiError,
     userFullName: UserState.userFullName,
     userEmail: UserState.userEmail,
   });

@@ -34,6 +34,13 @@ export namespace AppAction {
   export class ShowErrorInUI {
     static readonly type = '[App] Show Error In UI';
 
-    constructor(public message: string) {}
+    constructor(
+      public message: string,
+      public title?: string,
+    ) {}
+  }
+
+  export class ClearErrorInUI {
+    static readonly type = '[App] Clear Error In UI';
   }
 }

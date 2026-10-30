@@ -39,8 +39,10 @@ Several `@Action(...)` decorators may be stacked on one handler when actions sha
 
 ## Persistence
 
-`main.ts` configures `withNgxsStoragePlugin({ keys: '*' })`, so **every** slice is persisted on the device and the app is offline-first. Therefore:
+`main.ts` configures `withNgxsStoragePlugin({ keys: ['user'] })`. Only the user slice is written to
+`localStorage`. Tasks, tags and the sync outbox are stored in IndexedDB by `LocalStore`, one
+database per account (`ba-<userId>`). Screen and feature slices are not persisted.
 
-- Keep state serializable: no `Blob`, `File`, DOM nodes, RxJS subjects, functions or class instances with behaviour.
+- Keep persisted state serializable: no `Blob`, `File`, DOM nodes, RxJS subjects, functions or class instances with behaviour. Image blobs belong in IndexedDB, not in NGXS.
 - Never put passwords or access tokens into state.
-- Adding, renaming or removing a field changes the shape of state already stored on users' devices. Write defaults and selectors that tolerate previously persisted data instead of assuming the new shape.
+- Adding, renaming or removing a field on `user` changes state already stored on the device. Write defaults and selectors that tolerate previously persisted data.

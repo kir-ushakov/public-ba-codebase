@@ -89,6 +89,14 @@
   (touchstart)="onContentTouchStart($event)"
   (touchend)="onContentTouchEnd($event)"
 >
+  @if (selectors.uiError(); as error) {
+    <ba-home-sync-status
+      [title]="error.title"
+      [body]="error.body"
+      [showAction]="false"
+      testId="home-persistence-error"
+    ></ba-home-sync-status>
+  }
   @if (selectors.isLocalAuthenticated()) {
     <ba-home-sync-status></ba-home-sync-status>
   }

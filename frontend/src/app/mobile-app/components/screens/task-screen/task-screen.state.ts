@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import type { StateContext } from '@ngxs/store';
 import { State, Action, Selector, Store } from '@ngxs/store';
+import { firstValueFrom } from 'rxjs';
 import type { DefaultTask, Task } from 'src/app/shared/models/task.model';
 import { ETaskStatus, ETaskType, defaultTask } from 'src/app/shared/models/task.model';
 import { TaskScreenAction } from './task-screen.actions';
@@ -114,10 +115,10 @@ export class TaskScreenState {
   }
 
   @Action(TaskScreenAction.TagIdsChanged)
-  tagIdsChanged(
+  async tagIdsChanged(
     ctx: StateContext<ITaskScreenStateModel>,
     { tagIds }: TaskScreenAction.TagIdsChanged,
-  ): void {
+  ): Promise<void> {
     const state = ctx.getState();
     ctx.patchState({
       taskData: {
@@ -129,11 +130,13 @@ export class TaskScreenState {
       return;
     }
 
-    ctx.dispatch(
-      new TasksAction.UpdateTask({
-        taskId: state.taskData.id,
-        changes: { tagIds },
-      }),
+    await firstValueFrom(
+      ctx.dispatch(
+        new TasksAction.UpdateTask({
+          taskId: state.taskData.id,
+          changes: { tagIds },
+        }),
+      ),
     );
   }
 
@@ -173,7 +176,7 @@ export class TaskScreenState {
 
     ctx.patchState({ taskData: finalTaskData });
     this.homeContentMode.showStatus(finalTaskData.status);
-    ctx.dispatch(new TasksAction.CreateTask(finalTaskData, userId));
+    await firstValueFrom(ctx.dispatch(new TasksAction.CreateTask(finalTaskData, userId)));
     ctx.dispatch(TaskScreenAction.Close);
   }
 
@@ -188,11 +191,13 @@ export class TaskScreenState {
 
     ctx.patchState({ taskData: changes });
     this.homeContentMode.showStatus(changes.status);
-    ctx.dispatch(
-      new TasksAction.UpdateTask({
-        taskId: taskData.id,
-        changes,
-      }),
+    await firstValueFrom(
+      ctx.dispatch(
+        new TasksAction.UpdateTask({
+          taskId: taskData.id,
+          changes,
+        }),
+      ),
     );
     ctx.dispatch(TaskScreenAction.Close);
   }
@@ -218,24 +223,24 @@ export class TaskScreenState {
   }
 
   @Action(TaskScreenAction.CompleteTaskOptionSelected)
-  completeTask(ctx: StateContext<ITaskScreenStateModel>): void {
+  async completeTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
     const taskUpdateData: Partial<Task> = { status: ETaskStatus.Done };
-    this.updateAndClose(ctx, taskUpdateData);
+    await this.updateAndClose(ctx, taskUpdateData);
   }
 
   @Action(TaskScreenAction.CancelTaskOptionSelected)
-  cancelTask(ctx: StateContext<ITaskScreenStateModel>): void {
+  async cancelTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
     const taskUpdateData: Partial<Task> = { status: ETaskStatus.Cancel };
-    this.updateAndClose(ctx, taskUpdateData);
+    await this.updateAndClose(ctx, taskUpdateData);
   }
 
   @Action(TaskScreenAction.DeleteTaskOptionSelected)
-  deleteTask(ctx: StateContext<ITaskScreenStateModel>): void {
+  async deleteTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
     const taskId = ctx.getState().taskData.id;
     if (taskId == null) {
       return;
     }
-    ctx.dispatch(new TasksAction.DeleteTask(taskId));
+    await firstValueFrom(ctx.dispatch(new TasksAction.DeleteTask(taskId)));
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
 
@@ -251,16 +256,16 @@ export class TaskScreenState {
   }
 
   @Action(TaskScreenAction.MarkActiveButtonPressed)
-  markActive(ctx: StateContext<ITaskScreenStateModel>): void {
+  async markActive(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
     if (ctx.getState().taskData.type !== ETaskType.Basic) {
       return;
     }
-    this.updateAndClose(ctx, { status: ETaskStatus.Active });
+    await this.updateAndClose(ctx, { status: ETaskStatus.Active });
   }
 
   @Action(TaskScreenAction.MarkDoneButtonPressed)
-  markDone(ctx: StateContext<ITaskScreenStateModel>): void {
-    this.updateAndClose(ctx, { status: ETaskStatus.Done });
+  async markDone(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
+    await this.updateAndClose(ctx, { status: ETaskStatus.Done });
   }
 
   @Action(TaskScreenAction.AddPictureBtnPressed)
@@ -348,11 +353,13 @@ export class TaskScreenState {
       draftImages: draftsFromTask(changes),
       coverDraftKey: undefined,
     });
-    ctx.dispatch(
-      new TasksAction.UpdateTask({
-        taskId: state.taskData.id,
-        changes,
-      }),
+    await firstValueFrom(
+      ctx.dispatch(
+        new TasksAction.UpdateTask({
+          taskId: state.taskData.id,
+          changes,
+        }),
+      ),
     );
   }
 
@@ -388,19 +395,21 @@ export class TaskScreenState {
     return { imageId, images };
   }
 
-  private updateAndClose(
+  private async updateAndClose(
     ctx: StateContext<ITaskScreenStateModel>,
     updatedTaskData: Partial<Task>,
-  ): void {
+  ): Promise<void> {
     const taskId = ctx.getState().taskData.id;
     if (taskId == null) {
       return;
     }
     this.homeContentMode.showStatus(updatedTaskData.status ?? ctx.getState().taskData.status);
-    ctx.dispatch([
-      new TasksAction.UpdateTask({ taskId, changes: updatedTaskData }),
-      TaskScreenAction.Close,
-    ]);
+    await firstValueFrom(
+      ctx.dispatch([
+        new TasksAction.UpdateTask({ taskId, changes: updatedTaskData }),
+        TaskScreenAction.Close,
+      ]),
+    );
   }
 }
 
