@@ -10,13 +10,9 @@ import { LoginResponseDTO } from '../login/login.dto.js';
 import { UserRepo } from '../../../../shared/repo/user.repo.js';
 import { User } from '../../../../shared/domain/models/user.js';
 import { UserEmail } from '../../../../shared/domain/values/user/user-email.js';
-import { GoogleAuthTokens } from '../../../../shared/domain/values/user/google-auth-tokens.js';
 import { UserDocument } from '../../../../shared/infra/database/mongodb/user.model.js';
 import { LoginService } from '../../services/login.service.js';
-import {
-  GoogleOAuthTokenPayload,
-  GoogleProfileWithTokens,
-} from '../../../../shared/infra/auth/google.strategy.js';
+import { GoogleProfileWithTokens } from '../../../../shared/infra/auth/google.strategy.js';
 
 export type GoogleAuthRequest = {
   context: { req: Request; res: Response; next: NextFunction };
@@ -46,10 +42,7 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
         if (err) return resolve(GoogleAuthErrors.AuthorizationFailed());
         if (!res) return resolve(GoogleAuthErrors.AuthorizationFailed());
 
-        const profile = res.profile;
-        const tokens = res.tokens;
-
-        const userOrError = await this.findOrCreateUser(profile, tokens);
+        const userOrError = await this.findOrCreateUser(res.profile);
         if (userOrError.isFailure) {
           return resolve(userOrError as Result<never, UseCaseError<EGoogleAuthUseCaseError>>);
         }
@@ -81,30 +74,14 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
     });
   }
 
+  /** Sign-in needs only the profile: Google tokens are not stored while no Google API is called. */
   private async findOrCreateUser(
     profile: Profile,
-    tokenPayload: GoogleOAuthTokenPayload,
   ): Promise<Result<User | never, UseCaseError<EGoogleAuthUseCaseError>>> {
     let user: User | null;
     user = await this.userRepo.getUserByGoogleId(profile.id);
 
-    const tokensOrError = GoogleAuthTokens.create({
-      accessToken: tokenPayload.accessToken ?? '',
-      refreshToken: tokenPayload.refreshToken,
-    });
-    const tokens = tokensOrError.isSuccess ? tokensOrError.getValue() : null;
-
     if (user) {
-      if (tokens?.refreshToken) {
-        user.setGoogleTokens(tokens);
-        await this.userRepo.save(user);
-      }
-
-      // If we have no refresh token in DB and Google didn't return one in this callback,
-      // we need to force consent again.
-      if (!tokenPayload.refreshToken && !user.googleRefreshToken) {
-        return GoogleAuthErrors.RefreshTokenNotReceived();
-      }
       return Result.ok(user);
     }
 
@@ -125,15 +102,9 @@ export class GoogleAuthUsecase implements UseCase<GoogleAuthRequest, Promise<Goo
 
     const email: UserEmail = UserEmail.create(emailRaw).getValue();
 
-    if (!tokens?.refreshToken) {
-      return GoogleAuthErrors.RefreshTokenNotReceived();
-    }
-
     const userModel: User = User.create({
       username: email,
       googleId: profile.id,
-      googleAccessToken: tokens.accessToken,
-      googleRefreshToken: tokens.refreshToken,
       firstName: profile._json.given_name ?? '',
       lastName: profile._json.family_name ?? '',
       verified: true,

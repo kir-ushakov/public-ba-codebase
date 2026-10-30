@@ -16,26 +16,9 @@ export class GetOAuthConsentScreenController extends BaseController {
       return Promise.resolve();
     }
     try {
-      const forceConsentParam = req.query.forceConsent;
-      const forceConsentFirst = Array.isArray(forceConsentParam)
-        ? forceConsentParam[0]
-        : forceConsentParam;
-      const forceConsentString =
-        typeof forceConsentFirst === 'string' ? forceConsentFirst : undefined;
-
-      const forceConsent = forceConsentString === '1' || forceConsentString === 'true';
-
-      const authOptions: Record<string, unknown> = {
-        scope: ['profile', 'email', 'https://www.googleapis.com/auth/drive.appdata'],
-        accessType: 'offline',
-      };
-
-      if (forceConsent) {
-        authOptions.prompt = 'consent';
-      }
-
+      // Sign-in only. Google Drive access, when needed again, gets its own incremental consent.
       this._passport.authenticate('google', {
-        ...authOptions,
+        scope: ['profile', 'email'],
         session: false,
       })(req, res, next);
     } catch (err) {

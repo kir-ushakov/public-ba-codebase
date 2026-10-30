@@ -7,7 +7,6 @@ import { ETaskStatus, Task } from 'src/app/shared/models/task.model';
 import { ContextMenuComponent } from 'src/app/shared/components/ui-elements/context-menu/context-menu.component';
 import type { ContextMenuItem } from 'src/app/shared/components/ui-elements/context-menu/context-menu-item.type';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
-import { ImageService } from 'src/app/shared/services/application/image.service';
 import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
 import { formatTaskTileDate } from './helpers/format-task-tile-date.function';
 import { taskTypeIcon } from './helpers/task-type-icon.function';
@@ -67,7 +66,6 @@ export class TaskTileComponent {
 
   constructor(
     private store: Store,
-    private imageService: ImageService,
     private host: ElementRef<HTMLElement>,
     private router: Router,
   ) {}
@@ -107,17 +105,8 @@ export class TaskTileComponent {
     }
   }
 
-  onImageError(event: Event): void {
+  onImageError(): void {
     this.isLoading.set(false);
-    if (!this.isRemoteImageEvent(event) || !this.task.imageId) {
-      return;
-    }
-    this.imageService.probeRemoteImage(this.task.imageId);
-  }
-
-  private isRemoteImageEvent(event: Event): boolean {
-    const image = event.target;
-    return image instanceof HTMLImageElement && !image.src.startsWith('blob:');
   }
 
   private calculateImageWidth(): void {

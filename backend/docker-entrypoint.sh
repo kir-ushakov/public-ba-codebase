@@ -4,6 +4,6 @@ set -e
 # Path comes from compose (`FILES_UPLOAD_PATH`); both the dev image (/app/backend) and
 # Dockerfile.prod (/usr/src/app) mount the volume at that env path, not at WORKDIR.
 upload_root="${FILES_UPLOAD_PATH:-/app/backend/files}"
-mkdir -p "$upload_root/tmp" "$upload_root/uploads"
+mkdir -p "$upload_root/tmp" "$upload_root/uploads" "$upload_root/images"
 chown -R node:node "$upload_root"
 exec gosu node "$@"

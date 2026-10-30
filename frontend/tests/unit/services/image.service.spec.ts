@@ -1,6 +1,5 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { throwError } from 'rxjs';
 import { ImageUploaderService } from 'src/app/shared/services/api/image-uploader.service';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { UuidGeneratorService } from 'src/app/shared/services/adapters/uuid-generator.service';
@@ -15,7 +14,6 @@ describe('ImageService', () => {
     deleteImage: jest.Mock;
   };
   let imageUploaderService: { uploadImageBlob: jest.Mock };
-  let http: { get: jest.Mock };
   let service: ImageService;
 
   beforeEach(() => {
@@ -25,7 +23,6 @@ describe('ImageService', () => {
       deleteImage: jest.fn(),
     };
     imageUploaderService = { uploadImageBlob: jest.fn() };
-    http = { get: jest.fn(() => throwError(() => new HttpErrorResponse({ status: 403 }))) };
 
     TestBed.configureTestingModule({
       providers: [
@@ -35,7 +32,6 @@ describe('ImageService', () => {
         { provide: ImageOptimizerService, useValue: {} },
         { provide: FetchService, useValue: {} },
         { provide: UuidGeneratorService, useValue: {} },
-        { provide: HttpClient, useValue: http },
       ],
     });
     service = TestBed.inject(ImageService);
@@ -114,13 +110,5 @@ describe('ImageService', () => {
     resolveUpload({ imageId: 'img-1' });
     await expect(Promise.all([first, second])).resolves.toEqual(['uploaded', 'uploaded']);
     expect(imageUploaderService.uploadImageBlob).toHaveBeenCalledTimes(1);
-  });
-
-  it('probes the files API only once when several thumbnails fail', () => {
-    service.probeRemoteImage('img-1');
-    service.probeRemoteImage('img-2');
-
-    expect(http.get).toHaveBeenCalledTimes(1);
-    expect(http.get).toHaveBeenCalledWith('/api/files/image/img-1', { responseType: 'blob' });
   });
 });

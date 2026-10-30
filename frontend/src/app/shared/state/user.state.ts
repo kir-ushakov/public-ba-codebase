@@ -8,7 +8,6 @@ import { User } from '../models/user.model';
 import { AuthService } from '../services/api/auth.service';
 import { AppAction } from './app.actions';
 import { SlackService } from '../services/integrations/slack.service';
-import { GoogleOAuthConsentService } from '../services/integrations/google-oauth-consent.service';
 import { LoginScreenAction } from 'src/app/mobile-app/components/screens/login-screen/login-screen.actions';
 import { SyncScreenAction } from 'src/app/mobile-app/components/screens/sync-screen/sync-screen.actions';
 import { SlackAPIAction } from '../services/integrations/slack.api.actions';
@@ -17,7 +16,6 @@ import { UserAction } from './user.actions';
 
 interface IUserIntegrations {
   isAddedToSlack: boolean | undefined;
-  googleNeedsReconsent?: boolean;
 }
 export interface IUserStateModel {
   userData: User | null;
@@ -44,7 +42,6 @@ export enum EUserAuthType {
     authType: undefined,
     integrations: {
       isAddedToSlack: undefined,
-      googleNeedsReconsent: false,
     },
   },
 })
@@ -53,7 +50,6 @@ export class UserState {
   constructor(
     private _authService: AuthService,
     private _slackService: SlackService,
-    private readonly googleOAuthConsentService: GoogleOAuthConsentService,
   ) {}
 
   @Selector()
@@ -100,11 +96,6 @@ export class UserState {
     return state.authType;
   }
 
-  @Selector()
-  static needsGoogleReconsent(state: IUserStateModel): boolean {
-    return state.integrations?.googleNeedsReconsent === true;
-  }
-
   @Action(LoginScreenAction.LoginUser)
   async login(
     ctx: StateContext<IUserStateModel>,
@@ -128,18 +119,7 @@ export class UserState {
         action instanceof UserAction.UserAuthenticatedWithGoogle
           ? EUserAuthType.Google
           : EUserAuthType.Password,
-      integrations: {
-        ...ctx.getState().integrations,
-        googleNeedsReconsent:
-          action instanceof UserAction.UserAuthenticatedWithGoogle
-            ? false
-            : ctx.getState().integrations?.googleNeedsReconsent,
-      },
     });
-
-    if (action instanceof UserAction.UserAuthenticatedWithGoogle) {
-      this.googleOAuthConsentService.clearForceConsentAttempt();
-    }
 
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
@@ -167,20 +147,6 @@ export class UserState {
     if (UserState.isLoggedIn(ctx.getState())) {
       ctx.patchState({ authState: EUserAuthState.LocalAuthenticated });
     }
-  }
-
-  @Action(AppAction.GoogleRefreshTokenInvalid)
-  googleRefreshTokenInvalid(ctx: StateContext<IUserStateModel>): void {
-    if (!ctx.getState().integrations?.googleNeedsReconsent) {
-      ctx.patchState({
-        integrations: {
-          ...ctx.getState().integrations,
-          googleNeedsReconsent: true,
-        },
-      });
-      ctx.dispatch(new AppAction.ShowErrorInUI('Google access expired. Please reconnect Google.'));
-    }
-    this.requestNewGoogleConsent();
   }
 
   @Action(SyncScreenAction.Relogin)
@@ -257,9 +223,5 @@ export class UserState {
         }),
       )
       .subscribe();
-  }
-
-  private requestNewGoogleConsent(): void {
-    this.googleOAuthConsentService.openForceConsentScreen();
   }
 }

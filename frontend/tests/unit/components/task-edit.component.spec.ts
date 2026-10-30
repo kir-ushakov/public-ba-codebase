@@ -10,7 +10,6 @@ import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.s
 import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
-import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { AppState } from 'src/app/shared/state/app.state';
 import { TagsState } from 'src/app/shared/state/tags.state';
 import { UserState } from 'src/app/shared/state/user.state';
@@ -30,7 +29,6 @@ describe('TaskEditComponent title field', () => {
         { provide: DialogService, useValue: {} },
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
-        { provide: GoogleOAuthConsentService, useValue: {} },
       ],
     }).compileComponents();
 

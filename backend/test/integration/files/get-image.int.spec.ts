@@ -1,27 +1,27 @@
 import { EGetImageUseCaseError, ImageConst } from '@brainassistant/contracts';
 import path from 'path';
-import { createReadStream } from 'fs';
-import { Readable } from 'stream';
+import { promises as fsp } from 'fs';
 import { Application } from 'express';
 import request from 'supertest';
 import sharp from 'sharp';
-import { googleDriveService } from '../../../src/modules/integrations/google/services/index.js';
-import { EGoogleDriveServiceError } from '../../../src/modules/integrations/google/services/google-drive-service.error.js';
 import { EImageRepoServiceError } from '../../../src/shared/repo/image-repo.service.js';
-import { Result } from '../../../src/shared/core/result.js';
-import { ServiceError } from '../../../src/shared/core/service-error.js';
-import { ServiceErrorLevel } from '../../../src/shared/core/service-error-level.enum.js';
+import { models } from '../../../src/shared/infra/database/mongodb/index.js';
+import { IMAGE_CACHE_CONTROL } from '../../../src/modules/files/config.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
 
+function imagesRoot(): string {
+  const root = process.env.FILES_UPLOAD_PATH;
+  if (!root) {
+    throw new Error('FILES_UPLOAD_PATH is not set');
+  }
+  return path.join(root, 'images');
+}
+
 describe('Integration: GetImage (Controller -> UseCase -> Repo -> MongoDB)', () => {
   let app: Application;
   const TEST_IMAGE_PATH = path.join(process.cwd(), 'test/integration/_fixtures/test-img.jpg');
-  const drive = googleDriveService as unknown as {
-    uploadFile: jest.Mock;
-    getImageById: jest.Mock;
-  };
 
   beforeAll(async () => {
     await startInMemoryMongo();
@@ -34,18 +34,7 @@ describe('Integration: GetImage (Controller -> UseCase -> Repo -> MongoDB)', () 
 
   beforeEach(async () => {
     await clearDatabase();
-    jest.clearAllMocks();
-    drive.uploadFile.mockResolvedValue(Result.ok('google-drive-file-id'));
-    drive.getImageById.mockImplementation(async () =>
-      Result.ok({
-        // eslint-disable-next-line security/detect-non-literal-fs-filename -- fixed test fixture path
-        data: createReadStream(TEST_IMAGE_PATH),
-        headers: { 'content-type': 'image/jpeg' },
-        status: 200,
-        statusText: 'OK',
-        config: {},
-      }),
-    );
+    await fsp.rm(imagesRoot(), { recursive: true, force: true });
   });
 
   it('returns 401 without auth cookie', async () => {
@@ -62,34 +51,68 @@ describe('Integration: GetImage (Controller -> UseCase -> Repo -> MongoDB)', () 
     expect(res.status).toBe(404);
     expect(res.body.name).toBe(EImageRepoServiceError.UserImageNotFound);
     expect(res.body).toHaveProperty('message');
-    expect(drive.getImageById).not.toHaveBeenCalled();
   });
 
-  it('streams the image from Drive after a successful upload', async () => {
+  it('does not serve another user their neighbour image', async () => {
+    const owner = await seedTestUser({ email: 'owner@example.com' });
+    const stranger = await seedTestUser({ email: 'stranger@example.com' });
+    const imageId = 'image-private';
+    await uploadFixture(app, owner.jwtCookie, imageId, TEST_IMAGE_PATH);
+
+    const res = await authenticatedRequest(app, stranger.jwtCookie).get(
+      `/api/files/image/${imageId}`,
+    );
+
+    expect(res.status).toBe(404);
+    expect(res.body.name).toBe(EImageRepoServiceError.UserImageNotFound);
+  });
+
+  it('streams the stored image with cache headers after a successful upload', async () => {
     const { jwtCookie } = await seedTestUser();
     const imageId = 'image-get-1';
-    await uploadFixture(app, jwtCookie, imageId);
+    await uploadFixture(app, jwtCookie, imageId, TEST_IMAGE_PATH);
 
     const res = await getImageBuffer(app, jwtCookie, imageId);
 
     expect(res.status).toBe(200);
-    expect(res.headers['content-type']).toMatch(/image\/jpeg/);
-    expect(drive.getImageById).toHaveBeenCalledTimes(1);
+    expect(res.headers['content-type']).toBe('image/webp');
+    expect(res.headers['cache-control']).toBe(IMAGE_CACHE_CONTROL);
+    expect(res.headers.etag).toBeTruthy();
+    expect(Number(res.headers['content-length'])).toBe((res.body as Buffer).length);
     const meta = await sharp(res.body).metadata();
-    expect(meta.format).toBe('jpeg');
+    expect(meta.format).toBe('webp');
     expect(meta.width).toBeGreaterThan(0);
+  });
+
+  it('answers 304 when the client already has the same version', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const imageId = 'image-get-etag';
+    await uploadFixture(app, jwtCookie, imageId, TEST_IMAGE_PATH);
+    const first = await getImageBuffer(app, jwtCookie, imageId);
+    const etag = first.headers.etag;
+    if (typeof etag !== 'string') {
+      throw new Error('expected an ETag header');
+    }
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .get(`/api/files/image/${imageId}`)
+      .set('If-None-Match', etag);
+
+    expect(res.status).toBe(304);
+    expect(res.headers.etag).toBe(etag);
   });
 
   it('resizes the image when width is requested', async () => {
     const { jwtCookie } = await seedTestUser();
     const imageId = 'image-get-resize';
-    await uploadFixture(app, jwtCookie, imageId);
+    await uploadFixture(app, jwtCookie, imageId, TEST_IMAGE_PATH);
 
     const original = await sharp(TEST_IMAGE_PATH).metadata();
     const requestedWidth = 40;
     const res = await getImageBuffer(app, jwtCookie, imageId, requestedWidth);
 
     expect(res.status).toBe(200);
+    expect(res.headers['content-length']).toBeUndefined();
     const meta = await sharp(res.body).metadata();
     expect(meta.width).toBe(requestedWidth);
     expect(original.width).toBeGreaterThan(requestedWidth);
@@ -98,8 +121,6 @@ describe('Integration: GetImage (Controller -> UseCase -> Repo -> MongoDB)', () 
   it('clamps a requested width to the store long edge', async () => {
     const { jwtCookie } = await seedTestUser();
     const imageId = 'image-get-width-cap';
-    await uploadFixture(app, jwtCookie, imageId);
-
     const wide = await sharp({
       create: {
         width: 2400,
@@ -110,16 +131,7 @@ describe('Integration: GetImage (Controller -> UseCase -> Repo -> MongoDB)', () 
     })
       .jpeg()
       .toBuffer();
-
-    drive.getImageById.mockResolvedValue(
-      Result.ok({
-        data: Readable.from(wide),
-        headers: { 'content-type': 'image/jpeg' },
-        status: 200,
-        statusText: 'OK',
-        config: {},
-      }),
-    );
+    await uploadFixture(app, jwtCookie, imageId, wide);
 
     const res = await getImageBuffer(app, jwtCookie, imageId, 4000);
 
@@ -129,36 +141,51 @@ describe('Integration: GetImage (Controller -> UseCase -> Repo -> MongoDB)', () 
     expect(meta.height).toBe(800);
   });
 
-  it('returns 403 when Google rejects the refresh token', async () => {
+  it('returns 404 when the document exists but the file is gone', async () => {
     const { jwtCookie } = await seedTestUser();
-    const imageId = 'image-get-invalid-grant';
-    await uploadFixture(app, jwtCookie, imageId);
-
-    drive.getImageById.mockResolvedValue(
-      Result.fail(
-        new ServiceError(
-          'Google refresh token is invalid or revoked',
-          EGoogleDriveServiceError.InvalidGrant,
-          undefined,
-          ServiceErrorLevel.Medium,
-        ),
-      ),
-    );
+    const imageId = 'image-file-lost';
+    await uploadFixture(app, jwtCookie, imageId, TEST_IMAGE_PATH);
+    const document = await models.ImageModel.findOne({ imageId }).lean();
+    if (!document) {
+      throw new Error('expected persisted image');
+    }
+    await fsp.rm(path.join(imagesRoot(), document.fileId));
 
     const res = await authenticatedRequest(app, jwtCookie).get(`/api/files/image/${imageId}`);
 
-    expect(res.status).toBe(403);
-    expect(res.body.name).toBe(EGetImageUseCaseError.GoogleRefreshTokenInvalid);
+    expect(res.status).toBe(404);
+    expect(res.body.name).toBe(EGetImageUseCaseError.ImageFileMissing);
     expect(res.body).toHaveProperty('message');
+  });
+
+  it('refuses a persisted fileId that points outside the storage root', async () => {
+    const { userId, jwtCookie } = await seedTestUser();
+    const imageId = 'image-bad-file-id';
+    await models.ImageModel.create({
+      imageId,
+      userId,
+      storageType: 'local',
+      fileId: '../../outside.webp',
+      mimeType: 'image/webp',
+    });
+
+    const res = await authenticatedRequest(app, jwtCookie).get(`/api/files/image/${imageId}`);
+
+    expect(res.status).toBe(500);
+    expect(res.body.name).toBe(EGetImageUseCaseError.ImageReadFailed);
   });
 });
 
-async function uploadFixture(app: Application, jwtCookie: string, imageId: string): Promise<void> {
-  const TEST_IMAGE_PATH = path.join(process.cwd(), 'test/integration/_fixtures/test-img.jpg');
+async function uploadFixture(
+  app: Application,
+  jwtCookie: string,
+  imageId: string,
+  file: string | Buffer,
+): Promise<void> {
   const res = await authenticatedRequest(app, jwtCookie)
     .post('/api/files/image')
     .field('imageId', imageId)
-    .attach('file', TEST_IMAGE_PATH);
+    .attach('file', file, { filename: 'fixture.jpg', contentType: 'image/jpeg' });
 
   if (res.status !== 200) {
     throw new Error(`Upload fixture failed: ${res.status} ${JSON.stringify(res.body)}`);
