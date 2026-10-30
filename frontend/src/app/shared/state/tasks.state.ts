@@ -3,7 +3,10 @@ import { Injectable } from '@angular/core';
 import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
 import { patch, append, updateItem, iif, insertItem, removeItem } from '@ngxs/store/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { Task, ETaskStatus, ETaskType, Change, TaskChanges } from 'src/app/shared/models/';
+import { Change, Task, ETaskStatus, ETaskType, TaskChanges } from 'src/app/shared/models/';
+import { OutboxEntry } from '../models/outbox-entry.type';
+import { LocalStore } from '../services/infrastructure/local-store.service';
+import { UserAction } from './user.actions';
 import { UserState } from './user.state';
 import { AppAction } from './app.actions';
 import { SyncAction } from './sync.action';
@@ -13,6 +16,8 @@ import { isEmptyTaskDescription } from '../helpers/is-empty-task-description.fun
 interface ITasksStateModel {
   entities: Array<Task>;
 }
+
+const SAVE_FAILED = 'Could not save the task on this device.';
 
 @State<ITasksStateModel>({
   name: 'tasks',
@@ -27,6 +32,8 @@ export class TasksState {
     ETaskStatus.Active,
     ETaskStatus.Notes,
   ];
+
+  constructor(private readonly localStore: LocalStore) {}
 
   @Selector([TasksState, UserState.userId])
   static allTasks(state: ITasksStateModel, userId: string | null): Array<Task> {
@@ -51,77 +58,99 @@ export class TasksState {
       userId: string;
     },
   ): Promise<void> {
-    try {
-      const now = this.now();
-      const newTask = this.createTaskEntity(taskInitData, userId, now);
-      ctx.setState(
-        patch({
-          entities: append([newTask]),
-        }),
-      );
-
-      ctx.dispatch(
-        new SyncAction.ChangeForSyncOccurred({
-          entity: EChangedEntity.Task,
-          action: EChangeAction.Created,
-          object: newTask,
-          modifiedAt: now,
-        } as Change),
-      );
-    } catch (error) {
-      ctx.dispatch(new AppAction.ShowErrorInUI('Task creation failed.'));
-    }
-  }
-
-  @Action(TasksAction.UpdateTask)
-  updateTask(
-    ctx: StateContext<ITasksStateModel>,
-    { taskUpdateData }: { taskUpdateData: TaskChanges },
-  ) {
     const now = this.now();
+    const newTask = this.createTaskEntity(taskInitData, userId, now);
+    const entry = this.outboxEntry(newTask.id, EChangeAction.Created, newTask, now);
+
+    try {
+      await this.localStore.saveTaskAndEnqueue(newTask, entry);
+    } catch {
+      ctx.dispatch(new AppAction.ShowErrorInUI(SAVE_FAILED, 'Not saved'));
+      return;
+    }
 
     ctx.setState(
       patch({
-        entities: updateItem(
-          task => task.id === taskUpdateData.taskId,
-          patch({
-            ...taskUpdateData.changes,
-            modifiedAt: now,
-          }),
-        ),
+        entities: append([newTask]),
       }),
     );
+    ctx.dispatch(new AppAction.ClearErrorInUI());
+    ctx.dispatch(new SyncAction.ChangeForSyncOccurred(entry));
+  }
 
-    const updatedTask = ctx.getState().entities.find(t => t.id === taskUpdateData.taskId);
+  @Action(TasksAction.UpdateTask)
+  async updateTask(
+    ctx: StateContext<ITasksStateModel>,
+    { taskUpdateData }: { taskUpdateData: TaskChanges },
+  ): Promise<void> {
+    const current = ctx.getState().entities.find(task => task.id === taskUpdateData.taskId);
+    if (!current) {
+      return;
+    }
 
-    ctx.dispatch(
-      new SyncAction.ChangeForSyncOccurred({
-        entity: EChangedEntity.Task,
-        action: EChangeAction.Updated,
-        object: updatedTask,
-        modifiedAt: this.now(),
-      } as Change),
+    const now = this.now();
+    const updated: Task = {
+      ...current,
+      ...taskUpdateData.changes,
+      modifiedAt: now,
+    };
+    const entry = this.outboxEntry(updated.id, EChangeAction.Updated, updated, now);
+
+    try {
+      await this.localStore.saveTaskAndEnqueue(updated, entry);
+    } catch {
+      ctx.dispatch(new AppAction.ShowErrorInUI(SAVE_FAILED, 'Not saved'));
+      return;
+    }
+
+    ctx.setState(
+      patch({
+        entities: updateItem(task => task.id === updated.id, patch(updated)),
+      }),
     );
+    ctx.dispatch(new AppAction.ClearErrorInUI());
+    ctx.dispatch(new SyncAction.ChangeForSyncOccurred(entry));
   }
 
   @Action(TasksAction.DeleteTask)
-  delete(ctx: StateContext<ITasksStateModel>, { taskId }: { taskId: string }) {
+  async delete(ctx: StateContext<ITasksStateModel>, { taskId }: { taskId: string }): Promise<void> {
+    const existing = ctx.getState().entities.find(task => task.id === taskId);
+    if (!existing) {
+      return;
+    }
+
+    const now = this.now();
+    const entry = this.outboxEntry(
+      taskId,
+      EChangeAction.Deleted,
+      { id: taskId, modifiedAt: now },
+      now,
+    );
+
+    try {
+      await this.localStore.deleteTaskAndEnqueue(existing.userId, taskId, entry);
+    } catch {
+      ctx.dispatch(new AppAction.ShowErrorInUI(SAVE_FAILED, 'Not saved'));
+      return;
+    }
+
     ctx.setState(
       patch({
         entities: removeItem<Task>(task => task.id === taskId),
       }),
     );
+    ctx.dispatch(new AppAction.ClearErrorInUI());
+    ctx.dispatch(new SyncAction.ChangeForSyncOccurred(entry));
+  }
 
-    const now = this.now();
+  @Action(UserAction.LoggedOut)
+  loggedOut(ctx: StateContext<ITasksStateModel>): void {
+    ctx.setState({ entities: [] });
+  }
 
-    ctx.dispatch(
-      new SyncAction.ChangeForSyncOccurred({
-        entity: EChangedEntity.Task,
-        action: EChangeAction.Deleted,
-        object: { id: taskId, modifiedAt: now },
-        modifiedAt: now,
-      }),
-    );
+  @Action(SyncAction.LocalDataHydrated)
+  hydrate(ctx: StateContext<ITasksStateModel>, { snapshot }: SyncAction.LocalDataHydrated): void {
+    ctx.setState({ entities: snapshot.tasks });
   }
 
   @Action(SyncAction.ServerChangesLoaded)
@@ -153,6 +182,24 @@ export class TasksState {
     }
   }
 
+  private outboxEntry(
+    entityId: string,
+    action: EChangeAction,
+    object: OutboxEntry['change']['object'],
+    modifiedAt: string,
+  ): OutboxEntry {
+    return {
+      id: uuidv4(),
+      entityId,
+      change: {
+        entity: EChangedEntity.Task,
+        action,
+        object,
+        modifiedAt,
+      },
+    };
+  }
+
   private createTaskEntity(taskInitData: TaskCreateInput, userId: string, timestamp: string): Task {
     const task: Task = {
       type: ETaskType.Basic,
@@ -182,7 +229,7 @@ export class TasksState {
       .sort((a, b) => {
         const dateA = new Date(a.createdAt).getTime();
         const dateB = new Date(b.createdAt).getTime();
-        return dateB - dateA; // descending order
+        return dateB - dateA;
       });
   }
 

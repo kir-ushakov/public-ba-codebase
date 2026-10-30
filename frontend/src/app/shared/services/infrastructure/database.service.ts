@@ -1,79 +1,132 @@
 import { Injectable } from '@angular/core';
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { DBSchema, IDBPDatabase, openDB } from 'idb';
+import { OutboxEntry } from '../../models/outbox-entry.type';
+import { Tag } from '../../models/tag.model';
+import { Task } from '../../models/task.model';
 
-// Database constants
 export const DATABASE_CONFIG = {
-  NAME: 'ba-db',
-  VERSION: 2,
+  VERSION: 3,
   STORES: {
-    IMAGES: 'images' as const, // runtime name
+    IMAGES: 'images' as const,
+    TASKS: 'tasks' as const,
+    TAGS: 'tags' as const,
+    OUTBOX: 'outbox' as const,
+    META: 'meta' as const,
   },
 } as const;
 
-// Database schema interfaces
-interface ImageRecord {
+export const SYNCED_REVISION_ID = 'syncedRevision';
+
+/** Old NGXS storage-plugin key from `keys: '*'`. Removed only after this database opens. */
+export const LEGACY_NGXS_STATE_KEY = '@@STATE';
+
+export function userDatabaseName(userId: string): string {
+  return `ba-${userId}`;
+}
+
+type ImageRecord = {
   id: string;
   blob?: Blob;
   uploaded: boolean;
   url?: string;
-}
+};
+
+export type SyncMetaRecord = {
+  id: string;
+  syncedRevision: number;
+};
 
 export interface AppDB extends DBSchema {
   images: {
     key: string;
     value: ImageRecord;
-    indexes: {
-      uploaded: IDBValidKey;
-    };
+    indexes: { uploaded: IDBValidKey };
   };
+  tasks: {
+    key: string;
+    value: Task;
+  };
+  tags: {
+    key: string;
+    value: Tag;
+  };
+  outbox: {
+    key: string;
+    value: OutboxEntry;
+    indexes: { entityId: string };
+  };
+  meta: {
+    key: string;
+    value: SyncMetaRecord;
+  };
+}
+
+function upgradeDatabase(db: IDBPDatabase<AppDB>): void {
+  if (!db.objectStoreNames.contains(DATABASE_CONFIG.STORES.IMAGES)) {
+    const images = db.createObjectStore(DATABASE_CONFIG.STORES.IMAGES, { keyPath: 'id' });
+    images.createIndex('uploaded', 'uploaded', { unique: false });
+  }
+
+  if (!db.objectStoreNames.contains(DATABASE_CONFIG.STORES.TASKS)) {
+    db.createObjectStore(DATABASE_CONFIG.STORES.TASKS, { keyPath: 'id' });
+  }
+
+  if (!db.objectStoreNames.contains(DATABASE_CONFIG.STORES.TAGS)) {
+    db.createObjectStore(DATABASE_CONFIG.STORES.TAGS, { keyPath: 'id' });
+  }
+
+  if (!db.objectStoreNames.contains(DATABASE_CONFIG.STORES.OUTBOX)) {
+    const outbox = db.createObjectStore(DATABASE_CONFIG.STORES.OUTBOX, { keyPath: 'id' });
+    outbox.createIndex('entityId', 'entityId', { unique: false });
+  }
+
+  if (!db.objectStoreNames.contains(DATABASE_CONFIG.STORES.META)) {
+    db.createObjectStore(DATABASE_CONFIG.STORES.META, { keyPath: 'id' });
+  }
 }
 
 @Injectable({ providedIn: 'root' })
 export class DatabaseService {
-  private dbPromise: Promise<IDBPDatabase<AppDB>>;
+  private currentUserId: string | null = null;
+  private dbPromise: Promise<IDBPDatabase<AppDB>> | null = null;
 
-  constructor() {
-    this.dbPromise = openDB<AppDB>(DATABASE_CONFIG.NAME, DATABASE_CONFIG.VERSION, {
-      upgrade(db, oldVersion, newVersion, transaction) {
-        console.log(`Upgrading DB from v${oldVersion} to v${newVersion}`);
+  public async open(userId: string): Promise<void> {
+    if (this.currentUserId === userId && this.dbPromise) {
+      await this.dbPromise;
+      return;
+    }
 
-        switch (oldVersion) {
-          case 0:
-            // First install → create store
-            const store = db.createObjectStore(DATABASE_CONFIG.STORES.IMAGES, {
-              keyPath: 'id',
-            });
-            store.createIndex('uploaded', 'uploaded', { unique: false });
-            break;
-
-          case 1:
-            // Migration from v1 → v2
-            const imageStore = transaction.objectStore(DATABASE_CONFIG.STORES.IMAGES);
-            if (!imageStore.indexNames.contains('uploaded')) {
-              imageStore.createIndex('uploaded', 'uploaded', { unique: false });
-            }
-            break;
-
-          default:
-            // For future migrations
-            console.warn(`No specific migration for v${oldVersion}`);
-        }
+    await this.close();
+    this.currentUserId = userId;
+    this.dbPromise = openDB<AppDB>(userDatabaseName(userId), DATABASE_CONFIG.VERSION, {
+      upgrade(db) {
+        upgradeDatabase(db);
       },
     });
+    await this.dbPromise;
   }
 
-  /**
-   * Get the database instance
-   */
-  getDatabase(): Promise<IDBPDatabase<AppDB>> {
+  public async close(): Promise<void> {
+    if (!this.dbPromise) {
+      this.currentUserId = null;
+      return;
+    }
+
+    const db = await this.dbPromise;
+    db.close();
+    this.dbPromise = null;
+    this.currentUserId = null;
+  }
+
+  public async getDatabase(): Promise<IDBPDatabase<AppDB>> {
+    if (!this.dbPromise) {
+      throw new Error('Local database is not open');
+    }
     return this.dbPromise;
   }
 
-  /**
-   * Get database info for debugging
-   */
-  async getDatabaseInfo(): Promise<{ name: string; version: number; stores: string[] }> {
-    const db = await this.dbPromise;
+  public async getDatabaseInfo(): Promise<{ name: string; version: number; stores: string[] }> {
+    const db = await this.getDatabase();
     return {
       name: db.name,
       version: db.version,
@@ -81,16 +134,17 @@ export class DatabaseService {
     };
   }
 
-  /**
-   * Clear all data from all stores (useful for testing/reset)
-   */
-  async clearAllData(): Promise<void> {
-    const db = await this.dbPromise;
-    const stores = Array.from(db.objectStoreNames);
-
-    for (const storeName of stores) {
-      await db.clear(storeName);
-    }
-    console.log('Cleared all data from database');
+  public async clearAllData(): Promise<void> {
+    const db = await this.getDatabase();
+    const stores = [
+      DATABASE_CONFIG.STORES.IMAGES,
+      DATABASE_CONFIG.STORES.TASKS,
+      DATABASE_CONFIG.STORES.TAGS,
+      DATABASE_CONFIG.STORES.OUTBOX,
+      DATABASE_CONFIG.STORES.META,
+    ] as const;
+    const tx = db.transaction(stores, 'readwrite');
+    await Promise.all(stores.map(storeName => tx.objectStore(storeName).clear()));
+    await tx.done;
   }
 }

@@ -10,6 +10,11 @@ import {
   type UploadImageContract,
 } from '@brainassistant/contracts';
 
+export type ApiMocks = {
+  /** Abort `/api/**` so the app shell can still reload from the dev server. */
+  setOffline(offline: boolean): void;
+};
+
 export type SetupApiMocksOptions = {
   /** GET /api/sync/changes returns 401; Home shows the signed-in-not-synced banner. */
   unauthorizedChanges?: boolean;
@@ -46,8 +51,17 @@ function parseSendChangeTask(postData: string | null): TaskDTO | null {
  * integration specs in `backend/test/integration/`. POST and PATCH `/api/sync/task`
  * return the saved TaskDTO; DELETE answers 200 with no payload.
  */
-export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = {}): Promise<void> {
+export async function setupApiMocks(
+  page: Page,
+  options: SetupApiMocksOptions = {},
+): Promise<ApiMocks> {
+  let offline = false;
   await page.route('**/api/**', async route => {
+    if (offline) {
+      await route.abort('internetdisconnected');
+      return;
+    }
+
     const request = route.request();
     const url = request.url();
     const method = request.method();
@@ -140,4 +154,10 @@ export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = 
 
     await route.continue();
   });
+
+  return {
+    setOffline(next: boolean): void {
+      offline = next;
+    },
+  };
 }

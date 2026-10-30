@@ -9,6 +9,7 @@ import { ImageService } from 'src/app/shared/services/application/image.service'
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { TAG_COLOR } from 'src/app/shared/models/tag.model';
+import { AppAction } from 'src/app/shared/state/app.actions';
 import { AppState } from 'src/app/shared/state/app.state';
 import { TagsState } from 'src/app/shared/state/tags.state';
 import { TasksState } from 'src/app/shared/state/tasks.state';
@@ -112,6 +113,19 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-search-cancel"]')?.textContent).toContain('Cancel');
     expect(host.querySelector('[data-test="home-search"]')).toBeNull();
     expect(host.querySelector('[data-test="home-more"]')).toBeNull();
+  });
+
+  it('shows a persistence error on the home banner', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    TestBed.inject(Store).dispatch(
+      new AppAction.ShowErrorInUI('Could not save the task on this device.', 'Not saved'),
+    );
+    fixture.detectChanges();
+
+    const banner = host.querySelector('[data-test="home-persistence-error"]');
+    expect(banner?.textContent).toContain('Not saved');
+    expect(banner?.textContent).toContain('Could not save the task on this device.');
+    expect(banner?.querySelector('[data-test="home-sync-now"]')).toBeNull();
   });
 
   it('hides tiles that do not match and keeps the full item count', () => {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -7,4 +7,9 @@ import { RouterLink } from '@angular/router';
   styleUrls: ['./home-sync-status.component.scss'],
   imports: [RouterLink],
 })
-export class HomeSyncStatusComponent {}
+export class HomeSyncStatusComponent {
+  readonly title = input('Signed in, not synced');
+  readonly body = input('Your changes will sync when connection is available.');
+  readonly showAction = input(true);
+  readonly testId = input('home-sync-status');
+}

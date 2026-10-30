@@ -3,6 +3,7 @@ import { provideStore, Store } from '@ngxs/store';
 import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
 import { firstValueFrom } from 'rxjs';
 import { ETaskStatus, ETaskType, Task } from 'src/app/shared/models/task.model';
+import { LocalStore } from 'src/app/shared/services/infrastructure/local-store.service';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { SyncAction } from 'src/app/shared/state/sync.action';
@@ -10,10 +11,10 @@ import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { EUserAuthState, UserState } from 'src/app/shared/state/user.state';
 
+const userId = 'user-1';
+
 describe('TasksState', () => {
   let store: Store;
-
-  const userId = 'user-1';
   const existing: Task = {
     id: 'task-1',
     userId,
@@ -209,5 +210,42 @@ describe('TasksState', () => {
     );
 
     expect(store.selectSnapshot(TasksState.allTasks).map(t => t.id)).toEqual([inserted.id]);
+  });
+});
+
+describe('TasksState when the device store rejects the write', () => {
+  it('does not add the task', async () => {
+    const localStore = {
+      saveTaskAndEnqueue: jest.fn().mockRejectedValue(new Error('disk')),
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideStore([TasksState, UserState]),
+        { provide: AuthService, useValue: {} },
+        { provide: SlackService, useValue: {} },
+        { provide: LocalStore, useValue: localStore },
+      ],
+    });
+    const store = TestBed.inject(Store);
+    store.reset({
+      tasks: { entities: [] },
+      user: {
+        userData: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          userId,
+          googleId: 'g-1',
+        },
+        authState: EUserAuthState.Authenticated,
+        authType: undefined,
+        integrations: { isAddedToSlack: undefined },
+      },
+    });
+
+    await firstValueFrom(store.dispatch(new TasksAction.CreateTask({ title: 'Nope' }, userId)));
+
+    expect(localStore.saveTaskAndEnqueue).toHaveBeenCalledTimes(1);
+    expect(store.selectSnapshot(TasksState.allTasks)).toEqual([]);
   });
 });

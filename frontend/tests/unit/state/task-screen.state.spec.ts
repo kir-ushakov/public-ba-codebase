@@ -162,7 +162,7 @@ describe('TaskScreenState', () => {
       store.selectSnapshot(TasksState.allTasks).find(task => task.id === existingWithPhoto.id)
         ?.tagIds,
     ).toEqual(['tag-1', 'tag-2']);
-    expect(synced.map(action => action.change)).toEqual([
+    expect(synced.map(action => action.entry.change)).toEqual([
       expect.objectContaining({
         entity: EChangedEntity.Task,
         action: EChangeAction.Updated,
@@ -176,7 +176,7 @@ describe('TaskScreenState', () => {
     await firstValueFrom(store.dispatch(new TaskScreenAction.TagIdsChanged(['tag-2'])));
 
     expect(store.selectSnapshot(TaskScreenState.task).tagIds).toEqual(['tag-2']);
-    expect(synced[1]?.change.object).toEqual(
+    expect(synced[1]?.entry.change.object).toEqual(
       expect.objectContaining({ id: existingWithPhoto.id, tagIds: ['tag-2'] }),
     );
     subscription.unsubscribe();

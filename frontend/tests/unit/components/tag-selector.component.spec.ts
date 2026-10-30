@@ -1,10 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideStore, Store } from '@ngxs/store';
+import { Actions, ofActionSuccessful, provideStore, Store } from '@ngxs/store';
+import { firstValueFrom } from 'rxjs';
 import { TagConst } from '@brainassistant/contracts';
 import { TAG_COLOR, Tag } from 'src/app/shared/models/tag.model';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { TagsState } from 'src/app/shared/state/tags.state';
+import { TagsAction } from 'src/app/shared/state/tags.action';
 import { EUserAuthState, UserState } from 'src/app/shared/state/user.state';
 import { TagSelectorComponent } from 'src/app/mobile-app/components/screens/task-screen/task-edit/tag-selector/tag-selector.component';
 
@@ -108,7 +110,7 @@ describe('TagSelectorComponent', () => {
     );
   });
 
-  it('creates a tag optimistically and selects it in the list', () => {
+  it('creates a tag optimistically and selects it in the list', async () => {
     const host = fixture.nativeElement as HTMLElement;
 
     host.querySelector<HTMLButtonElement>('[data-test="task-tags-selector"]')!.click();
@@ -125,7 +127,11 @@ describe('TagSelectorComponent', () => {
       false,
     );
 
+    const saved = firstValueFrom(
+      TestBed.inject(Actions).pipe(ofActionSuccessful(TagsAction.CreateTag)),
+    );
     host.querySelector<HTMLButtonElement>('[data-test="new-tag-submit"]')!.click();
+    await saved;
     fixture.detectChanges();
 
     expect(host.querySelector('[data-test="bottom-sheet-title"]')?.textContent).toContain(

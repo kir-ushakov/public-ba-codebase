@@ -20,6 +20,7 @@ tests/integration/
 ├── create-task.spec.ts
 ├── edit-task.spec.ts
 ├── delete-task.spec.ts
+├── offline-reload.spec.ts
 ├── home-sync-status.spec.ts
 ├── home-task-menu.spec.ts
 ├── sync-error.spec.ts
@@ -59,6 +60,7 @@ That starts `npm run start:integration` (see `playwright.config.js`) and runs th
 - **delete-task** — DELETE `/api/sync/task`
 - **home-task-menu** — Home card overflow: Edit, disabled Duplicate/Add to tags, Delete
 - **home-sync-status** — 401 on GET `/api/sync/changes` shows the signed-in-not-synced banner; Sync now goes to `/sync`
+- **offline-reload** — a task saved while `/api` is down is still on home after reload, then one POST goes out when the API is back
 - **sync-error** — POST fails with 500; the task stays on home (offline queue)
 - **voice-input-visibility** — mic button is shown when synced and online; hidden when offline or signed in but not synced
 
