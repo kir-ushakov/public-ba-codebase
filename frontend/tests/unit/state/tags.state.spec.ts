@@ -4,7 +4,6 @@ import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
 import { firstValueFrom } from 'rxjs';
 import { TAG_COLOR } from 'src/app/shared/models/tag.model';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
-import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { SyncAction } from 'src/app/shared/state/sync.action';
 import { TagsAction } from 'src/app/shared/state/tags.action';
@@ -21,7 +20,6 @@ describe('TagsState', () => {
         provideStore([TagsState, UserState]),
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
-        { provide: GoogleOAuthConsentService, useValue: {} },
       ],
     });
 

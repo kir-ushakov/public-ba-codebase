@@ -46,7 +46,7 @@ services:
     entrypoint:
       - sh
       - -c
-      - mkdir -p /app/backend/files/tmp /app/backend/files/uploads /tmp/ssl && chown -R node:node /app/backend/files && cp /app/backend/ssl/server.crt /app/backend/ssl/server.key /tmp/ssl/ && chmod 644 /tmp/ssl/server.crt /tmp/ssl/server.key && chown node:node /tmp/ssl/server.crt /tmp/ssl/server.key && exec gosu node npm run dev
+      - mkdir -p /app/backend/files/tmp /app/backend/files/uploads /app/backend/files/images /tmp/ssl && chown -R node:node /app/backend/files && cp /app/backend/ssl/server.crt /app/backend/ssl/server.key /tmp/ssl/ && chmod 644 /tmp/ssl/server.crt /tmp/ssl/server.key && chown node:node /tmp/ssl/server.crt /tmp/ssl/server.key && exec gosu node npm run dev
     environment:
       NODE_ENV: development
       PORT: 3443

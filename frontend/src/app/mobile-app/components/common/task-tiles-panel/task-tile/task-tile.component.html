@@ -8,7 +8,7 @@
         <img
           [src]="task.imageId | imageSrc: calculatedImageWidth()"
           (load)="isLoading.set(false)"
-          (error)="onImageError($event)"
+          (error)="onImageError()"
         />
       }
     </div>

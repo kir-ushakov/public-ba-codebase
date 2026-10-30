@@ -2,7 +2,6 @@ import { Page } from '@playwright/test';
 import {
   EApiError,
   ERefreshSessionUseCaseError,
-  EUploadImageUseCaseError,
   type ApiErrorDto,
   type GetChangesContract,
   type RefreshSessionContract,
@@ -16,8 +15,6 @@ export type SetupApiMocksOptions = {
   unauthorizedChanges?: boolean;
   /** POST /api/sync/task returns 500; the task stays in the client sync queue. */
   failTaskSync?: boolean;
-  /** POST /api/files/image returns 403 Google refresh token invalid. */
-  failGoogleRefreshToken?: boolean;
   /** POST /api/files/image returns 500; the task stays queued until a later retry. */
   failImageUpload?: boolean;
 };
@@ -108,14 +105,6 @@ export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = 
     }
 
     if (url.includes('/api/files/image') && method === 'POST') {
-      if (options.failGoogleRefreshToken) {
-        const body: ApiErrorDto = {
-          name: EUploadImageUseCaseError.GoogleRefreshTokenInvalid,
-          message: 'Google refresh token is invalid or revoked',
-        };
-        await route.fulfill(json(403, body));
-        return;
-      }
       if (options.failImageUpload) {
         const body: ApiErrorDto = { name: EApiError.Unexpected, message: 'image upload failed' };
         await route.fulfill(json(500, body));

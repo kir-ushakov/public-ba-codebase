@@ -16,15 +16,12 @@ export class ImageResizeService {
     stream.pipe(passForProbe);
     stream.pipe(passForResize);
 
-    const probeResult = await probe(passForProbe);
-    const aspectRatio = probeResult.height / probeResult.width;
-    const height = Math.round(width * aspectRatio);
-    const mime = probeResult.mime;
-
+    // sharp must be draining its branch before probe is awaited: an idle branch fills up,
+    // pauses the shared source, and probe then never sees enough bytes to resolve.
     const resized = passForResize.pipe(
-      sharp().resize(width, height, { fit: 'inside', fastShrinkOnLoad: true }),
+      sharp().resize({ width, fit: 'inside', fastShrinkOnLoad: true }),
     );
-    const contentType = mime;
+    const { mime: contentType } = await probe(passForProbe);
 
     return { resized, contentType };
   }
@@ -70,15 +67,17 @@ export class ImageResizeService {
   }
 
   private async alreadyWithinStoreLimits(filePath: string): Promise<boolean> {
-    const metadata = await sharp(filePath).metadata();
+    // From a buffer, not the path: libvips keeps a path open in its cache, and on Windows the
+    // kept file can then not be renamed into storage (EBUSY).
     // eslint-disable-next-line security/detect-non-literal-fs-filename -- upload pipeline path under controlled temp dir
-    const stat = await fsp.stat(filePath);
+    const file = await fsp.readFile(filePath);
+    const metadata = await sharp(file).metadata();
     const longEdge = Math.max(metadata.width ?? 0, metadata.height ?? 0);
     return (
       metadata.format === 'webp' &&
       longEdge > 0 &&
       longEdge <= ImageConst.MAX_LONG_EDGE_PX &&
-      stat.size <= ImageConst.MAX_BYTES
+      file.length <= ImageConst.MAX_BYTES
     );
   }
 

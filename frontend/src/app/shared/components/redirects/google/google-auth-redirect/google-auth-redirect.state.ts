@@ -8,7 +8,6 @@ import { User } from 'src/app/shared/models';
 import { EMPTY, catchError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { EGoogleAuthUseCaseError } from '@brainassistant/contracts';
-import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { readApiErrorName } from 'src/app/shared/helpers/http-error-body.function';
 
 export interface IGoogleAuthRedirectScreenStateModel {
@@ -29,10 +28,7 @@ const defaults: IGoogleAuthRedirectScreenStateModel = {
 })
 @Injectable()
 export class GoogleAuthRedirectScreenState {
-  constructor(
-    private googleAPIService: GoogleAPIService,
-    private readonly googleOAuthConsentService: GoogleOAuthConsentService,
-  ) {}
+  constructor(private googleAPIService: GoogleAPIService) {}
 
   @Selector()
   static isLogging(state: IGoogleAuthRedirectScreenStateModel): boolean {
@@ -80,16 +76,12 @@ export class GoogleAuthRedirectScreenState {
     ctx: StateContext<IGoogleAuthRedirectScreenStateModel>,
     user: User,
   ): void {
-    this.googleOAuthConsentService.clearForceConsentAttempt();
     ctx.patchState({ isLogging: false });
     ctx.dispatch(new UserAction.UserAuthenticatedWithGoogle(user));
     ctx.dispatch(AppAction.NavigateToProfileScreen);
   }
 
-  /**
-   * Backend JSON uses `name` = error code. Cached clients may still send `code`.
-   * UX branches: missing refresh token → one automatic consent retry; bad/expired code → message.
-   */
+  /** Backend JSON uses `name` = error code. Cached clients may still send `code`. */
   private onGoogleAuthHttpError(
     ctx: StateContext<IGoogleAuthRedirectScreenStateModel>,
     err: HttpErrorResponse,
@@ -98,13 +90,7 @@ export class GoogleAuthRedirectScreenState {
 
     const errorCode = readApiErrorName(err);
 
-    if (errorCode === EGoogleAuthUseCaseError.RefreshTokenNotReceived) {
-      this.retryOnceWithForcedGoogleConsent();
-      return;
-    }
-
     if (errorCode === EGoogleAuthUseCaseError.AuthorizationFailed) {
-      this.googleOAuthConsentService.clearForceConsentAttempt();
       ctx.patchState({
         errorMessage: 'Google code expired. Please try signing in again.',
       });
@@ -114,17 +100,5 @@ export class GoogleAuthRedirectScreenState {
     if (errorCode === EGoogleAuthUseCaseError.EmailAlreadyInUse) {
       ctx.patchState({ errorMessage: err.error?.message });
     }
-  }
-
-  /**
-   * Without prompt=consent Google may not return refresh_token for returning users.
-   * We redirect once; flag avoids an endless loop if consent still yields no token.
-   */
-  private retryOnceWithForcedGoogleConsent(): void {
-    if (this.googleOAuthConsentService.hasRecentForceConsentAttempt()) {
-      this.googleOAuthConsentService.clearForceConsentAttempt();
-      return;
-    }
-    this.googleOAuthConsentService.openForceConsentScreen();
   }
 }

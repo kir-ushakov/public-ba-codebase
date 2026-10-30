@@ -13,7 +13,6 @@ import { catchError, finalize, shareReplay, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { AppAction } from '../../state/app.actions';
-import { isGoogleRefreshTokenInvalidError } from '../../helpers/google-refresh-token-invalid.function';
 import { normalizeHttpErrorResponse } from '../../helpers/http-error-body.function';
 import { AuthService } from '../api/auth.service';
 
@@ -100,9 +99,6 @@ export class HttpInterceptorService implements HttpInterceptor {
       !req.url.includes('/api/auth/refresh')
     ) {
       this._store.dispatch(AppAction.UserNotAuthenticated);
-    }
-    if (isGoogleRefreshTokenInvalidError(httpError)) {
-      this._store.dispatch(new AppAction.GoogleRefreshTokenInvalid());
     }
     if (
       httpError instanceof HttpErrorResponse &&

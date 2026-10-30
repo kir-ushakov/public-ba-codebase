@@ -10,6 +10,7 @@ export const UNEXPECTED_ERROR_RESPONSE = {
 export enum EHttpStatus {
   Ok = 200,
   Created = 201,
+  NotModified = 304,
   BadRequest = 400,
   Unauthorized = 401,
   PaymentRequired = 402,

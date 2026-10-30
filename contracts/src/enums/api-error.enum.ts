@@ -21,11 +21,15 @@ export enum EUploadImageUseCaseError {
   UploadToGoogleDriveFailed = 'UPLOAD_IMAGE_ERROR_CODE__UPLOAD_TO_GOOGLE_DRIVE_FAILED',
   GoogleRefreshTokenInvalid = 'UPLOAD_IMAGE_ERROR__GOOGLE_REFRESH_TOKEN_INVALID',
   FileTooLarge = 'FILE_TOO_LARGE',
+  InvalidImageId = 'UPLOAD_IMAGE_ERROR_CODE__INVALID_IMAGE_ID',
+  StoreImageFailed = 'UPLOAD_IMAGE_ERROR_CODE__STORE_IMAGE_FAILED',
 }
 
 export enum EGetImageUseCaseError {
   GoogleRefreshTokenInvalid = 'GET_IMAGE_ERROR__GOOGLE_REFRESH_TOKEN_INVALID',
   GoogleDriveRequestFailed = 'GET_IMAGE_ERROR__GOOGLE_DRIVE_REQUEST_FAILED',
+  ImageFileMissing = 'GET_IMAGE_ERROR__IMAGE_FILE_MISSING',
+  ImageReadFailed = 'GET_IMAGE_ERROR__IMAGE_READ_FAILED',
 }
 
 export enum ELoginUseCaseError {

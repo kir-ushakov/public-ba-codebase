@@ -20,7 +20,6 @@ tests/integration/
 ├── create-task.spec.ts
 ├── edit-task.spec.ts
 ├── delete-task.spec.ts
-├── google-refresh-token.spec.ts
 ├── home-sync-status.spec.ts
 ├── home-task-menu.spec.ts
 ├── sync-error.spec.ts

@@ -7,6 +7,7 @@ export interface IImageProps {
   userId: string;
   storageType: 'local' | 'googleDrive';
   fileId: string;
+  mimeType: string;
 }
 
 export class Image extends AggregateRoot<IImageProps> {
@@ -30,10 +31,14 @@ export class Image extends AggregateRoot<IImageProps> {
     return this.props.fileId;
   }
 
-  public static create(props: IImageProps, id?: UniqueEntityID): Result<Image, never> {
+  get mimeType(): string {
+    return this.props.mimeType;
+  }
+
+  public static create(props: IImageProps, id?: UniqueEntityID): Result<Image> {
     const image = new Image(props, id);
 
-    return Result.ok<Image, never>(image);
+    return Result.ok<Image>(image);
   }
 
   private constructor(props: IImageProps, id?: UniqueEntityID) {

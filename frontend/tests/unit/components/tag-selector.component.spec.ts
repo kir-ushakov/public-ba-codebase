@@ -3,7 +3,6 @@ import { provideStore, Store } from '@ngxs/store';
 import { TagConst } from '@brainassistant/contracts';
 import { TAG_COLOR, Tag } from 'src/app/shared/models/tag.model';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
-import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { TagsState } from 'src/app/shared/state/tags.state';
 import { EUserAuthState, UserState } from 'src/app/shared/state/user.state';
@@ -22,7 +21,6 @@ describe('TagSelectorComponent', () => {
         provideStore([TagsState, UserState]),
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
-        { provide: GoogleOAuthConsentService, useValue: {} },
       ],
     }).compileComponents();
 

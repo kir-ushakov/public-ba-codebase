@@ -3,7 +3,7 @@ import { Result } from '../core/result.js';
 import { ServiceError } from '../core/service-error.js';
 import { serviceFail } from '../core/service-fail.factory.js';
 import { Image } from '../domain/models/image.js';
-import { IImagePersistent, ImageDocument } from '../infra/database/mongodb/image.model.js';
+import { IImagePersistent } from '../infra/database/mongodb/image.model.js';
 import { IDbModels } from '../infra/database/mongodb/index.js';
 import { ImageMapper } from '../mappers/image.mapper.js';
 
@@ -16,12 +16,16 @@ export class ImageRepoService {
     this._models = models;
   }
 
-  public async create(client: Image): Promise<ImageDocument> {
+  /** Upsert by owner + imageId, so a retried upload of the same image is not a duplicate. */
+  public async save(image: Image): Promise<void> {
     const imageModel = this._models.ImageModel;
 
-    const clientData: IImagePersistent = ImageMapper.toPersistence(client);
-    const newClient = await imageModel.create(clientData);
-    return newClient;
+    const { _id, ...fields }: IImagePersistent = ImageMapper.toPersistence(image);
+    await imageModel.updateOne(
+      { userId: image.userId, imageId: image.imageId },
+      { $set: fields, $setOnInsert: { _id } },
+      { upsert: true },
+    );
   }
 
   public async getUserImageById(
@@ -40,21 +44,5 @@ export class ImageRepoService {
     return Result.ok<Image, ServiceError<EImageRepoServiceError>>(
       ImageMapper.toDomain(imageDocument).getValue(),
     );
-  }
-
-  public async save(image: Image): Promise<ImageDocument> {
-    const imageModel = this._models.ImageModel;
-
-    const imagePersistent = ImageMapper.toPersistence(image);
-    const updatedImage = await imageModel.findOneAndUpdate(
-      { imageId: image.imageId },
-      imagePersistent,
-      {
-        new: true,
-        useFindAndModify: false,
-      },
-    );
-    if (!updatedImage) throw new Error(`Image with id ${image.imageId} not found`);
-    return updatedImage;
   }
 }

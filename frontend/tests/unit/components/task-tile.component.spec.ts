@@ -29,7 +29,6 @@ describe('TaskTileComponent', () => {
           provide: ImageService,
           useValue: {
             getImageRecord: jest.fn().mockResolvedValue(undefined),
-            probeRemoteImage: jest.fn(),
           },
         },
       ],

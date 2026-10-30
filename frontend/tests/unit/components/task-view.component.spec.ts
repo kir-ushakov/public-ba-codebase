@@ -9,7 +9,6 @@ import {
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
-import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { TAG_COLOR } from 'src/app/shared/models/tag.model';
 import { TagsState } from 'src/app/shared/state/tags.state';
@@ -27,7 +26,6 @@ describe('TaskViewComponent title', () => {
         { provide: DeviceCameraService, useValue: {} },
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
-        { provide: GoogleOAuthConsentService, useValue: {} },
       ],
     }).compileComponents();
 

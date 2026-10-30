@@ -56,7 +56,8 @@ describe('Integration: GoogleAuth (Controller -> UseCase -> Repo -> MongoDB)', (
     }
     expect(stored.verified).toBe(true);
     expect(stored.googleId).toBe('g-new-1');
-    expect(stored.googleRefreshToken).toBe('google-refresh-token');
+    expect(stored.googleAccessToken).toBeUndefined();
+    expect(stored.googleRefreshToken).toBeUndefined();
 
     const jwtCookie = jwtCookieFromResponse(res);
     const taskRes = await authenticatedRequest(app, jwtCookie)
@@ -74,41 +75,23 @@ describe('Integration: GoogleAuth (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(taskRes.body.userId).toBe(res.body.user.userId);
   });
 
-  it('logs in an existing Google user and refreshes tokens', async () => {
-    installFakeGoogleStrategy({
-      type: 'success',
-      value: fakeGoogleSuccess({
-        googleId: 'g-existing',
-        email: 'existing.google@example.com',
-        refreshToken: 'first-refresh',
-      }),
+  it('logs in an existing Google user without creating a second account', async () => {
+    const existing = fakeGoogleSuccess({
+      googleId: 'g-existing',
+      email: 'existing.google@example.com',
     });
+    installFakeGoogleStrategy({ type: 'success', value: existing });
     await request(app).get(AUTH_PATH);
 
-    installFakeGoogleStrategy({
-      type: 'success',
-      value: fakeGoogleSuccess({
-        googleId: 'g-existing',
-        email: 'existing.google@example.com',
-        accessToken: 'second-access',
-        refreshToken: 'second-refresh',
-      }),
-    });
+    installFakeGoogleStrategy({ type: 'success', value: existing });
     const res = await request(app).get(AUTH_PATH);
 
     expect(res.status).toBe(200);
     expect(res.body.user.email).toBe('existing.google@example.com');
-
-    const stored = await UserModel.findOne({ googleId: 'g-existing' });
-    if (!stored) {
-      throw new Error('expected stored Google user');
-    }
-    expect(stored.googleAccessToken).toBe('second-access');
-    expect(stored.googleRefreshToken).toBe('second-refresh');
     expect(await UserModel.countDocuments({ googleId: 'g-existing' })).toBe(1);
   });
 
-  it('rejects a new Google user when refresh token is missing', async () => {
+  it('signs in a new Google user when Google returns no refresh token', async () => {
     installFakeGoogleStrategy({
       type: 'success',
       value: fakeGoogleSuccess({
@@ -120,10 +103,9 @@ describe('Integration: GoogleAuth (Controller -> UseCase -> Repo -> MongoDB)', (
 
     const res = await request(app).get(AUTH_PATH);
 
-    expect(res.status).toBe(400);
-    expect(res.body.name).toBe(EGoogleAuthUseCaseError.RefreshTokenNotReceived);
-    expect(res.body.code).toBe(EGoogleAuthUseCaseError.RefreshTokenNotReceived);
-    expect(await UserModel.countDocuments({ username: 'norefresh@example.com' })).toBe(0);
+    expect(res.status).toBe(200);
+    expect(res.body.user.email).toBe('norefresh@example.com');
+    expect(await UserModel.countDocuments({ username: 'norefresh@example.com' })).toBe(1);
   });
 
   it('rejects Google sign-in when a verified local account already owns the email', async () => {

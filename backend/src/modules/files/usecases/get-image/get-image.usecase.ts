@@ -2,99 +2,84 @@ import { Readable } from 'stream';
 import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
-import {
-  GoogleDriveImageFile,
-  GoogleDriveService,
-} from '../../../integrations/google/services/google-drive.service.js';
-import { EGoogleDriveServiceError } from '../../../integrations/google/services/google-drive-service.error.js';
 import { ImageResizeService } from '../../services/image-resize.service.js';
-import { User } from '../../../../shared/domain/models/user.js';
 import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
+import { Image } from '../../../../shared/domain/models/image.js';
+import {
+  IImageStorage,
+  StoredImageFile,
+} from '../../services/image-storage/image-storage.interface.js';
+import { EImageStorageError } from '../../services/image-storage/image-storage.error.js';
 import { GetImageErrors, GetImageErrorCode } from './get-image.errors.js';
 
 export type GetImageRequest = {
   imageId: string;
-  user: User;
+  userId: string;
   imageWidth?: number;
 };
 
-export type GetImageResult = Result<GoogleDriveImageFile | never, UseCaseError<GetImageErrorCode>>;
+export type ImageFile = {
+  data: Readable;
+  contentType: string;
+  /** Unknown once the image is resized on the fly. */
+  contentLength?: number;
+  etag: string;
+};
+
+export type GetImageResult = Result<ImageFile, UseCaseError<GetImageErrorCode>>;
 
 export class GetImageUsecase implements UseCase<GetImageRequest, Promise<GetImageResult>> {
   constructor(
-    private readonly googleDriveService: GoogleDriveService,
+    private readonly localImageStorage: IImageStorage,
     private readonly imageResizeService: ImageResizeService,
     private readonly imageRepoService: ImageRepoService,
   ) {}
 
   public async execute(req: GetImageRequest): Promise<GetImageResult> {
-    const user = req.user;
-    const userId = user.id.toString();
-    const imageId = req.imageId;
-
-    const imageOrError = await this.imageRepoService.getUserImageById(userId, imageId);
+    const imageOrError = await this.imageRepoService.getUserImageById(req.userId, req.imageId);
     if (imageOrError.isFailure) {
       return GetImageErrors.ImageNotFoundError(imageOrError.error);
     }
     const image = imageOrError.getValue();
-    const fileId = image.fileId;
 
-    const fileOrError = await this.googleDriveService.getImageById(user, fileId);
-    if (fileOrError.isFailure) {
-      switch (fileOrError.error.code) {
-        case EGoogleDriveServiceError.InvalidGrant:
-          return GetImageErrors.GoogleRefreshTokenInvalid(fileOrError.error);
-        default:
-          return GetImageErrors.GoogleDriveRequestFailed(fileOrError.error);
-      }
+    if (image.storageType !== 'local') {
+      return GetImageErrors.ImageReadFailed();
     }
-    let file: GoogleDriveImageFile = fileOrError.getValue();
+
+    const storedOrError = await this.localImageStorage.get(image.fileId);
+    if (storedOrError.isFailure) {
+      return storedOrError.error.code === EImageStorageError.FileMissing
+        ? GetImageErrors.ImageFileMissing(storedOrError.error)
+        : GetImageErrors.ImageReadFailed(storedOrError.error);
+    }
+    const stored = storedOrError.getValue();
+    const etag = buildEtag(stored, req.imageWidth);
 
     if (req.imageWidth) {
-      file = await this.resize(file, req.imageWidth);
+      const { resized, contentType } = await this.imageResizeService.resizeImage(
+        stored.data,
+        req.imageWidth,
+      );
+      // The caller only sees `resized`; destroying it must also release the file handle.
+      resized.once('close', () => stored.data.destroy());
+      return Result.ok({ data: resized, contentType, etag });
     }
 
-    return Result.ok<GoogleDriveImageFile>(file);
+    return Result.ok(toImageFile(image, stored, etag));
   }
+}
 
-  private async resize(file: GoogleDriveImageFile, width: number): Promise<GoogleDriveImageFile> {
-    // Start timing the resize operation
-    const startTime = Date.now();
+function toImageFile(image: Image, stored: StoredImageFile, etag: string): ImageFile {
+  return {
+    data: stored.data,
+    contentType: image.mimeType,
+    contentLength: stored.sizeBytes,
+    etag,
+  };
+}
 
-    // Log the original content type and requested width
-    const originalContentType = file.headers['content-type'];
-    const originalContentLength = file.headers['content-length'];
-    const originalSizeBytes = originalContentLength ? parseInt(originalContentLength) : null;
-    const originalSizeMB = originalSizeBytes
-      ? (originalSizeBytes / (1024 * 1024)).toFixed(2)
-      : 'unknown';
-
-    console.log(`[GetImageUsecase] Starting resize operation:`, {
-      requestedWidth: width,
-      originalContentType,
-      originalSizeInMB: `${originalSizeMB} MB`,
-    });
-
-    const resizeResult: { resized: Readable; contentType: string } =
-      await this.imageResizeService.resizeImage(file.data, width);
-
-    // Calculate resize duration
-    const duration = Date.now() - startTime;
-
-    // Log the resize results
-    console.log(`[GetImageUsecase] Resize completed:`, {
-      duration: `${duration}ms`,
-      newContentType: resizeResult.contentType,
-      originalContentType,
-    });
-
-    file.data = resizeResult.resized;
-    file.headers = {
-      ...file.headers,
-      'content-type': resizeResult.contentType,
-    };
-    delete file.headers['content-length'];
-
-    return file;
-  }
+/** Weak: a resize is re-encoded on every request and need not be byte-identical. */
+function buildEtag(stored: StoredImageFile, width: number | undefined): string {
+  const version = `${stored.sizeBytes.toString(16)}-${stored.modifiedAt.getTime().toString(16)}`;
+  return `W/"${version}-w${width ?? 0}"`;
 }
