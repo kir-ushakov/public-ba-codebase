@@ -26,6 +26,8 @@ import { LocalSessionService } from './app/shared/services/infrastructure/local-
 import { PwaVersionUpdateService } from './app/shared/services/pwa/pwa-version-update.service';
 import { AppAction } from './app/shared/state/app.actions';
 import { SyncAction } from './app/shared/state/sync.action';
+import { benchMark, benchMeasure } from './app/benchmark/bench-marks';
+import { installBenchmarkProbe } from './app/benchmark/install-benchmark-probe';
 
 if (environment.production) {
   enableProdMode();
@@ -49,9 +51,16 @@ bootstrapApplication(AppComponent, {
       }
       return session
         .openAndLoad(userId)
-        .then(snapshot =>
-          firstValueFrom(store.dispatch(new SyncAction.LocalDataHydrated(snapshot))),
-        )
+        .then(snapshot => {
+          benchMark('ba:ngxs-hydrate:start');
+          return firstValueFrom(store.dispatch(new SyncAction.LocalDataHydrated(snapshot))).then(
+            result => {
+              benchMark('ba:ngxs-hydrate:end');
+              benchMeasure('ba:ngxs-hydrate', 'ba:ngxs-hydrate:start', 'ba:ngxs-hydrate:end');
+              return result;
+            },
+          );
+        })
         .catch(() => {
           store.dispatch(
             new AppAction.ShowErrorInUI('Could not open saved tasks on this device.', 'Not saved'),
@@ -74,4 +83,8 @@ bootstrapApplication(AppComponent, {
     },
     PwaVersionUpdateService,
   ],
-}).catch(err => console.error(err));
+})
+  .then(appRef => {
+    installBenchmarkProbe(appRef);
+  })
+  .catch(err => console.error(err));

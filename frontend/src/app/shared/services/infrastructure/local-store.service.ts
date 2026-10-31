@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { benchMark, benchMeasure } from '../../../benchmark/bench-marks';
 import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
 import { IDBPDatabase, IDBPTransaction, StoreNames } from 'idb';
 import { Change } from '../../models/change.model';
@@ -66,6 +67,7 @@ export class LocalStore {
   }
 
   public async loadAll(): Promise<LocalSnapshot> {
+    benchMark('ba:idb-read:start');
     const db = await this.database.getDatabase();
     const tx = db.transaction(
       [
@@ -81,6 +83,8 @@ export class LocalStore {
     const outbox = await tx.objectStore(DATABASE_CONFIG.STORES.OUTBOX).getAll();
     const meta = await tx.objectStore(DATABASE_CONFIG.STORES.META).get(SYNCED_REVISION_ID);
     await tx.done;
+    benchMark('ba:idb-read:end');
+    benchMeasure('ba:idb-read', 'ba:idb-read:start', 'ba:idb-read:end');
     return {
       tasks,
       tags,

@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   computed,
   effect,
@@ -11,6 +12,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Store, createSelectMap } from '@ngxs/store';
+import { benchMark } from 'src/app/benchmark/bench-marks';
 import { AppAction } from 'src/app/shared/state/app.actions';
 import { AppState } from 'src/app/shared/state/app.state';
 import { TagsState } from 'src/app/shared/state/tags.state';
@@ -47,7 +49,7 @@ import {
     TaskTilesPanelComponent,
   ],
 })
-export class HomeScreenComponent implements OnInit {
+export class HomeScreenComponent implements OnInit, AfterViewInit {
   selectors = createSelectMap({
     tasks: TasksState.actualTasks,
     tags: TagsState.forCurrentUser,
@@ -102,6 +104,12 @@ export class HomeScreenComponent implements OnInit {
   ngOnInit(): void {
     this.store.dispatch(AppAction.Opened);
     this.setAvatarInputData();
+  }
+
+  ngAfterViewInit(): void {
+    requestAnimationFrame(() => {
+      benchMark('ba:list-painted');
+    });
   }
 
   openSearch(): void {

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DBSchema, IDBPDatabase, openDB } from 'idb';
+import { benchMark, benchMeasure } from '../../../benchmark/bench-marks';
 import { OutboxEntry } from '../../models/outbox-entry.type';
 import { Tag } from '../../models/tag.model';
 import { Task } from '../../models/task.model';
@@ -96,6 +97,7 @@ export class DatabaseService {
       return;
     }
 
+    benchMark('ba:idb-open:start');
     await this.close();
     this.currentUserId = userId;
     this.dbPromise = openDB<AppDB>(userDatabaseName(userId), DATABASE_CONFIG.VERSION, {
@@ -104,6 +106,8 @@ export class DatabaseService {
       },
     });
     await this.dbPromise;
+    benchMark('ba:idb-open:end');
+    benchMeasure('ba:idb-open', 'ba:idb-open:start', 'ba:idb-open:end');
   }
 
   public async close(): Promise<void> {
