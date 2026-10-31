@@ -4,9 +4,11 @@
       @if (isLoading()) {
         <ba-spinner></ba-spinner>
       }
-      @if (calculatedImageWidth()) {
+      @if (task.imageId | taskTileImage; as image) {
         <img
-          [src]="task.imageId | imageSrc: calculatedImageWidth()"
+          [src]="image.src"
+          [attr.srcset]="image.srcset"
+          [attr.sizes]="image.sizes"
           (load)="isLoading.set(false)"
           (error)="onImageError()"
         />
