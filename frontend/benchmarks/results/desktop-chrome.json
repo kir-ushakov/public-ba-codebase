@@ -1,0 +1,1112 @@
+{
+  "measuredAt": "2026-10-31T04:39:15.399Z",
+  "commit": {
+    "sha": "f9192a812e545b1a1af30fa3b6dc08bb0b2b529b",
+    "dirty": true
+  },
+  "environment": {
+    "kind": "desktop-chromium",
+    "android": null,
+    "note": "Not a physical phone. Viewport is phone-sized; CPU and RAM are this computer.",
+    "chrome": "140.0.7339.186",
+    "viewport": {
+      "width": 375,
+      "height": 667
+    },
+    "platform": "win32",
+    "osRelease": "10.0.26200",
+    "cpu": "Intel(R) Core(TM) Ultra 9 275HX",
+    "logicalCores": 24,
+    "totalMemoryBytes": 33687678976,
+    "node": "v24.13.0",
+    "build": "ng build --configuration benchmark (production optimization, service worker on)",
+    "seed": 20261031,
+    "userId": "bench-user",
+    "database": "ba-bench-user"
+  },
+  "dataset": {
+    "primaryCount": 1000,
+    "jsonBytes": 2701292,
+    "counts": {
+      "TASK_STATUS_TODO": 500,
+      "TASK_STATUS_ACTIVE": 200,
+      "TASK_STATUS_DONE": 250,
+      "TASK_STATUS_CANCEL": 50
+    },
+    "adaptations": [
+      "Ids are task-00001, not uuid.",
+      "60% of tasks have 1–4 tags; 40% have none.",
+      "Types are 80% To do (TASK_TYPE_BASIC), 10% Calendar, 10% Location.",
+      "Home has no Notes status in this set, so the Notes tab is empty.",
+      "Done and Cancelled stay in IndexedDB but are not a Home mode.",
+      "10% carry imageId metadata only. No image blobs are stored.",
+      "Tag color is #00a991, the same constant the app uses for new tags."
+    ]
+  },
+  "bench01ColdStart": {
+    "coldAppWarmHttpCache": {
+      "first": {
+        "startupToListMs": 472.8999999985099,
+        "idbOpenMs": 14.100000001490116,
+        "idbReadMs": 25.5,
+        "ngxsHydrateMs": 0.29999999701976776,
+        "domContentLoadedMs": 56.30000000447035,
+        "loadEventMs": 1240.6000000014901,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [73],
+        "serviceWorkerControlled": true
+      },
+      "rest": {
+        "startupToListMs": {
+          "n": 9,
+          "min": 276.8999999985099,
+          "p50": 290.29999999701977,
+          "p95": 307.1000000014901,
+          "max": 307.1000000014901
+        },
+        "idbOpenMs": {
+          "n": 9,
+          "min": 1.3999999985098839,
+          "p50": 1.5,
+          "p95": 1.6000000014901161,
+          "max": 1.6000000014901161
+        },
+        "idbReadMs": {
+          "n": 9,
+          "min": 169.29999999701977,
+          "p50": 170.5,
+          "p95": 174.39999999850988,
+          "max": 174.39999999850988
+        },
+        "ngxsHydrateMs": {
+          "n": 9,
+          "min": 0.19999999552965164,
+          "p50": 0.20000000298023224,
+          "p95": 0.30000000447034836,
+          "max": 0.30000000447034836
+        },
+        "domContentLoadedMs": {
+          "n": 9,
+          "min": 36.899999998509884,
+          "p50": 37.600000001490116,
+          "p95": 38.69999999552965,
+          "max": 38.69999999552965
+        },
+        "loadEventMs": {
+          "n": 9,
+          "min": 206.5,
+          "p50": 207.69999999552965,
+          "p95": 211.10000000149012,
+          "max": 211.10000000149012
+        },
+        "longTaskCount": {
+          "n": 9,
+          "min": 1,
+          "p50": 1,
+          "p95": 1,
+          "max": 1
+        },
+        "longTaskMaxMs": {
+          "n": 9,
+          "min": 63,
+          "p50": 66,
+          "p95": 77,
+          "max": 77
+        },
+        "serviceWorkerControlled": [true, true, true, true, true, true, true, true, true],
+        "cachedResourceCount": [11, 11, 11, 11, 11, 11, 11, 11, 11]
+      },
+      "all": {
+        "startupToListMs": {
+          "n": 10,
+          "min": 276.8999999985099,
+          "p50": 290.29999999701977,
+          "p95": 472.8999999985099,
+          "max": 472.8999999985099
+        },
+        "idbOpenMs": {
+          "n": 10,
+          "min": 1.3999999985098839,
+          "p50": 1.5,
+          "p95": 14.100000001490116,
+          "max": 14.100000001490116
+        },
+        "idbReadMs": {
+          "n": 10,
+          "min": 25.5,
+          "p50": 169.90000000596046,
+          "p95": 174.39999999850988,
+          "max": 174.39999999850988
+        },
+        "ngxsHydrateMs": {
+          "n": 10,
+          "min": 0.19999999552965164,
+          "p50": 0.20000000298023224,
+          "p95": 0.30000000447034836,
+          "max": 0.30000000447034836
+        },
+        "domContentLoadedMs": {
+          "n": 10,
+          "min": 36.899999998509884,
+          "p50": 37.600000001490116,
+          "p95": 56.30000000447035,
+          "max": 56.30000000447035
+        },
+        "loadEventMs": {
+          "n": 10,
+          "min": 206.5,
+          "p50": 207.69999999552965,
+          "p95": 1240.6000000014901,
+          "max": 1240.6000000014901
+        },
+        "longTaskCount": {
+          "n": 10,
+          "min": 1,
+          "p50": 1,
+          "p95": 1,
+          "max": 1
+        },
+        "longTaskMaxMs": {
+          "n": 10,
+          "min": 63,
+          "p50": 66,
+          "p95": 77,
+          "max": 77
+        },
+        "serviceWorkerControlled": [true, true, true, true, true, true, true, true, true, true],
+        "cachedResourceCount": [11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
+      }
+    },
+    "coldHttpCache": {
+      "first": {
+        "startupToListMs": 427.29999999701977,
+        "idbOpenMs": 1.7000000029802322,
+        "idbReadMs": 19.399999998509884,
+        "ngxsHydrateMs": 0.09999999403953552,
+        "domContentLoadedMs": 38.899999998509884,
+        "loadEventMs": 733.6999999955297,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [64],
+        "serviceWorkerControlled": true
+      },
+      "rest": {
+        "startupToListMs": {
+          "n": 9,
+          "min": 238.60000000149012,
+          "p50": 432.79999999701977,
+          "p95": 449.20000000298023,
+          "max": 449.20000000298023
+        },
+        "idbOpenMs": {
+          "n": 9,
+          "min": 1,
+          "p50": 1.4000000059604645,
+          "p95": 1.6999999955296516,
+          "max": 1.6999999955296516
+        },
+        "idbReadMs": {
+          "n": 9,
+          "min": 18.600000001490116,
+          "p50": 20.5,
+          "p95": 173.30000000447035,
+          "max": 173.30000000447035
+        },
+        "ngxsHydrateMs": {
+          "n": 9,
+          "min": 0.10000000149011612,
+          "p50": 0.20000000298023224,
+          "p95": 0.30000000447034836,
+          "max": 0.30000000447034836
+        },
+        "domContentLoadedMs": {
+          "n": 9,
+          "min": 38.100000001490116,
+          "p50": 41.20000000298023,
+          "p95": 130.60000000149012,
+          "max": 130.60000000149012
+        },
+        "loadEventMs": {
+          "n": 9,
+          "min": 145.30000000447035,
+          "p50": 699,
+          "p95": 721.7999999970198,
+          "max": 721.7999999970198
+        },
+        "longTaskCount": {
+          "n": 9,
+          "min": 1,
+          "p50": 1,
+          "p95": 1,
+          "max": 1
+        },
+        "longTaskMaxMs": {
+          "n": 9,
+          "min": 61,
+          "p50": 65,
+          "p95": 69,
+          "max": 69
+        },
+        "serviceWorkerControlled": [true, true, true, true, true, true, true, true, true],
+        "cachedResourceCount": [11, 11, 11, 11, 11, 11, 11, 11, 11]
+      },
+      "all": {
+        "startupToListMs": {
+          "n": 10,
+          "min": 238.60000000149012,
+          "p50": 427.6000000014901,
+          "p95": 449.20000000298023,
+          "max": 449.20000000298023
+        },
+        "idbOpenMs": {
+          "n": 10,
+          "min": 1,
+          "p50": 1.4000000059604645,
+          "p95": 1.7000000029802322,
+          "max": 1.7000000029802322
+        },
+        "idbReadMs": {
+          "n": 10,
+          "min": 18.600000001490116,
+          "p50": 19.899999998509884,
+          "p95": 173.30000000447035,
+          "max": 173.30000000447035
+        },
+        "ngxsHydrateMs": {
+          "n": 10,
+          "min": 0.09999999403953552,
+          "p50": 0.20000000298023224,
+          "p95": 0.30000000447034836,
+          "max": 0.30000000447034836
+        },
+        "domContentLoadedMs": {
+          "n": 10,
+          "min": 38.100000001490116,
+          "p50": 40.899999998509884,
+          "p95": 130.60000000149012,
+          "max": 130.60000000149012
+        },
+        "loadEventMs": {
+          "n": 10,
+          "min": 145.30000000447035,
+          "p50": 699,
+          "p95": 733.6999999955297,
+          "max": 733.6999999955297
+        },
+        "longTaskCount": {
+          "n": 10,
+          "min": 1,
+          "p50": 1,
+          "p95": 1,
+          "max": 1
+        },
+        "longTaskMaxMs": {
+          "n": 10,
+          "min": 61,
+          "p50": 64,
+          "p95": 69,
+          "max": 69
+        },
+        "serviceWorkerControlled": [true, true, true, true, true, true, true, true, true, true],
+        "cachedResourceCount": [11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
+      }
+    },
+    "runs": [
+      {
+        "startupToListMs": 472.8999999985099,
+        "idbOpenMs": 14.100000001490116,
+        "idbReadMs": 25.5,
+        "ngxsHydrateMs": 0.29999999701976776,
+        "domContentLoadedMs": 56.30000000447035,
+        "loadEventMs": 1240.6000000014901,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [73],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 278.69999999552965,
+        "idbOpenMs": 1.5,
+        "idbReadMs": 170.5,
+        "ngxsHydrateMs": 0.20000000298023224,
+        "domContentLoadedMs": 37.099999994039536,
+        "loadEventMs": 207.29999999701977,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [68],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 307.1000000014901,
+        "idbOpenMs": 1.3999999985098839,
+        "idbReadMs": 172.79999999701977,
+        "ngxsHydrateMs": 0.20000000298023224,
+        "domContentLoadedMs": 37.600000001490116,
+        "loadEventMs": 210,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [77],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 291.29999999701977,
+        "idbOpenMs": 1.5999999940395355,
+        "idbReadMs": 169.90000000596046,
+        "ngxsHydrateMs": 0.29999999701976776,
+        "domContentLoadedMs": 38.599999994039536,
+        "loadEventMs": 208.09999999403954,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [65],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 290.29999999701977,
+        "idbOpenMs": 1.3999999985098839,
+        "idbReadMs": 169.39999999850988,
+        "ngxsHydrateMs": 0.20000000298023224,
+        "domContentLoadedMs": 38.69999999552965,
+        "loadEventMs": 207.69999999552965,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [65],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 276.8999999985099,
+        "idbOpenMs": 1.5,
+        "idbReadMs": 174.39999999850988,
+        "ngxsHydrateMs": 0.20000000298023224,
+        "domContentLoadedMs": 37.20000000298023,
+        "loadEventMs": 211.10000000149012,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [64],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 287.6000000014901,
+        "idbOpenMs": 1.3999999985098839,
+        "idbReadMs": 169.29999999701977,
+        "ngxsHydrateMs": 0.30000000447034836,
+        "domContentLoadedMs": 37.70000000298023,
+        "loadEventMs": 206.5,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [63],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 292.80000000447035,
+        "idbOpenMs": 1.5999999940395355,
+        "idbReadMs": 173.10000000149012,
+        "ngxsHydrateMs": 0.20000000298023224,
+        "domContentLoadedMs": 37.399999998509884,
+        "loadEventMs": 209.70000000298023,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [66],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 290.8999999985099,
+        "idbOpenMs": 1.6000000014901161,
+        "idbReadMs": 171.20000000298023,
+        "ngxsHydrateMs": 0.29999999701976776,
+        "domContentLoadedMs": 36.899999998509884,
+        "loadEventMs": 207.60000000149012,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [66],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 277.69999999552965,
+        "idbOpenMs": 1.5,
+        "idbReadMs": 169.89999999850988,
+        "ngxsHydrateMs": 0.19999999552965164,
+        "domContentLoadedMs": 38,
+        "loadEventMs": 207.39999999850988,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [67],
+        "serviceWorkerControlled": true
+      }
+    ],
+    "coldHttpCacheRuns": [
+      {
+        "startupToListMs": 427.29999999701977,
+        "idbOpenMs": 1.7000000029802322,
+        "idbReadMs": 19.399999998509884,
+        "ngxsHydrateMs": 0.09999999403953552,
+        "domContentLoadedMs": 38.899999998509884,
+        "loadEventMs": 733.6999999955297,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [64],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 238.60000000149012,
+        "idbOpenMs": 1,
+        "idbReadMs": 24,
+        "ngxsHydrateMs": 0.30000000447034836,
+        "domContentLoadedMs": 130.60000000149012,
+        "loadEventMs": 145.30000000447035,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [67],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 287.20000000298023,
+        "idbOpenMs": 1.5,
+        "idbReadMs": 173.30000000447035,
+        "ngxsHydrateMs": 0.19999999552965164,
+        "domContentLoadedMs": 42.600000001490116,
+        "loadEventMs": 215.10000000149012,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [69],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 282.6000000014901,
+        "idbOpenMs": 1.3999999985098839,
+        "idbReadMs": 163.29999999701977,
+        "ngxsHydrateMs": 0.20000000298023224,
+        "domContentLoadedMs": 38.100000001490116,
+        "loadEventMs": 192.70000000298023,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [65],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 449.20000000298023,
+        "idbOpenMs": 1.5,
+        "idbReadMs": 18.899999998509884,
+        "ngxsHydrateMs": 0.29999999701976776,
+        "domContentLoadedMs": 45.600000001490116,
+        "loadEventMs": 721.7999999970198,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [66],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 427.6000000014901,
+        "idbOpenMs": 1.3999999985098839,
+        "idbReadMs": 18.600000001490116,
+        "ngxsHydrateMs": 0.29999999701976776,
+        "domContentLoadedMs": 40.899999998509884,
+        "loadEventMs": 697.7999999970198,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [62],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 436.1000000014901,
+        "idbOpenMs": 1.6000000014901161,
+        "idbReadMs": 20.5,
+        "ngxsHydrateMs": 0.29999999701976776,
+        "domContentLoadedMs": 40.70000000298023,
+        "loadEventMs": 711.8000000044703,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [61],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 434.30000000447035,
+        "idbOpenMs": 1.4000000059604645,
+        "idbReadMs": 19.899999998509884,
+        "ngxsHydrateMs": 0.10000000149011612,
+        "domContentLoadedMs": 38.5,
+        "loadEventMs": 701.5,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [63],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 436.20000000298023,
+        "idbOpenMs": 1.6999999955296516,
+        "idbReadMs": 19,
+        "ngxsHydrateMs": 0.20000000298023224,
+        "domContentLoadedMs": 41.20000000298023,
+        "loadEventMs": 709.1000000014901,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [68],
+        "serviceWorkerControlled": true
+      },
+      {
+        "startupToListMs": 432.79999999701977,
+        "idbOpenMs": 1.3999999985098839,
+        "idbReadMs": 20.5,
+        "ngxsHydrateMs": 0.20000000298023224,
+        "domContentLoadedMs": 41.599999994039536,
+        "loadEventMs": 699,
+        "resourceCount": 30,
+        "cachedResourceCount": 11,
+        "longTasks": [61],
+        "serviceWorkerControlled": true
+      }
+    ]
+  },
+  "bench02And03": {
+    "100": {
+      "jsonBytes": 219364,
+      "counts": {
+        "TASK_STATUS_TODO": 50,
+        "TASK_STATUS_ACTIVE": 20,
+        "TASK_STATUS_DONE": 25,
+        "TASK_STATUS_CANCEL": 5
+      },
+      "micro": {
+        "read": {
+          "first": 2.399999998509884,
+          "n": 30,
+          "min": 1.8999999985098839,
+          "p50": 3,
+          "p95": 4.9000000059604645,
+          "max": 8.5
+        },
+        "save": {
+          "first": 0.5,
+          "n": 30,
+          "min": 0.20000000298023224,
+          "p50": 0.30000000447034836,
+          "p95": 0.4000000059604645,
+          "max": 0.4000000059604645
+        },
+        "update": {
+          "first": 0.3999999985098839,
+          "n": 30,
+          "min": 0.29999999701976776,
+          "p50": 0.30000000447034836,
+          "p95": 0.4000000059604645,
+          "max": 0.5
+        },
+        "delete": {
+          "first": 0.3999999985098839,
+          "n": 30,
+          "min": 0.20000000298023224,
+          "p50": 0.30000000447034836,
+          "p95": 0.5,
+          "max": 0.5999999940395355
+        },
+        "applyBatch": {
+          "first": 9.5,
+          "n": 30,
+          "min": 8.100000001490116,
+          "p50": 9.200000002980232,
+          "p95": 12.699999995529652,
+          "max": 13.899999998509884
+        },
+        "selectors": {
+          "cachedAllTasksMs": {
+            "first": 0,
+            "n": 30,
+            "min": 0,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "max": 0.10000000149011612
+          },
+          "resetMs": {
+            "first": 0.10000000149011612,
+            "n": 30,
+            "min": 0,
+            "p50": 0.09999999403953552,
+            "p95": 0.10000000149011612,
+            "max": 0.20000000298023224
+          },
+          "allTasksMs": {
+            "first": 0.20000000298023224,
+            "n": 30,
+            "min": 0,
+            "p50": 0.19999999552965164,
+            "p95": 0.20000000298023224,
+            "max": 0.30000000447034836
+          },
+          "actualTasksMs": {
+            "first": 0.29999999701976776,
+            "n": 30,
+            "min": 0.09999999403953552,
+            "p50": 0.20000000298023224,
+            "p95": 0.29999999701976776,
+            "max": 0.6000000014901161
+          },
+          "statusFilterMs": {
+            "first": 0,
+            "n": 30,
+            "min": 0,
+            "p50": 0,
+            "p95": 0,
+            "max": 0.09999999403953552
+          },
+          "tagFilterMs": {
+            "first": 0.20000000298023224,
+            "n": 30,
+            "min": 0.09999999403953552,
+            "p50": 0.19999999552965164,
+            "p95": 0.20000000298023224,
+            "max": 0.20000000298023224
+          },
+          "sortMs": {
+            "first": 0,
+            "n": 30,
+            "min": 0,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "max": 0.10000000149011612
+          },
+          "allCount": 100,
+          "actualCount": 70,
+          "todoCount": 50
+        }
+      }
+    },
+    "1000": {
+      "jsonBytes": 2701292,
+      "counts": {
+        "TASK_STATUS_TODO": 500,
+        "TASK_STATUS_ACTIVE": 200,
+        "TASK_STATUS_DONE": 250,
+        "TASK_STATUS_CANCEL": 50
+      },
+      "micro": {
+        "read": {
+          "first": 410.29999999701977,
+          "n": 30,
+          "min": 18.5,
+          "p50": 20.80000000447035,
+          "p95": 23,
+          "max": 23.399999998509884
+        },
+        "save": {
+          "first": 0.7000000029802322,
+          "n": 30,
+          "min": 0.19999999552965164,
+          "p50": 0.3999999985098839,
+          "p95": 0.5,
+          "max": 1.3000000044703484
+        },
+        "update": {
+          "first": 0.4000000059604645,
+          "n": 30,
+          "min": 0.20000000298023224,
+          "p50": 0.30000000447034836,
+          "p95": 0.4000000059604645,
+          "max": 3.899999998509884
+        },
+        "delete": {
+          "first": 0.29999999701976776,
+          "n": 30,
+          "min": 0.19999999552965164,
+          "p50": 0.30000000447034836,
+          "p95": 0.4000000059604645,
+          "max": 0.4000000059604645
+        },
+        "applyBatch": {
+          "first": 11.300000004470348,
+          "n": 30,
+          "min": 8.700000002980232,
+          "p50": 21.600000001490116,
+          "p95": 25.5,
+          "max": 26.299999997019768
+        },
+        "selectors": {
+          "cachedAllTasksMs": {
+            "first": 0,
+            "n": 30,
+            "min": 0,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "max": 0.10000000149011612
+          },
+          "resetMs": {
+            "first": 0,
+            "n": 30,
+            "min": 0,
+            "p50": 0,
+            "p95": 0.19999999552965164,
+            "max": 0.19999999552965164
+          },
+          "allTasksMs": {
+            "first": 2.2999999970197678,
+            "n": 30,
+            "min": 2,
+            "p50": 2.2999999970197678,
+            "p95": 2.600000001490116,
+            "max": 2.7000000029802322
+          },
+          "actualTasksMs": {
+            "first": 2,
+            "n": 30,
+            "min": 2,
+            "p50": 2.1999999955296516,
+            "p95": 3,
+            "max": 3
+          },
+          "statusFilterMs": {
+            "first": 0,
+            "n": 30,
+            "min": 0,
+            "p50": 0,
+            "p95": 0.09999999403953552,
+            "max": 0.10000000149011612
+          },
+          "tagFilterMs": {
+            "first": 2.3000000044703484,
+            "n": 30,
+            "min": 1.8000000044703484,
+            "p50": 2,
+            "p95": 2.7999999970197678,
+            "max": 2.899999998509884
+          },
+          "sortMs": {
+            "first": 0.29999999701976776,
+            "n": 30,
+            "min": 0.09999999403953552,
+            "p50": 0.29999999701976776,
+            "p95": 0.6000000014901161,
+            "max": 0.6999999955296516
+          },
+          "allCount": 1000,
+          "actualCount": 700,
+          "todoCount": 500
+        }
+      }
+    },
+    "5000": {
+      "jsonBytes": 13189404,
+      "counts": {
+        "TASK_STATUS_TODO": 2500,
+        "TASK_STATUS_ACTIVE": 1000,
+        "TASK_STATUS_DONE": 1250,
+        "TASK_STATUS_CANCEL": 250
+      },
+      "micro": {
+        "read": {
+          "first": 8033.30000000447,
+          "n": 30,
+          "min": 68.5,
+          "p50": 75.89999999850988,
+          "p95": 83.39999999850988,
+          "max": 84.90000000596046
+        },
+        "save": {
+          "first": 1.5999999940395355,
+          "n": 30,
+          "min": 0.19999999552965164,
+          "p50": 0.3999999985098839,
+          "p95": 0.7000000029802322,
+          "max": 1.1000000014901161
+        },
+        "update": {
+          "first": 0.8000000044703484,
+          "n": 30,
+          "min": 0.19999999552965164,
+          "p50": 0.30000000447034836,
+          "p95": 0.5,
+          "max": 0.8999999985098839
+        },
+        "delete": {
+          "first": 0.29999999701976776,
+          "n": 30,
+          "min": 0.19999999552965164,
+          "p50": 0.30000000447034836,
+          "p95": 0.6000000014901161,
+          "max": 10.5
+        },
+        "applyBatch": {
+          "first": 27,
+          "n": 30,
+          "min": 25,
+          "p50": 34.69999999552965,
+          "p95": 39.30000000447035,
+          "max": 50.899999998509884
+        },
+        "selectors": {
+          "cachedAllTasksMs": {
+            "first": 0,
+            "n": 30,
+            "min": 0,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "max": 0.10000000149011612
+          },
+          "resetMs": {
+            "first": 0,
+            "n": 30,
+            "min": 0,
+            "p50": 0.09999999403953552,
+            "p95": 0.20000000298023224,
+            "max": 0.20000000298023224
+          },
+          "allTasksMs": {
+            "first": 13.100000001490116,
+            "n": 30,
+            "min": 12.600000001490116,
+            "p50": 13,
+            "p95": 14,
+            "max": 14.099999994039536
+          },
+          "actualTasksMs": {
+            "first": 13.200000002980232,
+            "n": 30,
+            "min": 13,
+            "p50": 13.200000002980232,
+            "p95": 14.700000002980232,
+            "max": 16.299999997019768
+          },
+          "statusFilterMs": {
+            "first": 0.10000000149011612,
+            "n": 30,
+            "min": 0,
+            "p50": 0.09999999403953552,
+            "p95": 0.10000000149011612,
+            "max": 2.3000000044703484
+          },
+          "tagFilterMs": {
+            "first": 10.099999994039536,
+            "n": 30,
+            "min": 9.600000001490116,
+            "p50": 11.5,
+            "p95": 14.200000002980232,
+            "max": 18.799999997019768
+          },
+          "sortMs": {
+            "first": 1.2000000029802322,
+            "n": 30,
+            "min": 1.0999999940395355,
+            "p50": 1.2000000029802322,
+            "p95": 1.3000000044703484,
+            "max": 1.3999999985098839
+          },
+          "allCount": 5000,
+          "actualCount": 3500,
+          "todoCount": 2500
+        }
+      }
+    }
+  },
+  "bench04And05": {
+    "dom": {
+      "tiles": 500,
+      "allElements": 5699
+    },
+    "filterSwitchMs": {
+      "n": 30,
+      "min": 608,
+      "p50": 1198,
+      "p95": 5415,
+      "max": 5921
+    },
+    "filterSwitchSamples": [
+      {
+        "mode": "active",
+        "ms": 1002,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 5052,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 608,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 4782,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 1198,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 4886,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 807,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 4752,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 885,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 5147,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 615,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 5126,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 642,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 4721,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 1186,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 5109,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 631,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 5121,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 636,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 5250,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 639,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 5415,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 630,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 5210,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 620,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 4520,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 644,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 5921,
+        "tiles": 500
+      },
+      {
+        "mode": "active",
+        "ms": 761,
+        "tiles": 200
+      },
+      {
+        "mode": "todo",
+        "ms": 4911,
+        "tiles": 500
+      }
+    ],
+    "scrollFrameMs": {
+      "n": 40,
+      "min": 12.100000001490116,
+      "p50": 16.5,
+      "p95": 17.700000002980232,
+      "max": 17.80000000447035
+    },
+    "scrollFramesOver32Ms": 0,
+    "openTaskMs": {
+      "n": 20,
+      "min": 27,
+      "p50": 98,
+      "p95": 299,
+      "max": 535
+    },
+    "typingEventMs": {
+      "n": 64,
+      "min": 16,
+      "p50": 16,
+      "p95": 24,
+      "max": 24
+    },
+    "typingEventCount": 64,
+    "saveAndReturnMs": 36,
+    "markDoneMs": 2335,
+    "longTasks": {
+      "n": 80,
+      "min": 54,
+      "p50": 164,
+      "p95": 277,
+      "max": 285
+    },
+    "longTaskCount": 80
+  },
+  "bench06Memory": {
+    "unit": "JSHeapUsedSize bytes from Chrome DevTools Protocol Performance.getMetrics",
+    "limitation": "This is Chrome-only heap inside the page process, not Android PSS and not performance.memory. A larger heap after work is not by itself a leak. afterGc is measured after HeapProfiler.collectGarbage.",
+    "afterHydration": 31988968,
+    "afterOpenClose": 23992124,
+    "afterHundredUpdates": 26540380,
+    "afterReturnHome": 51109976,
+    "afterGc": 12788476,
+    "hundredUpdates": {
+      "n": 100,
+      "min": 0.19999999552965164,
+      "p50": 0.29999999701976776,
+      "p95": 0.5,
+      "max": 1051.6000000014901
+    }
+  }
+}

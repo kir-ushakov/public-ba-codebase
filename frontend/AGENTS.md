@@ -58,6 +58,11 @@ Tests: Jest in `tests/unit/` (state, helpers, component tripwires), mocked Playw
 `tests/integration/` (guide in `tests/integration/README.md`), live two-client specs in
 `tests/e2e/`. `npm test` is Jest only.
 
+`benchmarks/` is a separate measurement harness. The normal dev and production builds keep
+`src/app/benchmark/` as no-ops. Only `ng build --configuration benchmark` replaces those files
+with the probe. Do not import `benchmarks/` from application code, and do not treat its timings
+as a change to IndexedDB, NGXS, or the screens.
+
 ## Canonical references
 
 Existing code to open and imitate when building something of the same kind. Copy the structure, not
