@@ -110,7 +110,7 @@ Chrome DevTools CPU throttling stays a preview. Do not put throttled numbers in 
 
 ## What a result file means
 
-`results/*.json` is written only by a run that finished. `commit.sha` is `git rev-parse HEAD` at run time. `commit.dirty` is true when the working tree had extra edits, so the SHA does not contain this harness until those edits are committed.
+`results/*.json` is written only by a run that finished. `commit.sha` is the commit currently checked out, read from `.git/HEAD`. The runner does not call `git`. `desktop-chrome.json` in this folder was captured before that change, while the tree was still dirty, so that file still has `commit.dirty: true`. Later runs leave `dirty` null.
 
 For 10 cold-start samples, nearest-rank p95 is the slowest sample. Say that next to the table. For 30 samples, p95 is the 29th.
 

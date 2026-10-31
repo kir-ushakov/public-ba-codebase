@@ -8,7 +8,6 @@
  * A phone is not launched from here. Set BENCH_CDP and BENCH_PUBLIC_ORIGIN
  * only when Chrome on that phone is already reachable. See README.md.
  */
-import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
@@ -203,9 +202,52 @@ try {
 }
 
 function commitInfo() {
-  const sha = execSync('git rev-parse HEAD', { cwd: frontendRoot, encoding: 'utf8' }).trim();
-  const dirty = execSync('git status --porcelain', { cwd: frontendRoot, encoding: 'utf8' }).trim();
-  return { sha, dirty: dirty.length > 0 };
+  return {
+    sha: readGitHead(path.resolve(frontendRoot, '..')),
+    dirty: null,
+  };
+}
+
+function readGitHead(repoRoot) {
+  try {
+    let gitDir = path.join(repoRoot, '.git');
+    if (fs.statSync(gitDir).isFile()) {
+      const pointer = fs.readFileSync(gitDir, 'utf8').trim();
+      const match = pointer.match(/^gitdir:\s*(.+)$/);
+      if (!match) {
+        return null;
+      }
+      gitDir = path.resolve(repoRoot, match[1]);
+    }
+    const head = fs.readFileSync(path.join(gitDir, 'HEAD'), 'utf8').trim();
+    if (!head.startsWith('ref: ')) {
+      return head;
+    }
+    const refPath = path.join(gitDir, head.slice('ref: '.length));
+    if (fs.existsSync(refPath)) {
+      return fs.readFileSync(refPath, 'utf8').trim();
+    }
+    return readPackedRef(gitDir, head.slice('ref: '.length));
+  } catch {
+    return null;
+  }
+}
+
+function readPackedRef(gitDir, refName) {
+  const packedPath = path.join(gitDir, 'packed-refs');
+  if (!fs.existsSync(packedPath)) {
+    return null;
+  }
+  for (const line of fs.readFileSync(packedPath, 'utf8').split('\n')) {
+    if (line.startsWith('#') || line.startsWith('^')) {
+      continue;
+    }
+    const [sha, ref] = line.split(' ');
+    if (ref === refName) {
+      return sha;
+    }
+  }
+  return null;
 }
 
 async function newContext(browser) {
@@ -509,6 +551,58 @@ async function heapAfterGc(page) {
 }
 
 function listen(root, listenPort, host) {
+  const files = listDistFiles(root);
+  const indexPath = files.get('/index.html');
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url ?? '/', `http://127.0.0.1:${listenPort}`);
+    const filePath = files.get(requestPath(url.pathname)) ?? indexPath;
+    if (!filePath) {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+    const body = fs.readFileSync(filePath);
+    res.writeHead(200, { 'content-type': contentType(filePath) });
+    res.end(body);
+  });
+  return new Promise((resolve, reject) => {
+    server.listen(listenPort, host, () => {
+      resolve({
+        origin: process.env.BENCH_PUBLIC_ORIGIN ?? `http://127.0.0.1:${listenPort}/`,
+        close: () => closeServer(server),
+      });
+    });
+    server.on('error', reject);
+  });
+}
+
+function listDistFiles(root) {
+  const files = new Map();
+  const walk = dir => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      const rel = `/${path.relative(root, full).split(path.sep).join('/')}`;
+      files.set(rel, full);
+    }
+  };
+  walk(root);
+  return files;
+}
+
+function requestPath(pathname) {
+  try {
+    const decoded = decodeURIComponent(pathname);
+    return decoded.length > 1 && decoded.endsWith('/') ? decoded.slice(0, -1) : decoded;
+  } catch {
+    return '/';
+  }
+}
+
+function contentType(filePath) {
   const types = {
     '.html': 'text/html',
     '.js': 'text/javascript',
@@ -520,32 +614,11 @@ function listen(root, listenPort, host) {
     '.woff2': 'font/woff2',
     '.ico': 'image/x-icon',
   };
-  const server = http.createServer((req, res) => {
-    const url = new URL(req.url ?? '/', `http://127.0.0.1:${listenPort}`);
-    const requested = path.normalize(decodeURIComponent(url.pathname));
-    let filePath = path.join(root, requested);
-    if (!filePath.startsWith(root)) {
-      res.writeHead(403);
-      res.end();
-      return;
-    }
-    if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-      filePath = path.join(root, 'index.html');
-    }
-    const body = fs.readFileSync(filePath);
-    res.writeHead(200, { 'content-type': types[path.extname(filePath)] ?? 'application/octet-stream' });
-    res.end(body);
-  });
-  return new Promise((resolve, reject) => {
-    server.listen(listenPort, host, () => {
-      resolve({
-        origin: process.env.BENCH_PUBLIC_ORIGIN ?? `http://127.0.0.1:${listenPort}/`,
-        close: () =>
-          new Promise((done, fail) => {
-            server.close(error => (error ? fail(error) : done()));
-          }),
-      });
-    });
-    server.on('error', reject);
+  return types[path.extname(filePath)] ?? 'application/octet-stream';
+}
+
+function closeServer(server) {
+  return new Promise((done, fail) => {
+    server.close(error => (error ? fail(error) : done()));
   });
 }
