@@ -44,7 +44,9 @@
           ></ba-context-menu>
         }
       </div>
-      <div class="task-tile-meta">{{ createdAtLabel }}</div>
+      <div class="task-tile-meta" data-test="task-tile-date">
+        {{ task.createdAt | taskTileDate: dayKey() : dateLocale }}
+      </div>
     </div>
   </div>
 </div>
