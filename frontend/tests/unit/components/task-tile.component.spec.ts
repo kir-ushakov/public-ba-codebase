@@ -159,27 +159,72 @@ describe('TaskTileComponent', () => {
 
   it('does not measure a tile that has no image', () => {
     expect(offsetWidthReads(fixture)).toBe(0);
-    expect(fixture.componentInstance.calculatedImageWidth()).toBeUndefined();
     expect((fixture.nativeElement as HTMLElement).querySelector('img')).toBeNull();
   });
 
-  it('measures an image tile once', () => {
+  it('selects a remote image with srcset and does not read tile width', async () => {
     const imageFixture = TestBed.createComponent(TaskTileComponent);
     const reads = offsetWidthOf(imageFixture);
-    reads.mockReturnValue(180);
 
     imageFixture.componentRef.setInput('task', { ...task, imageId: 'img-1' });
     imageFixture.detectChanges();
-
-    expect(reads).toHaveBeenCalledTimes(1);
-    expect(imageFixture.componentInstance.calculatedImageWidth()).toBe(
-      180 * (window.devicePixelRatio || 1),
-    );
-    expect((imageFixture.nativeElement as HTMLElement).querySelector('img')).not.toBeNull();
-
+    await flushImage();
     imageFixture.detectChanges();
-    expect(reads).toHaveBeenCalledTimes(1);
+
+    const img = (imageFixture.nativeElement as HTMLElement).querySelector('img');
+    expect(reads).not.toHaveBeenCalled();
+    expect(img?.getAttribute('src')).toBe('/api/files/image/img-1?width=960');
+    expect(img?.getAttribute('srcset')).toBe(
+      '/api/files/image/img-1?width=480 480w, /api/files/image/img-1?width=960 960w, /api/files/image/img-1?width=1600 1600w',
+    );
+    expect(img?.getAttribute('sizes')).toContain('336px');
+    imageFixture.detectChanges();
+    expect(reads).not.toHaveBeenCalled();
     imageFixture.destroy();
+  });
+
+  it('keeps a local image as one blob url without srcset', async () => {
+    const imageService = TestBed.inject(ImageService) as unknown as { getImageRecord: jest.Mock };
+    const blob = new Blob(['local']);
+    const previousCreate = URL.createObjectURL;
+    const previousRevoke = URL.revokeObjectURL;
+    const createObjectURL = jest.fn(() => 'blob:local');
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: createObjectURL,
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      writable: true,
+      value: jest.fn(),
+    });
+    imageService.getImageRecord.mockResolvedValue({ id: 'img-1', blob, uploaded: true });
+
+    const imageFixture = TestBed.createComponent(TaskTileComponent);
+    try {
+      imageFixture.componentRef.setInput('task', { ...task, imageId: 'img-1' });
+      imageFixture.detectChanges();
+      await flushImage();
+      imageFixture.detectChanges();
+
+      const img = (imageFixture.nativeElement as HTMLElement).querySelector('img');
+      expect(img?.getAttribute('src')).toBe('blob:local');
+      expect(img?.getAttribute('srcset')).toBeNull();
+      expect(createObjectURL).toHaveBeenCalledWith(blob);
+    } finally {
+      imageFixture.destroy();
+      Object.defineProperty(URL, 'createObjectURL', {
+        configurable: true,
+        writable: true,
+        value: previousCreate,
+      });
+      Object.defineProperty(URL, 'revokeObjectURL', {
+        configurable: true,
+        writable: true,
+        value: previousRevoke,
+      });
+    }
   });
 
   it('formats the date again when the calendar day changes', () => {
@@ -237,6 +282,11 @@ function mockNow(start: Date): { at(next: Date): void; restore(): void } {
       spy.mockRestore();
     },
   };
+}
+
+async function flushImage(): Promise<void> {
+  await Promise.resolve();
+  await Promise.resolve();
 }
 
 function dateText(fixture: ComponentFixture<TaskTileComponent>): string {

@@ -1,13 +1,4 @@
-import {
-  Component,
-  DestroyRef,
-  ElementRef,
-  HostListener,
-  inject,
-  Input,
-  signal,
-  ViewChild,
-} from '@angular/core';
+import { Component, DestroyRef, HostListener, inject, Input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { TaskTileAction } from './task-tile.actions';
@@ -16,10 +7,10 @@ import { ETaskStatus, Task } from 'src/app/shared/models/task.model';
 import { ContextMenuComponent } from 'src/app/shared/components/ui-elements/context-menu/context-menu.component';
 import type { ContextMenuItem } from 'src/app/shared/components/ui-elements/context-menu/context-menu-item.type';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
-import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
 import { TASK_TILE_DATE_LOCALE } from './helpers/format-task-tile-date.function';
 import { TaskTileCalendar } from './task-tile-calendar.service';
 import { TaskTileDatePipe } from './task-tile-date.pipe';
+import { TaskTileImagePipe } from './task-tile-image.pipe';
 import { taskTypeIcon } from './helpers/task-type-icon.function';
 
 const menuItems: ContextMenuItem[] = [
@@ -52,7 +43,7 @@ const menuItems: ContextMenuItem[] = [
   selector: 'ba-task-tile',
   templateUrl: './task-tile.component.html',
   styleUrls: ['./task-tile.component.scss'],
-  imports: [ContextMenuComponent, SpinnerComponent, ImageSrcPipe, TaskTileDatePipe],
+  imports: [ContextMenuComponent, SpinnerComponent, TaskTileDatePipe, TaskTileImagePipe],
   host: {
     '[class.is-menu-open]': 'isMenuOpen()',
   },
@@ -66,12 +57,7 @@ export class TaskTileComponent {
     void this.router.navigate([`task/${ETaskViewMode.View}/${this.task.id}`]);
   }
 
-  @ViewChild(SpinnerComponent, { static: false }) spinnerComponent!: SpinnerComponent;
-
-  DEFAULT_IMAGE_WIDTH = 50;
-
   isLoading = signal(true);
-  calculatedImageWidth = signal<number | undefined>(undefined);
   readonly isMenuOpen = signal(false);
   readonly menuItems = menuItems;
   readonly dateLocale = TASK_TILE_DATE_LOCALE;
@@ -81,7 +67,6 @@ export class TaskTileComponent {
 
   constructor(
     private store: Store,
-    private host: ElementRef<HTMLElement>,
     private router: Router,
   ) {
     this.calendar.retain();
@@ -93,13 +78,6 @@ export class TaskTileComponent {
       return 'article';
     }
     return taskTypeIcon(this.task.type);
-  }
-
-  ngAfterViewInit(): void {
-    if (!this.task.imageId) {
-      return;
-    }
-    this.calculateImageWidth();
   }
 
   onMoreClick(event: Event): void {
@@ -124,14 +102,5 @@ export class TaskTileComponent {
 
   onImageError(): void {
     this.isLoading.set(false);
-  }
-
-  private calculateImageWidth(): void {
-    const width =
-      this.host.nativeElement.offsetWidth ||
-      this.spinnerComponent?.getNativeElement()?.offsetWidth ||
-      this.DEFAULT_IMAGE_WIDTH;
-    const dpr = window.devicePixelRatio || 1;
-    this.calculatedImageWidth.set(dpr * width);
   }
 }
