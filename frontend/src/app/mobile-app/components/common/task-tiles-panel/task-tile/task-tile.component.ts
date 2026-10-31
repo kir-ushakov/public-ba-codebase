@@ -1,4 +1,13 @@
-import { Component, ElementRef, Input, HostListener, signal, ViewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostListener,
+  inject,
+  Input,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { TaskTileAction } from './task-tile.actions';
@@ -8,7 +17,9 @@ import { ContextMenuComponent } from 'src/app/shared/components/ui-elements/cont
 import type { ContextMenuItem } from 'src/app/shared/components/ui-elements/context-menu/context-menu-item.type';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
 import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
-import { formatTaskTileDate } from './helpers/format-task-tile-date.function';
+import { TASK_TILE_DATE_LOCALE } from './helpers/format-task-tile-date.function';
+import { TaskTileCalendar } from './task-tile-calendar.service';
+import { TaskTileDatePipe } from './task-tile-date.pipe';
 import { taskTypeIcon } from './helpers/task-type-icon.function';
 
 const menuItems: ContextMenuItem[] = [
@@ -41,7 +52,7 @@ const menuItems: ContextMenuItem[] = [
   selector: 'ba-task-tile',
   templateUrl: './task-tile.component.html',
   styleUrls: ['./task-tile.component.scss'],
-  imports: [ContextMenuComponent, SpinnerComponent, ImageSrcPipe],
+  imports: [ContextMenuComponent, SpinnerComponent, ImageSrcPipe, TaskTileDatePipe],
   host: {
     '[class.is-menu-open]': 'isMenuOpen()',
   },
@@ -63,12 +74,19 @@ export class TaskTileComponent {
   calculatedImageWidth = signal<number | undefined>(undefined);
   readonly isMenuOpen = signal(false);
   readonly menuItems = menuItems;
+  readonly dateLocale = TASK_TILE_DATE_LOCALE;
+
+  private readonly calendar = inject(TaskTileCalendar);
+  readonly dayKey = this.calendar.dayKey;
 
   constructor(
     private store: Store,
     private host: ElementRef<HTMLElement>,
     private router: Router,
-  ) {}
+  ) {
+    this.calendar.retain();
+    inject(DestroyRef).onDestroy(() => this.calendar.release());
+  }
 
   get typeIcon(): string {
     if (this.task.status === ETaskStatus.Notes) {
@@ -77,11 +95,10 @@ export class TaskTileComponent {
     return taskTypeIcon(this.task.type);
   }
 
-  get createdAtLabel(): string {
-    return formatTaskTileDate(this.task.createdAt);
-  }
-
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
+    if (!this.task.imageId) {
+      return;
+    }
     this.calculateImageWidth();
   }
 
