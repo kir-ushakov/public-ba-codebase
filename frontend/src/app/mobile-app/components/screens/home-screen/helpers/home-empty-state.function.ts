@@ -28,6 +28,12 @@ const EMPTY_STATES: Record<HomeContentMode, HomeEmptyState> = {
     symbol: `${EMPTY_SPRITE}#empty-notes`,
     viewBox: '0 0 520 400',
   },
+  waiting: {
+    title: 'Nothing is waiting.',
+    body: 'Tasks with a calendar or location condition show up here until they start.',
+    symbol: `${EMPTY_SPRITE}#empty-todo`,
+    viewBox: '0 0 640 440',
+  },
 };
 
 export function homeEmptyState(mode: HomeContentMode): HomeEmptyState {

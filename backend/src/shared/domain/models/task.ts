@@ -1,4 +1,5 @@
 import {
+  ETaskCondition,
   ETaskError,
   ETaskStatus,
   ETaskType,
@@ -6,6 +7,7 @@ import {
   type ChecklistItemDTO,
   type TaskDescriptionDoc,
 } from '@brainassistant/contracts';
+import { deriveTaskConditions, parseTaskConditions, projectTaskType } from './task-conditions.js';
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 import { Result } from '../../core/result.js';
@@ -20,6 +22,7 @@ export interface ITaskProps {
   type: ETaskType;
   title: string;
   status: ETaskStatus;
+  conditions?: ETaskCondition[];
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;
@@ -36,6 +39,7 @@ export interface TaskPresitant {
   type: string;
   title: string;
   status: string;
+  conditions?: string[];
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;
@@ -68,6 +72,10 @@ export class Task extends AggregateRoot<ITaskProps> {
 
   get status(): ETaskStatus {
     return this.props.status;
+  }
+
+  get conditions(): ETaskCondition[] | undefined {
+    return this.props.conditions;
   }
 
   get imageId(): string | undefined {
@@ -115,11 +123,24 @@ export class Task extends AggregateRoot<ITaskProps> {
     if (checklistResult.isFailure) {
       return checklistResult as Result<never, DomainError<Task, ETaskError>>;
     }
+    const conditionsResult = Task.acceptConditions(
+      props.status,
+      props.type,
+      props.conditions,
+      'conditions' in props,
+      undefined,
+    );
+    if (conditionsResult.isFailure) {
+      return conditionsResult as Result<never, DomainError<Task, ETaskError>>;
+    }
 
+    const conditions = conditionsResult.getValue();
     const fullProps: ITaskProps = {
       ...props,
       description: descriptionResult.getValue(),
       checklist: checklistResult.getValue(),
+      conditions,
+      type: conditions ? projectTaskType(conditions) : props.type,
       tagIds: props.tagIds ?? [],
       createdAt: Task.instantOrNow(props.createdAt, now),
       modifiedAt: Task.instantOrNow(props.modifiedAt, now),
@@ -161,13 +182,29 @@ export class Task extends AggregateRoot<ITaskProps> {
       return checklistResult as Result<never, DomainError<Task, ETaskError>>;
     }
 
-    const newProps: ITaskProps = {
+    const drafted: ITaskProps = {
       ...this.props,
       ...props,
       description: descriptionResult.getValue(),
       checklist: checklistResult.getValue(),
       createdAt: this.props.createdAt,
       modifiedAt: Task.instantOrNow(props.modifiedAt, new Date()),
+    };
+    const conditionsResult = Task.acceptConditions(
+      drafted.status,
+      drafted.type,
+      props.conditions,
+      'conditions' in props,
+      this.props.conditions,
+    );
+    if (conditionsResult.isFailure) {
+      return conditionsResult as Result<never, DomainError<Task, ETaskError>>;
+    }
+    const conditions = conditionsResult.getValue();
+    const newProps: ITaskProps = {
+      ...drafted,
+      conditions,
+      type: conditions ? projectTaskType(conditions) : drafted.type,
     };
 
     const validationResult = Task.isValid(newProps);
@@ -177,6 +214,7 @@ export class Task extends AggregateRoot<ITaskProps> {
     this.props.type = newProps.type;
     this.props.title = newProps.title;
     this.props.status = newProps.status;
+    this.props.conditions = newProps.conditions;
     this.props.modifiedAt = newProps.modifiedAt;
     this.props.imageId = newProps.imageId;
     if ('images' in props) {
@@ -326,6 +364,48 @@ export class Task extends AggregateRoot<ITaskProps> {
       return Result.fail<never, DomainError<Task, ETaskError>>(checklistResult.error);
     }
 
+    if (props.status === ETaskStatus.Notes) {
+      if (props.conditions && props.conditions.length > 0) {
+        return Task.conditionsError('A note has no activation conditions');
+      }
+    } else if (!parseTaskConditions(props.conditions)) {
+      return Task.conditionsError('Activation conditions are invalid');
+    }
+
     return Result.ok<void, DomainError<Task, ETaskError>>();
+  }
+
+  private static acceptConditions(
+    status: ETaskStatus,
+    type: ETaskType,
+    incoming: ETaskCondition[] | undefined,
+    incomingProvided: boolean,
+    existing: ETaskCondition[] | undefined,
+  ): Result<ETaskCondition[] | undefined, DomainError<Task, ETaskError>> {
+    if (status === ETaskStatus.Notes) {
+      if (incomingProvided && incoming !== undefined && incoming.length > 0) {
+        return Task.conditionsError('A note has no activation conditions');
+      }
+      return Result.ok<ETaskCondition[] | undefined>(undefined);
+    }
+
+    if (!incomingProvided) {
+      if (existing && existing.length > 0) {
+        return Result.ok<ETaskCondition[] | undefined>(existing);
+      }
+      return Result.ok<ETaskCondition[] | undefined>(deriveTaskConditions(type));
+    }
+
+    const parsed = parseTaskConditions(incoming);
+    if (!parsed) {
+      return Task.conditionsError('Activation conditions are invalid');
+    }
+    return Result.ok<ETaskCondition[] | undefined>(parsed);
+  }
+
+  private static conditionsError(message: string): Result<never, DomainError<Task, ETaskError>> {
+    return Result.fail<never, DomainError<Task, ETaskError>>(
+      new DomainError<Task, ETaskError>(ETaskError.ConditionsInvalid, message),
+    );
   }
 }

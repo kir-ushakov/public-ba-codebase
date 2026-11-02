@@ -11,6 +11,7 @@ type HomeContentModeOption = {
 const HOME_CONTENT_MODE_OPTIONS: HomeContentModeOption[] = [
   { id: 'active', label: 'Active', icon: 'play_arrow', iconFill: 1 },
   { id: 'todo', label: 'To do', icon: 'radio_button_unchecked', iconFill: 0 },
+  { id: 'waiting', label: 'Waiting', icon: 'hourglass_empty', iconFill: 0 },
   { id: 'notes', label: 'Notes', icon: 'article', iconFill: 0 },
 ];
 

@@ -74,6 +74,12 @@ describe('TaskEditComponent title field', () => {
       'false',
     );
     expect(host.querySelector('[data-test="task-status-notes"]')).toBeNull();
+    expect(host.querySelector('[data-test="task-conditions-section"]')?.textContent).toContain(
+      'Conditions',
+    );
+    expect(
+      host.querySelector('[data-test="task-condition-todo"]')?.getAttribute('aria-pressed'),
+    ).toBe('true');
   });
 
   it('updates the character count as the title changes', () => {
@@ -107,6 +113,7 @@ describe('TaskEditComponent title field', () => {
 
     expect(host.querySelector('[data-test="task-type-chip"]')).toBeNull();
     expect(host.querySelector('[data-test="task-status-section"]')).toBeNull();
+    expect(host.querySelector('[data-test="task-conditions-section"]')).toBeNull();
     expect(host.querySelector('[data-test="task-title-input"]')?.getAttribute('placeholder')).toBe(
       'Note title here...',
     );

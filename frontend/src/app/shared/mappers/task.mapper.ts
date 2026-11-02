@@ -1,6 +1,7 @@
 import { TaskDTO } from '@brainassistant/contracts';
 import { Task } from '../models/task.model';
 import { isEmptyTaskDescription } from '../helpers/is-empty-task-description.function';
+import { normalizeTaskRecord } from '../helpers/task-conditions.function';
 
 export class TasksMapper {
   public static toModel(taskDto: TaskDTO): Task {
@@ -31,7 +32,7 @@ export class TasksMapper {
       task.tagIds = taskDto.tagIds;
     }
 
-    return task;
+    return normalizeTaskRecord(task);
   }
 
   public static toDto(task: Task): TaskDTO {
@@ -66,6 +67,10 @@ export class TasksMapper {
 
     if (task.tagIds) {
       dto.tagIds = task.tagIds;
+    }
+
+    if (task.conditions?.length) {
+      dto.conditions = task.conditions;
     }
 
     return dto;

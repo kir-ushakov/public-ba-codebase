@@ -7,6 +7,7 @@ import {
 } from '@brainassistant/contracts';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 import { TaskDescription } from '../domain/values/task/task-description.js';
+import { projectTaskType, storedTaskConditions } from '../domain/models/task-conditions.js';
 
 export class TaskMapper {
   public static toDomain(raw: TaskPresitant): Task {
@@ -23,14 +24,18 @@ export class TaskMapper {
       _id,
       createdAt,
       modifiedAt,
+      conditions,
     } = raw;
+
+    const storedConditions = storedTaskConditions(status, type, conditions);
 
     return Task.reconstitute(
       {
         userId,
-        type: type as ETaskType,
+        type: storedConditions ? projectTaskType(storedConditions) : (type as ETaskType),
         title: title ?? '',
         status: status as ETaskStatus,
+        conditions: storedConditions,
         imageId,
         images: TaskMapper.definedImages(images),
         description: TaskMapper.toValidDescription(description),
@@ -57,6 +62,7 @@ export class TaskMapper {
       tagIds,
       createdAt,
       modifiedAt,
+      conditions,
     } = task;
 
     const persisted: TaskPresitant = {
@@ -84,6 +90,10 @@ export class TaskMapper {
       persisted.checklist = checklist;
     }
 
+    if (conditions?.length) {
+      persisted.conditions = conditions;
+    }
+
     return persisted;
   }
 
@@ -99,6 +109,11 @@ export class TaskMapper {
       createdAt: task.createdAt.toISOString(),
       modifiedAt: task.modifiedAt.toISOString(),
     };
+
+    if (task.conditions?.length) {
+      dto.conditions = task.conditions;
+      dto.type = projectTaskType(task.conditions);
+    }
 
     const definedImages = TaskMapper.definedImages(task.images);
     if (definedImages) {

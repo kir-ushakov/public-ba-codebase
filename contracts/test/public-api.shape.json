@@ -12,6 +12,11 @@
       "TASK_STATUS_CANCEL",
       "TASK_STATUS_NOTES"
     ],
+    "ETaskCondition": [
+      "TASK_CONDITION_TODO",
+      "TASK_CONDITION_CALENDAR",
+      "TASK_CONDITION_LOCATION"
+    ],
     "EChangedEntity": [
       "CHANGED_ENTITY_TASK",
       "CHANGED_ENTITY_TAG"
@@ -76,6 +81,7 @@
       "TASK_ERROR__DESCRIPTION_INVALID",
       "TASK_ERROR__DESCRIPTION_TOO_LONG",
       "TASK_ERROR__CHECKLIST_INVALID",
+      "TASK_ERROR__CONDITIONS_INVALID",
       "TASK_ERROR__UNKNOWN_TAG"
     ],
     "ETagError": [
@@ -98,6 +104,7 @@
         "type",
         "title",
         "status",
+        "conditions",
         "imageId",
         "images",
         "description",
@@ -111,7 +118,8 @@
         "images",
         "description",
         "checklist",
-        "tagIds"
+        "tagIds",
+        "conditions"
       ]
     },
     "ChecklistItemDTO": {

@@ -61,6 +61,7 @@
       (selectedIdsChange)="onTagIdsChange($event)"
     />
     @if (!isNote()) {
+      <ba-condition-selector formControlName="conditions" />
       <ba-status-selector formControlName="status" />
     }
   </form>

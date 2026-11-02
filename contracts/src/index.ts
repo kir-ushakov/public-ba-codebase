@@ -36,6 +36,7 @@ export {
   EChangeAction,
   ETaskStatus,
   ETaskType,
+  ETaskCondition,
   EApiError,
   EUploadImageUseCaseError,
   EGetImageUseCaseError,

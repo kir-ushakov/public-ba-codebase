@@ -34,6 +34,8 @@
 
   .material-symbols-rounded {
     flex-shrink: 0;
+    width: var(--icon-size-small);
+    overflow: hidden;
     font-size: var(--icon-size-small);
     font-variation-settings:
       'FILL' var(--icon-fill),

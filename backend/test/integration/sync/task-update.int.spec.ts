@@ -1,6 +1,6 @@
 import { Application } from 'express';
 import request from 'supertest';
-import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { ETaskCondition, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { ETaskError } from '../../../src/shared/domain/models/task.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { ETaskRepoServiceError } from '../../../src/shared/repo/task-repo.service.js';
@@ -303,5 +303,35 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(cleared.status).toBe(200);
     expect(cleared.body.checklist).toBeUndefined();
     expect((await models.TaskModel.findById(created.id).lean())?.checklist).toBeUndefined();
+  });
+
+  it('keeps conditions when an older client updates the task without the field', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const created = await createTaskViaApi(app, jwtCookie, {
+      id: 'task-keep-conditions',
+      title: 'Buy lemons',
+      conditions: [ETaskCondition.Todo, ETaskCondition.Location],
+    });
+
+    const { conditions: _conditions, ...withoutConditions } = created;
+    const res = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          ...withoutConditions,
+          type: ETaskType.Basic,
+          title: 'Buy more lemons',
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(200);
+    expect(res.body.conditions).toEqual([ETaskCondition.Todo, ETaskCondition.Location]);
+    expect(res.body.type).toBe(ETaskType.Location);
+
+    const persisted = await models.TaskModel.findById(created.id).lean();
+    expect(persisted?.conditions).toEqual([ETaskCondition.Todo, ETaskCondition.Location]);
+    expect(persisted?.type).toBe(ETaskType.Location);
+    expect(persisted?.title).toBe('Buy more lemons');
   });
 });

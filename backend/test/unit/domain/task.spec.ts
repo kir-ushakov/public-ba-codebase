@@ -1,6 +1,7 @@
 import { ETaskError, Task } from '../../../src/shared/domain/models/task.js';
 import { UniqueEntityID } from '../../../src/shared/domain/UniqueEntityID.js';
 import {
+  ETaskCondition,
   ETaskStatus,
   ETaskType,
   TaskConst,
@@ -38,6 +39,7 @@ describe('Task', () => {
       expect(task.status).toBe(ETaskStatus.Todo);
       expect(task.createdAt).toEqual(new Date('2025-01-15T12:00:00.000Z'));
       expect(task.modifiedAt).toEqual(new Date('2025-01-15T12:00:00.000Z'));
+      expect(task.conditions).toEqual([ETaskCondition.Todo]);
     });
 
     it('accepts a two-character title when no imageId is provided', () => {
@@ -314,6 +316,72 @@ describe('Task', () => {
       const invariants = task.checkWriteInvariants();
       expect(invariants.isFailure).toBe(true);
       expect(invariants.error.code).toBe(ETaskError.TitleMissed);
+    });
+  });
+
+  describe('conditions', () => {
+    it('stores todo and location together and projects the type older clients read', () => {
+      const result = Task.create({
+        ...baseTaskProps,
+        title: 'Buy lemons',
+        conditions: [ETaskCondition.Todo, ETaskCondition.Location],
+      });
+
+      expect(result.isSuccess).toBe(true);
+      const task = result.getValue();
+      expect(task.conditions).toEqual([ETaskCondition.Todo, ETaskCondition.Location]);
+      expect(task.type).toBe(ETaskType.Location);
+    });
+
+    it('rejects an empty condition list and conditions on a note', () => {
+      const empty = Task.create({
+        ...baseTaskProps,
+        title: 'Buy lemons',
+        conditions: [],
+      });
+      const note = Task.create({
+        ...baseTaskProps,
+        title: 'A note',
+        status: ETaskStatus.Notes,
+        conditions: [ETaskCondition.Todo],
+      });
+
+      expect(empty.isFailure).toBe(true);
+      expect(empty.error.code).toBe(ETaskError.ConditionsInvalid);
+      expect(note.isFailure).toBe(true);
+      expect(note.error.code).toBe(ETaskError.ConditionsInvalid);
+    });
+
+    it('keeps stored conditions when an older client omits them', () => {
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Buy lemons',
+        conditions: [ETaskCondition.Todo, ETaskCondition.Location],
+      }).getValue();
+
+      const updated = created.update({
+        title: 'Buy more lemons',
+        type: ETaskType.Basic,
+        status: ETaskStatus.Todo,
+      });
+
+      expect(updated.isSuccess).toBe(true);
+      expect(created.conditions).toEqual([ETaskCondition.Todo, ETaskCondition.Location]);
+      expect(created.type).toBe(ETaskType.Location);
+    });
+
+    it('clears conditions when the task becomes a note', () => {
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Buy lemons',
+        conditions: [ETaskCondition.Location],
+      }).getValue();
+
+      const updated = created.update({ status: ETaskStatus.Notes });
+
+      expect(updated.isSuccess).toBe(true);
+      expect(created.status).toBe(ETaskStatus.Notes);
+      expect(created.conditions).toBeUndefined();
     });
   });
 });
