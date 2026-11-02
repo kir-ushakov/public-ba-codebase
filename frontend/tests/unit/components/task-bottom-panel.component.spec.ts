@@ -94,6 +94,44 @@ describe('TaskBottomPanelComponent', () => {
     expect(host.querySelector('[data-test="task-view-actions"]')).toBeNull();
   });
 
+  it('hides both status actions on a note', () => {
+    showViewTask(ETaskStatus.Notes);
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-test="mark-task-active-btn"]')).toBeNull();
+    expect(host.querySelector('[data-test="mark-task-done-btn"]')).toBeNull();
+    expect(host.querySelector('[data-test="task-view-actions"]')).toBeNull();
+  });
+
+  it('labels the primary action Create Note', () => {
+    const store = TestBed.inject(Store);
+    store.reset({
+      taskViewState: {
+        mode: ETaskViewMode.Create,
+        taskViewForm: {
+          formData: { title: '', description: null },
+          status: false,
+        },
+        taskData: {
+          id: null,
+          userId: null,
+          type: ETaskType.Basic,
+          status: ETaskStatus.Notes,
+          title: '',
+          createdAt: null,
+          modifiedAt: null,
+        },
+        draftImages: [],
+      },
+    });
+    fixture.detectChanges();
+
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('[data-test="apply-changes-btn"]')
+        ?.textContent,
+    ).toContain('Create Note');
+  });
+
   it('marks the task active or done from the view actions', () => {
     showViewTask(ETaskStatus.Todo);
     const store = TestBed.inject(Store);

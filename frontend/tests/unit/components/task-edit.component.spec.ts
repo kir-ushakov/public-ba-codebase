@@ -1,7 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideStore } from '@ngxs/store';
+import { provideStore, Store } from '@ngxs/store';
 import { TaskEditComponent } from 'src/app/mobile-app/components/screens/task-screen/task-edit/task-edit.component';
-import { TaskScreenState } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
+import {
+  ETaskViewMode,
+  TaskScreenState,
+} from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
+import { ETaskStatus, defaultTask } from 'src/app/shared/models/task.model';
 import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice-input.state';
 import { VoiceRecordingFacade } from 'src/app/shared/features/voice-input/voice-recording.facade';
 import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/speech-to-text.service';
@@ -69,10 +73,7 @@ describe('TaskEditComponent title field', () => {
     expect(host.querySelector('[data-test="task-status-todo"]')?.getAttribute('aria-pressed')).toBe(
       'false',
     );
-    expect(host.querySelector('[data-test="task-status-notes"]')?.textContent).toContain('Notes');
-    expect(
-      host.querySelector('[data-test="task-status-notes"]')?.getAttribute('aria-pressed'),
-    ).toBe('false');
+    expect(host.querySelector('[data-test="task-status-notes"]')).toBeNull();
   });
 
   it('updates the character count as the title changes', () => {
@@ -84,5 +85,30 @@ describe('TaskEditComponent title field', () => {
     fixture.detectChanges();
 
     expect(host.querySelector('[data-test="task-title-count"]')?.textContent).toContain('4/100');
+  });
+
+  it('hides task type and status on a note and uses the note title placeholder', () => {
+    const store = TestBed.inject(Store);
+    store.reset({
+      ...store.snapshot(),
+      taskViewState: {
+        mode: ETaskViewMode.Create,
+        taskViewForm: {
+          formData: { title: '', description: null },
+          status: false,
+        },
+        taskData: { ...defaultTask, status: ETaskStatus.Notes },
+        draftImages: [],
+      },
+    });
+    const noteFixture = TestBed.createComponent(TaskEditComponent);
+    noteFixture.detectChanges();
+    const host = noteFixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-test="task-type-chip"]')).toBeNull();
+    expect(host.querySelector('[data-test="task-status-section"]')).toBeNull();
+    expect(host.querySelector('[data-test="task-title-input"]')?.getAttribute('placeholder')).toBe(
+      'Note title here...',
+    );
   });
 });

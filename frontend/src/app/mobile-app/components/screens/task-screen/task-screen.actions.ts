@@ -46,6 +46,10 @@ export namespace TaskScreenAction {
     static readonly type = '[TaskScreen] Delete Task Option Selected';
   }
 
+  export class ConvertOptionSelected {
+    static readonly type = '[TaskScreen] Convert Option Selected';
+  }
+
   export class AddPictureBtnPressed {
     static readonly type = '[TaskScreen] Add Picture Btn Pressed';
   }

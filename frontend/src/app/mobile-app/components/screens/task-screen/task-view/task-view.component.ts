@@ -5,7 +5,12 @@ import { map } from 'rxjs/operators';
 import type { Observable } from 'rxjs';
 import { TaskScreenAction } from '../task-screen.actions';
 import { TaskScreenState } from '../task-screen.state';
-import type { DefaultTask, Task, TaskDescriptionDoc } from 'src/app/shared/models/task.model';
+import {
+  ETaskStatus,
+  type DefaultTask,
+  type Task,
+  type TaskDescriptionDoc,
+} from 'src/app/shared/models/task.model';
 import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-description.function';
 import { TaskTypeChipComponent } from '../task-type-chip/task-type-chip.component';
 import { ImageGalleryEditorComponent } from '../task-edit/image-gallery-editor/image-gallery-editor.component';
@@ -28,6 +33,7 @@ type TaskViewContent = {
   styleUrl: './task-view.component.scss',
 })
 export class TaskViewComponent {
+  readonly ETaskStatus = ETaskStatus;
   readonly galleryImages = computed(() =>
     toGalleryImages(this.draftImages(), this.task().imageId, this.coverDraftKey()),
   );

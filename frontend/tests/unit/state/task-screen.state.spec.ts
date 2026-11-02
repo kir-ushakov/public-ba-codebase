@@ -646,6 +646,61 @@ describe('TaskScreenState', () => {
     ).toBe(false);
   });
 
+  it('converts a to-do task into a note and keeps its type and image', async () => {
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    const updated = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => task.id === existingWithPhoto.id);
+    expect(updated?.status).toBe(ETaskStatus.Notes);
+    expect(updated?.type).toBe(ETaskType.Basic);
+    expect(updated?.imageId).toBe(existingWithPhoto.imageId);
+    expect(updated?.id).toBe(existingWithPhoto.id);
+  });
+
+  it('converts a note back into a to-do task', async () => {
+    const note: Task = { ...existingWithPhoto, id: 'note-1', status: ETaskStatus.Notes };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [note] },
+    });
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, note.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    const updated = store.selectSnapshot(TasksState.allTasks).find(task => task.id === note.id);
+    expect(updated?.status).toBe(ETaskStatus.Todo);
+    expect(updated?.type).toBe(ETaskType.Basic);
+    expect(updated?.imageId).toBe(note.imageId);
+  });
+
+  it('converts an active calendar task into a note and keeps the calendar type', async () => {
+    const calendarTask: Task = {
+      ...existingWithPhoto,
+      id: 'task-calendar-active',
+      type: ETaskType.Calendar,
+      status: ETaskStatus.Active,
+    };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [calendarTask] },
+    });
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, calendarTask.id)),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    const updated = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => task.id === calendarTask.id);
+    expect(updated?.status).toBe(ETaskStatus.Notes);
+    expect(updated?.type).toBe(ETaskType.Calendar);
+  });
+
   async function saveCreatedTaskWithTwoPhotos(
     action: TaskScreenAction.DraftImageRemoved,
   ): Promise<Task | undefined> {

@@ -28,9 +28,9 @@
         </button>
         @if (isOptionsMenuOpen()) {
           <ba-context-menu
-            ariaLabel="Task options"
             testId="task-options-menu"
-            [items]="optionsMenuItems"
+            [items]="optionsMenuItems()"
+            [ariaLabel]="headerMenuLabel()"
             (closed)="closeMenu()"
             (selected)="onOptionsMenuItem($event)"
           ></ba-context-menu>

@@ -234,6 +234,13 @@ export class TaskScreenState {
     await this.updateAndClose(ctx, taskUpdateData);
   }
 
+  @Action(TaskScreenAction.ConvertOptionSelected)
+  async convert(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
+    const status = ctx.getState().taskData.status;
+    const next = status === ETaskStatus.Notes ? ETaskStatus.Todo : ETaskStatus.Notes;
+    await this.updateAndClose(ctx, { status: next });
+  }
+
   @Action(TaskScreenAction.DeleteTaskOptionSelected)
   async deleteTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
     const taskId = ctx.getState().taskData.id;

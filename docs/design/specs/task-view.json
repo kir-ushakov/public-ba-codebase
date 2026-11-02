@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-view",
     "name": "Task View",
-    "version": "1.6.0",
+    "version": "1.7.0",
 
     "purpose": "Read a task and perform focused task actions without entering full edit mode.",
 
@@ -296,8 +296,52 @@
               "action": "duplicate-task"
             },
             {
+              "id": "convert",
+              "label": "Convert to note",
+              "icon": "swap_horiz",
+              "action": "convert-task-to-note"
+            },
+            {
               "id": "delete",
               "label": "Delete task",
+              "icon": "delete",
+              "semantic": "danger",
+              "action": "open-delete-confirmation"
+            }
+          ]
+        }
+      },
+
+      "noteOptionsMenuOpen": {
+        "trigger": "header.more",
+        "referenceImage": "../references/note-view-options.png",
+
+        "overlay": {
+          "component": "context-menu",
+          "anchor": "header.more",
+
+          "items": [
+            {
+              "id": "edit",
+              "label": "Edit",
+              "icon": "edit",
+              "action": "open-note-edit"
+            },
+            {
+              "id": "duplicate",
+              "label": "Duplicate",
+              "icon": "content_copy",
+              "action": "duplicate-note"
+            },
+            {
+              "id": "convert",
+              "label": "Convert to task",
+              "icon": "swap_horiz",
+              "action": "convert-note-to-todo"
+            },
+            {
+              "id": "delete",
+              "label": "Delete",
               "icon": "delete",
               "semantic": "danger",
               "action": "open-delete-confirmation"
@@ -366,6 +410,7 @@
       "The sticky bottom action bar contains focused task-state actions rather than global application navigation.",
       "Mark as Active and Done save the new status and close Task View.",
       "Mark as Active is shown only for a Basic (To do) task that is still in To do status.",
+      "A note does not show Mark as Active or Done.",
       "Calendar and Location tasks do not show Mark as Active.",
       "For a Basic task in To do status, Mark as Active is displayed on the left and Done on the right.",
       "Mark as Active uses the secondary action treatment.",
@@ -373,7 +418,9 @@
       "The two bottom actions share the available width.",
       "Do not display Edit in the bottom action bar.",
 
-      "The options menu contains object-level actions: Edit task, Duplicate and Delete task.",
+      "The options menu contains object-level actions: Edit task, Duplicate, Convert to note and Delete task.",
+      "A note uses Edit, Duplicate, Convert to task and Delete. Convert to task sets status to To do and keeps the same id, images, tags and description.",
+      "Converting an Active task to a note asks for confirmation, then sets status to Notes. The calendar or location trigger stays on the record.",
       "Delete task uses the global danger semantic treatment and requires confirmation.",
 
       "Keep overlays visually subordinate to the task and consistent with the global surface hierarchy.",

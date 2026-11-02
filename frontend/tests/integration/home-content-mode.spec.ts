@@ -77,8 +77,14 @@ test('home opens on Active and switches to the mode of a saved task', async ({ p
   );
   await page.click('[data-test="new-task-btn"]');
   await page.waitForURL('/task/TASK_VIEW_MODE_CREATE');
+  await expect(page.locator('[data-test="create-note-title"]')).toHaveText('Create Note');
+  await expect(page.locator('[data-test="task-status-section"]')).toHaveCount(0);
+  await expect(page.locator('[data-test="task-title-input"]')).toHaveAttribute(
+    'placeholder',
+    'Note title here...',
+  );
   await page.fill('[data-test="task-title-input"]', 'Saved article');
-  await page.click('[data-test="task-status-notes"]');
+  await expect(page.locator('[data-test="apply-changes-btn"]')).toHaveText('Create Note');
 
   const postPromise = page.waitForResponse(
     response => response.url().includes('/api/sync/task') && response.request().method() === 'POST',
