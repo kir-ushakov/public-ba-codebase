@@ -15,11 +15,13 @@
   align-items: center;
   gap: var(--spacing-md);
   width: min(100%, 360px);
+  margin: 0;
   padding: var(--spacing-xl) var(--spacing-lg);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-large);
   background: var(--color-surface-elevated);
   box-shadow: var(--elevation-floating-shadow);
+  color: inherit;
   text-align: center;
 }
 

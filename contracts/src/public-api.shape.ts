@@ -178,7 +178,7 @@ const SEND_CHANGE_REQUEST_KEYS = [
 const _sendChangeReq: ExactKeys<SendChangeContract.Request, typeof SEND_CHANGE_REQUEST_KEYS> = true;
 
 void _taskDto;
-void _checklistItemDto;
+type _ChecklistItemDtoShapeOk = typeof _checklistItemDto;
 void _taskDescriptionDoc;
 void _taskDescriptionNode;
 void _taskDescriptionMark;

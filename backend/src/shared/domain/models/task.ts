@@ -233,7 +233,7 @@ export class Task extends AggregateRoot<ITaskProps> {
     raw: ChecklistItemDTO[] | undefined,
   ): Result<ChecklistItemDTO[] | undefined, DomainError<Task, ETaskError>> {
     if (raw === undefined || raw.length === 0) {
-      return Result.ok<ChecklistItemDTO[] | undefined>(undefined);
+      return Result.ok<ChecklistItemDTO[] | undefined>();
     }
 
     if (raw.length > TaskConst.CHECKLIST_MAX_ITEMS) {

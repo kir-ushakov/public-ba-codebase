@@ -1,11 +1,16 @@
 @if (prompt()) {
-  <div class="checklist-dialog-backdrop" data-test="checklist-completion-dialog" (click)="keep()">
-    <div
+  <div
+    class="checklist-dialog-backdrop"
+    data-test="checklist-completion-dialog"
+    (click)="keep()"
+    (keydown.escape)="keep()"
+  >
+    <dialog
       class="checklist-dialog"
-      role="dialog"
-      aria-modal="true"
+      open
       aria-labelledby="checklist-completion-title"
       (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
     >
       <img class="checklist-dialog-icon" src="assets/ui/icons/checklist-completed.svg" alt="" />
       <h2 id="checklist-completion-title" data-test="checklist-completion-title">
@@ -33,6 +38,6 @@
           Mark as Done
         </button>
       </div>
-    </div>
+    </dialog>
   </div>
 }
