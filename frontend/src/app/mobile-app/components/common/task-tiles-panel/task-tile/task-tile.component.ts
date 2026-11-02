@@ -13,6 +13,7 @@ import { TaskTileCalendar } from './task-tile-calendar.service';
 import { TaskTileDatePipe } from './task-tile-date.pipe';
 import { TaskTileImagePipe } from './task-tile-image.pipe';
 import { taskTypeIcon } from './helpers/task-type-icon.function';
+import { projectTaskType, taskConditions } from 'src/app/shared/helpers/task-conditions.function';
 import { shouldOfferChecklistCompletionOnNoteConversion } from 'src/app/shared/helpers/checklist.function';
 import {
   confirmActiveToNote,
@@ -93,7 +94,7 @@ export class TaskTileComponent {
     if (this.task.status === ETaskStatus.Notes) {
       return 'article';
     }
-    return taskTypeIcon(this.task.type);
+    return taskTypeIcon(projectTaskType(taskConditions(this.task)));
   }
 
   get menuItems(): ContextMenuItem[] {

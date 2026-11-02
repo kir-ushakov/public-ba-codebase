@@ -1,8 +1,9 @@
-import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { ETaskCondition, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import {
   homeModeAfterSwipe,
   homeModeCounts,
   homeModeForStatus,
+  homeModeForTask,
   homeModeItemLabel,
   statusForHomeMode,
   tasksForHomeMode,
@@ -31,13 +32,15 @@ describe('home content mode', () => {
     expect(tasksForHomeMode(tasks, 'active').map(item => item.id)).toEqual(['active']);
     expect(tasksForHomeMode(tasks, 'todo').map(item => item.id)).toEqual(['todo']);
     expect(tasksForHomeMode(tasks, 'notes').map(item => item.id)).toEqual(['notes']);
-    expect(homeModeCounts(tasks)).toEqual({ active: 1, todo: 1, notes: 1 });
+    expect(homeModeCounts(tasks)).toEqual({ active: 1, todo: 1, waiting: 0, notes: 1 });
   });
 
   it('names the header count for the selected mode', () => {
     expect(homeModeItemLabel('active', 1)).toBe('1 active item');
     expect(homeModeItemLabel('active', 3)).toBe('3 active items');
     expect(homeModeItemLabel('todo', 8)).toBe('8 to do items');
+    expect(homeModeItemLabel('waiting', 1)).toBe('1 waiting item');
+    expect(homeModeItemLabel('waiting', 2)).toBe('2 waiting items');
     expect(homeModeItemLabel('notes', 1)).toBe('1 note');
     expect(homeModeItemLabel('notes', 12)).toBe('12 notes');
   });
@@ -45,6 +48,7 @@ describe('home content mode', () => {
   it('maps a saved task onto its Home mode and leaves Done where it was', () => {
     expect(statusForHomeMode('active')).toBe(ETaskStatus.Active);
     expect(statusForHomeMode('todo')).toBe(ETaskStatus.Todo);
+    expect(statusForHomeMode('waiting')).toBe(ETaskStatus.Todo);
     expect(statusForHomeMode('notes')).toBe(ETaskStatus.Notes);
     expect(homeModeForStatus(ETaskStatus.Active)).toBe('active');
     expect(homeModeForStatus(ETaskStatus.Todo)).toBe('todo');
@@ -55,10 +59,32 @@ describe('home content mode', () => {
 
   it('moves one mode on a horizontal swipe and ignores a vertical drag', () => {
     expect(homeModeAfterSwipe('active', -80, 10)).toBe('todo');
+    expect(homeModeAfterSwipe('todo', -80, 10)).toBe('waiting');
+    expect(homeModeAfterSwipe('waiting', -80, 10)).toBe('notes');
     expect(homeModeAfterSwipe('todo', 80, 10)).toBe('active');
     expect(homeModeAfterSwipe('notes', -80, 10)).toBe('notes');
     expect(homeModeAfterSwipe('active', 80, 10)).toBe('active');
     expect(homeModeAfterSwipe('todo', -20, 10)).toBe('todo');
     expect(homeModeAfterSwipe('todo', -80, 90)).toBe('todo');
+  });
+
+  it('lists a waiting task with a todo condition in both To do and Waiting', () => {
+    const lemons: Task = {
+      ...task('lemons', ETaskStatus.Todo),
+      conditions: [ETaskCondition.Todo, ETaskCondition.Location],
+    };
+    const storeOnly: Task = {
+      ...task('store', ETaskStatus.Todo),
+      type: ETaskType.Location,
+      conditions: [ETaskCondition.Location],
+    };
+
+    expect(tasksForHomeMode([lemons, storeOnly], 'todo').map(item => item.id)).toEqual(['lemons']);
+    expect(tasksForHomeMode([lemons, storeOnly], 'waiting').map(item => item.id)).toEqual([
+      'lemons',
+      'store',
+    ]);
+    expect(homeModeForTask(lemons)).toBe('todo');
+    expect(homeModeForTask(storeOnly)).toBe('waiting');
   });
 });

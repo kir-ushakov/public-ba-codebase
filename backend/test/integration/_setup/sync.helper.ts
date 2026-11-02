@@ -2,6 +2,7 @@ import { Application } from 'express';
 import {
   TaskDTO,
   TagDTO,
+  ETaskCondition,
   ETaskStatus,
   ETaskType,
   type ChecklistItemDTO,
@@ -17,6 +18,7 @@ export type TaskSeed = {
   description?: TaskDTO['description'];
   tagIds?: string[];
   checklist?: ChecklistItemDTO[];
+  conditions?: ETaskCondition[];
 };
 
 export async function createTaskViaApi(
@@ -33,6 +35,7 @@ export async function createTaskViaApi(
     ...(seed.description !== undefined ? { description: seed.description } : {}),
     ...(seed.tagIds !== undefined ? { tagIds: seed.tagIds } : {}),
     ...(seed.checklist !== undefined ? { checklist: seed.checklist } : {}),
+    ...(seed.conditions !== undefined ? { conditions: seed.conditions } : {}),
   };
 
   const res = await authenticatedRequest(app, jwtCookie)

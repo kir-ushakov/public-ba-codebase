@@ -49,6 +49,7 @@ import {
   ESlackEventReceivedUseCaseError,
   ESpeechToTextUseCaseError,
   ETagError,
+  ETaskCondition,
   ETaskError,
   ETaskRepoServiceError,
   ETaskStatus,
@@ -69,6 +70,7 @@ const TASK_DTO_KEYS = [
   'type',
   'title',
   'status',
+  'conditions',
   'imageId',
   'images',
   'description',
@@ -205,6 +207,7 @@ export const PUBLIC_API_SHAPE = {
   enums: {
     ETaskType: Object.values(ETaskType),
     ETaskStatus: Object.values(ETaskStatus),
+    ETaskCondition: Object.values(ETaskCondition),
     EChangedEntity: Object.values(EChangedEntity),
     EChangeAction: Object.values(EChangeAction),
     EApiError: Object.values(EApiError),
@@ -226,7 +229,7 @@ export const PUBLIC_API_SHAPE = {
   dto: {
     TaskDTO: {
       keys: [...TASK_DTO_KEYS],
-      optional: ['imageId', 'images', 'description', 'checklist', 'tagIds'],
+      optional: ['imageId', 'images', 'description', 'checklist', 'tagIds', 'conditions'],
     },
     ChecklistItemDTO: {
       keys: [...CHECKLIST_ITEM_DTO_KEYS],

@@ -307,29 +307,29 @@
       "Do not mix Material Symbols with legacy PNG icons on Home. Do not show no-connection.png or no-synchronize.png.",
       "Bottom navigation destinations are Home, Tasks and Tags only. Do not add Settings as a fourth tab.",
       "The avatar opens the account menu: Profile, Settings, Integrations, Sign out.",
-      "The leading icon on every Home card is the task type from design-system icons.taskType, not an image/video icon.",
+      "The leading icon on every Home card comes from the task conditions: location_on, then calendar_month, otherwise radio_button_unchecked. Notes cards use article.",
       "Do not print TODO, TIMER, SCHEDULE or LOCATION as text on the card.",
       "Presence of an image does not change the leading icon.",
       "Current live type is TODO (ETaskType.Basic) using radio_button_unchecked. Do not use check or check_circle.",
       "The card overflow menu is Edit, Duplicate, Add to tags and Delete. Duplicate and Add to tags are visible but disabled until those features exist.",
-      "Place the Active / To do / Notes segmented switcher immediately under the Home header and above the optional sync banner.",
+      "Place the Active / To do / Waiting / Notes segmented switcher immediately under the Home header and above the optional sync banner.",
       "Active is the default selected mode. The selected segment uses the segmentedControl recipe: dark selected surface, thin teal outline and a teal icon. Inactive segments stay transparent inside the shared container and have no border of their own.",
       "One vertical divider sits between adjacent unselected segments. It does not touch the selected outline.",
-      "Active uses play_arrow at the segmentedControl filled-icon exception. To do and Notes stay outline icons.",
+      "Active uses play_arrow at the segmentedControl filled-icon exception. To do, Waiting and Notes stay outline icons. Waiting uses hourglass_empty from icons.homeContentMode.",
       "Each segment shows an icon, a label and a count. Counts update from live data.",
       "Switching modes filters the existing two-column masonry grid without changing bottom navigation.",
-      "A horizontal swipe on the content moves one mode. Active, To do and Notes stay in that order.",
-      "The header count names the selected mode: \"3 active items\", \"8 to do items\", \"12 notes\".",
+      "A horizontal swipe on the content moves one mode. Active, To do, Waiting and Notes stay in that order.",
+      "The header count names the selected mode: \"3 active items\", \"8 to do items\", \"2 waiting items\", \"12 notes\".",
       "Counts reflect every item in that mode, including cards hidden by search.",
-      "Done and Cancel stay off Home. Home is the working set: Active, To do and Notes.",
-      "Active and To do are workflow-status filters, while Notes is a content category; do not confuse these with task type To do / Calendar / Location.",
+      "Done and Cancel stay off Home. Home is the working set: Active, To do, Waiting and Notes.",
+      "Active is status Active. Notes is status Notes. To do is status Todo with a todo condition. Waiting is status Todo with a calendar or location condition. A task with both a todo condition and a trigger is listed in To do and Waiting.",
       "Task cards retain their task-type icons; Notes cards use Material Symbols Rounded article.",
       "Use Google Material Symbols Rounded article for the Notes tab, with FILL 0, weight 400, optical size 24. Do not use notes, subject, menu, or a generic list icon. Render the exact Material Symbol, not a Lucide or custom SVG substitute.",
       "The attached Home mockup is a visual reference for the segmented control, not a literal data contract: sample cards shown there do not override filtering rules.",
       "When the selected mode count is 0, replace the masonry grid with that mode's empty state. The header, segmented switcher, sync banner, floating create action and bottom navigation stay.",
-      "Emptiness follows the selected mode count, not the total number of tasks. Switching Active, To do or Notes changes both the mascot and the copy.",
+      "Emptiness follows the selected mode count, not the total number of tasks. Switching Active, To do, Waiting or Notes changes both the mascot and the copy.",
       "A search that hides cards does not show the empty state while that mode's count is still greater than 0.",
-      "At zero the header still names the mode: \"0 active items\", \"0 to do items\", \"0 notes\".",
+      "At zero the header still names the mode: \"0 active items\", \"0 to do items\", \"0 waiting items\", \"0 notes\".",
       "The empty state has no button of its own. The floating create action is the only create control on Home.",
       "The mascot is a small centered illustration. Keep the surrounding area empty. Do not add confetti, a large scene, or a second accent color."
     ],
@@ -344,7 +344,7 @@
       "activeSelected": {
         "selectedMode": "active",
         "referenceImage": "../references/home.jpg",
-        "description": "Default state: Active tab highlighted in teal, counts displayed on all three segments; masonry shows only Active tasks."
+        "description": "Default state: Active tab highlighted in teal, counts displayed on all four segments; masonry shows only Active tasks."
       },
       "todoSelected": {
         "selectedMode": "todo",
@@ -377,7 +377,7 @@
     "reference": {
       "status": "approved",
       "image": "../references/home.jpg",
-      "description": "Home with Active / To do / Notes segmented filter (Active selected by default), sync banner, two-column masonry, FAB and Home/Tasks/Tags bottom navigation."
+      "description": "Home with Active / To do / Waiting / Notes segmented filter (Active selected by default), sync banner, two-column masonry, FAB and Home/Tasks/Tags bottom navigation."
     },
 
     "contentModeSwitcher": {
@@ -400,6 +400,12 @@
           "countSource": "home.counts.todo"
         },
         {
+          "id": "waiting",
+          "label": "Waiting",
+          "icon": "hourglass_empty",
+          "countSource": "home.counts.waiting"
+        },
+        {
           "id": "notes",
           "label": "Notes",
           "icon": "article",
@@ -419,7 +425,7 @@
       "visual": {
         "componentRecipe": "segmentedControl",
         "layout": "single shared container",
-        "segments": "three equal-width adjacent segments",
+        "segments": "four equal-width adjacent segments",
         "selectedTreatment": "subtle dark teal background with thin teal outline",
         "unselectedTreatment": "transparent background, muted text and icons",
         "countBadge": "small separate rounded badge from segmentedControl.countBadge",
@@ -429,6 +435,7 @@
           "names": [
             "play_arrow",
             "radio_button_unchecked",
+            "hourglass_empty",
             "article"
           ]
         },
@@ -470,6 +477,13 @@
           "scene": "Looking at an empty list, with a question mark beside it.",
           "title": "Your to-do list is empty.",
           "body": "Add a new task, capture an idea or move something from notes."
+        },
+        "waiting": {
+          "illustration": "../assets/empty-states.svg#empty-todo",
+          "expression": "puzzled",
+          "scene": "Reuses the to-do empty illustration until a dedicated waiting scene is approved.",
+          "title": "Nothing is waiting.",
+          "body": "Tasks with a calendar or location condition show up here until they start."
         },
         "notes": {
           "illustration": "../assets/empty-states.svg#empty-notes",

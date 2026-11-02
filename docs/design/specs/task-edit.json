@@ -125,13 +125,36 @@
           "options": [
             {
               "id": "todo",
-              "label": "To do",
+              "label": "Waiting",
               "icon": "status-todo"
             },
             {
               "id": "active",
               "label": "Active",
               "icon": "status-active"
+            }
+          ]
+        },
+        {
+          "id": "conditions",
+          "label": "Conditions",
+          "component": "multi-select",
+          "selection": "at-least-one",
+          "options": [
+            {
+              "id": "todo",
+              "label": "To do",
+              "icon": "radio_button_unchecked"
+            },
+            {
+              "id": "calendar",
+              "label": "Calendar",
+              "icon": "calendar_month"
+            },
+            {
+              "id": "location",
+              "label": "Location",
+              "icon": "location_on"
             }
           ]
         },
@@ -191,7 +214,7 @@
     },
 
     "angular": {
-      "note": "Create and Edit share task-edit today. The live screen does not yet match this spec. Same data-shape caveats as task-create.json: single imageId, no task tags or dueDate on TaskDTO. The form offers To do and Active. A note is edited without a status selector. Mark as Active and Done are Task View actions. Task View does not show a status section. Mockup counters are not TaskConst.",
+      "note": "Create and Edit share task-edit today. The live screen does not yet match this spec. Same data-shape caveats as task-create.json: single imageId, no dueDate on TaskDTO. The form offers Waiting and Active, plus a conditions multi-select (To do, Calendar, Location). A note is edited without a status or conditions selector. Mark as Active requires the todo condition. Mark as Active and Done are Task View actions. Task View does not show a status section. Calendar and location conditions do not store a date or place yet. Mockup counters are not TaskConst.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/screens/task-screen/task-edit/",

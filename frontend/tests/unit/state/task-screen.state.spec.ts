@@ -7,7 +7,13 @@ import {
   TaskScreenState,
 } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
 import { TaskScreenAction } from 'src/app/mobile-app/components/screens/task-screen/task-screen.actions';
-import { ETaskStatus, ETaskType, Task, defaultTask } from 'src/app/shared/models/task.model';
+import {
+  ETaskCondition,
+  ETaskStatus,
+  ETaskType,
+  Task,
+  defaultTask,
+} from 'src/app/shared/models/task.model';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
@@ -609,11 +615,12 @@ describe('TaskScreenState', () => {
     ).toBe(true);
   });
 
-  it('does not mark a calendar task active', async () => {
+  it('does not mark a calendar-only task active', async () => {
     const calendarTask: Task = {
       ...existingWithPhoto,
       id: 'task-calendar',
       type: ETaskType.Calendar,
+      conditions: [ETaskCondition.Calendar],
     };
     store.reset({
       ...store.snapshot(),

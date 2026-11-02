@@ -12,6 +12,7 @@ import { AppAction } from './app.actions';
 import { SyncAction } from './sync.action';
 import { TasksAction, type TaskCreateInput } from './tasks.action';
 import { isEmptyTaskDescription } from '../helpers/is-empty-task-description.function';
+import { normalizeTaskRecord } from '../helpers/task-conditions.function';
 
 interface ITasksStateModel {
   entities: Array<Task>;
@@ -89,11 +90,11 @@ export class TasksState {
     }
 
     const now = this.now();
-    const updated: Task = {
+    const updated = normalizeTaskRecord({
       ...current,
       ...taskUpdateData.changes,
       modifiedAt: now,
-    };
+    });
     const entry = this.outboxEntry(updated.id, EChangeAction.Updated, updated, now);
 
     try {
@@ -150,7 +151,7 @@ export class TasksState {
 
   @Action(SyncAction.LocalDataHydrated)
   hydrate(ctx: StateContext<ITasksStateModel>, { snapshot }: SyncAction.LocalDataHydrated): void {
-    ctx.setState({ entities: snapshot.tasks });
+    ctx.setState({ entities: snapshot.tasks.map(task => normalizeTaskRecord(task)) });
   }
 
   @Action(SyncAction.ServerChangesLoaded)
@@ -168,7 +169,7 @@ export class TasksState {
           }),
         );
       } else {
-        const task = changedObject as Task;
+        const task = normalizeTaskRecord(changedObject as Task);
         ctx.setState(
           patch({
             entities: iif<Array<Task>>(
@@ -211,6 +212,7 @@ export class TasksState {
         ? undefined
         : taskInitData.description,
       status: taskInitData.status ?? ETaskStatus.Todo,
+      conditions: taskInitData.conditions,
       tagIds: taskInitData.tagIds ?? [],
       createdAt: timestamp,
       modifiedAt: timestamp,
@@ -224,7 +226,7 @@ export class TasksState {
       task.checklist = taskInitData.checklist;
     }
 
-    return task;
+    return normalizeTaskRecord(task);
   }
 
   private static getSortedUserTasks(state: ITasksStateModel, userId: string | null): Task[] {

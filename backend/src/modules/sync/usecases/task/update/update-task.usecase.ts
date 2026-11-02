@@ -44,6 +44,7 @@ export class UpdateTask implements UseCase<Request, Promise<UpdateTaskResult>> {
       imageId: taskDto.imageId,
       description: taskDto.description,
       ...(taskDto.checklist !== undefined ? { checklist: taskDto.checklist } : {}),
+      ...(taskDto.conditions !== undefined ? { conditions: taskDto.conditions } : {}),
       modifiedAt: new Date(taskDto.modifiedAt),
       ...(taskDto.images !== undefined ? { images: taskDto.images } : {}),
       ...(taskDto.tagIds !== undefined ? { tagIds: taskDto.tagIds } : {}),

@@ -238,8 +238,15 @@
           "The leading icon on a task card is the task type, not media presence.",
           "Do not show the type name as text on the card.",
           "Do not use check or check_circle for TODO; they read as completed.",
-          "To do maps from ETaskType.Basic (TASK_TYPE_BASIC). Location is TASK_TYPE_LOCATION and Calendar is TASK_TYPE_CALENDAR. Timer and schedule are not wire values yet."
+          "The card icon is projected from task conditions: location, then calendar, otherwise To do.",
+          "ETaskType remains on the wire for older clients. Basic is the projection when the only condition is todo."
         ]
+      },
+      "homeContentMode": {
+        "active": "play_arrow",
+        "todo": "radio_button_unchecked",
+        "waiting": "hourglass_empty",
+        "notes": "article"
       }
     },
 

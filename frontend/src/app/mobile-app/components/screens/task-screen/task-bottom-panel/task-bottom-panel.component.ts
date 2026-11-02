@@ -1,6 +1,6 @@
 import { Component, computed, inject, Input, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { ETaskStatus } from '@brainassistant/contracts';
 import { Observable } from 'rxjs';
 import { Store } from '@ngxs/store';
 import { TaskScreenAction } from 'src/app/mobile-app/components/screens/task-screen/task-screen.actions';
@@ -8,6 +8,7 @@ import {
   ETaskViewMode,
   TaskScreenState,
 } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
+import { taskHasTodoCondition } from 'src/app/shared/helpers/task-conditions.function';
 
 @Component({
   selector: 'ba-task-bottom-panel',
@@ -28,8 +29,8 @@ export class TaskBottomPanelComponent {
   readonly showMarkActive = computed(
     () =>
       this.mode() === ETaskViewMode.View &&
-      this.task().type === ETaskType.Basic &&
-      this.task().status === ETaskStatus.Todo,
+      this.task().status === ETaskStatus.Todo &&
+      taskHasTodoCondition(this.task()),
   );
   readonly showMarkDone = computed(
     () =>

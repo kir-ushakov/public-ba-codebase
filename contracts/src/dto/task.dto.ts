@@ -1,3 +1,4 @@
+import { ETaskCondition } from '../enums/task-condition.enum';
 import { ETaskStatus } from '../enums/task-status.enum';
 import { ETaskType } from '../enums/task-type.enum';
 
@@ -49,6 +50,11 @@ export type TaskDTO = {
   type: ETaskType;
   title: string;
   status: ETaskStatus;
+  /**
+   * How the task can become active. Older clients omit this.
+   * Absent on a note. A task stores at least one condition.
+   */
+  conditions?: ETaskCondition[];
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;

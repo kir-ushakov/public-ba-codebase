@@ -3,7 +3,7 @@ import type { StateContext } from '@ngxs/store';
 import { State, Action, Selector, Store } from '@ngxs/store';
 import { firstValueFrom } from 'rxjs';
 import type { DefaultTask, Task } from 'src/app/shared/models/task.model';
-import { ETaskStatus, ETaskType, defaultTask } from 'src/app/shared/models/task.model';
+import { ETaskStatus, defaultTask } from 'src/app/shared/models/task.model';
 import { TaskScreenAction } from './task-screen.actions';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
@@ -19,7 +19,11 @@ import {
   shouldOfferChecklistCompletionOnNoteConversion,
 } from 'src/app/shared/helpers/checklist.function';
 import { ChecklistCompletionPromptService } from 'src/app/shared/services/application/checklist-completion-prompt.service';
-import { statusForHomeMode } from '../home-screen/helpers/home-content-mode.function';
+import { taskDraftForHomeMode } from '../home-screen/helpers/home-content-mode.function';
+import {
+  projectTaskType,
+  taskHasTodoCondition,
+} from 'src/app/shared/helpers/task-conditions.function';
 import { HomeContentModeService } from '../home-screen/home-content-mode.service';
 
 export enum ETaskViewMode {
@@ -100,12 +104,20 @@ export class TaskScreenState {
     { mode, taskId }: TaskScreenAction.Opened,
   ): void {
     ctx.dispatch(new VoiceInputAction.Reset());
-    const createStatus = statusForHomeMode(this.homeContentMode.mode());
+    const draft = taskDraftForHomeMode(this.homeContentMode.mode());
     ctx.setState({
       ...defaults,
       mode,
       ...(mode === ETaskViewMode.Create
-        ? { taskData: { ...defaults.taskData, status: createStatus } }
+        ? {
+            taskData: {
+              ...defaults.taskData,
+              status: draft.status,
+              ...(draft.conditions
+                ? { conditions: draft.conditions, type: projectTaskType(draft.conditions) }
+                : {}),
+            },
+          }
         : {}),
     });
     if (taskId) {
@@ -215,7 +227,7 @@ export class TaskScreenState {
     const finalTaskData = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: finalTaskData });
-    this.homeContentMode.showStatus(finalTaskData.status);
+    this.homeContentMode.showTask(finalTaskData);
     await firstValueFrom(ctx.dispatch(new TasksAction.CreateTask(finalTaskData, userId)));
     ctx.dispatch(TaskScreenAction.Close);
   }
@@ -230,7 +242,7 @@ export class TaskScreenState {
     const changes = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: changes });
-    this.homeContentMode.showStatus(changes.status);
+    this.homeContentMode.showTask(changes);
     await firstValueFrom(
       ctx.dispatch(
         new TasksAction.UpdateTask({
@@ -322,7 +334,8 @@ export class TaskScreenState {
 
   @Action(TaskScreenAction.MarkActiveButtonPressed)
   async markActive(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
-    if (ctx.getState().taskData.type !== ETaskType.Basic) {
+    const taskData = ctx.getState().taskData;
+    if (taskData.status !== ETaskStatus.Todo || !taskHasTodoCondition(taskData)) {
       return;
     }
     await this.updateAndClose(ctx, { status: ETaskStatus.Active });

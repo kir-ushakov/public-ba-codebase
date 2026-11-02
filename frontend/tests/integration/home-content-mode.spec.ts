@@ -63,11 +63,46 @@ test('home opens on Active and switches to the mode of a saved task', async ({ p
   await page.click('[data-test="apply-changes-btn"]');
   const todoBody = (await todoPost).request().postDataJSON() as SendChangeContract.Request<TaskDTO>;
   expect(todoBody.changeableObjectDto.status).toBe(ETaskStatus.Todo);
+  expect(todoBody.changeableObjectDto.conditions).toEqual(['TASK_CONDITION_TODO']);
   await page.waitForURL(/\/(home)?$/);
   await expect(
     page.locator('[data-test="task-tile"]', { hasText: 'Write the brief' }),
   ).toBeVisible();
   await expect(page.locator('[data-test="home-item-count"]')).toHaveText('1 to do item');
+
+  await page.click('[data-test="home-mode-waiting"]');
+  await expect(page.locator('[data-test="home-empty-title"]')).toHaveText('Nothing is waiting.');
+  await page.click('[data-test="new-task-btn"]');
+  await page.waitForURL('/task/TASK_VIEW_MODE_CREATE');
+  await expect(page.locator('[data-test="task-condition-calendar"]')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.locator('[data-test="task-condition-todo"]')).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+  await page.fill('[data-test="task-title-input"]', 'Buy lemons');
+  const waitingPost = page.waitForResponse(
+    response => response.url().includes('/api/sync/task') && response.request().method() === 'POST',
+  );
+  await page.click('[data-test="apply-changes-btn"]');
+  const waitingBody = (await waitingPost)
+    .request()
+    .postDataJSON() as SendChangeContract.Request<TaskDTO>;
+  expect(waitingBody.changeableObjectDto.status).toBe(ETaskStatus.Todo);
+  expect(waitingBody.changeableObjectDto.conditions).toEqual(['TASK_CONDITION_CALENDAR']);
+  await page.waitForURL(/\/(home)?$/);
+  await expect(page.locator('[data-test="home-mode-waiting"]')).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await expect(page.locator('[data-test="task-tile"]', { hasText: 'Buy lemons' })).toBeVisible();
+  await page.click('[data-test="home-mode-todo"]');
+  await expect(page.locator('[data-test="task-tile"]', { hasText: 'Buy lemons' })).toHaveCount(0);
+  await expect(
+    page.locator('[data-test="task-tile"]', { hasText: 'Write the brief' }),
+  ).toBeVisible();
 
   await page.click('[data-test="home-mode-notes"]');
   await expect(page.locator('[data-test="home-empty-title"]')).toHaveText('No notes yet.');
