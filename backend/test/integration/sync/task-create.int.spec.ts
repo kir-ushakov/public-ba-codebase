@@ -6,7 +6,7 @@ import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
-import { createTagViaApi } from '../_setup/sync.helper.js';
+import { createTagViaApi, createTaskViaApi } from '../_setup/sync.helper.js';
 
 describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', () => {
   let app: Application;
@@ -351,5 +351,31 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(res.body.name).toBe(ETaskError.UnknownTag);
     expect(res.body).toHaveProperty('message');
     expect(await models.TaskModel.findById('task-foreign-tag').lean()).toBeNull();
+  });
+
+  it('persists a checklist on a task and on a note', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const checklist = [
+      { id: 'item-1', text: 'Buy cat food', completed: false },
+      { id: 'item-2', text: 'Check salmon variant', completed: true },
+    ];
+
+    const task = await createTaskViaApi(app, jwtCookie, {
+      id: 'task-with-checklist',
+      title: 'Shopping',
+      checklist,
+    });
+    const note = await createTaskViaApi(app, jwtCookie, {
+      id: 'note-with-checklist',
+      title: 'Remember this',
+      status: ETaskStatus.Notes,
+      checklist,
+    });
+
+    expect(task.checklist).toEqual(checklist);
+    expect(note.status).toBe(ETaskStatus.Notes);
+    expect(note.checklist).toEqual(checklist);
+    expect((await models.TaskModel.findById(task.id).lean())?.checklist).toEqual(checklist);
+    expect((await models.TaskModel.findById(note.id).lean())?.checklist).toEqual(checklist);
   });
 });

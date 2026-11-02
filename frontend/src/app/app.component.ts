@@ -15,12 +15,13 @@ import { PwaInstallService } from './shared/services/pwa/pwa-install.service';
 import { DialogService } from './shared/services/utility/dialog.service';
 import { PwaInstallDialogComponent } from './shared/components/ui-elements/pwa-install-dialog/pwa-install-dialog.component';
 import { PwaVersionUpdateService } from './shared/services/pwa/pwa-version-update.service';
+import { ChecklistCompletionDialogComponent } from './shared/components/ui-elements/checklist-completion-dialog/checklist-completion-dialog.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ChecklistCompletionDialogComponent],
 })
 export class AppComponent implements OnInit, OnDestroy {
   onlineEvent!: Observable<Event>;

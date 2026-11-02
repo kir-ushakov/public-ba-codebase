@@ -21,6 +21,7 @@ import {
   type SignUpRequestDTO,
   type SignUpResponseDTO,
   type TagDTO,
+  type ChecklistItemDTO,
   type TaskDescriptionDoc,
   type TaskDescriptionMark,
   type TaskDescriptionNode,
@@ -71,11 +72,19 @@ const TASK_DTO_KEYS = [
   'imageId',
   'images',
   'description',
+  'checklist',
   'createdAt',
   'modifiedAt',
   'tagIds',
 ] as const satisfies readonly (keyof TaskDTO)[];
 const _taskDto: ExactKeys<TaskDTO, typeof TASK_DTO_KEYS> = true;
+
+const CHECKLIST_ITEM_DTO_KEYS = [
+  'id',
+  'text',
+  'completed',
+] as const satisfies readonly (keyof ChecklistItemDTO)[];
+const _checklistItemDto: ExactKeys<ChecklistItemDTO, typeof CHECKLIST_ITEM_DTO_KEYS> = true;
 
 const TASK_DESCRIPTION_DOC_KEYS = ['type', 'content'] as const satisfies readonly (keyof TaskDescriptionDoc)[];
 const _taskDescriptionDoc: ExactKeys<TaskDescriptionDoc, typeof TASK_DESCRIPTION_DOC_KEYS> = true;
@@ -169,6 +178,7 @@ const SEND_CHANGE_REQUEST_KEYS = [
 const _sendChangeReq: ExactKeys<SendChangeContract.Request, typeof SEND_CHANGE_REQUEST_KEYS> = true;
 
 void _taskDto;
+type _ChecklistItemDtoShapeOk = typeof _checklistItemDto;
 void _taskDescriptionDoc;
 void _taskDescriptionNode;
 void _taskDescriptionMark;
@@ -216,7 +226,11 @@ export const PUBLIC_API_SHAPE = {
   dto: {
     TaskDTO: {
       keys: [...TASK_DTO_KEYS],
-      optional: ['imageId', 'images', 'description', 'tagIds'],
+      optional: ['imageId', 'images', 'description', 'checklist', 'tagIds'],
+    },
+    ChecklistItemDTO: {
+      keys: [...CHECKLIST_ITEM_DTO_KEYS],
+      optional: [] as string[],
     },
     TaskDescriptionDoc: {
       keys: [...TASK_DESCRIPTION_DOC_KEYS],

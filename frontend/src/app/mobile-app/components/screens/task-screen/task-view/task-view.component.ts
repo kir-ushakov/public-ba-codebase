@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { map } from 'rxjs/operators';
 import type { Observable } from 'rxjs';
@@ -7,6 +7,7 @@ import { TaskScreenAction } from '../task-screen.actions';
 import { TaskScreenState } from '../task-screen.state';
 import {
   ETaskStatus,
+  type ChecklistItem,
   type DefaultTask,
   type Task,
   type TaskDescriptionDoc,
@@ -15,6 +16,9 @@ import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-des
 import { TaskTypeChipComponent } from '../task-type-chip/task-type-chip.component';
 import { ImageGalleryEditorComponent } from '../task-edit/image-gallery-editor/image-gallery-editor.component';
 import { TagSelectorComponent } from '../task-edit/tag-selector/tag-selector.component';
+import { ChecklistEditorComponent } from '../task-edit/checklist-editor/checklist-editor.component';
+import { TaskContentSwitchComponent } from '../task-content-switch/task-content-switch.component';
+import type { TaskContentMode } from '../task-content-switch/task-content-switch.component';
 import {
   toGalleryImages,
   type GalleryImage,
@@ -28,12 +32,20 @@ type TaskViewContent = {
 
 @Component({
   selector: 'ba-task-view',
-  imports: [CommonModule, TaskTypeChipComponent, ImageGalleryEditorComponent, TagSelectorComponent],
+  imports: [
+    CommonModule,
+    TaskTypeChipComponent,
+    ImageGalleryEditorComponent,
+    TagSelectorComponent,
+    TaskContentSwitchComponent,
+    ChecklistEditorComponent,
+  ],
   templateUrl: './task-view.component.html',
   styleUrl: './task-view.component.scss',
 })
 export class TaskViewComponent {
   readonly ETaskStatus = ETaskStatus;
+  readonly contentMode = signal<TaskContentMode>('description');
   readonly galleryImages = computed(() =>
     toGalleryImages(this.draftImages(), this.task().imageId, this.coverDraftKey()),
   );
@@ -45,12 +57,18 @@ export class TaskViewComponent {
   private readonly task = this.store.selectSignal(TaskScreenState.task);
 
   constructor() {
+    const task = this.store.selectSnapshot(TaskScreenState.task);
+    this.contentMode.set(task.checklist?.length ? 'checklist' : 'description');
     this.view$ = this.store.select(TaskScreenState.task).pipe(
       map(task => ({
         task,
         descriptionHtml: descriptionHtml(task.description),
       })),
     );
+  }
+
+  checklistChanged(checklist: ChecklistItem[]): void {
+    this.store.dispatch(new TaskScreenAction.ChecklistChanged(checklist));
   }
 
   tagsChanged(tagIds: string[]): void {

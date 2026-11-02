@@ -18,6 +18,7 @@ export class TaskMapper {
       imageId,
       images,
       description,
+      checklist,
       tagIds,
       _id,
       createdAt,
@@ -33,6 +34,7 @@ export class TaskMapper {
         imageId,
         images: TaskMapper.definedImages(images),
         description: TaskMapper.toValidDescription(description),
+        checklist,
         tagIds: tagIds ?? [],
         createdAt,
         modifiedAt,
@@ -51,6 +53,7 @@ export class TaskMapper {
       imageId,
       images,
       description,
+      checklist,
       tagIds,
       createdAt,
       modifiedAt,
@@ -77,6 +80,10 @@ export class TaskMapper {
       persisted.description = description;
     }
 
+    if (checklist?.length) {
+      persisted.checklist = checklist;
+    }
+
     return persisted;
   }
 
@@ -100,6 +107,10 @@ export class TaskMapper {
 
     if (task.description !== undefined) {
       dto.description = task.description;
+    }
+
+    if (task.checklist?.length) {
+      dto.checklist = task.checklist;
     }
 
     return dto;

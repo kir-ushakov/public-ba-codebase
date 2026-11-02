@@ -1,0 +1,67 @@
+<ul class="checklist" data-test="task-checklist">
+  @for (item of rows(); track item.id; let index = $index) {
+    <li class="checklist-item">
+      <label class="checklist-check">
+        <input
+          type="checkbox"
+          [checked]="item.completed"
+          [disabled]="!canCheck()"
+          data-test="checklist-item-check"
+          (change)="toggle(item)"
+        />
+        <span class="check-box" aria-hidden="true">
+          @if (item.completed) {
+            <span class="material-symbols-rounded check-mark" data-test="checklist-item-mark"
+              >check</span
+            >
+          }
+        </span>
+      </label>
+      @if (canEdit()) {
+        <input
+          class="checklist-text"
+          [id]="'checklist-item-' + item.id"
+          [class.is-complete]="item.completed"
+          [value]="item.text"
+          [attr.maxlength]="itemMaxLength"
+          data-test="checklist-item-text"
+          (input)="onTextInput(item, $event)"
+        />
+        <div class="item-menu">
+          <button
+            class="item-more"
+            type="button"
+            data-test="checklist-item-more"
+            aria-label="Checklist item options"
+            (click)="toggleMenu(item.id, $event)"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">more_vert</span>
+          </button>
+          @if (openMenuId() === item.id) {
+            <ba-context-menu
+              ariaLabel="Checklist item options"
+              testId="checklist-item-menu"
+              [items]="menuItems(item, index)"
+              (closed)="closeMenu()"
+              (selected)="onMenuItem(item, $event)"
+            />
+          }
+        </div>
+      } @else {
+        <span
+          class="checklist-text"
+          [class.is-complete]="item.completed"
+          data-test="checklist-item-text"
+        >
+          {{ item.text }}
+        </span>
+      }
+    </li>
+  }
+</ul>
+@if (canEdit()) {
+  <button class="add-item" type="button" data-test="checklist-add-item" (click)="addItem()">
+    <span class="material-symbols-rounded" aria-hidden="true">add</span>
+    Add item...
+  </button>
+}

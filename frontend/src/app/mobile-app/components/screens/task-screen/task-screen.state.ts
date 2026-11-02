@@ -14,6 +14,11 @@ import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
 import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-description.function';
+import {
+  shouldOfferChecklistCompletion,
+  shouldOfferChecklistCompletionOnNoteConversion,
+} from 'src/app/shared/helpers/checklist.function';
+import { ChecklistCompletionPromptService } from 'src/app/shared/services/application/checklist-completion-prompt.service';
 import { statusForHomeMode } from '../home-screen/helpers/home-content-mode.function';
 import { HomeContentModeService } from '../home-screen/home-content-mode.service';
 
@@ -62,6 +67,7 @@ export class TaskScreenState {
   private readonly deviceCameraService = inject(DeviceCameraService);
   private readonly imageService = inject(ImageService);
   private readonly homeContentMode = inject(HomeContentModeService);
+  private readonly checklistPrompts = inject(ChecklistCompletionPromptService);
 
   @Selector()
   static mode(state: ITaskScreenStateModel): ETaskViewMode {
@@ -138,6 +144,40 @@ export class TaskScreenState {
         }),
       ),
     );
+  }
+
+  @Action(TaskScreenAction.ChecklistChanged)
+  async checklistChanged(
+    ctx: StateContext<ITaskScreenStateModel>,
+    { checklist }: TaskScreenAction.ChecklistChanged,
+  ): Promise<void> {
+    const state = ctx.getState();
+    const previous = state.taskData.checklist;
+    const status = state.taskData.status;
+    ctx.patchState({
+      taskData: {
+        ...state.taskData,
+        checklist,
+      },
+    });
+    if (!state.taskData.id) {
+      return;
+    }
+
+    await firstValueFrom(
+      ctx.dispatch(
+        new TasksAction.UpdateTask({
+          taskId: state.taskData.id,
+          changes: { checklist },
+        }),
+      ),
+    );
+    if (
+      shouldOfferChecklistCompletion(status, previous, checklist) &&
+      (status === ETaskStatus.Todo || status === ETaskStatus.Active)
+    ) {
+      this.checklistPrompts.offer({ taskId: state.taskData.id, status });
+    }
   }
 
   @Action(TaskScreenAction.ApplyButtonPressed)
@@ -236,8 +276,26 @@ export class TaskScreenState {
 
   @Action(TaskScreenAction.ConvertOptionSelected)
   async convert(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
-    const status = ctx.getState().taskData.status;
+    const taskData = ctx.getState().taskData;
+    const status = taskData.status;
     const next = status === ETaskStatus.Notes ? ETaskStatus.Todo : ETaskStatus.Notes;
+    if (
+      taskData.id &&
+      shouldOfferChecklistCompletionOnNoteConversion(status, next, taskData.checklist)
+    ) {
+      ctx.patchState({ taskData: { ...taskData, status: next } });
+      this.homeContentMode.showStatus(next);
+      await firstValueFrom(
+        ctx.dispatch(
+          new TasksAction.UpdateTask({
+            taskId: taskData.id,
+            changes: { status: next },
+          }),
+        ),
+      );
+      this.checklistPrompts.offer({ taskId: taskData.id, status: ETaskStatus.Todo });
+      return;
+    }
     await this.updateAndClose(ctx, { status: next });
   }
 

@@ -1,5 +1,11 @@
 import { Application } from 'express';
-import { TaskDTO, TagDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import {
+  TaskDTO,
+  TagDTO,
+  ETaskStatus,
+  ETaskType,
+  type ChecklistItemDTO,
+} from '@brainassistant/contracts';
 import { authenticatedRequest } from './auth.helper.js';
 
 export type TaskSeed = {
@@ -10,6 +16,7 @@ export type TaskSeed = {
   imageId?: string;
   description?: TaskDTO['description'];
   tagIds?: string[];
+  checklist?: ChecklistItemDTO[];
 };
 
 export async function createTaskViaApi(
@@ -25,6 +32,7 @@ export async function createTaskViaApi(
     ...(seed.imageId !== undefined ? { imageId: seed.imageId } : {}),
     ...(seed.description !== undefined ? { description: seed.description } : {}),
     ...(seed.tagIds !== undefined ? { tagIds: seed.tagIds } : {}),
+    ...(seed.checklist !== undefined ? { checklist: seed.checklist } : {}),
   };
 
   const res = await authenticatedRequest(app, jwtCookie)

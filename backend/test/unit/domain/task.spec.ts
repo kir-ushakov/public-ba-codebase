@@ -214,6 +214,81 @@ describe('Task', () => {
       expect(cleared.isSuccess).toBe(true);
       expect(task.description).toBeUndefined();
     });
+
+    it('stores a checklist and keeps it when a later update omits the field', () => {
+      const checklist = [
+        { id: 'item-1', text: 'Buy cat food', completed: false },
+        { id: 'item-2', text: 'Check salmon variant', completed: true },
+      ];
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        checklist,
+      });
+
+      expect(created.isSuccess).toBe(true);
+      const task = created.getValue();
+      expect(task.checklist).toEqual(checklist);
+
+      const renamed = task.update({ title: 'Renamed task' });
+
+      expect(renamed.isSuccess).toBe(true);
+      expect(task.checklist).toEqual(checklist);
+      expect(task.title).toBe('Renamed task');
+    });
+
+    it('clears a checklist when the update sends an empty list', () => {
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        checklist: [{ id: 'item-1', text: 'Buy cat food', completed: false }],
+      });
+      const task = created.getValue();
+
+      const cleared = task.update({ checklist: [] });
+
+      expect(cleared.isSuccess).toBe(true);
+      expect(task.checklist).toBeUndefined();
+    });
+
+    it('rejects a checklist item without text', () => {
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        checklist: [{ id: 'item-1', text: '   ', completed: false }],
+      });
+
+      expect(created.isFailure).toBe(true);
+      expect(created.error.code).toBe(ETaskError.ChecklistInvalid);
+    });
+
+    it('rejects a checklist with a duplicate item id', () => {
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        checklist: [
+          { id: 'same', text: 'One', completed: false },
+          { id: 'same', text: 'Two', completed: false },
+        ],
+      });
+
+      expect(created.isFailure).toBe(true);
+      expect(created.error.code).toBe(ETaskError.ChecklistInvalid);
+    });
+
+    it('creates a note that keeps its checklist', () => {
+      const checklist = [{ id: 'item-1', text: 'Buy cat food', completed: true }];
+      const created = Task.create({
+        ...baseTaskProps,
+        status: ETaskStatus.Notes,
+        title: 'Note title here',
+        checklist,
+      });
+
+      expect(created.isSuccess).toBe(true);
+      expect(created.getValue().status).toBe(ETaskStatus.Notes);
+      expect(created.getValue().checklist).toEqual(checklist);
+    });
   });
 
   describe('reconstitute', () => {

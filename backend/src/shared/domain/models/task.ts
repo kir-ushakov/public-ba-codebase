@@ -3,6 +3,7 @@ import {
   ETaskStatus,
   ETaskType,
   TaskConst,
+  type ChecklistItemDTO,
   type TaskDescriptionDoc,
 } from '@brainassistant/contracts';
 import { AggregateRoot } from '../AggregateRoot.js';
@@ -22,6 +23,7 @@ export interface ITaskProps {
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;
+  checklist?: ChecklistItemDTO[];
   tagIds?: string[];
   createdAt: Date;
   modifiedAt: Date;
@@ -37,6 +39,7 @@ export interface TaskPresitant {
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;
+  checklist?: ChecklistItemDTO[];
   tagIds?: string[];
   createdAt: Date;
   modifiedAt: Date;
@@ -79,6 +82,10 @@ export class Task extends AggregateRoot<ITaskProps> {
     return this.props.description;
   }
 
+  get checklist(): ChecklistItemDTO[] | undefined {
+    return this.props.checklist;
+  }
+
   get tagIds(): string[] {
     return this.props.tagIds ?? [];
   }
@@ -104,10 +111,15 @@ export class Task extends AggregateRoot<ITaskProps> {
     if (descriptionResult.isFailure) {
       return descriptionResult as Result<never, DomainError<Task, ETaskError>>;
     }
+    const checklistResult = Task.normalizeChecklist(props.checklist);
+    if (checklistResult.isFailure) {
+      return checklistResult as Result<never, DomainError<Task, ETaskError>>;
+    }
 
     const fullProps: ITaskProps = {
       ...props,
       description: descriptionResult.getValue(),
+      checklist: checklistResult.getValue(),
       tagIds: props.tagIds ?? [],
       createdAt: Task.instantOrNow(props.createdAt, now),
       modifiedAt: Task.instantOrNow(props.modifiedAt, now),
@@ -141,11 +153,19 @@ export class Task extends AggregateRoot<ITaskProps> {
     if (descriptionResult.isFailure) {
       return descriptionResult as Result<never, DomainError<Task, ETaskError>>;
     }
+    const checklistResult =
+      'checklist' in props
+        ? Task.normalizeChecklist(props.checklist)
+        : Result.ok<ChecklistItemDTO[] | undefined>(this.props.checklist);
+    if (checklistResult.isFailure) {
+      return checklistResult as Result<never, DomainError<Task, ETaskError>>;
+    }
 
     const newProps: ITaskProps = {
       ...this.props,
       ...props,
       description: descriptionResult.getValue(),
+      checklist: checklistResult.getValue(),
       createdAt: this.props.createdAt,
       modifiedAt: Task.instantOrNow(props.modifiedAt, new Date()),
     };
@@ -164,6 +184,9 @@ export class Task extends AggregateRoot<ITaskProps> {
     }
     if ('tagIds' in props) {
       this.props.tagIds = newProps.tagIds ?? [];
+    }
+    if ('checklist' in props) {
+      this.props.checklist = newProps.checklist;
     }
     this.props.description = newProps.description;
     return Result.ok<Task>();
@@ -204,6 +227,49 @@ export class Task extends AggregateRoot<ITaskProps> {
     }
 
     return Result.ok<TaskDescriptionDoc | undefined>(description.toJSON());
+  }
+
+  private static normalizeChecklist(
+    raw: ChecklistItemDTO[] | undefined,
+  ): Result<ChecklistItemDTO[] | undefined, DomainError<Task, ETaskError>> {
+    if (raw === undefined || raw.length === 0) {
+      return Result.ok<ChecklistItemDTO[] | undefined>();
+    }
+
+    if (raw.length > TaskConst.CHECKLIST_MAX_ITEMS) {
+      return Task.checklistError(
+        `A checklist can contain at most ${TaskConst.CHECKLIST_MAX_ITEMS} items`,
+      );
+    }
+
+    const ids = new Set<string>();
+    const items: ChecklistItemDTO[] = [];
+    for (const item of raw) {
+      if (!item || typeof item.id !== 'string' || typeof item.text !== 'string') {
+        return Task.checklistError('A checklist item needs an id and text');
+      }
+      const id = item.id.trim();
+      if (
+        id.length === 0 ||
+        id.length > TaskConst.CHECKLIST_ITEM_ID_MAX_LENGTH ||
+        item.text.trim().length === 0 ||
+        item.text.length > TaskConst.CHECKLIST_ITEM_MAX_LENGTH ||
+        typeof item.completed !== 'boolean' ||
+        ids.has(id)
+      ) {
+        return Task.checklistError('A checklist item is invalid');
+      }
+      ids.add(id);
+      items.push({ id, text: item.text, completed: item.completed });
+    }
+
+    return Result.ok<ChecklistItemDTO[] | undefined>(items);
+  }
+
+  private static checklistError(message: string): Result<never, DomainError<Task, ETaskError>> {
+    return Result.fail<never, DomainError<Task, ETaskError>>(
+      new DomainError<Task, ETaskError>(ETaskError.ChecklistInvalid, message),
+    );
   }
 
   private static isValid(props: ITaskProps): Result<void, DomainError<Task, ETaskError>> {
@@ -253,6 +319,11 @@ export class Task extends AggregateRoot<ITaskProps> {
           new DomainError<Task, ETaskError>(code, descriptionResult.error.message),
         );
       }
+    }
+
+    const checklistResult = Task.normalizeChecklist(props.checklist);
+    if (checklistResult.isFailure) {
+      return Result.fail<never, DomainError<Task, ETaskError>>(checklistResult.error);
     }
 
     return Result.ok<void, DomainError<Task, ETaskError>>();

@@ -125,12 +125,18 @@ test('title field grows extra lines without overlapping the image control', asyn
   await expect(applyButton).toBeVisible();
 
   const titleBox = await titleInput.boundingBox();
-  const imageBox = await addImageBtn.boundingBox();
-  const applyBox = await applyButton.boundingBox();
   expect(titleBox).toBeTruthy();
+  let imageBox = await addImageBtn.boundingBox();
+  expect(imageBox).toBeTruthy();
+  expect(imageBox!.y).toBeGreaterThan(titleBox!.y + titleBox!.height);
+
+  // Content switch makes the create form taller than the 375px viewport, so scroll
+  // the image control into view before checking it against the fixed Apply bar.
+  await addImageBtn.scrollIntoViewIfNeeded();
+  imageBox = await addImageBtn.boundingBox();
+  const applyBox = await applyButton.boundingBox();
   expect(imageBox).toBeTruthy();
   expect(applyBox).toBeTruthy();
-  expect(imageBox!.y).toBeGreaterThan(titleBox!.y + titleBox!.height);
   expect(applyBox!.y).toBeGreaterThan(imageBox!.y + imageBox!.height);
 });
 

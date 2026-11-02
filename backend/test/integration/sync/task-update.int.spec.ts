@@ -261,4 +261,47 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     const persisted = await models.TaskModel.findById(created.id).lean();
     expect(persisted?.tagIds ?? []).toEqual([]);
   });
+
+  it('keeps a checklist when the update omits it and clears it when the update sends an empty list', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const checklist = [
+      { id: 'item-1', text: 'Buy cat food', completed: false },
+      { id: 'item-2', text: 'Check salmon variant', completed: true },
+    ];
+    const created = await createTaskViaApi(app, jwtCookie, {
+      id: 'task-checklist-update',
+      title: 'Shopping',
+      checklist,
+    });
+
+    const { checklist: _checklist, ...withoutChecklist } = created;
+    const renamed = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          ...withoutChecklist,
+          title: 'Shopping later',
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(renamed.status).toBe(200);
+    expect(renamed.body.checklist).toEqual(checklist);
+    expect((await models.TaskModel.findById(created.id).lean())?.checklist).toEqual(checklist);
+
+    const cleared = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          ...created,
+          title: 'Shopping later',
+          checklist: [],
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(cleared.status).toBe(200);
+    expect(cleared.body.checklist).toBeUndefined();
+    expect((await models.TaskModel.findById(created.id).lean())?.checklist).toBeUndefined();
+  });
 });

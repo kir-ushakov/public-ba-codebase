@@ -11,6 +11,7 @@ export type {
   TaskDescriptionNode,
   TaskDescriptionMarkType,
   TaskDescriptionNodeType,
+  ChecklistItemDTO,
 } from './task.dto';
 export { TaskConst } from './task.const';
 export { ImageConst } from './image.const';
