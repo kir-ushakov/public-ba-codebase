@@ -1,4 +1,14 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  effect,
+  inject,
+  Injector,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { TaskConst } from '@brainassistant/contracts';
 import { v4 as uuidv4 } from 'uuid';
 import { ContextMenuComponent } from 'src/app/shared/components/ui-elements/context-menu/context-menu.component';
@@ -23,6 +33,7 @@ export class ChecklistEditorComponent {
   readonly rows = computed(() => visibleRows(this.items(), this.draft()));
 
   private readonly draft = signal<ChecklistItem | null>(null);
+  private readonly injector = inject(Injector);
 
   constructor() {
     effect(() => {
@@ -168,7 +179,12 @@ export class ChecklistEditorComponent {
   }
 
   private focusItem(id: string): void {
-    setTimeout(() => document.getElementById(`checklist-item-${id}`)?.focus());
+    afterNextRender(
+      () => {
+        document.getElementById(`checklist-item-${id}`)?.focus();
+      },
+      { injector: this.injector },
+    );
   }
 }
 

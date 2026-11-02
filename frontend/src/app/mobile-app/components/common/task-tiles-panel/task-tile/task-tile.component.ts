@@ -120,23 +120,24 @@ export class TaskTileComponent {
       return;
     }
     if (id === 'convert') {
-      if (!confirmActiveToNote(this.task.status)) {
-        return;
-      }
-      const from = this.task.status;
-      const to = statusAfterConversion(from);
-      const checklist = this.task.checklist;
-      const taskId = this.task.id;
-      void firstValueFrom(this.store.dispatch(new TaskTileAction.ConvertSelected(taskId, to))).then(
-        () => {
-          if (
-            to === ETaskStatus.Todo &&
-            shouldOfferChecklistCompletionOnNoteConversion(from, to, checklist)
-          ) {
-            this.checklistPrompts.offer({ taskId, status: ETaskStatus.Todo });
-          }
-        },
-      );
+      void this.convertSelected();
+    }
+  }
+
+  private async convertSelected(): Promise<void> {
+    if (!confirmActiveToNote(this.task.status)) {
+      return;
+    }
+    const from = this.task.status;
+    const to = statusAfterConversion(from);
+    const checklist = this.task.checklist;
+    const taskId = this.task.id;
+    await firstValueFrom(this.store.dispatch(new TaskTileAction.ConvertSelected(taskId, to)));
+    if (
+      to === ETaskStatus.Todo &&
+      shouldOfferChecklistCompletionOnNoteConversion(from, to, checklist)
+    ) {
+      this.checklistPrompts.offer({ taskId, status: ETaskStatus.Todo });
     }
   }
 

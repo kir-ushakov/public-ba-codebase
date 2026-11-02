@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { of } from 'rxjs';
 import { taskTileDayKey } from 'src/app/mobile-app/components/common/task-tiles-panel/task-tile/helpers/format-task-tile-date.function';
 import { TaskTileCalendar } from 'src/app/mobile-app/components/common/task-tiles-panel/task-tile/task-tile-calendar.service';
 import { TaskTileComponent } from 'src/app/mobile-app/components/common/task-tiles-panel/task-tile/task-tile.component';
@@ -36,7 +37,7 @@ describe('TaskTileComponent', () => {
     await TestBed.configureTestingModule({
       imports: [TaskTileComponent],
       providers: [
-        { provide: Store, useValue: { dispatch: jest.fn() } },
+        { provide: Store, useValue: { dispatch: jest.fn().mockReturnValue(of(undefined)) } },
         { provide: Router, useValue: { navigate: jest.fn() } },
         {
           provide: ImageService,

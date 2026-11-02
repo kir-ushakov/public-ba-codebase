@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { map } from 'rxjs/operators';
 import type { Observable } from 'rxjs';
@@ -55,17 +55,10 @@ export class TaskViewComponent {
   private readonly draftImages = this.store.selectSignal(TaskScreenState.draftImages);
   private readonly coverDraftKey = this.store.selectSignal(TaskScreenState.coverDraftKey);
   private readonly task = this.store.selectSignal(TaskScreenState.task);
-  private contentModeChosen = false;
 
   constructor() {
-    effect(() => {
-      const task = this.task();
-      if (this.contentModeChosen || !task.id) {
-        return;
-      }
-      this.contentMode.set(task.checklist?.length ? 'checklist' : 'description');
-      this.contentModeChosen = true;
-    });
+    const task = this.store.selectSnapshot(TaskScreenState.task);
+    this.contentMode.set(task.checklist?.length ? 'checklist' : 'description');
     this.view$ = this.store.select(TaskScreenState.task).pipe(
       map(task => ({
         task,
