@@ -1,9 +1,9 @@
-<section class="condition-section" data-test="task-conditions-section">
+<section class="choice-section" data-test="task-conditions-section">
   <p class="field-label">Conditions</p>
-  <div class="condition-options">
+  <div class="choice-options">
     @for (option of options; track option.id) {
       <button
-        class="condition-option"
+        class="choice-option is-compact"
         type="button"
         [attr.data-test]="'task-condition-' + option.testId"
         [class.is-selected]="isSelected(option.id)"
