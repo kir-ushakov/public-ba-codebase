@@ -66,10 +66,11 @@ describe('TaskViewComponent title', () => {
     expect(title?.querySelector('input, textarea')).toBeNull();
   });
 
-  it('hides the description card when the task has no description', () => {
-    expect(
-      (fixture.nativeElement as HTMLElement).querySelector('[data-test="task-view-description"]'),
-    ).toBeNull();
+  it('shows the content switch without description text when the task has no description', () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-test="task-content-switch"]')).not.toBeNull();
+    expect(host.querySelector('[data-test="task-view-description-body"]')).toBeNull();
   });
 
   it('shows the description as read-only text inside a card', () => {

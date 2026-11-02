@@ -1,3 +1,4 @@
+import type { ChecklistItem } from 'src/app/shared/models/task.model';
 import type { ITaskEditFormData } from './task-edit/task-edit.component.interface';
 import type { DraftTaskImage, ETaskViewMode } from './task-screen.state';
 
@@ -70,6 +71,12 @@ export namespace TaskScreenAction {
     static readonly type = '[TaskScreen] Tag Ids Changed';
 
     constructor(public tagIds: string[]) {}
+  }
+
+  export class ChecklistChanged {
+    static readonly type = '[TaskScreen] Checklist Changed';
+
+    constructor(public checklist: ChecklistItem[]) {}
   }
 
   export class UpdateFormData {

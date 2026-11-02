@@ -1,6 +1,7 @@
 import { Component, DestroyRef, HostListener, inject, Input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
+import { firstValueFrom } from 'rxjs';
 import { TaskTileAction } from './task-tile.actions';
 import { ETaskViewMode } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
 import { ETaskStatus, Task } from 'src/app/shared/models/task.model';
@@ -12,10 +13,12 @@ import { TaskTileCalendar } from './task-tile-calendar.service';
 import { TaskTileDatePipe } from './task-tile-date.pipe';
 import { TaskTileImagePipe } from './task-tile-image.pipe';
 import { taskTypeIcon } from './helpers/task-type-icon.function';
+import { shouldOfferChecklistCompletionOnNoteConversion } from 'src/app/shared/helpers/checklist.function';
 import {
   confirmActiveToNote,
   statusAfterConversion,
 } from 'src/app/shared/helpers/task-status-conversion.function';
+import { ChecklistCompletionPromptService } from 'src/app/shared/services/application/checklist-completion-prompt.service';
 
 function menuItemsFor(status: ETaskStatus): ContextMenuItem[] {
   const note = status === ETaskStatus.Notes;
@@ -75,6 +78,7 @@ export class TaskTileComponent {
   readonly dateLocale = TASK_TILE_DATE_LOCALE;
 
   private readonly calendar = inject(TaskTileCalendar);
+  private readonly checklistPrompts = inject(ChecklistCompletionPromptService);
   readonly dayKey = this.calendar.dayKey;
 
   constructor(
@@ -119,8 +123,19 @@ export class TaskTileComponent {
       if (!confirmActiveToNote(this.task.status)) {
         return;
       }
-      this.store.dispatch(
-        new TaskTileAction.ConvertSelected(this.task.id, statusAfterConversion(this.task.status)),
+      const from = this.task.status;
+      const to = statusAfterConversion(from);
+      const checklist = this.task.checklist;
+      const taskId = this.task.id;
+      void firstValueFrom(this.store.dispatch(new TaskTileAction.ConvertSelected(taskId, to))).then(
+        () => {
+          if (
+            to === ETaskStatus.Todo &&
+            shouldOfferChecklistCompletionOnNoteConversion(from, to, checklist)
+          ) {
+            this.checklistPrompts.offer({ taskId, status: ETaskStatus.Todo });
+          }
+        },
       );
     }
   }

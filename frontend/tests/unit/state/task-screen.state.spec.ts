@@ -12,8 +12,10 @@ import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { HomeContentModeService } from 'src/app/mobile-app/components/screens/home-screen/home-content-mode.service';
+import { ChecklistCompletionPromptService } from 'src/app/shared/services/application/checklist-completion-prompt.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 import { SyncAction } from 'src/app/shared/state/sync.action';
+import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { EUserAuthState, UserState } from 'src/app/shared/state/user.state';
 
@@ -699,6 +701,215 @@ describe('TaskScreenState', () => {
       .find(task => task.id === calendarTask.id);
     expect(updated?.status).toBe(ETaskStatus.Notes);
     expect(updated?.type).toBe(ETaskType.Calendar);
+  });
+
+  it('checks an item without offering completion until the last one is checked', async () => {
+    const checklist = [
+      { id: 'a', text: 'Buy cat food', completed: false },
+      { id: 'b', text: 'Check salmon variant', completed: false },
+    ];
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [{ ...existingWithPhoto, checklist }] },
+    });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.ChecklistChanged([
+          { id: 'a', text: 'Buy cat food', completed: true },
+          { id: 'b', text: 'Check salmon variant', completed: false },
+        ]),
+      ),
+    );
+
+    expect(prompts.prompt()).toBeNull();
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.status).toBe(ETaskStatus.Todo);
+
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.ChecklistChanged([
+          { id: 'a', text: 'Buy cat food', completed: true },
+          { id: 'b', text: 'Check salmon variant', completed: true },
+        ]),
+      ),
+    );
+
+    expect(prompts.prompt()).toEqual({ taskId: existingWithPhoto.id, status: ETaskStatus.Todo });
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.status).toBe(ETaskStatus.Todo);
+    prompts.dismiss();
+  });
+
+  it('offers completion when the last item of an active task is checked', async () => {
+    const checklist = [{ id: 'a', text: 'Buy cat food', completed: false }];
+    store.reset({
+      ...store.snapshot(),
+      tasks: {
+        entities: [
+          { ...existingWithPhoto, id: 'task-active', status: ETaskStatus.Active, checklist },
+        ],
+      },
+    });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, 'task-active')),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.ChecklistChanged([{ id: 'a', text: 'Buy cat food', completed: true }]),
+      ),
+    );
+
+    expect(prompts.prompt()).toEqual({ taskId: 'task-active', status: ETaskStatus.Active });
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.status).toBe(ETaskStatus.Active);
+    prompts.dismiss();
+  });
+
+  it('does not offer completion when the last item of a note is checked', async () => {
+    const checklist = [{ id: 'a', text: 'Buy cat food', completed: false }];
+    store.reset({
+      ...store.snapshot(),
+      tasks: {
+        entities: [{ ...existingWithPhoto, id: 'note-1', status: ETaskStatus.Notes, checklist }],
+      },
+    });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, 'note-1')));
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.ChecklistChanged([{ id: 'a', text: 'Buy cat food', completed: true }]),
+      ),
+    );
+
+    expect(prompts.prompt()).toBeNull();
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.status).toBe(ETaskStatus.Notes);
+  });
+
+  it('does not offer completion for an empty checklist or an already completed one', async () => {
+    const checklist = [{ id: 'a', text: 'Buy cat food', completed: true }];
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [{ ...existingWithPhoto, checklist }] },
+    });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
+    );
+    expect(prompts.prompt()).toBeNull();
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.ChecklistChanged([])));
+    expect(prompts.prompt()).toBeNull();
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.status).toBe(ETaskStatus.Todo);
+  });
+
+  it('converts an incomplete note to to-do without a dialog and keeps item ids', async () => {
+    const checklist = [
+      { id: 'a', text: 'Buy cat food', completed: true },
+      { id: 'b', text: 'Check salmon variant', completed: false },
+    ];
+    const note: Task = {
+      ...existingWithPhoto,
+      id: 'note-open',
+      status: ETaskStatus.Notes,
+      checklist,
+    };
+    store.reset({ ...store.snapshot(), tasks: { entities: [note] } });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, note.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    const updated = store.selectSnapshot(TasksState.allTasks).find(task => task.id === note.id);
+    expect(updated?.status).toBe(ETaskStatus.Todo);
+    expect(updated?.checklist).toEqual(checklist);
+    expect(prompts.prompt()).toBeNull();
+  });
+
+  it('offers completion when a fully completed note becomes a to-do, and Mark as Done finishes it', async () => {
+    const checklist = [
+      { id: 'a', text: 'Buy cat food', completed: true },
+      { id: 'b', text: 'Check salmon variant', completed: true },
+    ];
+    const note: Task = {
+      ...existingWithPhoto,
+      id: 'note-done-list',
+      status: ETaskStatus.Notes,
+      checklist,
+    };
+    store.reset({ ...store.snapshot(), tasks: { entities: [note] } });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, note.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    expect(prompts.prompt()).toEqual({ taskId: note.id, status: ETaskStatus.Todo });
+    expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.View);
+    let updated = store.selectSnapshot(TasksState.allTasks).find(task => task.id === note.id);
+    expect(updated?.status).toBe(ETaskStatus.Todo);
+    expect(updated?.checklist).toEqual(checklist);
+
+    await firstValueFrom(
+      store.dispatch(
+        new TasksAction.UpdateTask({ taskId: note.id, changes: { status: ETaskStatus.Done } }),
+      ),
+    );
+    prompts.dismiss();
+
+    updated = store.selectSnapshot(TasksState.allTasks).find(task => task.id === note.id);
+    expect(updated?.status).toBe(ETaskStatus.Done);
+    expect(updated?.checklist).toEqual(checklist);
+    expect(prompts.prompt()).toBeNull();
+  });
+
+  it('keeps to-do when the completion dialog is dismissed after converting a completed note', async () => {
+    const checklist = [{ id: 'a', text: 'Buy cat food', completed: true }];
+    const note: Task = {
+      ...existingWithPhoto,
+      id: 'note-keep',
+      status: ETaskStatus.Notes,
+      checklist,
+    };
+    store.reset({ ...store.snapshot(), tasks: { entities: [note] } });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, note.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+    prompts.dismiss();
+
+    const updated = store.selectSnapshot(TasksState.allTasks).find(task => task.id === note.id);
+    expect(updated?.status).toBe(ETaskStatus.Todo);
+    expect(updated?.checklist).toEqual(checklist);
+    expect(prompts.prompt()).toBeNull();
+  });
+
+  it('converts a completed to-do back to a note without a dialog, then offers again on the way back', async () => {
+    const checklist = [{ id: 'a', text: 'Buy cat food', completed: true }];
+    const task: Task = { ...existingWithPhoto, id: 'task-roundtrip', checklist };
+    store.reset({ ...store.snapshot(), tasks: { entities: [task] } });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, task.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    let updated = store.selectSnapshot(TasksState.allTasks).find(item => item.id === task.id);
+    expect(updated?.status).toBe(ETaskStatus.Notes);
+    expect(updated?.checklist).toEqual(checklist);
+    expect(prompts.prompt()).toBeNull();
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, task.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    updated = store.selectSnapshot(TasksState.allTasks).find(item => item.id === task.id);
+    expect(updated?.status).toBe(ETaskStatus.Todo);
+    expect(updated?.checklist).toEqual(checklist);
+    expect(prompts.prompt()).toEqual({ taskId: task.id, status: ETaskStatus.Todo });
+    prompts.dismiss();
   });
 
   async function saveCreatedTaskWithTwoPhotos(

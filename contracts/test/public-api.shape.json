@@ -75,6 +75,7 @@
       "TASK_ERROR__TITLE_TOO_LONG",
       "TASK_ERROR__DESCRIPTION_INVALID",
       "TASK_ERROR__DESCRIPTION_TOO_LONG",
+      "TASK_ERROR__CHECKLIST_INVALID",
       "TASK_ERROR__UNKNOWN_TAG"
     ],
     "ETagError": [
@@ -100,6 +101,7 @@
         "imageId",
         "images",
         "description",
+        "checklist",
         "createdAt",
         "modifiedAt",
         "tagIds"
@@ -108,8 +110,13 @@
         "imageId",
         "images",
         "description",
+        "checklist",
         "tagIds"
       ]
+    },
+    "ChecklistItemDTO": {
+      "keys": ["id", "text", "completed"],
+      "optional": []
     },
     "TaskDescriptionDoc": {
       "keys": [
@@ -297,7 +304,10 @@
       "TITLE_MAX_LENGTH": 100,
       "DESCRIPTION_MAX_TEXT_LENGTH": 4000,
       "DESCRIPTION_MAX_JSON_BYTES": 16384,
-      "DESCRIPTION_MAX_DEPTH": 8
+      "DESCRIPTION_MAX_DEPTH": 8,
+      "CHECKLIST_MAX_ITEMS": 100,
+      "CHECKLIST_ITEM_MAX_LENGTH": 200,
+      "CHECKLIST_ITEM_ID_MAX_LENGTH": 64
     },
     "TagConst": {
       "NAME_MIN_LENGTH": 1,

@@ -4,12 +4,29 @@
     <ba-task-type-chip [type]="view.task.type" />
   }
   <h2 class="task-title" data-test="task-view-title">{{ view.task.title }}</h2>
-  @if (view.descriptionHtml) {
-    <section class="description-card" data-test="task-view-description">
-      <p class="description-label">Description</p>
-      <div class="description-body" [innerHTML]="view.descriptionHtml"></div>
-    </section>
-  }
+  <section class="description-card" data-test="task-view-description">
+    <p class="description-label">Content</p>
+    <ba-task-content-switch
+      [mode]="contentMode()"
+      [descriptionHasContent]="!!view.descriptionHtml"
+      [checklistHasContent]="(view.task.checklist?.length ?? 0) > 0"
+      (modeChange)="contentMode.set($event)"
+    />
+    @if (contentMode() === 'description' && view.descriptionHtml) {
+      <div
+        class="description-body"
+        data-test="task-view-description-body"
+        [innerHTML]="view.descriptionHtml"
+      ></div>
+    }
+    @if (contentMode() === 'checklist') {
+      <ba-checklist-editor
+        [items]="view.task.checklist ?? []"
+        [canEdit]="false"
+        (itemsChange)="checklistChanged($event)"
+      />
+    }
+  </section>
   <ba-image-gallery-editor
     presentation="view"
     [images]="galleryImages()"

@@ -27,8 +27,27 @@
       </p>
     </div>
     <div class="description-field">
-      <p class="field-label">Description</p>
-      <ba-rich-text-editor formControlName="description" [placeholder]="descriptionPlaceholder()" />
+      <p class="field-label">Content</p>
+      <ba-task-content-switch
+        [mode]="contentMode()"
+        [descriptionHasContent]="descriptionHasContent()"
+        [checklistHasContent]="checklist().length > 0"
+        (modeChange)="contentMode.set($event)"
+      />
+      <div [hidden]="contentMode() !== 'description'">
+        <ba-rich-text-editor
+          formControlName="description"
+          [placeholder]="descriptionPlaceholder()"
+        />
+      </div>
+      <div [hidden]="contentMode() !== 'checklist'">
+        <ba-checklist-editor
+          [items]="checklist()"
+          [canEdit]="true"
+          [canCheck]="canCheckChecklist()"
+          (itemsChange)="onChecklistChange($event)"
+        />
+      </div>
     </div>
     <ba-image-gallery-editor
       [images]="galleryImages()"

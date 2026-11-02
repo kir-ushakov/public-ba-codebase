@@ -33,6 +33,12 @@ export type TaskDescriptionDoc = {
   content?: TaskDescriptionNode[];
 };
 
+export type ChecklistItemDTO = {
+  id: string;
+  text: string;
+  completed: boolean;
+};
+
 /**
  * Task Data Transfer Object
  * Shared contract between frontend and backend for task data
@@ -46,6 +52,7 @@ export type TaskDTO = {
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;
+  checklist?: ChecklistItemDTO[];
   tagIds?: string[];
   createdAt: string;
   modifiedAt: string;

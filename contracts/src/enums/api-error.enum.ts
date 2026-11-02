@@ -78,6 +78,7 @@ export enum ETaskError {
   TitleTooLong = 'TASK_ERROR__TITLE_TOO_LONG',
   DescriptionInvalid = 'TASK_ERROR__DESCRIPTION_INVALID',
   DescriptionTooLong = 'TASK_ERROR__DESCRIPTION_TOO_LONG',
+  ChecklistInvalid = 'TASK_ERROR__CHECKLIST_INVALID',
   UnknownTag = 'TASK_ERROR__UNKNOWN_TAG',
 }
 

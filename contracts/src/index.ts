@@ -13,6 +13,7 @@ export type {
   TaskDescriptionNode,
   TaskDescriptionMarkType,
   TaskDescriptionNodeType,
+  ChecklistItemDTO,
   UserDto,
   LoginRequestDTO,
   LoginResponseDTO,

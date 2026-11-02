@@ -1,0 +1,38 @@
+@if (prompt(); as current) {
+  <div class="checklist-dialog-backdrop" data-test="checklist-completion-dialog" (click)="keep()">
+    <div
+      class="checklist-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="checklist-completion-title"
+      (click)="$event.stopPropagation()"
+    >
+      <img class="checklist-dialog-icon" src="assets/ui/icons/checklist-completed.svg" alt="" />
+      <h2 id="checklist-completion-title" data-test="checklist-completion-title">
+        All checklist items completed!
+      </h2>
+      <p data-test="checklist-completion-message">
+        You've completed everything on your checklist. Mark this task as done?
+      </p>
+      <div class="checklist-dialog-actions">
+        <button
+          class="dialog-action dialog-action-secondary"
+          type="button"
+          data-test="checklist-completion-keep"
+          (click)="keep()"
+        >
+          {{ keepLabel() }}
+        </button>
+        <button
+          class="dialog-action dialog-action-primary"
+          type="button"
+          data-test="checklist-completion-done"
+          (click)="markDone()"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">check</span>
+          Mark as Done
+        </button>
+      </div>
+    </div>
+  </div>
+}

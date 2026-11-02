@@ -220,6 +220,10 @@ export class TasksState {
       task.images = taskInitData.images;
     }
 
+    if (taskInitData.checklist) {
+      task.checklist = taskInitData.checklist;
+    }
+
     return task;
   }
 

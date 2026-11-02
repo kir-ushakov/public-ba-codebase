@@ -23,6 +23,10 @@ export class TasksMapper {
       task.description = taskDto.description;
     }
 
+    if (taskDto.checklist) {
+      task.checklist = taskDto.checklist;
+    }
+
     if (taskDto.tagIds) {
       task.tagIds = taskDto.tagIds;
     }
@@ -54,6 +58,10 @@ export class TasksMapper {
 
     if (!isEmptyTaskDescription(task.description)) {
       dto.description = task.description;
+    }
+
+    if (task.checklist) {
+      dto.checklist = task.checklist;
     }
 
     if (task.tagIds) {

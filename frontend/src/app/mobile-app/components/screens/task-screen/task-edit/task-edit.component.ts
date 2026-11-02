@@ -34,6 +34,11 @@ import { TaskTypeChipComponent } from '../task-type-chip/task-type-chip.componen
 import { toGalleryImages, type GalleryImage } from './helpers/to-gallery-images.function';
 import { statusForHomeMode } from '../../home-screen/helpers/home-content-mode.function';
 import { HomeContentModeService } from '../../home-screen/home-content-mode.service';
+import { TaskContentSwitchComponent } from '../task-content-switch/task-content-switch.component';
+import type { TaskContentMode } from '../task-content-switch/task-content-switch.component';
+import { ChecklistEditorComponent } from './checklist-editor/checklist-editor.component';
+import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-description.function';
+import type { ChecklistItem } from 'src/app/shared/models/task.model';
 
 @Component({
   selector: 'ba-task-edit',
@@ -46,6 +51,8 @@ import { HomeContentModeService } from '../../home-screen/home-content-mode.serv
     TagSelectorComponent,
     StatusSelectorComponent,
     TaskTypeChipComponent,
+    TaskContentSwitchComponent,
+    ChecklistEditorComponent,
     ReactiveFormsModule,
   ],
   templateUrl: './task-edit.component.html',
@@ -77,6 +84,9 @@ export class TaskEditComponent {
       ? 'Write something you want to remember...'
       : 'Write additional details about this task...',
   );
+  readonly contentMode = signal<TaskContentMode>('description');
+  readonly checklist = computed(() => this.editedTask().checklist ?? []);
+  readonly canCheckChecklist = computed(() => this.screenMode() !== ETaskViewMode.Create);
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);
@@ -115,6 +125,14 @@ export class TaskEditComponent {
         previewUrl: image.previewUrl,
       }),
     );
+  }
+
+  descriptionHasContent(): boolean {
+    return !isEmptyTaskDescription(this.form?.controls.description?.value ?? null);
+  }
+
+  onChecklistChange(checklist: ChecklistItem[]): void {
+    this.store.dispatch(new TaskScreenAction.ChecklistChanged(checklist));
   }
 
   onTagIdsChange(tagIds: string[]): void {
@@ -217,6 +235,7 @@ export class TaskEditComponent {
           : ETaskStatus.Todo;
     const existingTagIds = existingTask.tagIds ?? [];
     this.tagIds.set(existingTagIds);
+    this.contentMode.set((existingTask.checklist?.length ?? 0) > 0 ? 'checklist' : 'description');
 
     this.form = this.fb.group<FormControlsOf<ITaskEditFormData>>({
       title: this.fb.control(existingTitle, {
