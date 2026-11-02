@@ -18,25 +18,45 @@ import type { ContextMenuItem } from 'src/app/shared/components/ui-elements/cont
 import { TaskEditComponent } from './task-edit/task-edit.component';
 import { TaskViewComponent } from './task-view/task-view.component';
 import { TaskBottomPanelComponent } from 'src/app/mobile-app/components/screens/task-screen/task-bottom-panel/task-bottom-panel.component';
+import { ETaskStatus } from 'src/app/shared/models/task.model';
+import { confirmActiveToNote } from 'src/app/shared/helpers/task-status-conversion.function';
 
-const optionsMenuItems: ContextMenuItem[] = [
-  { id: 'edit', label: 'Edit task', icon: 'edit', testId: 'task-menu-edit' },
-  {
-    id: 'duplicate',
-    label: 'Duplicate',
-    icon: 'content_copy',
-    testId: 'task-menu-duplicate',
-    disabled: true,
-  },
-  {
-    id: 'delete',
-    label: 'Delete task',
-    icon: 'delete',
-    testId: 'task-menu-delete',
-    danger: true,
-    separatorBefore: true,
-  },
-];
+function isNote(status: ETaskStatus | undefined): boolean {
+  return status === ETaskStatus.Notes;
+}
+
+function optionsMenuFor(status: ETaskStatus | undefined): ContextMenuItem[] {
+  const note = isNote(status);
+  return [
+    {
+      id: 'edit',
+      label: note ? 'Edit' : 'Edit task',
+      icon: 'edit',
+      testId: 'task-menu-edit',
+    },
+    {
+      id: 'duplicate',
+      label: 'Duplicate',
+      icon: 'content_copy',
+      testId: 'task-menu-duplicate',
+      disabled: true,
+    },
+    {
+      id: 'convert',
+      label: note ? 'Convert to task' : 'Convert to note',
+      icon: 'swap_horiz',
+      testId: 'task-menu-convert',
+    },
+    {
+      id: 'delete',
+      label: note ? 'Delete' : 'Delete task',
+      icon: 'delete',
+      testId: 'task-menu-delete',
+      danger: true,
+      separatorBefore: true,
+    },
+  ];
+}
 
 @Component({
   selector: 'ba-task-screen',
@@ -61,46 +81,54 @@ export class TaskScreenComponent implements OnInit {
 
   mode = inject(Store).selectSignal(TaskScreenState.mode);
   headerTitle = computed(() => {
+    const note = isNote(this.task().status);
     switch (this.mode()) {
       case ETaskViewMode.Edit:
-        return 'Edit Task';
+        return note ? 'Edit Note' : 'Edit Task';
       case ETaskViewMode.View:
-        return 'Task';
+        return note ? 'Note' : 'Task';
       default:
-        return 'Create Task';
+        return note ? 'Create Note' : 'Create Task';
     }
   });
   headerTitleTestId = computed(() => {
+    const note = isNote(this.task().status);
     switch (this.mode()) {
       case ETaskViewMode.Edit:
-        return 'edit-task-title';
+        return note ? 'edit-note-title' : 'edit-task-title';
       case ETaskViewMode.View:
-        return 'task-title';
+        return note ? 'note-title' : 'task-title';
       default:
-        return 'create-task-title';
+        return note ? 'create-note-title' : 'create-task-title';
     }
   });
   headerBackTestId = computed(() => {
+    const note = isNote(this.task().status);
     switch (this.mode()) {
       case ETaskViewMode.Edit:
-        return 'edit-task-back';
+        return note ? 'edit-note-back' : 'edit-task-back';
       case ETaskViewMode.View:
-        return 'task-back';
+        return note ? 'note-back' : 'task-back';
       default:
-        return 'create-task-back';
+        return note ? 'create-note-back' : 'create-task-back';
     }
   });
   showHeaderMenu = computed(() => this.mode() !== ETaskViewMode.Create);
-  headerMenuLabel = computed(() =>
-    this.mode() === ETaskViewMode.View ? 'Task options' : 'More options',
-  );
+  headerMenuLabel = computed(() => {
+    if (this.mode() !== ETaskViewMode.View) {
+      return 'More options';
+    }
+    return isNote(this.task().status) ? 'Note options' : 'Task options';
+  });
   headerMenuTestId = computed(() =>
     this.mode() === ETaskViewMode.View ? 'task-options-btn' : 'edit-task-more',
   );
   readonly isOptionsMenuOpen = signal(false);
-  readonly optionsMenuItems = optionsMenuItems;
+  readonly optionsMenuItems = computed(() => optionsMenuFor(this.task().status));
 
   ETaskViewMode = ETaskViewMode;
+
+  private readonly task = inject(Store).selectSignal(TaskScreenState.task);
 
   constructor(
     private store: Store,
@@ -132,6 +160,14 @@ export class TaskScreenComponent implements OnInit {
     }
     if (id === 'delete') {
       this.store.dispatch(TaskScreenAction.DeleteTaskOptionSelected);
+      return;
+    }
+    if (id === 'convert') {
+      const status = this.store.selectSnapshot(TaskScreenState.task).status;
+      if (!confirmActiveToNote(status)) {
+        return;
+      }
+      this.store.dispatch(TaskScreenAction.ConvertOptionSelected);
     }
   }
 

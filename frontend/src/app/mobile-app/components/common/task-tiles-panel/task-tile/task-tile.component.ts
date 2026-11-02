@@ -12,32 +12,45 @@ import { TaskTileCalendar } from './task-tile-calendar.service';
 import { TaskTileDatePipe } from './task-tile-date.pipe';
 import { TaskTileImagePipe } from './task-tile-image.pipe';
 import { taskTypeIcon } from './helpers/task-type-icon.function';
+import {
+  confirmActiveToNote,
+  statusAfterConversion,
+} from 'src/app/shared/helpers/task-status-conversion.function';
 
-const menuItems: ContextMenuItem[] = [
-  { id: 'edit', label: 'Edit', icon: 'edit', testId: 'task-tile-menu-edit' },
-  {
-    id: 'duplicate',
-    label: 'Duplicate',
-    icon: 'content_copy',
-    testId: 'task-tile-menu-duplicate',
-    disabled: true,
-  },
-  {
-    id: 'add-to-tags',
-    label: 'Add to tags',
-    icon: 'sell',
-    testId: 'task-tile-menu-add-to-tags',
-    disabled: true,
-  },
-  {
-    id: 'delete',
-    label: 'Delete',
-    icon: 'delete',
-    testId: 'task-tile-menu-delete',
-    danger: true,
-    separatorBefore: true,
-  },
-];
+function menuItemsFor(status: ETaskStatus): ContextMenuItem[] {
+  const note = status === ETaskStatus.Notes;
+  return [
+    { id: 'edit', label: 'Edit', icon: 'edit', testId: 'task-tile-menu-edit' },
+    {
+      id: 'duplicate',
+      label: 'Duplicate',
+      icon: 'content_copy',
+      testId: 'task-tile-menu-duplicate',
+      disabled: true,
+    },
+    {
+      id: 'add-to-tags',
+      label: 'Add to tags',
+      icon: 'sell',
+      testId: 'task-tile-menu-add-to-tags',
+      disabled: true,
+    },
+    {
+      id: 'convert',
+      label: note ? 'Convert to task' : 'Convert to note',
+      icon: 'swap_horiz',
+      testId: 'task-tile-menu-convert',
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: 'delete',
+      testId: 'task-tile-menu-delete',
+      danger: true,
+      separatorBefore: true,
+    },
+  ];
+}
 
 @Component({
   selector: 'ba-task-tile',
@@ -59,7 +72,6 @@ export class TaskTileComponent {
 
   isLoading = signal(true);
   readonly isMenuOpen = signal(false);
-  readonly menuItems = menuItems;
   readonly dateLocale = TASK_TILE_DATE_LOCALE;
 
   private readonly calendar = inject(TaskTileCalendar);
@@ -80,6 +92,10 @@ export class TaskTileComponent {
     return taskTypeIcon(this.task.type);
   }
 
+  get menuItems(): ContextMenuItem[] {
+    return menuItemsFor(this.task.status);
+  }
+
   onMoreClick(event: Event): void {
     event.stopPropagation();
     this.isMenuOpen.update(isOpen => !isOpen);
@@ -97,6 +113,15 @@ export class TaskTileComponent {
     }
     if (id === 'delete') {
       this.store.dispatch(new TaskTileAction.DeleteSelected(this.task.id));
+      return;
+    }
+    if (id === 'convert') {
+      if (!confirmActiveToNote(this.task.status)) {
+        return;
+      }
+      this.store.dispatch(
+        new TaskTileAction.ConvertSelected(this.task.id, statusAfterConversion(this.task.status)),
+      );
     }
   }
 

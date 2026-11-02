@@ -5,7 +5,7 @@ import { ETaskStatus } from '@brainassistant/contracts';
 
 type TaskStatusOption = {
   id: ETaskStatus;
-  testId: 'todo' | 'active' | 'notes';
+  testId: 'todo' | 'active';
   label: string;
   icon: string;
 };
@@ -22,12 +22,6 @@ const TASK_FORM_STATUSES: TaskStatusOption[] = [
     testId: 'active',
     label: 'Active',
     icon: 'play_arrow',
-  },
-  {
-    id: ETaskStatus.Notes,
-    testId: 'notes',
-    label: 'Notes',
-    icon: 'article',
   },
 ];
 

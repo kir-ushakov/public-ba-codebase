@@ -1,0 +1,164 @@
+{
+  "screen": {
+    "id": "note-create",
+    "name": "Create Note",
+    "version": "1.0.0",
+
+    "purpose": "Create a note: a task with status Notes and no execution lifecycle.",
+
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+
+    "status": "approved",
+    "implementationStatus": "implemented",
+    "sharedPattern": "task-form",
+
+    "layout": {
+      "type": "mobile",
+      "structure": [
+        "header",
+        "task-form",
+        "bottom-actions"
+      ]
+    },
+
+    "header": {
+      "type": "page-header",
+
+      "left": {
+        "action": {
+          "id": "back",
+          "type": "icon-button",
+          "icon": "arrow_back",
+          "action": "navigate-back"
+        },
+        "title": {
+          "text": "Create Note",
+          "typographyToken": "typography.styles.sectionTitle"
+        }
+      }
+    },
+
+    "form": {
+      "component": "task-form",
+      "mode": "create-note",
+      "sections": [
+        {
+          "id": "title",
+          "label": "Title",
+          "component": "text-input",
+          "placeholder": "Note title here...",
+          "voiceInput": {
+            "enabled": true,
+            "icon": "mic"
+          },
+          "characterCount": true
+        },
+        {
+          "id": "description",
+          "label": "Description",
+          "component": "rich-text-editor",
+          "placeholder": "Write something you want to remember...",
+          "toolbar": [
+            "bold",
+            "italic",
+            "bulleted-list",
+            "numbered-list",
+            "link"
+          ],
+          "characterCount": true
+        },
+        {
+          "id": "images",
+          "label": "Images",
+          "component": "image-gallery-editor",
+          "addAction": {
+            "label": "Add image",
+            "icon": "image",
+            "action": "add-image"
+          },
+          "multiple": true,
+          "cover": {
+            "enabled": true,
+            "selectionRule": "Exactly one attached image may be selected as cover when images exist.",
+            "defaultRule": "The first added image becomes the cover automatically.",
+            "tileUse": "The cover image is used as the note image on home tiles.",
+            "selectedTreatment": [
+              "accent selection border",
+              "small COVER badge"
+            ],
+            "changeAction": "set-image-as-cover"
+          }
+        },
+        {
+          "id": "tags",
+          "label": "Tags",
+          "component": "tag-selector",
+          "placeholder": "Add tags...",
+          "multiple": true,
+          "openAction": {
+            "action": "open-tag-selector",
+            "presentation": "bottom-sheet"
+          },
+          "selectedDisplay": {
+            "component": "chip-list",
+            "removable": true
+          }
+        }
+      ]
+    },
+
+    "bottomActions": {
+      "component": "sticky-form-actions",
+      "actions": [
+        {
+          "id": "cancel",
+          "label": "Cancel",
+          "style": "secondary",
+          "action": "navigate-back"
+        },
+        {
+          "id": "submit",
+          "label": "Create Note",
+          "style": "primary",
+          "action": "create-note"
+        }
+      ]
+    },
+
+    "states": {
+      "tagSelectorOpen": {
+        "trigger": "form.sections.tags",
+        "spec": "./tag-selector-open.json",
+        "referenceImage": "../references/tag-selector-open.png"
+      }
+    },
+
+    "visualRules": [
+      "Use global design tokens from design-system.json.",
+      "Do not define screen-specific colors, radii or arbitrary spacing.",
+      "The reference image is a visual target, not a source of token values. Do not measure colors, spacing, or radii from it.",
+      "Opened from the Home Notes mode. Saving sets status to Notes on the existing task record.",
+      "Create Note has no header overflow menu, no task-type chip, no status selector and no due date.",
+      "Images, tags and description stay on the same task when the note is later converted to a task.",
+      "Teal marks the cover selection and the primary action.",
+      "Do not add a delete action or title-clear action to this screen."
+    ],
+
+    "reference": {
+      "status": "approved",
+      "image": "../references/note-create.jpg",
+      "description": "Approved visual reference for the Create Note screen."
+    },
+
+    "angular": {
+      "note": "Create Note reuses the task screen in create mode while Home is on Notes. It does not add a Note entity, API or sync queue. The saved status is ETaskStatus.Notes. Character counters in the reference are visual placeholders; live limits stay in TaskConst.",
+      "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
+      "existingPiecesToReuse": [
+        "frontend/src/app/mobile-app/components/screens/task-screen/task-edit/",
+        "frontend/src/app/shared/components/ui-elements/rich-text-editor/",
+        "frontend/src/app/shared/features/voice-input/components/voice-input-trigger/"
+      ]
+    }
+  }
+}

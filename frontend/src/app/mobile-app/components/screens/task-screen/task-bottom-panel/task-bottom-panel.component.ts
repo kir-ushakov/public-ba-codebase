@@ -19,9 +19,12 @@ export class TaskBottomPanelComponent {
   @Input() enabled!: boolean;
 
   mode: Signal<ETaskViewMode> = this.store.selectSignal(TaskScreenState.mode);
-  readonly submitLabel = computed(() =>
-    this.mode() === ETaskViewMode.Edit ? 'Save Changes' : 'Create Task',
-  );
+  readonly submitLabel = computed(() => {
+    if (this.mode() === ETaskViewMode.Edit) {
+      return 'Save Changes';
+    }
+    return this.task().status === ETaskStatus.Notes ? 'Create Note' : 'Create Task';
+  });
   readonly showMarkActive = computed(
     () =>
       this.mode() === ETaskViewMode.View &&
@@ -29,7 +32,10 @@ export class TaskBottomPanelComponent {
       this.task().status === ETaskStatus.Todo,
   );
   readonly showMarkDone = computed(
-    () => this.mode() === ETaskViewMode.View && this.task().status !== ETaskStatus.Done,
+    () =>
+      this.mode() === ETaskViewMode.View &&
+      this.task().status !== ETaskStatus.Done &&
+      this.task().status !== ETaskStatus.Notes,
   );
 
   isEditFormValid$: Observable<boolean> = inject(Store).select(TaskScreenState.isEditFormValid);

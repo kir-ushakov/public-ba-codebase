@@ -2,7 +2,10 @@ import type { Extensions } from '@tiptap/core';
 import { Placeholder } from '@tiptap/extension-placeholder';
 import StarterKit from '@tiptap/starter-kit';
 
-export function createTaskDescriptionExtensions(readonly: boolean): Extensions {
+export function createTaskDescriptionExtensions(
+  readonly: boolean,
+  placeholder = 'Write additional details about this task...',
+): Extensions {
   return [
     StarterKit.configure({
       heading: false,
@@ -23,7 +26,7 @@ export function createTaskDescriptionExtensions(readonly: boolean): Extensions {
       ? []
       : [
           Placeholder.configure({
-            placeholder: 'Write additional details about this task...',
+            placeholder,
           }),
         ]),
   ];

@@ -68,6 +68,15 @@ export class TaskEditComponent {
   readonly showSelectedTags = computed(() => this.screenMode() === ETaskViewMode.Create);
   readonly tagIds = signal<string[]>([]);
   readonly taskType = computed(() => this.editedTask().type);
+  readonly isNote = computed(() => this.editedTask().status === ETaskStatus.Notes);
+  readonly titlePlaceholder = computed(() =>
+    this.isNote() ? 'Note title here...' : 'Task title here...',
+  );
+  readonly descriptionPlaceholder = computed(() =>
+    this.isNote()
+      ? 'Write something you want to remember...'
+      : 'Write additional details about this task...',
+  );
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);

@@ -6,6 +6,7 @@ import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { taskTileDayKey } from 'src/app/mobile-app/components/common/task-tiles-panel/task-tile/helpers/format-task-tile-date.function';
 import { TaskTileCalendar } from 'src/app/mobile-app/components/common/task-tiles-panel/task-tile/task-tile-calendar.service';
 import { TaskTileComponent } from 'src/app/mobile-app/components/common/task-tiles-panel/task-tile/task-tile.component';
+import { TaskTileAction } from 'src/app/mobile-app/components/common/task-tiles-panel/task-tile/task-tile.actions';
 import { TaskTileDatePipe } from 'src/app/mobile-app/components/common/task-tiles-panel/task-tile/task-tile-date.pipe';
 import type { Task } from 'src/app/shared/models/task.model';
 import { ImageService } from 'src/app/shared/services/application/image.service';
@@ -82,6 +83,9 @@ describe('TaskTileComponent', () => {
 
     expect(host.querySelector('[data-test="task-tile-menu"]')).not.toBeNull();
     expect(host.querySelector('[data-test="task-tile-menu-edit"]')?.textContent).toContain('Edit');
+    expect(host.querySelector('[data-test="task-tile-menu-convert"]')?.textContent).toContain(
+      'Convert to note',
+    );
     expect(host.querySelector('[data-test="task-tile-menu-delete"]')?.textContent).toContain(
       'Delete',
     );
@@ -245,6 +249,57 @@ describe('TaskTileComponent', () => {
     expect(host.querySelector('[data-test="task-tile-type-icon"]')?.textContent).toContain(
       'article',
     );
+  });
+
+  it('converts a to-do card into a note from the tile menu', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const store = TestBed.inject(Store);
+    const confirm = jest.spyOn(window, 'confirm');
+
+    host.querySelector<HTMLButtonElement>('[data-test="task-tile-more"]')?.click();
+    fixture.detectChanges();
+    host.querySelector<HTMLButtonElement>('[data-test="task-tile-menu-convert"]')?.click();
+
+    expect(confirm).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledWith(
+      new TaskTileAction.ConvertSelected(task.id, ETaskStatus.Notes),
+    );
+    confirm.mockRestore();
+  });
+
+  it('converts a note card into a to-do task from the tile menu', () => {
+    fixture.componentRef.setInput('task', { ...task, status: ETaskStatus.Notes });
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+    const store = TestBed.inject(Store);
+
+    host.querySelector<HTMLButtonElement>('[data-test="task-tile-more"]')?.click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="task-tile-menu-convert"]')?.textContent).toContain(
+      'Convert to task',
+    );
+    host.querySelector<HTMLButtonElement>('[data-test="task-tile-menu-convert"]')?.click();
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      new TaskTileAction.ConvertSelected(task.id, ETaskStatus.Todo),
+    );
+  });
+
+  it('asks before converting an active card into a note', () => {
+    fixture.componentRef.setInput('task', { ...task, status: ETaskStatus.Active });
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+    const store = TestBed.inject(Store);
+    const confirm = jest.spyOn(window, 'confirm').mockReturnValue(false);
+
+    host.querySelector<HTMLButtonElement>('[data-test="task-tile-more"]')?.click();
+    fixture.detectChanges();
+    host.querySelector<HTMLButtonElement>('[data-test="task-tile-menu-convert"]')?.click();
+
+    expect(confirm).toHaveBeenCalled();
+    expect(store.dispatch).not.toHaveBeenCalled();
+    confirm.mockRestore();
   });
 });
 

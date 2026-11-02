@@ -1,6 +1,8 @@
 @let view = view$ | async;
 @if (view) {
-  <ba-task-type-chip [type]="view.task.type" />
+  @if (view.task.status !== ETaskStatus.Notes) {
+    <ba-task-type-chip [type]="view.task.type" />
+  }
   <h2 class="task-title" data-test="task-view-title">{{ view.task.title }}</h2>
   @if (view.descriptionHtml) {
     <section class="description-card" data-test="task-view-description">
