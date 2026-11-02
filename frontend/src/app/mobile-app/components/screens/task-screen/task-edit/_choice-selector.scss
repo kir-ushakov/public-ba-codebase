@@ -20,6 +20,19 @@
 .choice-options {
   display: flex;
   gap: var(--spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+
+    > .choice-option {
+      width: 100%;
+    }
+  }
 }
 
 .choice-option {

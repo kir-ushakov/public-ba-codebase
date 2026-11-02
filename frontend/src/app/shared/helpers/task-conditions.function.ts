@@ -5,25 +5,28 @@ import { ETaskCondition, ETaskStatus, ETaskType } from '@brainassistant/contract
  * Contracts cannot hold functions, so each app owns this copy.
  */
 
-const KNOWN_CONDITIONS = new Set<string>(Object.values(ETaskCondition));
+const EXTRA_CONDITION_FOR_TYPE: ReadonlyMap<string, ETaskCondition> = new Map([
+  [ETaskType.Calendar, ETaskCondition.Calendar],
+  [ETaskType.Location, ETaskCondition.Location],
+]);
+
+const TYPE_FOR_CONDITION: ReadonlyArray<readonly [ETaskCondition, ETaskType]> = [
+  [ETaskCondition.Location, ETaskType.Location],
+  [ETaskCondition.Calendar, ETaskType.Calendar],
+];
+
+const KNOWN_CONDITIONS: ReadonlySet<string> = new Set(Object.values(ETaskCondition));
 
 export function deriveTaskConditions(type: ETaskType | string): ETaskCondition[] {
-  const conditions: ETaskCondition[] = [ETaskCondition.Todo];
-  if (type === ETaskType.Calendar) {
-    conditions.push(ETaskCondition.Calendar);
-  }
-  if (type === ETaskType.Location) {
-    conditions.push(ETaskCondition.Location);
-  }
-  return conditions;
+  const extra = EXTRA_CONDITION_FOR_TYPE.get(type);
+  return extra === undefined ? [ETaskCondition.Todo] : [ETaskCondition.Todo, extra];
 }
 
 export function projectTaskType(conditions: readonly ETaskCondition[]): ETaskType {
-  if (conditions.includes(ETaskCondition.Location)) {
-    return ETaskType.Location;
-  }
-  if (conditions.includes(ETaskCondition.Calendar)) {
-    return ETaskType.Calendar;
+  for (const [condition, projected] of TYPE_FOR_CONDITION) {
+    if (conditions.includes(condition)) {
+      return projected;
+    }
   }
   return ETaskType.Basic;
 }
@@ -74,18 +77,14 @@ export function normalizeTaskRecord<
 function parseTaskConditions(
   raw: readonly ETaskCondition[] | undefined,
 ): ETaskCondition[] | undefined {
-  if (!raw || raw.length === 0) {
+  if (raw === undefined || raw.length === 0) {
     return undefined;
   }
-
-  const seen = new Set<string>();
-  const parsed: ETaskCondition[] = [];
-  for (const item of raw) {
-    if (!KNOWN_CONDITIONS.has(item) || seen.has(item)) {
-      return undefined;
-    }
-    seen.add(item);
-    parsed.push(item);
+  if (new Set(raw).size !== raw.length) {
+    return undefined;
   }
-  return parsed;
+  if (raw.some(item => !KNOWN_CONDITIONS.has(item))) {
+    return undefined;
+  }
+  return [...raw];
 }
