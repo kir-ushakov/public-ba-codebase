@@ -96,7 +96,9 @@ describe('HomeScreenComponent search', () => {
       },
     });
 
-    TestBed.inject(HomeContentModeService).select('active');
+    const modes = TestBed.inject(HomeContentModeService);
+    modes.select('todo');
+    modes.select('active');
     fixture = TestBed.createComponent(HomeScreenComponent);
     fixture.detectChanges();
   });
@@ -245,20 +247,29 @@ describe('HomeScreenComponent search', () => {
     });
     fixture.detectChanges();
 
+    const tabs = host.querySelectorAll('[role="tab"]');
+    expect(tabs).toHaveLength(2);
+    expect(tabs[0]?.getAttribute('data-test')).toBe('home-mode-active');
+    expect(tabs[1]?.getAttribute('data-test')).toBe('home-mode-todo');
     expect(
       host.querySelector('[data-test="home-mode-active"]')?.getAttribute('aria-selected'),
     ).toBe('true');
     expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('1');
     expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
-    expect(host.querySelector('[data-test="home-mode-count-notes"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-mode-waiting"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-mode-notes"]')).toBeNull();
     expect(host.querySelector('[data-test="home-mode-active"]')?.textContent).toContain(
       'play_arrow',
     );
     expect(host.querySelector('[data-test="home-mode-todo"]')?.textContent).toContain(
       'radio_button_unchecked',
     );
-    expect(host.querySelector('[data-test="home-mode-notes"]')?.textContent).toContain('article');
-    expect(host.querySelectorAll('[data-test="home-mode-divider"]')).toHaveLength(2);
+    expect(
+      host.querySelector('[data-test="home-category-selector"]')?.getAttribute('aria-label'),
+    ).toBe('Choose task category');
+    expect(
+      host.querySelector('[data-test="home-category-selector"]')?.getAttribute('aria-expanded'),
+    ).toBe('false');
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
       '1 active item',
     );
@@ -273,7 +284,6 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-mode-todo"]')?.getAttribute('aria-selected')).toBe(
       'true',
     );
-    expect(host.querySelectorAll('[data-test="home-mode-divider"]')).toHaveLength(1);
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
       '1 to do item',
     );
@@ -281,11 +291,16 @@ describe('HomeScreenComponent search', () => {
     expect(tileText(host)).not.toContain('Buy cat food');
     expect(tileText(host)).not.toContain('Finished task');
 
-    (host.querySelector('[data-test="home-mode-notes"]') as HTMLButtonElement).click();
-    fixture.detectChanges();
+    chooseHomeCategory(fixture, 'notes');
 
+    expect(host.querySelector('[data-test="home-mode-notes"]')?.textContent).toContain('article');
+    expect(host.querySelector('[data-test="home-mode-notes"]')?.getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    expect(host.querySelector('[data-test="home-mode-count-notes"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-mode-todo"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-category-menu"]')).toBeNull();
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain('1 note');
-    expect(host.querySelectorAll('[data-test="home-mode-divider"]')).toHaveLength(2);
     expect(tileText(host)).toContain('Saved article');
     expect(tileText(host)).not.toContain('Finished task');
   });
@@ -315,8 +330,7 @@ describe('HomeScreenComponent search', () => {
       '0 to do items',
     );
 
-    (host.querySelector('[data-test="home-mode-notes"]') as HTMLButtonElement).click();
-    fixture.detectChanges();
+    chooseHomeCategory(fixture, 'notes');
 
     expect(host.querySelector('[data-test="home-empty-title"]')?.textContent).toContain(
       'No notes yet.',
@@ -330,8 +344,95 @@ describe('HomeScreenComponent search', () => {
 
     expect(host.querySelector('[data-test="home-empty"]')).toBeNull();
     expect(tileText(host)).toContain('Buy cat food');
+    expect(host.querySelector('[data-test="home-mode-notes"]')).not.toBeNull();
+  });
+
+  it('replaces only the second tab and restores that choice when Home opens again', () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    (host.querySelector('[data-test="home-category-selector"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(
+      host.querySelector('[data-test="home-category-selector"]')?.getAttribute('aria-expanded'),
+    ).toBe('true');
+    expect(host.querySelector('[data-test="home-category-menu"]')).not.toBeNull();
+    expect(host.querySelector('[data-test="home-mode-option-todo"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-mode-option-waiting"]')?.textContent).toContain(
+      'Waiting',
+    );
+    expect(host.querySelector('[data-test="home-mode-option-waiting"]')?.textContent).toContain(
+      'hourglass_empty',
+    );
+    expect(host.querySelector('[data-test="home-mode-option-notes"]')?.textContent).toContain(
+      'Notes',
+    );
+    expect(host.querySelector('[data-test="home-mode-option-active"]')).toBeNull();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-category-menu"]')).toBeNull();
+    expect(document.activeElement).toBe(host.querySelector('[data-test="home-category-selector"]'));
+
+    chooseHomeCategory(fixture, 'waiting');
+
+    expect(
+      host.querySelector('[data-test="home-mode-waiting"]')?.getAttribute('aria-selected'),
+    ).toBe('true');
+    expect(host.querySelector('[data-test="home-mode-todo"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-category-menu"]')).toBeNull();
+
+    (host.querySelector('[data-test="home-mode-active"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(
+      host.querySelector('[data-test="home-mode-active"]')?.getAttribute('aria-selected'),
+    ).toBe('true');
+    expect(
+      host.querySelector('[data-test="home-mode-waiting"]')?.getAttribute('aria-selected'),
+    ).toBe('false');
+
+    (host.querySelector('[data-test="home-category-selector"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(host.querySelector('[data-test="home-mode-option-waiting"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-mode-option-todo"]')?.textContent).toContain(
+      'To do',
+    );
+    expect(host.querySelector('[data-test="home-mode-option-notes"]')?.textContent).toContain(
+      'Notes',
+    );
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+
+    fixture.destroy();
+    fixture = TestBed.createComponent(HomeScreenComponent);
+    fixture.detectChanges();
+    const restored = fixture.nativeElement as HTMLElement;
+
+    expect(restored.querySelector('[data-test="home-mode-waiting"]')).not.toBeNull();
+    expect(restored.querySelector('[data-test="home-mode-todo"]')).toBeNull();
+    expect(
+      restored.querySelector('[data-test="home-mode-active"]')?.getAttribute('aria-selected'),
+    ).toBe('true');
   });
 });
+
+function chooseHomeCategory(fixture: ComponentFixture<HomeScreenComponent>, mode: string): void {
+  const host = fixture.nativeElement as HTMLElement;
+  const tab = host.querySelector(`[data-test="home-mode-${mode}"]`) as HTMLButtonElement | null;
+  if (tab) {
+    tab.click();
+    fixture.detectChanges();
+    return;
+  }
+
+  (host.querySelector('[data-test="home-category-selector"]') as HTMLButtonElement).click();
+  fixture.detectChanges();
+  (host.querySelector(`[data-test="home-mode-option-${mode}"]`) as HTMLButtonElement).click();
+  fixture.detectChanges();
+}
 
 function openSearch(fixture: ComponentFixture<HomeScreenComponent>): HTMLElement {
   const host = fixture.nativeElement as HTMLElement;

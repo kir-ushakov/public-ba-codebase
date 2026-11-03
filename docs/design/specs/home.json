@@ -2,7 +2,7 @@
   "screen": {
     "id": "home",
     "name": "Home",
-    "version": "1.7.1",
+    "version": "1.8.0",
 
     "purpose": "Main overview screen displaying the user's recent content and providing quick access to primary application areas.",
 
@@ -285,7 +285,8 @@
       "mobileFirst": true,
 
       "mobile": {
-        "columns": 2
+        "columns": 2,
+        "categoryNavigation": "Two flexible tabs and a fixed-width selector in one row. No horizontal scrolling. Active, To do, Waiting and Notes stay fully visible at 320px and wider."
       }
     },
 
@@ -312,13 +313,17 @@
       "Presence of an image does not change the leading icon.",
       "Current live type is TODO (ETaskType.Basic) using radio_button_unchecked. Do not use check or check_circle.",
       "The card overflow menu is Edit, Duplicate, Add to tags and Delete. Duplicate and Add to tags are visible but disabled until those features exist.",
-      "Place the Active / To do / Waiting / Notes segmented switcher immediately under the Home header and above the optional sync banner.",
-      "Active is the default selected mode. The selected segment uses the segmentedControl recipe: dark selected surface, thin teal outline and a teal icon. Inactive segments stay transparent inside the shared container and have no border of their own.",
-      "One vertical divider sits between adjacent unselected segments. It does not touch the selected outline.",
+      "Place the category navigation immediately under the Home header and above the optional sync banner.",
+      "The row shows two category tabs and one compact selector. Active is always the first tab. To do is the default second tab. Waiting and Notes replace the second tab through the selector.",
+      "The selected tab uses the segmentedControl selected treatment: dark selected surface, thin teal outline and a teal icon. The unselected tab uses a subtle default border and stays in the same row.",
+      "The selector is a compact button in that row, with keyboard_arrow_down. It stays neutral when closed and uses the accent border while open. Its menu is the existing context menu, anchored to the button and aligned to the button's right edge.",
       "Active uses play_arrow at the segmentedControl filled-icon exception. To do, Waiting and Notes stay outline icons. Waiting uses hourglass_empty from icons.homeContentMode.",
-      "Each segment shows an icon, a label and a count. Counts update from live data.",
+      "Each visible tab shows an icon, a label and a count. Counts update from live data. Do not truncate Active, To do, Waiting or Notes at supported mobile widths, and do not scroll the row horizontally.",
+      "The selector menu lists the secondary categories that are not the current second tab, each with its category icon and label. Active is never in the menu. Choosing one replaces the second tab, activates it, updates the task list and closes the menu.",
+      "Choosing Active activates Active and leaves the second tab unchanged. Choosing the visible second tab activates that category.",
+      "The selected secondary category and the active category survive ordinary in-app navigation, including Task View, Create and Edit. A full application restart may return the second tab to To do. Do not persist this preference in storage.",
       "Switching modes filters the existing two-column masonry grid without changing bottom navigation.",
-      "A horizontal swipe on the content moves one mode. Active, To do, Waiting and Notes stay in that order.",
+      "A horizontal swipe on the content moves one mode. Active, To do, Waiting and Notes stay in that order. Landing on To do, Waiting or Notes replaces the second tab with that category.",
       "The header count names the selected mode: \"3 active items\", \"8 to do items\", \"2 waiting items\", \"12 notes\".",
       "Counts reflect every item in that mode, including cards hidden by search.",
       "Done and Cancel stay off Home. Home is the working set: Active, To do, Waiting and Notes.",
@@ -344,15 +349,15 @@
       "activeSelected": {
         "selectedMode": "active",
         "referenceImage": "../references/home.jpg",
-        "description": "Default state: Active tab highlighted in teal, counts displayed on all four segments; masonry shows only Active tasks."
+        "description": "Default state: Active tab highlighted in teal, To do in the second tab, selector closed; masonry shows only Active tasks."
       },
       "todoSelected": {
         "selectedMode": "todo",
-        "description": "To do tab highlighted in teal; grid displays To do tasks."
+        "description": "To do is the second tab and is highlighted in teal; grid displays To do tasks."
       },
       "notesSelected": {
         "selectedMode": "notes",
-        "description": "Notes tab highlighted in teal; grid displays Notes cards."
+        "description": "Notes has replaced To do as the second tab and is highlighted in teal; grid displays Notes cards."
       },
       "activeEmpty": {
         "selectedMode": "active",
@@ -371,13 +376,16 @@
         "visibleWhen": "home.counts.notes is 0",
         "referenceImage": "../references/home-empty-notes.png",
         "description": "Notes count is 0. The waiting mascot replaces the grid. The rest of the screen chrome stays."
+      },
+      "categoryMenuOpen": {
+        "description": "The category selector is expanded. The menu is anchored to the selector, aligned to its right edge, and lists the secondary categories that are not the current second tab. Active is not listed."
       }
     },
 
     "reference": {
       "status": "approved",
       "image": "../references/home.jpg",
-      "description": "Home with Active / To do / Waiting / Notes segmented filter (Active selected by default), sync banner, two-column masonry, FAB and Home/Tasks/Tags bottom navigation."
+      "description": "Home with Active and To do category tabs plus a category selector (Active selected by default), sync banner, two-column masonry, FAB and Home/Tasks/Tags bottom navigation."
     },
 
     "contentModeSwitcher": {
@@ -386,32 +394,63 @@
       "placement": "below-header-above-sync-status-banner",
       "selection": "single",
       "defaultValue": "active",
+      "defaultSecondary": "todo",
+      "layout": {
+        "type": "row",
+        "tabs": "two flexible tabs sharing the remaining width",
+        "selector": "fixed compact width",
+        "scroll": "none"
+      },
+      "tabs": {
+        "first": "active",
+        "second": "secondary category"
+      },
       "options": [
         {
           "id": "active",
           "label": "Active",
           "icon": "play_arrow",
+          "role": "permanent-first-tab",
           "countSource": "home.counts.active"
         },
         {
           "id": "todo",
           "label": "To do",
           "icon": "radio_button_unchecked",
+          "role": "secondary",
+          "defaultVisible": true,
           "countSource": "home.counts.todo"
         },
         {
           "id": "waiting",
           "label": "Waiting",
           "icon": "hourglass_empty",
+          "role": "secondary",
           "countSource": "home.counts.waiting"
         },
         {
           "id": "notes",
           "label": "Notes",
           "icon": "article",
+          "role": "secondary",
           "countSource": "home.counts.notes"
         }
       ],
+      "selector": {
+        "id": "home-category-selector",
+        "icon": "keyboard_arrow_down",
+        "ariaLabel": "Choose task category",
+        "menu": {
+          "component": "context-menu",
+          "anchor": "selector",
+          "align": "right",
+          "contains": "secondary categories except the one currently shown in the second tab",
+          "excludes": [
+            "active",
+            "current second tab"
+          ]
+        }
+      },
       "behavior": {
         "switchAction": "set-home-content-mode",
         "updates": [
@@ -419,15 +458,21 @@
           "empty-state",
           "header.item-count"
         ],
+        "selectingSecondary": "Replaces the second tab, activates that category, updates the task list and closes the menu.",
+        "selectingActive": "Activates Active and leaves the second tab unchanged.",
+        "selectingVisibleSecondary": "Activates that category and leaves the second tab unchanged.",
         "preserveSelectionWhileOnHome": true,
-        "countSemantics": "Counts reflect all items in each mode, not only visible grid cards. The empty state appears only when the selected mode count is 0."
+        "preserveAcrossNavigation": "The active category and the selected secondary category survive returning from Task View, Create and Edit.",
+        "restart": "A full application restart may reset the second tab to To do. Do not add storage only for this preference.",
+        "countSemantics": "Counts reflect all items in each mode, not only visible grid cards. Visible tabs show their counts. The empty state appears only when the selected mode count is 0."
       },
       "visual": {
         "componentRecipe": "segmentedControl",
-        "layout": "single shared container",
-        "segments": "four equal-width adjacent segments",
+        "layout": "two flexible tabs and one compact selector in one row",
         "selectedTreatment": "subtle dark teal background with thin teal outline",
-        "unselectedTreatment": "transparent background, muted text and icons",
+        "unselectedTreatment": "default surface with a subtle border, muted text and icons",
+        "selectorClosed": "neutral, same surface and border as an unselected tab",
+        "selectorOpen": "accent border with hover surface",
         "countBadge": "small separate rounded badge from segmentedControl.countBadge",
         "icons": {
           "family": "Material Symbols Rounded",
@@ -436,15 +481,18 @@
             "play_arrow",
             "radio_button_unchecked",
             "hourglass_empty",
-            "article"
+            "article",
+            "keyboard_arrow_down"
           ]
         },
         "prohibited": [
           "solid bright teal selected background",
-          "independent floating buttons",
+          "four labels in one scrolling row",
+          "truncated category labels at 320px and wider",
+          "a separate full-screen category picker",
           "thick borders",
-          "drop shadows",
-          "different segment heights"
+          "drop shadows on the tabs",
+          "different tab heights"
         ]
       }
     },
@@ -496,7 +544,7 @@
     },
 
     "angular": {
-      "note": "The live Home screen does not yet match this spec. Treat this JSON as the approved target, not a description of the current implementation. Bottom-nav destinations /tasks and /tags are product destinations from the approved design; they are not a claim that those Angular routes already exist. The Active / To do / Notes switcher filters ETaskStatus.Active, ETaskStatus.Todo and ETaskStatus.Notes. Done and Cancel stay off Home. An empty selected mode shows that mode's mascot empty state instead of the grid and does not add a second create button.",
+      "note": "The live Home screen does not yet match this spec. Treat this JSON as the approved target, not a description of the current implementation. Bottom-nav destinations /tasks and /tags are product destinations from the approved design; they are not a claim that those Angular routes already exist. The category tabs filter ETaskStatus.Active, ETaskStatus.Todo and ETaskStatus.Notes. Waiting is Todo with a calendar or location condition. Done and Cancel stay off Home. An empty selected mode shows that mode's mascot empty state instead of the grid and does not add a second create button.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/home-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/common/task-tiles-panel/",

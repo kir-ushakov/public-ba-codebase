@@ -65,6 +65,7 @@ export class HomeScreenComponent implements OnInit, AfterViewInit {
   readonly searchOpen = signal(false);
   readonly queryControl = new FormControl('', { nonNullable: true });
   readonly contentMode = inject(HomeContentModeService).mode;
+  readonly secondaryCategory = inject(HomeContentModeService).secondary;
   readonly modeCounts = computed(() => homeModeCounts(this.selectors.tasks()));
   readonly hasQuery = computed(() => this.query().trim().length > 0);
   readonly filteredTasks = computed(() =>

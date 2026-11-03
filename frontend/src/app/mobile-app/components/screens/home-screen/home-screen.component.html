@@ -80,6 +80,7 @@
 <div class="content-mode-holder">
   <ba-home-content-mode
     [selected]="contentMode()"
+    [secondary]="secondaryCategory()"
     [counts]="modeCounts()"
     (modeChange)="selectContentMode($event)"
   ></ba-home-content-mode>
