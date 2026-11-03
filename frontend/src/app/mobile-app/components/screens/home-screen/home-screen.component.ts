@@ -67,6 +67,14 @@ export class HomeScreenComponent implements OnInit, AfterViewInit {
   readonly contentMode = inject(HomeContentModeService).mode;
   readonly secondaryCategory = inject(HomeContentModeService).secondary;
   readonly modeCounts = computed(() => homeModeCounts(this.selectors.tasks()));
+  readonly tabCounts = computed(() => {
+    const query = this.query();
+    const tasks = this.selectors.tasks();
+    if (query.trim().length === 0) {
+      return homeModeCounts(tasks);
+    }
+    return homeModeCounts(filterHomeTasks(tasks, query, this.selectors.tags()));
+  });
   readonly hasQuery = computed(() => this.query().trim().length > 0);
   readonly filteredTasks = computed(() =>
     filterHomeTasks(
