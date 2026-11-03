@@ -10,24 +10,12 @@
   }
 }
 
-@mixin scrollbar-thumb($edge: 'inline-end') {
-  border: 0 solid transparent;
-  border-radius: var(--scrollbar-border-radius);
-  background-color: var(--scrollbar-thumb-color);
-  background-clip: padding-box;
+.app-scrollable,
+.app-scrollable-x {
+  color-scheme: dark;
 
-  @if $edge == 'inline-end' {
-    border-inline-end-width: var(--spacing-xs);
-  } @else {
-    border-block-end-width: var(--spacing-xs);
-  }
+  @include scrollbar-fallback;
 
-  &:hover {
-    background-color: var(--scrollbar-thumb-hover-color);
-  }
-}
-
-@mixin scrollbar-buttons {
   &::-webkit-scrollbar-button,
   &::-webkit-scrollbar-button:single-button,
   &::-webkit-scrollbar-button:vertical:start:decrement,
@@ -39,6 +27,23 @@
     height: 0;
     background: transparent;
   }
+
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+    border: 0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border: 0 solid transparent;
+    border-radius: var(--scrollbar-border-radius);
+    background-color: var(--scrollbar-thumb-color);
+    background-clip: padding-box;
+
+    &:hover {
+      background-color: var(--scrollbar-thumb-hover-color);
+    }
+  }
 }
 
 .app-scrollable {
@@ -46,10 +51,6 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-padding-block: var(--spacing-lg);
-  color-scheme: dark;
-
-  @include scrollbar-fallback;
-  @include scrollbar-buttons;
 
   &::-webkit-scrollbar {
     width: calc(var(--scrollbar-width) + var(--spacing-xs));
@@ -61,14 +62,8 @@
     height: calc(var(--scrollbar-hover-width) + var(--spacing-xs));
   }
 
-  &::-webkit-scrollbar-track,
-  &::-webkit-scrollbar-corner {
-    background: transparent;
-    border: 0;
-  }
-
   &::-webkit-scrollbar-thumb {
-    @include scrollbar-thumb;
+    border-inline-end-width: var(--spacing-xs);
   }
 }
 
@@ -76,10 +71,6 @@
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior: contain;
-  color-scheme: dark;
-
-  @include scrollbar-fallback;
-  @include scrollbar-buttons;
 
   &::-webkit-scrollbar {
     width: 0;
@@ -91,13 +82,7 @@
     height: calc(var(--scrollbar-hover-width) + var(--spacing-xs));
   }
 
-  &::-webkit-scrollbar-track,
-  &::-webkit-scrollbar-corner {
-    background: transparent;
-    border: 0;
-  }
-
   &::-webkit-scrollbar-thumb {
-    @include scrollbar-thumb('block-end');
+    border-block-end-width: var(--spacing-xs);
   }
 }

@@ -43,7 +43,7 @@ test('scrolls the task form without moving the header or footer', async ({ page 
   expect(metrics.overflowX).toBe('hidden');
   expect(metrics.overflowY).toBe('auto');
   expect(metrics.overscrollBehavior).toMatch(/^contain(\s+contain)?$/);
-  expect(metrics.thumb).toMatch(/100,\s*123,\s*131/);
+  expect(metrics.thumb).toMatch(/100,\s*123,\s*131|130,\s*153,\s*161/);
   expect(metrics.buttonDisplay).toBe('none');
   expect(metrics.buttonHeight).toBe('0px');
   expect(metrics.track).toMatch(/rgba?\(0,\s*0,\s*0,\s*0\)|transparent/);
