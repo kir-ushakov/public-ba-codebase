@@ -325,7 +325,7 @@
       "Switching modes filters the existing two-column masonry grid without changing bottom navigation.",
       "A horizontal swipe on the content moves one mode. Active, To do, Waiting and Notes stay in that order. Landing on To do, Waiting or Notes replaces the second tab with that category.",
       "The header count names the selected mode: \"3 active items\", \"8 to do items\", \"2 waiting items\", \"12 notes\".",
-      "Counts reflect every item in that mode, including cards hidden by search.",
+      "While the search query is empty, each tab count is every item in that mode. While a query is active, every tab count — including the tab that is not selected — is the number of items in that mode that match the query. The header count still names every item in the selected mode, including cards hidden by search.",
       "Done and Cancel stay off Home. Home is the working set: Active, To do, Waiting and Notes.",
       "Active is status Active. Notes is status Notes. To do is status Todo with a todo condition. Waiting is status Todo with a calendar or location condition. A task with both a todo condition and a trigger is listed in To do and Waiting.",
       "Task cards retain their task-type icons; Notes cards use Material Symbols Rounded article.",

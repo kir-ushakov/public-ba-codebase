@@ -130,6 +130,62 @@ describe('HomeScreenComponent search', () => {
     expect(banner?.querySelector('[data-test="home-sync-now"]')).toBeNull();
   });
 
+  it('updates every tab count to matches while the open list stays on the selected mode', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const litter: Task = {
+      ...catTask,
+      id: 'task-litter',
+      title: 'Cat litter later',
+      status: ETaskStatus.Todo,
+    };
+    TestBed.inject(Store).reset({
+      app: { online: false },
+      tasks: { entities: [catTask, lampTask, litter] },
+      tags: { entities: [] },
+      user: {
+        userData: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          userId,
+          googleId: 'g-1',
+        },
+        authState: EUserAuthState.Authenticated,
+        authType: undefined,
+        integrations: { isAddedToSlack: undefined },
+      },
+    });
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('2');
+    expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
+
+    openSearch(fixture);
+    typeQuery(fixture, 'cat');
+
+    expect(tileText(host)).toContain('Buy cat food');
+    expect(tileText(host)).not.toContain('Lamp photo');
+    expect(tileText(host)).not.toContain('Cat litter later');
+    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '2 active items',
+    );
+
+    typeQuery(fixture, 'litter');
+
+    expect(host.querySelector('[data-test="task-tile"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-search-empty"]')?.textContent).toContain(
+      'No results',
+    );
+    expect(host.querySelector('[data-test="home-empty"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('0');
+    expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '2 active items',
+    );
+  });
+
   it('hides tiles that do not match and keeps the full item count', () => {
     const host = openSearch(fixture);
 
