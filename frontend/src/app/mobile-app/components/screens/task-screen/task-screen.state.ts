@@ -471,7 +471,7 @@ export class TaskScreenState {
             transcription: {
               text: transcript,
               createdAt: new Date().toISOString(),
-              model: 'whisper-1',
+              model: 'gpt-transcribe',
             },
           }
         : item,
