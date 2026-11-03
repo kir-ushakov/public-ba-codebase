@@ -11,6 +11,10 @@ import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import { AppAction } from 'src/app/shared/state/app.actions';
 import { AppState } from 'src/app/shared/state/app.state';
 import { appendTranscriptionToDescription } from 'src/app/shared/helpers/append-transcription-to-description.function';
+import {
+  TranscriptionFailure,
+  type TranscriptionFailureKind,
+} from 'src/app/shared/helpers/transcription-failure.function';
 import { TaskScreenAction } from '../task-screen.actions';
 import { TaskScreenState } from '../task-screen.state';
 
@@ -54,7 +58,8 @@ export class AudioAttachmentsComponent {
   readonly playingId = signal<string | null>(null);
   readonly progressMax = PROGRESS_MAX;
   private readonly transcribingIds = signal<ReadonlySet<string>>(new Set());
-  private readonly failedIds = signal<ReadonlySet<string>>(new Set());
+  private readonly blankIds = signal<ReadonlySet<string>>(new Set());
+  private readonly failures = signal<Readonly<Record<string, TranscriptionFailure>>>({});
   private readonly engagedIds = signal<ReadonlySet<string>>(new Set());
   private readonly addedIds = signal<ReadonlySet<string>>(new Set());
   private readonly playbackProgress = signal<Readonly<Record<string, number>>>({});
@@ -89,8 +94,16 @@ export class AudioAttachmentsComponent {
     return this.transcribingIds().has(id);
   }
 
-  hasFailed(id: string): boolean {
-    return this.failedIds().has(id);
+  isBlank(id: string): boolean {
+    return this.blankIds().has(id);
+  }
+
+  failure(id: string): TranscriptionFailure | null {
+    return this.failures()[id] ?? null;
+  }
+
+  failureKind(id: string): TranscriptionFailureKind | null {
+    return this.failure(id)?.kind ?? null;
   }
 
   showProgress(id: string): boolean {
@@ -137,7 +150,8 @@ export class AudioAttachmentsComponent {
     }
     const item = this.attachments().find(attachment => attachment.id === id);
     const text = item?.transcription?.text.trim() ?? '';
-    if (!item || !text) {
+    const empty = this.blankIds().has(id);
+    if (!item || (!text && !empty)) {
       return null;
     }
     return { id, durationMs: item.durationMs, text };
@@ -185,22 +199,42 @@ export class AudioAttachmentsComponent {
   }
 
   async transcribe(id: string): Promise<void> {
-    if (!this.online() || this.isTranscribing(id)) {
+    if (this.isTranscribing(id) || this.failureKind(id) === 'permanent') {
+      return;
+    }
+    if (!this.online()) {
+      this.setFailure(id, TranscriptionFailure.offline());
       return;
     }
     this.setMembership(this.transcribingIds, id, true);
-    this.setMembership(this.failedIds, id, false);
+    this.setMembership(this.blankIds, id, false);
+    this.clearFailure(id);
+    let thrown: unknown;
     try {
       await firstValueFrom(this.store.dispatch(new TaskScreenAction.TranscribeAudioAttachment(id)));
+    } catch (error) {
+      thrown = error;
     } finally {
       this.setMembership(this.transcribingIds, id, false);
     }
     if (!this.attachments().some(item => item.id === id)) {
       return;
     }
-    const saved = this.attachments().find(item => item.id === id)?.transcription;
+    if (thrown) {
+      const failure = TranscriptionFailure.from(thrown);
+      if (failure.kind === 'empty') {
+        this.setMembership(this.blankIds, id, true);
+        this.openTranscriptionId.set(id);
+        return;
+      }
+      this.setFailure(id, failure);
+      return;
+    }
+    const saved = this.attachments()
+      .find(item => item.id === id)
+      ?.transcription?.text.trim();
     if (!saved) {
-      this.setMembership(this.failedIds, id, true);
+      this.setFailure(id, TranscriptionFailure.failed());
     }
   }
 
@@ -209,7 +243,7 @@ export class AudioAttachmentsComponent {
       this.attachments()
         .find(item => item.id === id)
         ?.transcription?.text.trim() ?? '';
-    if (!text) {
+    if (!text && !this.blankIds().has(id)) {
       return;
     }
     this.openTranscriptionId.set(id);
@@ -313,6 +347,21 @@ export class AudioAttachmentsComponent {
       return `${String(hours).padStart(2, '0')}:${mm}:${ss}`;
     }
     return `${mm}:${ss}`;
+  }
+
+  private setFailure(id: string, failure: TranscriptionFailure): void {
+    this.failures.update(current => ({ ...current, [id]: failure }));
+  }
+
+  private clearFailure(id: string): void {
+    this.failures.update(current => {
+      if (!(id in current)) {
+        return current;
+      }
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
   }
 
   private setMembership(source: typeof this.transcribingIds, id: string, present: boolean): void {

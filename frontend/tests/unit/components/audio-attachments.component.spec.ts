@@ -2,7 +2,8 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ETaskStatus } from '@brainassistant/contracts';
 import { Store } from '@ngxs/store';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { TranscriptionFailure } from 'src/app/shared/helpers/transcription-failure.function';
 import { AudioAttachmentsComponent } from 'src/app/mobile-app/components/screens/task-screen/audio-attachments/audio-attachments.component';
 import { TaskScreenState } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
 import { AudioService } from 'src/app/shared/services/application/audio.service';
@@ -137,18 +138,75 @@ describe('AudioAttachmentsComponent', () => {
       'Transcription failed',
     );
     expect(host.querySelector('[data-test="audio-attachment-retry"]')?.textContent).toContain(
-      'Retry',
+      'Retry transcription',
     );
+    expect(
+      host.querySelector('[data-test="audio-attachment-error"] .material-symbols-rounded')
+        ?.textContent,
+    ).toContain('error_outline');
   });
 
-  it('disables Transcribe with AI while offline', () => {
+  it('shows No connection and Retry transcription while offline', () => {
     online.set(false);
-    const fixture = render(false);
-    const button = fixture.nativeElement.querySelector<HTMLButtonElement>(
-      '[data-test="audio-attachment-transcribe"]',
-    );
+    const fixture = render();
+    const host = fixture.nativeElement as HTMLElement;
+    const store = TestBed.inject(Store) as { dispatch: jest.Mock };
+    store.dispatch.mockClear();
 
-    expect(button?.disabled).toBe(true);
+    host.querySelector<HTMLButtonElement>('[data-test="audio-attachment-transcribe"]')?.click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="audio-attachment-error"]')?.textContent).toContain(
+      'No connection',
+    );
+    expect(host.querySelector('[data-test="audio-attachment-retry"]')?.textContent).toContain(
+      'Retry transcription',
+    );
+    expect(store.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('does not offer Retry when the recording cannot be transcribed', async () => {
+    const store = TestBed.inject(Store) as { dispatch: jest.Mock };
+    store.dispatch.mockReturnValue(
+      new Observable(subscriber => {
+        queueMicrotask(() => subscriber.error(TranscriptionFailure.unreadable()));
+      }),
+    );
+    const fixture = render();
+    const host = fixture.nativeElement as HTMLElement;
+
+    await fixture.componentInstance.transcribe('aud-1');
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="audio-attachment-error"]')?.textContent).toContain(
+      "This recording can't be transcribed.",
+    );
+    expect(host.querySelector('[data-test="audio-attachment-retry"]')).toBeNull();
+  });
+
+  it('shows an empty transcription instead of an error when the transcript is blank', async () => {
+    const store = TestBed.inject(Store) as { dispatch: jest.Mock };
+    store.dispatch.mockReturnValue(
+      new Observable(subscriber => {
+        queueMicrotask(() => subscriber.error(TranscriptionFailure.empty()));
+      }),
+    );
+    const fixture = render();
+    const host = fixture.nativeElement as HTMLElement;
+
+    await fixture.componentInstance.transcribe('aud-1');
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="audio-attachment-error"]')).toBeNull();
+    expect(host.querySelector('[data-test="audio-attachment-retry"]')).toBeNull();
+    expect(host.querySelector('[data-test="audio-attachment-empty"]')?.textContent).toContain(
+      'No text in this recording.',
+    );
+    expect(
+      host.querySelector('[data-test="audio-attachment-transcription"]')?.textContent,
+    ).toContain('No text in this recording.');
+    expect(host.querySelector('[data-test="audio-attachment-copy"]')).toBeNull();
+    expect(host.querySelector('[data-test="audio-attachment-add-to-description"]')).toBeNull();
   });
 
   it('hides the creation time until a second recording exists', () => {
