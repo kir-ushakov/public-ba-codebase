@@ -1,4 +1,5 @@
 import type { IVoiceRecorder } from '../voice-recorder.interface';
+import { logStartup } from '../microphone-startup-probe';
 import { MediaRecorderStrategy } from '../strategies/media-recorder.strategy';
 import { WebAudioWavStrategy } from '../strategies/web-audio-wav.strategy';
 
@@ -24,16 +25,6 @@ export interface IWebRecordingStrategy {
   pause(): Promise<void>;
   resume(): Promise<void>;
   capturedBytes(): number;
-  /**
-   * Optional "warm-up" time before the capture is considered stable.
-   *
-   * On some Windows stacks (communications processing / driver DSP), the first ~1s after mic
-   * activation can have a noticeable level/quality shift. We treat that period as warm-up:
-   * - UI should not start the "max duration" countdown yet.
-   * - Some strategies may discard audio during warm-up (e.g. PCM capture), while others simply
-   *   delay starting the actual encoder (e.g. MediaRecorder).
-   */
-  readonly warmupMs: number;
   start(): Promise<void>;
   stop(): Promise<Blob>;
   dispose(): void;
@@ -47,19 +38,20 @@ const FREQUENCY_BYTE_MAX = 255;
  * ({@link MediaRecorderStrategy} or {@link WebAudioWavStrategy}).
  */
 export class WebVoiceRecorder implements IVoiceRecorder {
-  /**
-   * Warm-up window to avoid capturing the initial "unstable" mic second on some stacks.
-   * Implemented as delay-start: audio during this window does not enter the final blob.
-   */
-  private static readonly WARMUP_MS = 700;
-
   private stream: MediaStream | null = null;
   private abortController: AbortController | null = null;
+  private ignoreTrackEnd = false;
+  private unexpectedEnd: (() => void) | null = null;
   private strategy: IWebRecordingStrategy | null = null;
   private levelContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
   private levelSamples: Uint8Array | null = null;
   private frequencySamples: Uint8Array | null = null;
+  private startupMark: {
+    constraints: 'voice-dsp' | 'fallback';
+    acquiredAt: number;
+    getUserMediaMs: number;
+  } | null = null;
 
   async start(): Promise<void> {
     this.cancel();
@@ -79,63 +71,71 @@ export class WebVoiceRecorder implements IVoiceRecorder {
         },
         signal: abortController.signal,
       };
+      const captureRequestedAt = performance.now();
+      let constraints: 'voice-dsp' | 'fallback' = 'voice-dsp';
       try {
         this.stream = await navigator.mediaDevices.getUserMedia(preferred);
-      } catch {
+      } catch (error) {
+        if (
+          abortController.signal.aborted ||
+          (error instanceof DOMException && error.name === 'AbortError')
+        ) {
+          throw error;
+        }
+        constraints = 'fallback';
         const fallback: MediaStreamConstraints & { signal?: AbortSignal } = {
           audio: true,
           signal: abortController.signal,
         };
         this.stream = await navigator.mediaDevices.getUserMedia(fallback);
       }
+      const acquiredAt = performance.now();
+      this.startupMark = {
+        constraints,
+        acquiredAt,
+        getUserMediaMs: acquiredAt - captureRequestedAt,
+      };
     } catch (e) {
       this.releaseAll();
       throw e;
     }
 
-    if (abortController.signal.aborted) {
+    const stream = this.stream;
+    if (!stream || abortController.signal.aborted) {
       this.releaseAll();
-      return;
+      throw new DOMException('Aborted', 'AbortError');
     }
 
-    // Warm-up: on some Windows audio stacks the first ~1s after mic activation can contain an audible dip.
-    // We treat it as a warm-up period: UI countdown starts after it; the captured blob excludes it.
-    const warmupMs = WebVoiceRecorder.WARMUP_MS;
+    this.watchStream(stream);
 
-    // Strategy selection:
-    // - Prefer MediaRecorder when available (small, browser-native codecs like WebM/Opus).
-    // - Fall back to WebAudio→WAV when MediaRecorder is missing or cannot be constructed (common on Safari/iOS).
-    this.strategy =
-      MediaRecorderStrategy.tryCreate(this.stream, warmupMs) ??
-      new WebAudioWavStrategy(this.stream, warmupMs);
-    this.startLevelMeter(this.stream);
+    // Prefer MediaRecorder. Fall back to WebAudio→WAV when it cannot be constructed.
+    const strategyInitStartedAt = performance.now();
+    const strategy = MediaRecorderStrategy.tryCreate(stream) ?? new WebAudioWavStrategy(stream);
+    this.strategy = strategy;
+    const strategyInitMs = performance.now() - strategyInitStartedAt;
+    this.startLevelMeter(stream);
 
+    const startup = this.startupMark;
+    const engine = strategy.engine;
     try {
-      // Warm-up delay before capture starts (lets the mic "stabilize").
-      // Must be cancellable: if `cancel()` happens during warm-up we abort immediately.
-      await new Promise<void>((resolve, reject) => {
-        if (abortController.signal.aborted) {
-          reject(new DOMException('Aborted', 'AbortError'));
-          return;
-        }
-
-        const t = window.setTimeout(() => {
-          abortController.signal.removeEventListener('abort', onAbort);
-          resolve();
-        }, warmupMs);
-
-        const onAbort = (): void => {
-          clearTimeout(t);
-          abortController.signal.removeEventListener('abort', onAbort);
-          reject(new DOMException('Aborted', 'AbortError'));
-        };
-
-        abortController.signal.addEventListener('abort', onAbort, { once: true });
-      });
-
-      await this.strategy.start();
+      const startInvokedAt = performance.now();
+      await this.awaitCaptureStart(abortController.signal);
+      if (abortController.signal.aborted) {
+        throw new DOMException('Aborted', 'AbortError');
+      }
+      const confirmedAt = performance.now();
+      this.logStartup(
+        startup,
+        engine,
+        'recorded',
+        strategyInitMs,
+        confirmedAt - startInvokedAt,
+        confirmedAt,
+      );
     } catch (e) {
-      this.strategy.dispose();
+      const aborted = e instanceof DOMException && e.name === 'AbortError';
+      this.logStartup(startup, engine, aborted ? 'aborted' : 'failed', strategyInitMs, null, null);
+      this.strategy?.dispose();
       this.strategy = null;
       this.releaseStreamOnly();
       this.releaseLevelMeter();
@@ -158,6 +158,10 @@ export class WebVoiceRecorder implements IVoiceRecorder {
       this.releaseLevelMeter();
       this.abortController = null;
     }
+  }
+
+  observeUnexpectedEnd(handler: () => void): void {
+    this.unexpectedEnd = handler;
   }
 
   cancel(): void {
@@ -228,12 +232,96 @@ export class WebVoiceRecorder implements IVoiceRecorder {
     return bars;
   }
 
+  private watchStream(stream: MediaStream): void {
+    this.ignoreTrackEnd = false;
+    for (const track of stream.getAudioTracks()) {
+      track.addEventListener('ended', () => this.onTrackEnded(), { once: true });
+    }
+  }
+
+  private onTrackEnded(): void {
+    if (this.ignoreTrackEnd) {
+      return;
+    }
+    this.ignoreTrackEnd = true;
+    this.abortController?.abort();
+    this.strategy?.dispose();
+    this.strategy = null;
+    this.releaseStreamOnly();
+    this.releaseLevelMeter();
+    this.abortController = null;
+    this.unexpectedEnd?.();
+  }
+
   private releaseStreamOnly(): void {
-    this.stream?.getTracks().forEach(t => t.stop());
+    this.ignoreTrackEnd = true;
+    this.stream?.getTracks().forEach(track => track.stop());
     this.stream = null;
   }
 
+  private awaitCaptureStart(signal: AbortSignal): Promise<void> {
+    const strategy = this.strategy;
+    if (!strategy || signal.aborted) {
+      return Promise.reject(new DOMException('Aborted', 'AbortError'));
+    }
+
+    const started = strategy.start();
+    return new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const finish = (error?: unknown): void => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        signal.removeEventListener('abort', onAbort);
+        if (error) {
+          reject(error instanceof Error ? error : new Error('Failed to start recorder'));
+        } else {
+          resolve();
+        }
+      };
+      const onAbort = (): void => {
+        finish(new DOMException('Aborted', 'AbortError'));
+      };
+
+      signal.addEventListener('abort', onAbort, { once: true });
+      started.then(
+        () => finish(),
+        (error: unknown) => finish(error),
+      );
+    });
+  }
+
+  private logStartup(
+    mark: {
+      constraints: 'voice-dsp' | 'fallback';
+      acquiredAt: number;
+      getUserMediaMs: number;
+    } | null,
+    engine: string | null,
+    outcome: 'recorded' | 'aborted' | 'failed',
+    strategyInitMs: number,
+    startToCaptureMs: number | null,
+    captureConfirmedAt: number | null,
+  ): void {
+    if (!mark) {
+      return;
+    }
+    logStartup({
+      constraints: mark.constraints,
+      engine,
+      outcome,
+      acquiredAt: mark.acquiredAt,
+      getUserMediaMs: mark.getUserMediaMs,
+      strategyInitMs,
+      startToCaptureMs,
+      captureConfirmedAt,
+    });
+    this.startupMark = null;
+  }
+
   private releaseAll(): void {
+    this.startupMark = null;
     this.strategy?.dispose();
     this.strategy = null;
     this.releaseStreamOnly();

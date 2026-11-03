@@ -27,8 +27,6 @@ function createAudioContext(AudioCtx: typeof AudioContext): AudioContext {
  */
 export class WebAudioWavStrategy implements IWebRecordingStrategy {
   readonly engine: VoiceRecorderEngine = 'web-audio-wav';
-  /** Audio to discard at the beginning; UI countdown starts after this period. */
-  readonly warmupMs: number;
 
   private audioContext: AudioContext | null = null;
   private source: MediaStreamAudioSourceNode | null = null;
@@ -43,15 +41,12 @@ export class WebAudioWavStrategy implements IWebRecordingStrategy {
    * WebAudio can deliver a final `onmessage`/`onaudioprocess` after we disconnect/close.
    */
   private active = false;
+  private disposed = false;
 
-  constructor(
-    private readonly stream: MediaStream,
-    warmupMs: number,
-  ) {
-    this.warmupMs = Math.max(0, warmupMs);
-  }
+  constructor(private readonly stream: MediaStream) {}
 
   async start(): Promise<void> {
+    this.throwIfDisposed();
     this.active = false;
     const AudioCtx =
       (window as unknown as { AudioContext?: typeof AudioContext }).AudioContext ??
@@ -69,6 +64,7 @@ export class WebAudioWavStrategy implements IWebRecordingStrategy {
     } catch {
       /* ignore */
     }
+    this.throwIfDisposed();
     this.source = this.audioContext.createMediaStreamSource(this.stream);
     this.pcmBuffer = null;
     this.pcmSampleCount = 0;
@@ -100,6 +96,7 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
         const url = moduleUrl;
         setTimeout(() => URL.revokeObjectURL(url), 0);
       }
+      this.throwIfDisposed();
 
       const node = new AudioWorkletNode(ctx, 'pcm-capture');
       node.port.onmessage = (event: MessageEvent<Float32Array>) => {
@@ -114,10 +111,10 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
       this.silenceGain.gain.value = 0;
 
       this.captureNode = node;
+      this.active = true;
       this.source.connect(node);
       node.connect(this.silenceGain);
       this.silenceGain.connect(ctx.destination);
-      this.active = true;
       return;
     }
 
@@ -141,10 +138,10 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
     this.captureNode = processor;
     this.silenceGain = ctx.createGain();
     this.silenceGain.gain.value = 0;
+    this.active = true;
     this.source.connect(processor);
     processor.connect(this.silenceGain);
     this.silenceGain.connect(ctx.destination);
-    this.active = true;
   }
 
   async pause(): Promise<void> {
@@ -194,7 +191,16 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
   }
 
   dispose(): void {
+    this.disposed = true;
     this.disposeGraph();
+  }
+
+  private throwIfDisposed(): void {
+    if (!this.disposed) {
+      return;
+    }
+    this.disposeGraph();
+    throw new DOMException('Aborted', 'AbortError');
   }
 
   private disposeGraph(): void {

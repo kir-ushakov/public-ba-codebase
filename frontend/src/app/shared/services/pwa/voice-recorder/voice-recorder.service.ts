@@ -30,9 +30,14 @@ export enum VoiceRecorderState {
 export class VoiceRecorderService implements IVoiceRecorder {
   private readonly impl: IVoiceRecorder;
   private state: VoiceRecorderState = VoiceRecorderState.Idle;
+  private captureEnded: (() => void) | null = null;
 
   constructor() {
     this.impl = Capacitor.isNativePlatform() ? new NativeVoiceRecorder() : new WebVoiceRecorder();
+    this.impl.observeUnexpectedEnd?.(() => {
+      this.state = VoiceRecorderState.Idle;
+      this.captureEnded?.();
+    });
   }
 
   get recordingState(): VoiceRecorderState {
@@ -41,8 +46,19 @@ export class VoiceRecorderService implements IVoiceRecorder {
 
   async start(): Promise<void> {
     this.state = VoiceRecorderState.Starting;
-    await this.impl.start();
-    this.state = VoiceRecorderState.Recording;
+    try {
+      await this.impl.start();
+    } catch (error) {
+      this.state = VoiceRecorderState.Idle;
+      throw error;
+    }
+    if (this.state === VoiceRecorderState.Starting) {
+      this.state = VoiceRecorderState.Recording;
+    }
+  }
+
+  whenCaptureEnds(handler: () => void): void {
+    this.captureEnded = handler;
   }
 
   async stop(): Promise<Blob> {

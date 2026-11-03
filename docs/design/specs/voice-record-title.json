@@ -56,11 +56,11 @@
     "timing": {
       "limitSeconds": 12,
       "clock": "elapsed capture time",
-      "startsWhen": "the microphone is capturing audio",
+      "startsWhen": "audio capture has started, after microphone preparation",
       "excludes": [
         "time spent opening the screen",
         "microphone permission",
-        "capture warm-up before the first sample"
+        "time until the recorder confirms capture has started"
       ]
     },
 
@@ -87,16 +87,25 @@
     "behavior": {
       "onApply": "Stop capture and send the recording through the existing speech-to-text flow. Write the transcript into the task title.",
       "onLimit": "At 12 seconds of capture, stop and transcribe the same way as Apply.",
+      "onOpen": "Open immediately in preparing. Request the microphone, then start capture automatically. Do not show a Start button and do not run the 12 second clock until capture starts.",
+      "onPrepareFailed": "Leave preparing. Show the failure, Retry and Cancel. Release the microphone. Leave the title unchanged.",
       "onCancel": "Discard the recording. Do not transcribe. Leave the title unchanged.",
       "audioRetention": "The recording is temporary. Do not save it as an audio attachment.",
       "transcription": "Automatic after Apply or after the 12 second limit. There is no separate Transcribe action."
     },
 
     "states": {
-      "starting": {
-        "description": "The screen is open and capture has not started. The ring stays empty and the counter stays at 0 / 12 s.",
-        "counter": "0 / 12 s",
+      "preparing": {
+        "description": "The screen is open and capture has not started. The ring stays empty, the microphone indicator stays neutral, and an indeterminate indicator is shown. The 12 second counter is hidden. Apply is disabled. Cancel stays available.",
+        "statusLabel": "Preparing microphone...",
+        "microphone": "icon.default",
+        "indicator": "indeterminate",
+        "counter": false,
         "actions": ["cancel"]
+      },
+      "starting": {
+        "description": "Same as preparing.",
+        "sameAs": "preparing"
       },
       "recording": {
         "description": "Capture is in progress. The ring and the counter follow elapsed capture time, not the time since the screen opened.",
@@ -111,8 +120,8 @@
         "actions": []
       },
       "error": {
-        "description": "Microphone permission failed, capture failed, or transcription failed. The title is unchanged. The user can close the screen and try again.",
-        "actions": ["cancel"]
+        "description": "Permission denied, no microphone, device or recorder initialization failed, the microphone disconnected, or transcription failed. Initialization failures stay on this screen with Retry and Cancel. The title is unchanged.",
+        "actions": ["cancel", "retry"]
       }
     },
 
@@ -122,6 +131,7 @@
       "The reference PNG is a visual target for composition and density, not a source of token values.",
       "Do not reproduce the glowing halo or the color-cycling ring from the reference. The ring is the thin accent stroke from voiceRecorder.",
       "Do not show a waveform, a pause control or a saved-audio state.",
+      "Preparing shows Preparing microphone... and an indeterminate indicator. The 12 second counter stays hidden until capture starts.",
       "Keep the header, microphone and actions as one compact group. Do not leave a large empty field between the microphone and the actions.",
       "12 seconds, the counter format and automatic transcription belong to this screen. Do not copy them into design-system.json or into the audio attachment recorder."
     ],

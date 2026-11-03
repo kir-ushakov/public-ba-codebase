@@ -9,6 +9,8 @@ import { Store } from '@ngxs/store';
 import { AppAction } from 'src/app/shared/state/app.actions';
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
 import { VoiceRecordingFacade } from 'src/app/shared/features/voice-input/voice-recording.facade';
+import { microphoneFailureMessage } from 'src/app/shared/features/voice-input/microphone-failure-message.function';
+import { markRecorderOpened } from 'src/app/shared/services/pwa/voice-recorder/microphone-startup-probe';
 import { TaskConst } from '@brainassistant/contracts';
 import { firstValueFrom } from 'rxjs';
 
@@ -53,7 +55,8 @@ export class VoiceRecorderComponent {
     inject<VoiceRecorderDialogData | null>(MAT_DIALOG_DATA, { optional: true })?.mode ?? 'title';
   readonly titleLimitSeconds = TITLE_LIMIT_MS / 1000;
   readonly recordingDuration = TITLE_LIMIT_MS;
-  readonly phase = signal<'starting' | 'recording' | 'paused' | 'saving' | 'error'>('starting');
+  readonly phase = signal<'preparing' | 'recording' | 'paused' | 'saving' | 'error'>('preparing');
+  readonly errorMessage = signal('');
   readonly elapsedLabel = signal(this.mode === 'title' ? '0 / 12 s' : '00:00');
   readonly bars = signal<number[]>(Array.from({ length: WAVEFORM_BARS }, () => MIN_BAR_LEVEL));
   readonly meterLive = signal(false);
@@ -66,30 +69,60 @@ export class VoiceRecorderComponent {
 
   private recordingTimeout: number | null = null;
   private clockTimer: number | null = null;
+  private attempt = 0;
+  private releaseOnDestroy = true;
   private elapsedMs = 0;
   private lastTick = 0;
   private isFinalized = false;
+  private endedDuringPrepare = false;
   private pendingBlob: Blob | null = null;
 
   constructor() {
-    this.destroyRef.onDestroy(() => this.stopClock());
+    this.recorder.whenCaptureEnds(() => this.onCaptureEnded());
+    this.destroyRef.onDestroy(() => {
+      this.stopClock();
+      if (this.releaseOnDestroy) {
+        this.recorder.cancelRecording();
+      }
+    });
   }
 
   ngAfterViewInit(): void {
-    void this.beginSessionAfterMicReady();
+    void this.beginSession();
+  }
+
+  micColor(): string {
+    return this.phase() === 'recording' ? 'var(--color-icon-active)' : 'var(--color-icon-default)';
+  }
+
+  canSave(): boolean {
+    return (
+      this.phase() !== 'preparing' &&
+      this.phase() !== 'saving' &&
+      !this.saveBlocked() &&
+      (this.phase() !== 'error' || this.pendingBlob !== null)
+    );
+  }
+
+  retry(): void {
+    if (this.phase() !== 'error' || this.isFinalized) {
+      return;
+    }
+    void this.beginSession();
   }
 
   apply(): void {
     if (
       this.confirmingCancel() ||
       this.saveBlocked() ||
-      this.phase() === 'starting' ||
+      this.phase() === 'preparing' ||
       this.phase() === 'saving' ||
       this.isFinalized
     ) {
       return;
     }
     if (this.mode === 'title') {
+      this.releaseOnDestroy = false;
       this.stopped.emit();
       this.finalize();
       return;
@@ -137,9 +170,17 @@ export class VoiceRecorderComponent {
     }
   }
 
-  private async beginSessionAfterMicReady(): Promise<void> {
+  private async beginSession(): Promise<void> {
+    const attempt = ++this.attempt;
+    markRecorderOpened();
+    this.endedDuringPrepare = false;
+    this.errorMessage.set('');
+    this.phase.set('preparing');
     try {
       await firstValueFrom(this.store.dispatch(new VoiceInputAction.StartRecording()));
+      if (attempt !== this.attempt || this.isFinalized) {
+        return;
+      }
       if (this.mode === 'attachment' && this.recorder.engine === 'web-audio-wav') {
         this.recorder.cancelRecording();
         this.store.dispatch(
@@ -147,7 +188,17 @@ export class VoiceRecorderComponent {
             'This browser records uncompressed audio. Long recordings are not available.',
           ),
         );
+        this.releaseOnDestroy = false;
         this.dialogRef.close();
+        return;
+      }
+      if (!this.recorder.isRecording) {
+        this.phase.set('error');
+        this.errorMessage.set(
+          this.endedDuringPrepare
+            ? 'The microphone disconnected.'
+            : 'The recorder could not be started.',
+        );
         return;
       }
       this.phase.set('recording');
@@ -157,16 +208,34 @@ export class VoiceRecorderComponent {
         this.recordingTimeout = window.setTimeout(() => this.apply(), TITLE_LIMIT_MS);
       }
     } catch (err) {
+      if (attempt !== this.attempt || this.isFinalized) {
+        return;
+      }
       if (err instanceof DOMException && err.name === 'AbortError') {
         return;
       }
-      this.store.dispatch(
-        new AppAction.ShowErrorInUI(
-          'Could not access the microphone. Check permissions and try again.',
-        ),
-      );
-      this.dialogRef.close();
+      this.recorder.cancelRecording();
+      this.phase.set('error');
+      this.errorMessage.set(microphoneFailureMessage(err));
     }
+  }
+
+  private onCaptureEnded(): void {
+    if (this.isFinalized || this.phase() === 'saving') {
+      return;
+    }
+    if (this.phase() === 'preparing') {
+      this.endedDuringPrepare = true;
+      return;
+    }
+    this.stopClock();
+    this.progressRing?.stop();
+    if (this.recordingTimeout !== null) {
+      clearTimeout(this.recordingTimeout);
+      this.recordingTimeout = null;
+    }
+    this.phase.set('error');
+    this.errorMessage.set('The microphone disconnected.');
   }
 
   private async saveAttachment(): Promise<void> {
@@ -183,6 +252,7 @@ export class VoiceRecorderComponent {
         );
         return;
       }
+      this.releaseOnDestroy = false;
       this.audioReady.emit({
         blob,
         durationMs: Math.max(0, Math.round(this.elapsedMs)),
