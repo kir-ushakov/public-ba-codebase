@@ -143,16 +143,33 @@
               "playback": true,
               "opensSheet": false
             },
+            "emptyTranscript": {
+              "when": "speech-to-text returns 200 with no text",
+              "label": "No text in this recording.",
+              "semantic": "neutral",
+              "keepsAudio": true,
+              "persisted": false,
+              "opensSheet": true,
+              "sheetMessage": "No text in this recording.",
+              "offersRetry": false,
+              "offersCopy": false,
+              "offersAddToDescription": false
+            },
             "transcriptionError": {
               "label": "Transcription failed",
+              "icon": "error_outline",
               "semantic": "danger",
               "keepsAudio": true,
               "keepsExistingData": true,
               "autoRetry": false,
               "opensSheet": false,
+              "offlineLabel": "No connection",
               "action": {
-                "label": "Retry",
-                "action": "retry-audio-transcription"
+                "label": "Retry transcription",
+                "icon": "refresh",
+                "style": "outlined",
+                "action": "retry-audio-transcription",
+                "hiddenWhen": "permanent"
               }
             },
             "withTranscription": {
@@ -292,6 +309,12 @@
         "referenceImage": "../references/task-create-with-audio.png",
         "description": "Shared with Create Task. Compact audio attachment card with Play, Voice recording, duration, more_vert, and Transcribe with AI. No progress bar until playback starts."
       },
+      "transcriptionRetry": {
+        "status": "approved",
+        "trigger": "form.sections.audio-attachments.item.transcriptionError",
+        "referenceImage": "../references/audio-transcription-retry.jpg",
+        "description": "Shared with Create Task. Compact card error: error_outline, Transcription failed, outlined Retry transcription."
+      },
       "audioTranscriptionOpen": {
         "status": "draft",
         "trigger": "form.sections.audio-attachments.item.withTranscription.action",
@@ -312,7 +335,7 @@
       "Several recordings are allowed, and each keeps its own transcription state.",
       "Transcribe with AI stays on the attachment. It does not open a waiting sheet. The card shows Transcribing... with an indeterminate indicator and no percent. Other fields stay editable, and playback stays available.",
       "When transcription finishes, the card shows View transcription only. Do not also show Transcription available. View transcription opens the shared transcription sheet. It does not call speech-to-text again.",
-      "A transcription error stays on the card as Transcription failed · Retry. The recording remains. Do not auto-retry and do not open an error sheet.",
+      "A transcription error stays on the card: error_outline and Transcription failed, then an outlined Retry transcription button. A 200 response with no text is not an error: the card and the transcription sheet say No text in this recording, without Retry, Copy, or Add to Description. The recording remains. Do not auto-retry and do not open an error sheet.",
       "Transcription failed uses semantic danger. auto_awesome is only the Transcribe action icon. Do not add a glow, a decorative waveform, or an extra sparkle on the card.",
       "The saved transcription belongs to the audio attachment and is kept independently of the description. It is stored with the attachment and synced with the task. It is not a separate sync system.",
       "Add to description appends the saved transcript to the description draft. It does not replace the description or the audio file.",

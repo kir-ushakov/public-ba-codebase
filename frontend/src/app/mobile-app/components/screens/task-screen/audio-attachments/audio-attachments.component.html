@@ -90,26 +90,31 @@
             >
             Transcribing...
           </p>
-        } @else if (hasFailed(item.id) && !item.transcription) {
+        } @else if (failure(item.id); as error) {
           <div class="audio-error">
-            <p class="audio-failed" data-test="audio-attachment-error">Transcription failed</p>
-            <span aria-hidden="true">·</span>
-            <button
-              class="audio-text-action"
-              type="button"
-              data-test="audio-attachment-retry"
-              [disabled]="!online()"
-              (click)="transcribe(item.id)"
-            >
-              Retry
-            </button>
+            <p class="audio-failed" data-test="audio-attachment-error">
+              <span class="material-symbols-rounded" aria-hidden="true">error_outline</span>
+              {{ error.message }}
+            </p>
+            @if (error.kind !== 'permanent') {
+              <button
+                class="retry-transcription"
+                type="button"
+                data-test="audio-attachment-retry"
+                (click)="transcribe(item.id)"
+              >
+                <span class="material-symbols-rounded" aria-hidden="true">refresh</span>
+                Retry transcription
+              </button>
+            }
           </div>
+        } @else if (isBlank(item.id)) {
+          <p class="audio-blank" data-test="audio-attachment-empty">No text in this recording.</p>
         } @else if (!item.transcription) {
           <button
             class="audio-text-action"
             type="button"
             data-test="audio-attachment-transcribe"
-            [disabled]="!online()"
             (click)="transcribe(item.id)"
           >
             <span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>
@@ -133,32 +138,42 @@
 @if (openTranscript(); as transcript) {
   <ba-bottom-sheet title="Transcription" icon="auto_awesome" (dismissed)="closeTranscription()">
     <p class="sheet-meta">Voice recording · {{ durationLabel(transcript.durationMs) }}</p>
-    <p class="sheet-transcript" data-test="audio-attachment-transcription">{{ transcript.text }}</p>
-    <div class="sheet-actions">
-      <button
-        class="sheet-secondary"
-        type="button"
-        data-test="audio-attachment-copy"
-        (click)="copy(transcript.text)"
-      >
-        <span class="material-symbols-rounded" aria-hidden="true">content_copy</span>
-        Copy
-      </button>
-      @if (wasAdded(transcript.id)) {
-        <button class="sheet-secondary" type="button" disabled data-test="audio-attachment-added">
-          Added to description
-        </button>
-      } @else {
+    @if (transcript.text) {
+      <p class="sheet-transcript" data-test="audio-attachment-transcription">
+        {{ transcript.text }}
+      </p>
+    } @else {
+      <p class="sheet-transcript" data-test="audio-attachment-transcription">
+        No text in this recording.
+      </p>
+    }
+    @if (transcript.text) {
+      <div class="sheet-actions">
         <button
-          class="sheet-primary"
+          class="sheet-secondary"
           type="button"
-          data-test="audio-attachment-add-to-description"
-          (click)="addToDescription(transcript.id, transcript.text)"
+          data-test="audio-attachment-copy"
+          (click)="copy(transcript.text)"
         >
-          <span class="material-symbols-rounded" aria-hidden="true">add</span>
-          Add to Description
+          <span class="material-symbols-rounded" aria-hidden="true">content_copy</span>
+          Copy
         </button>
-      }
-    </div>
+        @if (wasAdded(transcript.id)) {
+          <button class="sheet-secondary" type="button" disabled data-test="audio-attachment-added">
+            Added to description
+          </button>
+        } @else {
+          <button
+            class="sheet-primary"
+            type="button"
+            data-test="audio-attachment-add-to-description"
+            (click)="addToDescription(transcript.id, transcript.text)"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">add</span>
+            Add to Description
+          </button>
+        }
+      </div>
+    }
   </ba-bottom-sheet>
 }

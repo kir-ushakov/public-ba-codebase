@@ -1,7 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { Actions, ofActionDispatched, provideStore, Store } from '@ngxs/store';
-import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
-import { firstValueFrom, of, Subject } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import {
+  EChangeAction,
+  EChangedEntity,
+  ESpeechToTextUseCaseError,
+} from '@brainassistant/contracts';
+import { firstValueFrom, of, Subject, throwError } from 'rxjs';
+import { TranscriptionFailure } from 'src/app/shared/helpers/transcription-failure.function';
 import {
   ETaskViewMode,
   TaskScreenState,
@@ -1015,6 +1021,77 @@ describe('TaskScreenState', () => {
     await pending;
 
     expect(store.selectSnapshot(TaskScreenState.task).audioAttachments ?? []).toEqual([]);
+  });
+
+  it('keeps the recording and does not offer another format retry when audio is unsupported', async () => {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob.mockResolvedValue({
+      id: 'aud-1',
+      durationMs: 500,
+      mimeType: 'audio/webm',
+      createdAt: '2024-06-01T10:00:00.000Z',
+    });
+    audioService.getRecord.mockResolvedValue({
+      blob: new Blob(['a'], { type: 'audio/webm' }),
+      uploaded: false,
+    });
+    speechToText.uploadAudio.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: { name: ESpeechToTextUseCaseError.UnsupportedMimeType, message: 'nope' },
+          }),
+      ),
+    );
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+
+    let failure: unknown;
+    try {
+      await firstValueFrom(store.dispatch(new TaskScreenAction.TranscribeAudioAttachment('aud-1')));
+    } catch (error) {
+      failure = error;
+    }
+
+    expect(failure).toBeInstanceOf(TranscriptionFailure);
+    expect((failure as TranscriptionFailure).kind).toBe('permanent');
+    const saved = store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0];
+    expect(saved?.id).toBe('aud-1');
+    expect(saved?.transcription).toBeUndefined();
+  });
+
+  it('keeps the recording and does not report an error when the transcript is empty', async () => {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob.mockResolvedValue({
+      id: 'aud-1',
+      durationMs: 500,
+      mimeType: 'audio/webm',
+      createdAt: '2024-06-01T10:00:00.000Z',
+    });
+    audioService.getRecord.mockResolvedValue({
+      blob: new Blob(['a'], { type: 'audio/webm' }),
+      uploaded: false,
+    });
+    speechToText.uploadAudio.mockReturnValue(of({ transcript: '   ' }));
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+
+    let failure: unknown;
+    try {
+      await firstValueFrom(store.dispatch(new TaskScreenAction.TranscribeAudioAttachment('aud-1')));
+    } catch (error) {
+      failure = error;
+    }
+
+    expect(failure).toBeInstanceOf(TranscriptionFailure);
+    expect((failure as TranscriptionFailure).kind).toBe('empty');
+    expect((failure as TranscriptionFailure).message).toBe('No text in this recording.');
+    const saved = store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0];
+    expect(saved?.id).toBe('aud-1');
+    expect(saved?.transcription).toBeUndefined();
   });
 
   it('keeps the create draft when the task cannot be saved', async () => {

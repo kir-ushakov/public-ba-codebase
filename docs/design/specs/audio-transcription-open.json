@@ -138,9 +138,12 @@
     },
 
     "empty": {
-      "when": "the attachment has no saved transcription text",
-      "openSheet": false,
-      "fallback": "leave the attachment card in its current state"
+      "when": "speech-to-text returned 200 and the transcript is empty",
+      "openSheet": true,
+      "message": "No text in this recording.",
+      "hideCopy": true,
+      "hideAddToDescription": true,
+      "persistedOnAttachment": false
     },
 
     "visualRules": [
@@ -153,6 +156,7 @@
       "Added to description uses the disabled secondary treatment. Copy stays available.",
       "Teal is reserved for the primary action. Danger is not used on this sheet.",
       "Processing and failure stay on the audio attachment card. Do not add those states to this sheet.",
+      "A 200 response with no transcript opens this sheet with No text in this recording. Copy and Add to Description stay hidden. The empty text is not stored on the attachment.",
       "Closing the sheet does not delete the transcription, remove the audio, or undo an append that already happened."
     ],
 

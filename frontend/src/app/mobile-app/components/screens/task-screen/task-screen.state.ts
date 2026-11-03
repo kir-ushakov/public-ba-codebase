@@ -29,6 +29,7 @@ import { TaskConst, type AudioAttachment } from '@brainassistant/contracts';
 import { AudioService } from 'src/app/shared/services/application/audio.service';
 import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/speech-to-text.service';
 import { appendTranscriptionToDescription } from 'src/app/shared/helpers/append-transcription-to-description.function';
+import { TranscriptionFailure } from 'src/app/shared/helpers/transcription-failure.function';
 
 export enum ETaskViewMode {
   Create = 'TASK_VIEW_MODE_CREATE',
@@ -432,8 +433,7 @@ export class TaskScreenState {
     { id }: TaskScreenAction.TranscribeAudioAttachment,
   ): Promise<void> {
     if (!navigator.onLine) {
-      ctx.dispatch(new AppAction.ShowErrorInUI('Transcription needs a connection.'));
-      return;
+      throw TranscriptionFailure.offline();
     }
     const state = ctx.getState();
     const current = state.taskData.audioAttachments ?? [];
@@ -444,21 +444,18 @@ export class TaskScreenState {
 
     const blob = await this.audioBlob(id);
     if (!blob) {
-      ctx.dispatch(new AppAction.ShowErrorInUI('Could not read the recording.'));
-      return;
+      throw TranscriptionFailure.unreadable();
     }
 
     let transcript = '';
     try {
       const response = await firstValueFrom(this.speechToText.uploadAudio(blob));
       transcript = response.transcript.trim();
-    } catch {
-      ctx.dispatch(new AppAction.ShowErrorInUI('Could not transcribe the recording.'));
-      return;
+    } catch (error) {
+      throw TranscriptionFailure.from(error);
     }
     if (!transcript) {
-      ctx.dispatch(new AppAction.ShowErrorInUI('Could not transcribe the recording.'));
-      return;
+      throw TranscriptionFailure.empty();
     }
 
     const latest = ctx.getState();

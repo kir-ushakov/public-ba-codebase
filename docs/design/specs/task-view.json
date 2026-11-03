@@ -153,6 +153,18 @@
             "playback": true,
             "opensSheet": false
           },
+          "emptyTranscript": {
+            "when": "speech-to-text returns 200 with no text",
+            "label": "No text in this recording.",
+            "semantic": "neutral",
+            "keepsAudio": true,
+            "persisted": false,
+            "opensSheet": true,
+            "sheetMessage": "No text in this recording.",
+            "offersRetry": false,
+            "offersCopy": false,
+            "offersAddToDescription": false
+          },
           "transcriptionError": {
             "label": "Transcription failed",
             "semantic": "danger",
@@ -160,9 +172,13 @@
             "keepsExistingData": true,
             "autoRetry": false,
             "opensSheet": false,
+            "icon": "error_outline",
             "action": {
-              "label": "Retry",
-              "action": "retry-audio-transcription"
+              "label": "Retry transcription",
+              "icon": "refresh",
+              "style": "outlined",
+              "action": "retry-audio-transcription",
+              "hiddenWhen": "permanent"
             }
           },
           "withTranscription": {
@@ -443,6 +459,12 @@
         }
       },
 
+      "transcriptionRetry": {
+        "status": "approved",
+        "trigger": "content.audioAttachments.item.transcriptionError",
+        "referenceImage": "../references/audio-transcription-retry.jpg",
+        "description": "Same compact transcription error as Create Task. Read-only View still offers Retry transcription."
+      },
       "audioTranscriptionOpen": {
         "status": "draft",
         "trigger": "content.audioAttachments.item.withTranscription.action",
@@ -483,7 +505,7 @@
       "Task View can play an attachment and start Transcribe with AI when no transcription exists. Transcribe with AI does not open a waiting sheet. The card shows Transcribing... with an indeterminate indicator and no percent. Playback stays available.",
       "When transcription finishes, the card shows View transcription only. Do not also show Transcription available. View transcription opens the shared transcription sheet and does not call speech-to-text again.",
       "Copy and Add to Description live in that sheet. Add to Description does not change the read-only description. It opens Edit, where the append happens.",
-      "A transcription error stays on the card as Transcription failed, with Retry. The recording remains. Do not auto-retry and do not open an error sheet.",
+      "A transcription error stays on the card: error_outline and Transcription failed, then an outlined Retry transcription button. A 200 response with no text is not an error: the card and the transcription sheet say No text in this recording, without Retry, Copy, or Add to Description. The recording remains. Do not auto-retry and do not open an error sheet.",
       "Transcription failed uses semantic danger. Do not add a glow, a decorative waveform, or an extra sparkle on the card.",
       "The saved transcription belongs to the audio attachment. It is stored with the attachment and synced with the task. It is not a separate sync system.",
       "The default audio attachment card matches task-create-with-audio.png on Create/Edit. Playback progress appears only after playback starts. The transcription sheet stays draft until its own reference PNG is approved.",
