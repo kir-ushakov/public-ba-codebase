@@ -154,16 +154,7 @@
             "opensSheet": false
           },
           "emptyTranscript": {
-            "when": "speech-to-text returns 200 with no text",
-            "label": "No text in this recording.",
-            "semantic": "neutral",
-            "keepsAudio": true,
-            "persisted": false,
-            "opensSheet": true,
-            "sheetMessage": "No text in this recording.",
-            "offersRetry": false,
-            "offersCopy": false,
-            "offersAddToDescription": false
+            "sharedWith": "./task-create.json#form.sections.audio-attachments.item.emptyTranscript"
           },
           "transcriptionError": {
             "label": "Transcription failed",

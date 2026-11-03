@@ -59,6 +59,15 @@ describe('AudioAttachmentsComponent', () => {
     return fixture;
   }
 
+  function mockTranscribeRejection(error: TranscriptionFailure): void {
+    const store = TestBed.inject(Store) as { dispatch: jest.Mock };
+    store.dispatch.mockReturnValue(
+      new Observable(subscriber => {
+        queueMicrotask(() => subscriber.error(error));
+      }),
+    );
+  }
+
   it('shows Transcribe with AI until the saved task has a transcription', () => {
     const fixture = render();
     const host = fixture.nativeElement as HTMLElement;
@@ -166,12 +175,7 @@ describe('AudioAttachmentsComponent', () => {
   });
 
   it('does not offer Retry when the recording cannot be transcribed', async () => {
-    const store = TestBed.inject(Store) as { dispatch: jest.Mock };
-    store.dispatch.mockReturnValue(
-      new Observable(subscriber => {
-        queueMicrotask(() => subscriber.error(TranscriptionFailure.unreadable()));
-      }),
-    );
+    mockTranscribeRejection(TranscriptionFailure.unreadable());
     const fixture = render();
     const host = fixture.nativeElement as HTMLElement;
 
@@ -185,12 +189,7 @@ describe('AudioAttachmentsComponent', () => {
   });
 
   it('shows an empty transcription instead of an error when the transcript is blank', async () => {
-    const store = TestBed.inject(Store) as { dispatch: jest.Mock };
-    store.dispatch.mockReturnValue(
-      new Observable(subscriber => {
-        queueMicrotask(() => subscriber.error(TranscriptionFailure.empty()));
-      }),
-    );
+    mockTranscribeRejection(TranscriptionFailure.empty());
     const fixture = render();
     const host = fixture.nativeElement as HTMLElement;
 

@@ -1024,17 +1024,6 @@ describe('TaskScreenState', () => {
   });
 
   it('keeps the recording and does not offer another format retry when audio is unsupported', async () => {
-    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
-    audioService.saveBlob.mockResolvedValue({
-      id: 'aud-1',
-      durationMs: 500,
-      mimeType: 'audio/webm',
-      createdAt: '2024-06-01T10:00:00.000Z',
-    });
-    audioService.getRecord.mockResolvedValue({
-      blob: new Blob(['a'], { type: 'audio/webm' }),
-      uploaded: false,
-    });
     speechToText.uploadAudio.mockReturnValue(
       throwError(
         () =>
@@ -1044,54 +1033,21 @@ describe('TaskScreenState', () => {
           }),
       ),
     );
-    await firstValueFrom(
-      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
-    );
-
-    let failure: unknown;
-    try {
-      await firstValueFrom(store.dispatch(new TaskScreenAction.TranscribeAudioAttachment('aud-1')));
-    } catch (error) {
-      failure = error;
-    }
+    const failure = await transcribeCreateDraft('aud-1');
 
     expect(failure).toBeInstanceOf(TranscriptionFailure);
     expect((failure as TranscriptionFailure).kind).toBe('permanent');
-    const saved = store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0];
-    expect(saved?.id).toBe('aud-1');
-    expect(saved?.transcription).toBeUndefined();
+    expect(savedDraftAttachment('aud-1')?.transcription).toBeUndefined();
   });
 
   it('keeps the recording and does not report an error when the transcript is empty', async () => {
-    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
-    audioService.saveBlob.mockResolvedValue({
-      id: 'aud-1',
-      durationMs: 500,
-      mimeType: 'audio/webm',
-      createdAt: '2024-06-01T10:00:00.000Z',
-    });
-    audioService.getRecord.mockResolvedValue({
-      blob: new Blob(['a'], { type: 'audio/webm' }),
-      uploaded: false,
-    });
     speechToText.uploadAudio.mockReturnValue(of({ transcript: '   ' }));
-    await firstValueFrom(
-      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
-    );
-
-    let failure: unknown;
-    try {
-      await firstValueFrom(store.dispatch(new TaskScreenAction.TranscribeAudioAttachment('aud-1')));
-    } catch (error) {
-      failure = error;
-    }
+    const failure = await transcribeCreateDraft('aud-1');
 
     expect(failure).toBeInstanceOf(TranscriptionFailure);
     expect((failure as TranscriptionFailure).kind).toBe('empty');
     expect((failure as TranscriptionFailure).message).toBe('No text in this recording.');
-    const saved = store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0];
-    expect(saved?.id).toBe('aud-1');
-    expect(saved?.transcription).toBeUndefined();
+    expect(savedDraftAttachment('aud-1')?.transcription).toBeUndefined();
   });
 
   it('keeps the create draft when the task cannot be saved', async () => {
@@ -1205,6 +1161,36 @@ describe('TaskScreenState', () => {
         ?.audioAttachments?.[0]?.transcription,
     ).toBeUndefined();
   });
+
+  async function transcribeCreateDraft(id: string): Promise<unknown> {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob.mockResolvedValue({
+      id,
+      durationMs: 500,
+      mimeType: 'audio/webm',
+      createdAt: '2024-06-01T10:00:00.000Z',
+    });
+    audioService.getRecord.mockResolvedValue({
+      blob: new Blob(['a'], { type: 'audio/webm' }),
+      uploaded: false,
+    });
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+
+    try {
+      await firstValueFrom(store.dispatch(new TaskScreenAction.TranscribeAudioAttachment(id)));
+      return undefined;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  function savedDraftAttachment(id: string) {
+    const attachment = store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0];
+    expect(attachment?.id).toBe(id);
+    return attachment;
+  }
 });
 
 function leftoverCreateState() {
