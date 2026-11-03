@@ -12,6 +12,7 @@ import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/spe
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 import { DialogService } from 'src/app/shared/services/utility/dialog.service';
+import { AudioService } from 'src/app/shared/services/application/audio.service';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { AppState } from 'src/app/shared/state/app.state';
@@ -31,6 +32,7 @@ describe('TaskEditComponent title field', () => {
         { provide: VoiceRecordingFacade, useValue: {} },
         { provide: SpeechToTextService, useValue: {} },
         { provide: DialogService, useValue: {} },
+        { provide: AudioService, useValue: {} },
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
       ],
@@ -51,6 +53,12 @@ describe('TaskEditComponent title field', () => {
     expect(host.textContent).toContain('Description');
     expect(host.querySelector('[data-test="task-description-count"]')?.textContent).toContain(
       '0/4000',
+    );
+    expect(host.querySelector('[data-test="audio-attachments-section"]')?.textContent).toContain(
+      'Audio attachments',
+    );
+    expect(host.querySelector('[data-test="audio-attachment-add"]')?.textContent).toContain(
+      'Add audio recording',
     );
     expect(host.querySelector('[data-test="task-description-strike-btn"]')).toBeNull();
     expect(host.querySelector('[data-test="task-description-bold-btn"]')).not.toBeNull();
@@ -117,5 +125,6 @@ describe('TaskEditComponent title field', () => {
     expect(host.querySelector('[data-test="task-title-input"]')?.getAttribute('placeholder')).toBe(
       'Note title here...',
     );
+    expect(host.querySelector('[data-test="audio-attachments-section"]')).toBeNull();
   });
 });

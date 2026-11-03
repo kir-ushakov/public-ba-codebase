@@ -21,6 +21,8 @@ import {
   type SignUpRequestDTO,
   type SignUpResponseDTO,
   type TagDTO,
+  type AudioAttachment,
+  type AudioTranscription,
   type ChecklistItemDTO,
   type TaskDescriptionDoc,
   type TaskDescriptionMark,
@@ -33,12 +35,15 @@ import {
   GetChangesContract,
   RefreshSessionContract,
   SendChangeContract,
+  UploadAudioContract,
   UploadImageContract,
 } from './contracts';
 import {
   EApiError,
   EChangeAction,
   EChangedEntity,
+  EDeleteAudioUseCaseError,
+  EGetAudioUseCaseError,
   EGetImageUseCaseError,
   EGoogleAuthUseCaseError,
   EImageRepoServiceError,
@@ -54,6 +59,7 @@ import {
   ETaskRepoServiceError,
   ETaskStatus,
   ETaskType,
+  EUploadAudioUseCaseError,
   EUploadImageUseCaseError,
   EVerifyEmailUseCaseError,
 } from './enums';
@@ -75,6 +81,7 @@ const TASK_DTO_KEYS = [
   'images',
   'description',
   'checklist',
+  'audioAttachments',
   'createdAt',
   'modifiedAt',
   'tagIds',
@@ -87,6 +94,33 @@ const CHECKLIST_ITEM_DTO_KEYS = [
   'completed',
 ] as const satisfies readonly (keyof ChecklistItemDTO)[];
 const _checklistItemDto: ExactKeys<ChecklistItemDTO, typeof CHECKLIST_ITEM_DTO_KEYS> = true;
+
+const AUDIO_ATTACHMENT_KEYS = [
+  'id',
+  'durationMs',
+  'mimeType',
+  'createdAt',
+  'transcription',
+] as const satisfies readonly (keyof AudioAttachment)[];
+const _audioAttachment: ExactKeys<AudioAttachment, typeof AUDIO_ATTACHMENT_KEYS> = true;
+
+const AUDIO_TRANSCRIPTION_KEYS = [
+  'text',
+  'createdAt',
+  'model',
+] as const satisfies readonly (keyof AudioTranscription)[];
+const _audioTranscription: ExactKeys<AudioTranscription, typeof AUDIO_TRANSCRIPTION_KEYS> = true;
+
+const UPLOAD_AUDIO_REQUEST_KEYS = [
+  'audioId',
+  'file',
+] as const satisfies readonly (keyof UploadAudioContract.Request)[];
+const _uploadAudioReq: ExactKeys<UploadAudioContract.Request, typeof UPLOAD_AUDIO_REQUEST_KEYS> = true;
+
+const UPLOAD_AUDIO_RESPONSE_KEYS = [
+  'audioId',
+] as const satisfies readonly (keyof UploadAudioContract.Response)[];
+const _uploadAudioRes: ExactKeys<UploadAudioContract.Response, typeof UPLOAD_AUDIO_RESPONSE_KEYS> = true;
 
 const TASK_DESCRIPTION_DOC_KEYS = ['type', 'content'] as const satisfies readonly (keyof TaskDescriptionDoc)[];
 const _taskDescriptionDoc: ExactKeys<TaskDescriptionDoc, typeof TASK_DESCRIPTION_DOC_KEYS> = true;
@@ -181,6 +215,10 @@ const _sendChangeReq: ExactKeys<SendChangeContract.Request, typeof SEND_CHANGE_R
 
 void _taskDto;
 type _ChecklistItemDtoShapeOk = typeof _checklistItemDto;
+void _audioAttachment;
+void _audioTranscription;
+void _uploadAudioReq;
+void _uploadAudioRes;
 void _taskDescriptionDoc;
 void _taskDescriptionNode;
 void _taskDescriptionMark;
@@ -212,6 +250,9 @@ export const PUBLIC_API_SHAPE = {
     EChangeAction: Object.values(EChangeAction),
     EApiError: Object.values(EApiError),
     EUploadImageUseCaseError: Object.values(EUploadImageUseCaseError),
+    EUploadAudioUseCaseError: Object.values(EUploadAudioUseCaseError),
+    EGetAudioUseCaseError: Object.values(EGetAudioUseCaseError),
+    EDeleteAudioUseCaseError: Object.values(EDeleteAudioUseCaseError),
     EGetImageUseCaseError: Object.values(EGetImageUseCaseError),
     ELoginUseCaseError: Object.values(ELoginUseCaseError),
     ESignUpUseCaseError: Object.values(ESignUpUseCaseError),
@@ -229,7 +270,15 @@ export const PUBLIC_API_SHAPE = {
   dto: {
     TaskDTO: {
       keys: [...TASK_DTO_KEYS],
-      optional: ['imageId', 'images', 'description', 'checklist', 'tagIds', 'conditions'],
+      optional: ['imageId', 'images', 'description', 'checklist', 'audioAttachments', 'tagIds', 'conditions'],
+    },
+    AudioAttachment: {
+      keys: [...AUDIO_ATTACHMENT_KEYS],
+      optional: ['transcription'],
+    },
+    AudioTranscription: {
+      keys: [...AUDIO_TRANSCRIPTION_KEYS],
+      optional: ['model'],
     },
     ChecklistItemDTO: {
       keys: [...CHECKLIST_ITEM_DTO_KEYS],
@@ -263,6 +312,10 @@ export const PUBLIC_API_SHAPE = {
     UploadImageContract: {
       request: [...UPLOAD_REQUEST_KEYS],
       response: [...UPLOAD_RESPONSE_KEYS],
+    },
+    UploadAudioContract: {
+      request: [...UPLOAD_AUDIO_REQUEST_KEYS],
+      response: [...UPLOAD_AUDIO_RESPONSE_KEYS],
     },
     GetChangesContract: {
       request: [...GET_CHANGES_REQUEST_KEYS],

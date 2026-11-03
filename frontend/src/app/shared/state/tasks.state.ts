@@ -226,6 +226,10 @@ export class TasksState {
       task.checklist = taskInitData.checklist;
     }
 
+    if (taskInitData.audioAttachments) {
+      task.audioAttachments = taskInitData.audioAttachments;
+    }
+
     return normalizeTaskRecord(task);
   }
 

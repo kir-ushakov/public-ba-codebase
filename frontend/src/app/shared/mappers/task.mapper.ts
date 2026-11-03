@@ -28,6 +28,10 @@ export class TasksMapper {
       task.checklist = taskDto.checklist;
     }
 
+    if (taskDto.audioAttachments) {
+      task.audioAttachments = taskDto.audioAttachments;
+    }
+
     if (taskDto.tagIds) {
       task.tagIds = taskDto.tagIds;
     }
@@ -63,6 +67,10 @@ export class TasksMapper {
 
     if (task.checklist) {
       dto.checklist = task.checklist;
+    }
+
+    if (task.audioAttachments) {
+      dto.audioAttachments = task.audioAttachments;
     }
 
     if (task.tagIds) {

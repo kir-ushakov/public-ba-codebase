@@ -67,6 +67,33 @@ export namespace TaskScreenAction {
     constructor(public image: DraftTaskImage) {}
   }
 
+  export class AudioAttachmentCaptured {
+    static readonly type = '[TaskScreen] Audio Attachment Captured';
+
+    constructor(
+      public blob: Blob,
+      public durationMs: number,
+    ) {}
+  }
+
+  export class AudioAttachmentRemoved {
+    static readonly type = '[TaskScreen] Audio Attachment Removed';
+
+    constructor(public id: string) {}
+  }
+
+  export class TranscribeAudioAttachment {
+    static readonly type = '[TaskScreen] Transcribe Audio Attachment';
+
+    constructor(public id: string) {}
+  }
+
+  export class AddTranscriptionToDescription {
+    static readonly type = '[TaskScreen] Add Transcription To Description';
+
+    constructor(public text: string) {}
+  }
+
   export class TagIdsChanged {
     static readonly type = '[TaskScreen] Tag Ids Changed';
 

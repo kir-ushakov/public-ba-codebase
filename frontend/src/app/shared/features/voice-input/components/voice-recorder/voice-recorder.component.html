@@ -1,18 +1,79 @@
-<div class="recording-indicator">
-  <ba-progress-ring
-    [duration]="recordingDuration"
-    (colorChange)="micColor.set($event)"
-  />
-  <div class="mic-icon-wrapper">
-    <ba-mic-icon [color]="micColor()"></ba-mic-icon>
+<header class="recorder-header">
+  <button
+    type="button"
+    class="recorder-dismiss"
+    aria-label="Cancel recording"
+    data-test="voice-recorder-dismiss"
+    (click)="cancel()"
+  >
+    <span class="material-symbols-rounded" aria-hidden="true">close</span>
+  </button>
+  <div class="recorder-heading">
+    <h1 class="recorder-title">{{ mode === 'title' ? 'Voice input' : 'Record Audio' }}</h1>
+    <p class="recorder-subtitle">
+      {{ mode === 'title' ? 'Task title · up to 12 seconds' : 'Audio attachment for description' }}
+    </p>
   </div>
-</div>
-<div class="recorder-bottom">
-  <button mat-icon-button (click)="cancel()" aria-label="Close">
-    <mat-icon class="close-icon">close</mat-icon>
-  </button>
-  <button mat-icon-button (click)="stopRecording()" aria-label="OK">
-    <mat-icon class="ok-icon">check</mat-icon>
-  </button>
+</header>
+
+<div class="recorder-stage">
+  <div class="recording-indicator">
+    @if (mode === 'title') {
+      <ba-progress-ring [duration]="recordingDuration" [blurStdDev]="0" />
+    } @else {
+      <div class="activity-ring" aria-hidden="true"></div>
+    }
+    <div class="mic-icon-wrapper">
+      <ba-mic-icon color="var(--color-icon-active)"></ba-mic-icon>
+    </div>
+  </div>
+
+  <p class="recorder-clock" data-test="voice-recorder-clock">{{ elapsedLabel() }}</p>
+
+  @if (mode === 'attachment') {
+    <p class="recorder-status" data-test="voice-recorder-status">
+      {{ phase() === 'paused' ? 'Paused' : 'Recording' }}
+    </p>
+    <div class="waveform" data-test="voice-recorder-waveform" aria-hidden="true">
+      @for (bar of bars(); track $index) {
+        <span class="waveform-bar" [style.transform]="'scaleY(' + bar + ')'"></span>
+      }
+    </div>
+  }
 </div>
 
+<div class="recorder-bottom">
+  <button
+    type="button"
+    class="recorder-action recorder-action-secondary"
+    aria-label="Cancel"
+    data-test="voice-recorder-cancel"
+    (click)="cancel()"
+  >
+    <span class="material-symbols-rounded" aria-hidden="true">close</span>
+  </button>
+  @if (mode === 'attachment') {
+    <button
+      type="button"
+      class="recorder-action recorder-action-secondary"
+      [attr.aria-label]="phase() === 'paused' ? 'Resume' : 'Pause'"
+      data-test="voice-recorder-pause"
+      [disabled]="phase() === 'starting' || phase() === 'saving'"
+      (click)="togglePause()"
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">{{
+        phase() === 'paused' ? 'play_arrow' : 'pause'
+      }}</span>
+    </button>
+  }
+  <button
+    type="button"
+    class="recorder-action recorder-action-primary"
+    [attr.aria-label]="mode === 'title' ? 'Apply' : 'Stop'"
+    data-test="voice-recorder-apply"
+    [disabled]="phase() === 'starting' || phase() === 'saving'"
+    (click)="apply()"
+  >
+    <span class="material-symbols-rounded" aria-hidden="true">check</span>
+  </button>
+</div>

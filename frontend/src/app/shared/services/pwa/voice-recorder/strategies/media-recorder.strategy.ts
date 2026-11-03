@@ -71,6 +71,26 @@ export class MediaRecorderStrategy implements IWebRecordingStrategy {
     this.mediaRecorder?.start(MEDIARECORDER_TIMESLICE_MS);
   }
 
+  async pause(): Promise<void> {
+    const recorder = this.mediaRecorder;
+    if (!recorder || recorder.state !== 'recording') {
+      throw new Error('Not recording');
+    }
+    recorder.pause();
+  }
+
+  async resume(): Promise<void> {
+    const recorder = this.mediaRecorder;
+    if (!recorder || recorder.state !== 'paused') {
+      throw new Error('Not paused');
+    }
+    recorder.resume();
+  }
+
+  capturedBytes(): number {
+    return this.chunks.reduce((total, chunk) => total + chunk.size, 0);
+  }
+
   stop(): Promise<Blob> {
     const recorder = this.mediaRecorder;
     if (!recorder || recorder.state === 'inactive') {

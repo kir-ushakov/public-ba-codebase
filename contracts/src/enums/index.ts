@@ -11,6 +11,9 @@ export { ETaskCondition } from './task-condition.enum';
 export {
   EApiError,
   EUploadImageUseCaseError,
+  EUploadAudioUseCaseError,
+  EGetAudioUseCaseError,
+  EDeleteAudioUseCaseError,
   EGetImageUseCaseError,
   ELoginUseCaseError,
   ESignUpUseCaseError,

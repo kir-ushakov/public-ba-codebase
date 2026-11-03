@@ -37,6 +37,20 @@
       "UPLOAD_IMAGE_ERROR_CODE__INVALID_IMAGE_ID",
       "UPLOAD_IMAGE_ERROR_CODE__STORE_IMAGE_FAILED"
     ],
+    "EUploadAudioUseCaseError": [
+      "UPLOAD_AUDIO_ERROR__NOT_SUPPORTED_TYPE",
+      "UPLOAD_AUDIO_ERROR__INVALID_AUDIO_ID",
+      "UPLOAD_AUDIO_ERROR__STORE_FAILED",
+      "UPLOAD_AUDIO_ERROR__FILE_TOO_LARGE"
+    ],
+    "EGetAudioUseCaseError": [
+      "GET_AUDIO_ERROR__INVALID_AUDIO_ID",
+      "GET_AUDIO_ERROR__FILE_MISSING"
+    ],
+    "EDeleteAudioUseCaseError": [
+      "DELETE_AUDIO_ERROR__INVALID_AUDIO_ID",
+      "DELETE_AUDIO_ERROR__DELETE_FAILED"
+    ],
     "EGetImageUseCaseError": [
       "GET_IMAGE_ERROR__GOOGLE_REFRESH_TOKEN_INVALID",
       "GET_IMAGE_ERROR__GOOGLE_DRIVE_REQUEST_FAILED",
@@ -81,6 +95,7 @@
       "TASK_ERROR__DESCRIPTION_INVALID",
       "TASK_ERROR__DESCRIPTION_TOO_LONG",
       "TASK_ERROR__CHECKLIST_INVALID",
+      "TASK_ERROR__AUDIO_ATTACHMENTS_INVALID",
       "TASK_ERROR__CONDITIONS_INVALID",
       "TASK_ERROR__UNKNOWN_TAG"
     ],
@@ -109,6 +124,7 @@
         "images",
         "description",
         "checklist",
+        "audioAttachments",
         "createdAt",
         "modifiedAt",
         "tagIds"
@@ -118,12 +134,39 @@
         "images",
         "description",
         "checklist",
+        "audioAttachments",
         "tagIds",
         "conditions"
       ]
     },
+    "AudioAttachment": {
+      "keys": [
+        "id",
+        "durationMs",
+        "mimeType",
+        "createdAt",
+        "transcription"
+      ],
+      "optional": [
+        "transcription"
+      ]
+    },
+    "AudioTranscription": {
+      "keys": [
+        "text",
+        "createdAt",
+        "model"
+      ],
+      "optional": [
+        "model"
+      ]
+    },
     "ChecklistItemDTO": {
-      "keys": ["id", "text", "completed"],
+      "keys": [
+        "id",
+        "text",
+        "completed"
+      ],
       "optional": []
     },
     "TaskDescriptionDoc": {
@@ -258,6 +301,15 @@
         "imageId"
       ]
     },
+    "UploadAudioContract": {
+      "request": [
+        "audioId",
+        "file"
+      ],
+      "response": [
+        "audioId"
+      ]
+    },
     "GetChangesContract": {
       "request": [
         "afterRevision"
@@ -293,18 +345,54 @@
       "MIN_WEBP_QUALITY": 40,
       "WEBP_QUALITY_DROP": 8,
       "ENCODE_PLAN": [
-        [1600, 80],
-        [1600, 75],
-        [1600, 68],
-        [1280, 75],
-        [1280, 67],
-        [1280, 59],
-        [1280, 51],
-        [1280, 43],
-        [1120, 40],
-        [960, 40],
-        [800, 40],
-        [640, 40]
+        [
+          1600,
+          80
+        ],
+        [
+          1600,
+          75
+        ],
+        [
+          1600,
+          68
+        ],
+        [
+          1280,
+          75
+        ],
+        [
+          1280,
+          67
+        ],
+        [
+          1280,
+          59
+        ],
+        [
+          1280,
+          51
+        ],
+        [
+          1280,
+          43
+        ],
+        [
+          1120,
+          40
+        ],
+        [
+          960,
+          40
+        ],
+        [
+          800,
+          40
+        ],
+        [
+          640,
+          40
+        ]
       ]
     },
     "TaskConst": {
@@ -315,7 +403,11 @@
       "DESCRIPTION_MAX_DEPTH": 8,
       "CHECKLIST_MAX_ITEMS": 100,
       "CHECKLIST_ITEM_MAX_LENGTH": 200,
-      "CHECKLIST_ITEM_ID_MAX_LENGTH": 64
+      "CHECKLIST_ITEM_ID_MAX_LENGTH": 64,
+      "AUDIO_ATTACHMENT_MAX_COUNT": 10,
+      "AUDIO_TRANSCRIPTION_MAX_LENGTH": 20000,
+      "AUDIO_MAX_BYTES": 5242880,
+      "AUDIO_RECORDING_STOP_BYTES": 4194304
     },
     "TagConst": {
       "NAME_MIN_LENGTH": 1,

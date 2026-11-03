@@ -18,5 +18,6 @@ export const API_ENDPOINTS = {
   },
   FILES: {
     IMAGE: BASE_URL + 'files/image',
+    AUDIO: BASE_URL + 'files/audio',
   },
 };

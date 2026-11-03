@@ -14,6 +14,8 @@ export type {
   TaskDescriptionMarkType,
   TaskDescriptionNodeType,
   ChecklistItemDTO,
+  AudioAttachment,
+  AudioTranscription,
   UserDto,
   LoginRequestDTO,
   LoginResponseDTO,
@@ -39,6 +41,9 @@ export {
   ETaskCondition,
   EApiError,
   EUploadImageUseCaseError,
+  EUploadAudioUseCaseError,
+  EGetAudioUseCaseError,
+  EDeleteAudioUseCaseError,
   EGetImageUseCaseError,
   ELoginUseCaseError,
   ESignUpUseCaseError,
@@ -57,6 +62,7 @@ export {
 // Contracts
 export {
   UploadImageContract,
+  UploadAudioContract,
   SendChangeContract,
   GetChangesContract,
   RefreshSessionContract,

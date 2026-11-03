@@ -37,6 +37,7 @@ export class WebAudioWavStrategy implements IWebRecordingStrategy {
   private pcmBuffer: Float32Array | null = null;
   private pcmSampleCount = 0;
   private pcmOverflow = false;
+  private paused = false;
   /**
    * Ignore late worklet/script callbacks after stop/dispose.
    * WebAudio can deliver a final `onmessage`/`onaudioprocess` after we disconnect/close.
@@ -91,9 +92,7 @@ class PcmCaptureProcessor extends AudioWorkletProcessor {
 registerProcessor('pcm-capture', PcmCaptureProcessor);
 `;
 
-      const moduleUrl = URL.createObjectURL(
-        new Blob([workletCode], { type: 'text/javascript' }),
-      );
+      const moduleUrl = URL.createObjectURL(new Blob([workletCode], { type: 'text/javascript' }));
 
       try {
         await ctx.audioWorklet.addModule(moduleUrl);
@@ -122,25 +121,22 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
       return;
     }
 
-    const processor = (ctx as unknown as { createScriptProcessor?: Function }).createScriptProcessor?.call(
-      ctx,
-      4096,
-      1,
-      1,
-    ) as AudioNode | undefined;
+    const processor = (
+      ctx as unknown as { createScriptProcessor?: Function }
+    ).createScriptProcessor?.call(ctx, 4096, 1, 1) as AudioNode | undefined;
 
     if (!processor) {
       throw new Error('No supported WebAudio capture node available');
     }
 
-    (processor as unknown as { onaudioprocess?: (e: AudioProcessingEvent) => void }).onaudioprocess =
-      e => {
-        if (!this.active) {
-          return;
-        }
-        const input = e.inputBuffer.getChannelData(0);
-        this.appendPcmCopy(input);
-      };
+    (
+      processor as unknown as { onaudioprocess?: (e: AudioProcessingEvent) => void }
+    ).onaudioprocess = e => {
+      if (!this.active) {
+        return;
+      }
+      this.ingest(e.inputBuffer.getChannelData(0));
+    };
 
     this.captureNode = processor;
     this.silenceGain = ctx.createGain();
@@ -149,6 +145,32 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
     processor.connect(this.silenceGain);
     this.silenceGain.connect(ctx.destination);
     this.active = true;
+  }
+
+  async pause(): Promise<void> {
+    if (!this.active) {
+      throw new Error('Not recording');
+    }
+    this.paused = true;
+  }
+
+  async resume(): Promise<void> {
+    if (!this.active || !this.paused) {
+      throw new Error('Not paused');
+    }
+    this.paused = false;
+  }
+
+  capturedBytes(): number {
+    return 44 + this.pcmSampleCount * 2;
+  }
+
+  /** Copies one microphone chunk. While paused, the chunk is ignored. */
+  ingest(chunk: Float32Array): void {
+    if (!this.active) {
+      return;
+    }
+    this.appendPcmCopy(chunk);
   }
 
   async stop(): Promise<Blob> {
@@ -190,10 +212,11 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
     this.pcmBuffer = null;
     this.pcmSampleCount = 0;
     this.pcmOverflow = false;
+    this.paused = false;
   }
 
   private appendPcmCopy(chunk: Float32Array): void {
-    if (this.pcmOverflow) {
+    if (this.paused || this.pcmOverflow) {
       return;
     }
 
@@ -222,9 +245,12 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
     this.pcmBuffer = next;
   }
 
-  private encodeWavFromBuffer(samples: Float32Array | null, length: number, sampleRate: number): Blob {
-    const merged =
-      samples && length > 0 ? samples.subarray(0, length) : new Float32Array(0);
+  private encodeWavFromBuffer(
+    samples: Float32Array | null,
+    length: number,
+    sampleRate: number,
+  ): Blob {
+    const merged = samples && length > 0 ? samples.subarray(0, length) : new Float32Array(0);
 
     const buffer = new ArrayBuffer(44 + merged.length * 2);
     const view = new DataView(buffer);

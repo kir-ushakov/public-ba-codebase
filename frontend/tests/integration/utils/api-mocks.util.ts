@@ -138,6 +138,30 @@ export async function setupApiMocks(
       return;
     }
 
+    if (url.includes('/api/ai/speech-to-text') && method === 'POST') {
+      await route.fulfill(json(200, { transcript: 'Saved voice note' }));
+      return;
+    }
+
+    if (url.includes('/api/files/audio') && method === 'POST') {
+      await route.fulfill(json(200, { audioId: 'mock-uploaded-audio-id' }));
+      return;
+    }
+
+    if (url.includes('/api/files/audio') && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'audio/webm',
+        body: Buffer.from([0x1a, 0x45, 0xdf, 0xa3]),
+      });
+      return;
+    }
+
+    if (url.includes('/api/files/audio') && method === 'DELETE') {
+      await route.fulfill(json(200, { audioId: 'mock-uploaded-audio-id' }));
+      return;
+    }
+
     if (url.includes('/api/auth/logout') && method === 'DELETE') {
       await route.fulfill(json(200, {}));
       return;

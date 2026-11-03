@@ -9,6 +9,8 @@ import {
   TaskScreenState,
 } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
 import { ImageService } from 'src/app/shared/services/application/image.service';
+import { AudioService } from 'src/app/shared/services/application/audio.service';
+import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/speech-to-text.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 
 describe('TaskBottomPanelComponent', () => {
@@ -20,6 +22,8 @@ describe('TaskBottomPanelComponent', () => {
       providers: [
         provideStore([TaskScreenState]),
         { provide: ImageService, useValue: {} },
+        { provide: AudioService, useValue: {} },
+        { provide: SpeechToTextService, useValue: {} },
         { provide: DeviceCameraService, useValue: {} },
       ],
     }).compileComponents();

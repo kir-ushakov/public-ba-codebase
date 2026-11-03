@@ -25,6 +25,23 @@ export enum EUploadImageUseCaseError {
   StoreImageFailed = 'UPLOAD_IMAGE_ERROR_CODE__STORE_IMAGE_FAILED',
 }
 
+export enum EUploadAudioUseCaseError {
+  NotSupportedType = 'UPLOAD_AUDIO_ERROR__NOT_SUPPORTED_TYPE',
+  InvalidAudioId = 'UPLOAD_AUDIO_ERROR__INVALID_AUDIO_ID',
+  StoreAudioFailed = 'UPLOAD_AUDIO_ERROR__STORE_FAILED',
+  FileTooLarge = 'UPLOAD_AUDIO_ERROR__FILE_TOO_LARGE',
+}
+
+export enum EGetAudioUseCaseError {
+  InvalidAudioId = 'GET_AUDIO_ERROR__INVALID_AUDIO_ID',
+  AudioFileMissing = 'GET_AUDIO_ERROR__FILE_MISSING',
+}
+
+export enum EDeleteAudioUseCaseError {
+  InvalidAudioId = 'DELETE_AUDIO_ERROR__INVALID_AUDIO_ID',
+  DeleteFailed = 'DELETE_AUDIO_ERROR__DELETE_FAILED',
+}
+
 export enum EGetImageUseCaseError {
   GoogleRefreshTokenInvalid = 'GET_IMAGE_ERROR__GOOGLE_REFRESH_TOKEN_INVALID',
   GoogleDriveRequestFailed = 'GET_IMAGE_ERROR__GOOGLE_DRIVE_REQUEST_FAILED',
@@ -79,6 +96,7 @@ export enum ETaskError {
   DescriptionInvalid = 'TASK_ERROR__DESCRIPTION_INVALID',
   DescriptionTooLong = 'TASK_ERROR__DESCRIPTION_TOO_LONG',
   ChecklistInvalid = 'TASK_ERROR__CHECKLIST_INVALID',
+  AudioAttachmentsInvalid = 'TASK_ERROR__AUDIO_ATTACHMENTS_INVALID',
   ConditionsInvalid = 'TASK_ERROR__CONDITIONS_INVALID',
   UnknownTag = 'TASK_ERROR__UNKNOWN_TAG',
 }

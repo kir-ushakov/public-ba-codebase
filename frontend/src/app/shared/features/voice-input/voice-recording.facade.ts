@@ -1,5 +1,9 @@
 import { inject, Injectable } from '@angular/core';
-import { VoiceRecorderService } from 'src/app/shared/services/pwa/voice-recorder';
+import {
+  VoiceRecorderService,
+  VoiceRecorderState,
+} from 'src/app/shared/services/pwa/voice-recorder';
+import type { VoiceCaptureEngine } from 'src/app/shared/services/pwa/voice-recorder';
 
 /**
  * #VIWAI_FE_VOICE-RECORDING-FACADE:
@@ -36,5 +40,28 @@ export class VoiceRecordingFacade {
   cancelRecording(): void {
     this.recorder.cancel();
   }
-}
 
+  pauseRecording(): Promise<void> {
+    return this.recorder.pause();
+  }
+
+  resumeRecording(): Promise<void> {
+    return this.recorder.resume();
+  }
+
+  capturedBytes(): number {
+    return this.recorder.capturedBytes();
+  }
+
+  level(): number {
+    return this.recorder.level();
+  }
+
+  get engine(): VoiceCaptureEngine | null {
+    return this.recorder.engine;
+  }
+
+  get recordingState(): VoiceRecorderState {
+    return this.recorder.recordingState;
+  }
+}

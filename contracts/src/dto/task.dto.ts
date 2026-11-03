@@ -40,6 +40,20 @@ export type ChecklistItemDTO = {
   completed: boolean;
 };
 
+export type AudioTranscription = {
+  text: string;
+  createdAt: string;
+  model?: string;
+};
+
+export type AudioAttachment = {
+  id: string;
+  durationMs: number;
+  mimeType: string;
+  createdAt: string;
+  transcription?: AudioTranscription;
+};
+
 /**
  * Task Data Transfer Object
  * Shared contract between frontend and backend for task data
@@ -59,6 +73,7 @@ export type TaskDTO = {
   images?: string[];
   description?: TaskDescriptionDoc;
   checklist?: ChecklistItemDTO[];
+  audioAttachments?: AudioAttachment[];
   tagIds?: string[];
   createdAt: string;
   modifiedAt: string;

@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-view",
     "name": "Task View",
-    "version": "1.7.0",
+    "version": "1.8.0",
 
     "purpose": "Read a task and perform focused task actions without entering full edit mode.",
 
@@ -19,6 +19,7 @@
         "task-type",
         "task-summary",
         "description",
+        "audio-attachments",
         "images",
         "tags",
         "quick-properties",
@@ -102,6 +103,52 @@
         "render": "rich-text",
         "editable": false,
         "visibility": "when-present"
+      },
+
+      "audioAttachments": {
+        "label": "Audio attachments",
+        "component": "audio-attachment-list",
+        "designSystemPattern": "audioAttachment",
+        "source": "task.audioAttachments",
+        "multiple": true,
+        "editable": false,
+        "addAction": {
+          "enabled": false
+        },
+        "remove": false,
+        "visibility": "when-present",
+
+        "item": {
+          "title": "Voice recording",
+          "duration": true,
+          "playback": ["play", "pause"],
+          "withoutTranscription": {
+            "action": {
+              "label": "Transcribe with AI",
+              "action": "transcribe-audio-attachment"
+            }
+          },
+          "withTranscription": {
+            "meta": "Transcription available",
+            "action": {
+              "label": "View transcription",
+              "action": "view-audio-transcription"
+            }
+          },
+          "transcriptionActions": [
+            {
+              "id": "copy",
+              "label": "Copy transcription",
+              "action": "copy-transcription"
+            },
+            {
+              "id": "add-to-description",
+              "label": "Add to description",
+              "action": "open-edit-to-add-transcription",
+              "mutatesDescription": false
+            }
+          ]
+        }
       },
 
       "images": {
@@ -399,6 +446,10 @@
 
       "Do not duplicate Mark as Active or Done in the header options menu.",
 
+      "Audio attachments sit after Description and before Images.",
+      "Task View can play an attachment, show its transcription, copy it, and start Transcribe with AI when no transcription exists.",
+      "Add to description does not change the description on Task View. It opens Edit, where the append happens.",
+      "Task View does not add or delete audio attachments.",
       "Images are displayed as a gallery rather than as a single cover-only media block.",
       "Task View does not show an Add photo tile. New images are added only in Edit.",
       "The image count includes attached images only.",

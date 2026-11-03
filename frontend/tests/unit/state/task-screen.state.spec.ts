@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Actions, ofActionDispatched, provideStore, Store } from '@ngxs/store';
 import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
 import {
   ETaskViewMode,
   TaskScreenState,
@@ -16,10 +16,13 @@ import {
 } from 'src/app/shared/models/task.model';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { ImageService } from 'src/app/shared/services/application/image.service';
+import { AudioService } from 'src/app/shared/services/application/audio.service';
+import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/speech-to-text.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { HomeContentModeService } from 'src/app/mobile-app/components/screens/home-screen/home-content-mode.service';
 import { ChecklistCompletionPromptService } from 'src/app/shared/services/application/checklist-completion-prompt.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
+import { LocalStore } from 'src/app/shared/services/infrastructure/local-store.service';
 import { SyncAction } from 'src/app/shared/state/sync.action';
 import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { TasksState } from 'src/app/shared/state/tasks.state';
@@ -29,6 +32,14 @@ describe('TaskScreenState', () => {
   let store: Store;
   let imageService: { saveImage: jest.Mock };
   let deviceCameraService: { takePicture: jest.Mock };
+  let audioService: {
+    saveBlob: jest.Mock;
+    deleteBlob: jest.Mock;
+    deleteRemote: jest.Mock;
+    getRecord: jest.Mock;
+    objectUrl: jest.Mock;
+  };
+  let speechToText: { uploadAudio: jest.Mock };
 
   const userId = 'user-1';
   const existingWithPhoto: Task = {
@@ -45,6 +56,14 @@ describe('TaskScreenState', () => {
   beforeEach(() => {
     imageService = { saveImage: jest.fn().mockResolvedValue('new-image-id') };
     deviceCameraService = { takePicture: jest.fn() };
+    audioService = {
+      saveBlob: jest.fn(),
+      deleteBlob: jest.fn().mockResolvedValue(undefined),
+      deleteRemote: jest.fn().mockResolvedValue(undefined),
+      getRecord: jest.fn().mockResolvedValue(undefined),
+      objectUrl: jest.fn().mockResolvedValue(null),
+    };
+    speechToText = { uploadAudio: jest.fn() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -52,6 +71,8 @@ describe('TaskScreenState', () => {
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
         { provide: ImageService, useValue: imageService },
+        { provide: AudioService, useValue: audioService },
+        { provide: SpeechToTextService, useValue: speechToText },
         { provide: DeviceCameraService, useValue: deviceCameraService },
       ],
     });
@@ -942,6 +963,64 @@ describe('TaskScreenState', () => {
 
     return store.selectSnapshot(TasksState.allTasks).find(task => task.id !== existingWithPhoto.id);
   }
+
+  it('keeps a create-mode recording until cancel, then deletes the blob', async () => {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob.mockResolvedValue({
+      id: 'aud-1',
+      durationMs: 500,
+      mimeType: 'audio/webm',
+      createdAt: '2024-06-01T10:00:00.000Z',
+    });
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+
+    expect(store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0]?.id).toBe('aud-1');
+
+    await firstValueFrom(store.dispatch(TaskScreenAction.CancelButtonPressed));
+
+    expect(audioService.deleteBlob).toHaveBeenCalledWith('aud-1');
+  });
+
+  it('does not show a transcription when the device write fails', async () => {
+    const withAudio: Task = {
+      ...existingWithPhoto,
+      audioAttachments: [
+        {
+          id: 'aud-1',
+          durationMs: 1000,
+          mimeType: 'audio/webm',
+          createdAt: '2024-06-01T10:00:00.000Z',
+        },
+      ],
+    };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [withAudio] },
+    });
+    jest
+      .spyOn(TestBed.inject(LocalStore), 'saveTaskAndEnqueue')
+      .mockRejectedValueOnce(new Error('disk'));
+    audioService.getRecord.mockResolvedValue({
+      blob: new Blob(['a'], { type: 'audio/webm' }),
+    });
+    speechToText.uploadAudio.mockReturnValue(of({ transcript: 'hello from voice' }));
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Edit, withAudio.id)),
+    );
+    await firstValueFrom(store.dispatch(new TaskScreenAction.TranscribeAudioAttachment('aud-1')));
+
+    expect(
+      store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0]?.transcription,
+    ).toBeUndefined();
+    expect(
+      store.selectSnapshot(TasksState.allTasks).find(task => task.id === withAudio.id)
+        ?.audioAttachments?.[0]?.transcription,
+    ).toBeUndefined();
+  });
 });
 
 function leftoverCreateState() {

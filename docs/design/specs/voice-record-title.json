@@ -1,0 +1,144 @@
+{
+  "screen": {
+    "id": "voice-record-title",
+    "name": "Title Recording",
+    "version": "1.0.0",
+
+    "purpose": "Record up to 12 seconds and transcribe it into the task title.",
+
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+    "designSystemPattern": "voiceRecorder",
+
+    "status": "approved",
+    "implementationStatus": "spec-only",
+
+    "parents": [
+      "./task-create.json",
+      "./task-edit.json"
+    ],
+
+    "layout": {
+      "type": "mobile",
+      "presentation": "fullscreen",
+      "structure": [
+        "header",
+        "recorder",
+        "bottom-actions"
+      ]
+    },
+
+    "header": {
+      "title": "Voice input",
+      "subtitle": "Task title · up to 12 seconds",
+      "dismiss": {
+        "icon": "close",
+        "action": "cancel-recording",
+        "ariaLabel": "Cancel recording"
+      }
+    },
+
+    "recorder": {
+      "microphone": true,
+      "ring": {
+        "role": "progress",
+        "range": "0 to 12 seconds",
+        "fills": "as capture time elapses"
+      },
+      "counter": {
+        "pattern": "{elapsed} / 12 s",
+        "example": "8 / 12 s"
+      },
+      "waveform": false,
+      "pause": false
+    },
+
+    "timing": {
+      "limitSeconds": 12,
+      "clock": "elapsed capture time",
+      "startsWhen": "the microphone is capturing audio",
+      "excludes": [
+        "time spent opening the screen",
+        "microphone permission",
+        "capture warm-up before the first sample"
+      ]
+    },
+
+    "bottomActions": {
+      "component": "voiceRecorder.actions",
+      "actions": [
+        {
+          "id": "cancel",
+          "icon": "close",
+          "ariaLabel": "Cancel",
+          "style": "secondary",
+          "action": "cancel-recording"
+        },
+        {
+          "id": "apply",
+          "icon": "check",
+          "ariaLabel": "Apply",
+          "style": "primary",
+          "action": "stop-and-transcribe"
+        }
+      ]
+    },
+
+    "behavior": {
+      "onApply": "Stop capture and send the recording through the existing speech-to-text flow. Write the transcript into the task title.",
+      "onLimit": "At 12 seconds of capture, stop and transcribe the same way as Apply.",
+      "onCancel": "Discard the recording. Do not transcribe. Leave the title unchanged.",
+      "audioRetention": "The recording is temporary. Do not save it as an audio attachment.",
+      "transcription": "Automatic after Apply or after the 12 second limit. There is no separate Transcribe action."
+    },
+
+    "states": {
+      "starting": {
+        "description": "The screen is open and capture has not started. The ring stays empty and the counter stays at 0 / 12 s.",
+        "counter": "0 / 12 s",
+        "actions": ["cancel"]
+      },
+      "recording": {
+        "description": "Capture is in progress. The ring and the counter follow elapsed capture time, not the time since the screen opened.",
+        "actions": ["cancel", "apply"]
+      },
+      "stopping": {
+        "description": "Capture has stopped because of Apply or the 12 second limit. The ring and counter hold. Actions are unavailable.",
+        "actions": []
+      },
+      "transcribing": {
+        "description": "The captured audio is being transcribed. The title is not updated until the transcript arrives. A second recording cannot start.",
+        "actions": []
+      },
+      "error": {
+        "description": "Microphone permission failed, capture failed, or transcription failed. The title is unchanged. The user can close the screen and try again.",
+        "actions": ["cancel"]
+      }
+    },
+
+    "visualRules": [
+      "Use the voiceRecorder component from design-system.json.",
+      "Do not define screen-specific colors, radii or spacing.",
+      "The reference PNG is a visual target for composition and density, not a source of token values.",
+      "Do not reproduce the glowing halo or the color-cycling ring from the reference. The ring is the thin accent stroke from voiceRecorder.",
+      "Do not show a waveform, a pause control or a saved-audio state.",
+      "Keep the header, microphone and actions as one compact group. Do not leave a large empty field between the microphone and the actions.",
+      "12 seconds, the counter format and automatic transcription belong to this screen. Do not copy them into design-system.json or into the audio attachment recorder."
+    ],
+
+    "reference": {
+      "status": "approved",
+      "image": "../references/voice-record-title.png",
+      "description": "Approved composition reference for the 12 second title recorder. The halo in the image is superseded by the thin ring in voiceRecorder."
+    },
+
+    "angular": {
+      "note": "Opened from the title microphone on Create Task and Edit Task. Reuse the existing voice recorder and speech-to-text flow. Do not create a second recorder implementation.",
+      "existingPiecesToReuse": [
+        "frontend/src/app/shared/features/voice-input/components/voice-recorder/",
+        "frontend/src/app/shared/features/voice-input/components/voice-input-trigger/",
+        "frontend/src/app/shared/services/pwa/voice-recorder/"
+      ]
+    }
+  }
+}

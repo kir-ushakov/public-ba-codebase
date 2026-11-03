@@ -328,6 +328,39 @@ describe('TasksState', () => {
     expect(entry?.change.action).toBe(EChangeAction.Updated);
     expect(entry?.change.object).toMatchObject({ id: existing.id, checklist });
   });
+
+  it('stores a transcription only after the device write succeeds', async () => {
+    const localStore = TestBed.inject(LocalStore);
+    const save = jest.spyOn(localStore, 'saveTaskAndEnqueue');
+    const audioAttachments = [
+      {
+        id: 'aud-1',
+        durationMs: 1000,
+        mimeType: 'audio/webm',
+        createdAt: '2024-06-01T10:00:00.000Z',
+        transcription: {
+          text: 'hello from voice',
+          createdAt: '2024-06-01T10:01:00.000Z',
+          model: 'whisper-1',
+        },
+      },
+    ];
+
+    await firstValueFrom(
+      store.dispatch(
+        new TasksAction.UpdateTask({
+          taskId: existing.id,
+          changes: { audioAttachments },
+        }),
+      ),
+    );
+
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(
+      store.selectSnapshot(TasksState.allTasks).find(task => task.id === existing.id)
+        ?.audioAttachments?.[0]?.transcription?.text,
+    ).toBe('hello from voice');
+  });
 });
 
 describe('TasksState when the device store rejects the write', () => {
@@ -364,5 +397,70 @@ describe('TasksState when the device store rejects the write', () => {
 
     expect(localStore.saveTaskAndEnqueue).toHaveBeenCalledTimes(1);
     expect(store.selectSnapshot(TasksState.allTasks)).toEqual([]);
+  });
+
+  it('does not add a transcription when the device store rejects the write', async () => {
+    const localStore = {
+      saveTaskAndEnqueue: jest.fn().mockRejectedValue(new Error('disk')),
+    };
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideStore([TasksState, UserState]),
+        { provide: AuthService, useValue: {} },
+        { provide: SlackService, useValue: {} },
+        { provide: LocalStore, useValue: localStore },
+      ],
+    });
+    const store = TestBed.inject(Store);
+    const savedTask: Task = {
+      id: 'task-1',
+      userId,
+      type: ETaskType.Basic,
+      title: 'Existing task title',
+      status: ETaskStatus.Todo,
+      createdAt: '2024-06-01T10:00:00.000Z',
+      modifiedAt: '2024-06-01T10:00:00.000Z',
+    };
+    store.reset({
+      tasks: { entities: [savedTask] },
+      user: {
+        userData: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          userId,
+          googleId: 'g-1',
+        },
+        authState: EUserAuthState.Authenticated,
+        authType: undefined,
+        integrations: { isAddedToSlack: undefined },
+      },
+    });
+
+    await firstValueFrom(
+      store.dispatch(
+        new TasksAction.UpdateTask({
+          taskId: savedTask.id,
+          changes: {
+            audioAttachments: [
+              {
+                id: 'aud-1',
+                durationMs: 1000,
+                mimeType: 'audio/webm',
+                createdAt: '2024-06-01T10:00:00.000Z',
+                transcription: {
+                  text: 'hello from voice',
+                  createdAt: '2024-06-01T10:01:00.000Z',
+                },
+              },
+            ],
+          },
+        }),
+      ),
+    );
+
+    expect(localStore.saveTaskAndEnqueue).toHaveBeenCalledTimes(1);
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.audioAttachments).toBeUndefined();
   });
 });

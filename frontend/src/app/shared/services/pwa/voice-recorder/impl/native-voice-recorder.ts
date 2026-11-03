@@ -9,6 +9,8 @@ import type { IVoiceRecorder } from '../voice-recorder.interface';
  * This implementation uses the Capacitor Voice Recorder plugin to record audio.
  */
 export class NativeVoiceRecorder implements IVoiceRecorder {
+  readonly engine = 'native' as const;
+
   async start(): Promise<void> {
     const device = await VoiceRecorder.canDeviceVoiceRecord();
     if (!device.value) {
@@ -43,5 +45,27 @@ export class NativeVoiceRecorder implements IVoiceRecorder {
 
   cancel(): void {
     void VoiceRecorder.stopRecording();
+  }
+
+  async pause(): Promise<void> {
+    const result = await VoiceRecorder.pauseRecording();
+    if (!result.value) {
+      throw new Error('Pause failed');
+    }
+  }
+
+  async resume(): Promise<void> {
+    const result = await VoiceRecorder.resumeRecording();
+    if (!result.value) {
+      throw new Error('Resume failed');
+    }
+  }
+
+  capturedBytes(): number {
+    return 0;
+  }
+
+  level(): number {
+    return 0;
   }
 }

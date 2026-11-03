@@ -42,3 +42,14 @@ export interface Request {
   };
 }
 
+export namespace UploadAudioContract {
+  export type Request = {
+    audioId: string;
+    file: Blob;
+  };
+
+  export type Response = {
+    audioId: string;
+  };
+}
+
