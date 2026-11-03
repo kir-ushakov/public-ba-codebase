@@ -25,6 +25,7 @@ tests/integration/
 ├── home-task-menu.spec.ts
 ├── sync-error.spec.ts
 ├── task-description.spec.ts
+├── task-form-scroll.spec.ts
 ├── task-view-status.spec.ts
 └── voice-input-visibility.spec.ts
 ```
@@ -56,6 +57,7 @@ That starts `npm run start:integration` (see `playwright.config.js`) and runs th
 - **account-menu** — avatar menu: Profile, disabled Settings/Integrations, Sign out
 - **create-task** — Google stub login, title + image, POST `/api/sync/task`
 - **edit-task** — change title, PATCH `/api/sync/task`
+- **task-form-scroll** — Create Task keeps the header and footer in place while the form scrolls
 - **task-view-status** — Mark as Active, then Done, from Task View
 - **delete-task** — DELETE `/api/sync/task`
 - **home-task-menu** — Home card overflow: Edit, disabled Duplicate/Add to tags, Delete

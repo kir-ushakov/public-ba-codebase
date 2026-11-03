@@ -1,6 +1,7 @@
 :host {
   display: flex;
   height: 100%;
+  min-height: 0;
   flex-direction: column;
   overflow: hidden;
   background-color: var(--color-background-app);
@@ -200,6 +201,7 @@
   flex: 1;
   flex-direction: column;
   gap: var(--spacing-lg);
+  min-height: 0;
   padding: 0 var(--spacing-lg);
   overflow: hidden;
   overflow-y: scroll;

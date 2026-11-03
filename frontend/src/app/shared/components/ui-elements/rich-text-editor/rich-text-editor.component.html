@@ -53,7 +53,7 @@
       </button>
     </div>
   }
-  <div class="editor-host" #editorHost data-test="task-description-editor"></div>
+  <div class="editor-host app-scrollable" data-test="task-description-editor" #editorHost></div>
   @if (!readonly()) {
     <p class="character-count" data-test="task-description-count">
       {{ textLength() }}/{{ descriptionMaxTextLength }}

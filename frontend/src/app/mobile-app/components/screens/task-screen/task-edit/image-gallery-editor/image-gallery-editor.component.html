@@ -5,7 +5,7 @@
       <p class="images-count" data-test="task-images-count">{{ label }}</p>
     }
   </div>
-  <div class="images-row">
+  <div class="images-row app-scrollable-x">
     @if (!isView()) {
       <button class="add-image" type="button" data-test="add-image-btn" (click)="onAddImage()">
         <span class="material-symbols-rounded" aria-hidden="true">image</span>

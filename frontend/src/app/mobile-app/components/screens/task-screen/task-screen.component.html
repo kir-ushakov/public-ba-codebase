@@ -38,7 +38,11 @@
       </div>
     }
   </header>
-  <div class="main-panel-holder" [class.is-create]="taskMode === ETaskViewMode.Create">
+  <div
+    class="main-panel-holder app-scrollable"
+    data-test="task-screen-content"
+    [class.is-create]="taskMode === ETaskViewMode.Create"
+  >
     @if (taskMode === ETaskViewMode.Create || taskMode === ETaskViewMode.Edit) {
       <ba-task-edit></ba-task-edit>
     }
