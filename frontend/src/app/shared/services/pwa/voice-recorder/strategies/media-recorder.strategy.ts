@@ -2,6 +2,9 @@ import type { IWebRecordingStrategy } from '../impl/web-voice-recorder';
 
 const DEFAULT_WEBM_MIME = 'audio/webm';
 const MEDIARECORDER_TIMESLICE_MS = 250;
+/** Target for Opus voice notes. Raise to 48_000 if transcription quality drops. */
+const OPUS_AUDIO_BITS_PER_SECOND = 32_000;
+const AAC_AUDIO_BITS_PER_SECOND = 48_000;
 
 /**
  * #VIWAI_FE_MEDIA-RECORDER-STRATEGY:
@@ -45,10 +48,7 @@ export class MediaRecorderStrategy implements IWebRecordingStrategy {
     const mime = candidates.find(t => MediaRecorder.isTypeSupported(t)) ?? '';
 
     try {
-      const recorder = mime
-        ? new MediaRecorder(stream, { mimeType: mime })
-        : new MediaRecorder(stream);
-
+      const recorder = createMediaRecorder(stream, mime);
       const inst = new MediaRecorderStrategy();
       inst.mediaRecorder = recorder;
       inst.activeMimeType = recorder.mimeType || mime || DEFAULT_WEBM_MIME;
@@ -180,5 +180,35 @@ export class MediaRecorderStrategy implements IWebRecordingStrategy {
     this.mediaRecorder = null;
     this.chunks = [];
     this.activeMimeType = DEFAULT_WEBM_MIME;
+  }
+}
+
+/**
+ * Requested bitrate only — browsers may pick another value.
+ * Opus / generic WebM → 32 kbps; MP4/AAC → 48 kbps.
+ */
+export function mediaRecorderOptions(mimeType: string): MediaRecorderOptions {
+  return {
+    mimeType,
+    audioBitsPerSecond: requestedAudioBitsPerSecond(mimeType),
+  };
+}
+
+export function requestedAudioBitsPerSecond(mimeType: string): number {
+  const mime = mimeType.toLowerCase();
+  const isOpus = mime.includes('opus') || mime === 'audio/webm' || mime.startsWith('audio/ogg');
+  return isOpus ? OPUS_AUDIO_BITS_PER_SECOND : AAC_AUDIO_BITS_PER_SECOND;
+}
+
+function createMediaRecorder(stream: MediaStream, mime: string): MediaRecorder {
+  if (!mime) {
+    return new MediaRecorder(stream);
+  }
+
+  try {
+    return new MediaRecorder(stream, mediaRecorderOptions(mime));
+  } catch {
+    // Some stacks reject audioBitsPerSecond; keep the MIME if bitrate options fail.
+    return new MediaRecorder(stream, { mimeType: mime });
   }
 }

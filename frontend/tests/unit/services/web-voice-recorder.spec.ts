@@ -1,4 +1,7 @@
-import { MediaRecorderStrategy } from 'src/app/shared/services/pwa/voice-recorder/strategies/media-recorder.strategy';
+import {
+  MediaRecorderStrategy,
+  requestedAudioBitsPerSecond,
+} from 'src/app/shared/services/pwa/voice-recorder/strategies/media-recorder.strategy';
 import { WebAudioWavStrategy } from 'src/app/shared/services/pwa/voice-recorder/strategies/web-audio-wav.strategy';
 import { WebVoiceRecorder } from 'src/app/shared/services/pwa/voice-recorder/impl/web-voice-recorder';
 
@@ -11,12 +14,17 @@ class FakeMediaRecorder {
 
   state = 'inactive';
   mimeType = 'audio/webm;codecs=opus';
+  options: MediaRecorderOptions | undefined;
   ondataavailable: ((event: { data: Blob }) => void) | null = null;
   onstop: (() => void) | null = null;
   onerror: (() => void) | null = null;
   private readonly listeners = new Map<string, Set<Listener>>();
 
-  constructor() {
+  constructor(_stream?: MediaStream, options?: MediaRecorderOptions) {
+    this.options = options;
+    if (options?.mimeType) {
+      this.mimeType = options.mimeType;
+    }
     FakeMediaRecorder.latest = this;
   }
 
@@ -122,6 +130,13 @@ describe('web recording startup', () => {
       FakeAudioContext as unknown as typeof AudioContext;
   });
 
+  it('requests 32 kbps for Opus / WebM voice capture', () => {
+    expect(requestedAudioBitsPerSecond('audio/webm;codecs=opus')).toBe(32_000);
+    expect(requestedAudioBitsPerSecond('audio/webm')).toBe(32_000);
+    expect(requestedAudioBitsPerSecond('audio/ogg;codecs=opus')).toBe(32_000);
+    expect(requestedAudioBitsPerSecond('audio/mp4')).toBe(48_000);
+  });
+
   it('starts MediaRecorder without a fixed delay and keeps the first chunk', async () => {
     jest.useFakeTimers();
     try {
@@ -130,6 +145,10 @@ describe('web recording startup', () => {
       await Promise.resolve();
       await Promise.resolve();
 
+      expect(FakeMediaRecorder.latest?.options).toEqual({
+        mimeType: 'audio/webm;codecs=opus',
+        audioBitsPerSecond: 32_000,
+      });
       expect(FakeMediaRecorder.latest?.start).toHaveBeenCalledWith(250);
       expect(jest.getTimerCount()).toBe(0);
       await pending;
