@@ -1,5 +1,22 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import type { HomeContentMode, HomeContentModeCounts } from '../helpers/home-content-mode.function';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  ElementRef,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { ContextMenuComponent } from 'src/app/shared/components/ui-elements/context-menu/context-menu.component';
+import type { ContextMenuItem } from 'src/app/shared/components/ui-elements/context-menu/context-menu-item.type';
+import {
+  homeCategoryMenuModes,
+  isHomeSecondaryMode,
+  type HomeContentMode,
+  type HomeContentModeCounts,
+  type HomeSecondaryMode,
+} from '../helpers/home-content-mode.function';
 
 type HomeContentModeOption = {
   id: HomeContentMode;
@@ -8,39 +25,74 @@ type HomeContentModeOption = {
   iconFill: 0 | 1;
 };
 
-const HOME_CONTENT_MODE_OPTIONS: HomeContentModeOption[] = [
-  { id: 'active', label: 'Active', icon: 'play_arrow', iconFill: 1 },
-  { id: 'todo', label: 'To do', icon: 'radio_button_unchecked', iconFill: 0 },
-  { id: 'waiting', label: 'Waiting', icon: 'hourglass_empty', iconFill: 0 },
-  { id: 'notes', label: 'Notes', icon: 'article', iconFill: 0 },
-];
+const HOME_CONTENT_MODE_OPTIONS: Record<HomeContentMode, HomeContentModeOption> = {
+  active: { id: 'active', label: 'Active', icon: 'play_arrow', iconFill: 1 },
+  todo: { id: 'todo', label: 'To do', icon: 'radio_button_unchecked', iconFill: 0 },
+  waiting: { id: 'waiting', label: 'Waiting', icon: 'hourglass_empty', iconFill: 0 },
+  notes: { id: 'notes', label: 'Notes', icon: 'article', iconFill: 0 },
+};
 
 @Component({
   selector: 'ba-home-content-mode',
   templateUrl: './home-content-mode.component.html',
   styleUrl: './home-content-mode.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ContextMenuComponent],
 })
 export class HomeContentModeComponent {
   readonly selected = input.required<HomeContentMode>();
+  readonly secondary = input.required<HomeSecondaryMode>();
   readonly counts = input.required<HomeContentModeCounts>();
   readonly modeChange = output<HomeContentMode>();
 
-  readonly options = HOME_CONTENT_MODE_OPTIONS;
+  readonly menuOpen = signal(false);
+  readonly visibleOptions = computed(() => [
+    HOME_CONTENT_MODE_OPTIONS.active,
+    HOME_CONTENT_MODE_OPTIONS[this.secondary()],
+  ]);
+  readonly menuItems = computed((): ContextMenuItem[] =>
+    homeCategoryMenuModes(this.secondary()).map(id => {
+      const option = HOME_CONTENT_MODE_OPTIONS[id];
+      return {
+        id: option.id,
+        label: option.label,
+        icon: option.icon,
+        testId: `home-mode-option-${option.id}`,
+      };
+    }),
+  );
+
+  private readonly selectorButton = viewChild<ElementRef<HTMLButtonElement>>('selectorButton');
+
+  toggleMenu(): void {
+    this.menuOpen.update(open => !open);
+  }
+
+  closeMenu(): void {
+    this.menuOpen.set(false);
+    this.selectorButton()?.nativeElement.focus();
+  }
+
+  onSelectorKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowDown' && !this.menuOpen()) {
+      event.preventDefault();
+      this.menuOpen.set(true);
+    }
+  }
+
+  onMenuSelected(id: string): void {
+    if (!isHomeSecondaryMode(id)) {
+      return;
+    }
+    this.select(id);
+    this.selectorButton()?.nativeElement.focus();
+  }
 
   select(mode: HomeContentMode): void {
+    this.menuOpen.set(false);
     if (this.selected() === mode) {
       return;
     }
     this.modeChange.emit(mode);
-  }
-
-  hasDivider(id: HomeContentMode): boolean {
-    const index = this.options.findIndex(option => option.id === id);
-    if (index <= 0) {
-      return false;
-    }
-    const previous = this.options[index - 1]?.id;
-    return previous !== undefined && this.selected() !== id && this.selected() !== previous;
   }
 }

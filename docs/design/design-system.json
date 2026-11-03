@@ -1,7 +1,7 @@
 {
   "designSystem": {
     "name": "Brain Assistant Dark Technical",
-    "version": "1.8.0",
+    "version": "1.9.0",
     "scope": "product",
 
     "tokenNaming": {
@@ -553,12 +553,13 @@
 
     "segmentedControl": {
       "container": {
-        "background": "surface.default",
-        "border": "border.default",
-        "borderRadius": "large"
+        "layout": "single horizontal row",
+        "gap": "spacing.scale.sm",
+        "background": "transparent",
+        "border": "none"
       },
       "segment": {
-        "layout": "equal-width",
+        "layout": "flexible, sharing the width left by the selector",
         "alignment": "center",
         "gap": "spacing.scale.xs",
         "iconSize": "small",
@@ -567,6 +568,7 @@
         "iconGrade": 0,
         "opticalSize": 24,
         "minHeight": "44px",
+        "borderRadius": "large",
         "filledIcons": {
           "play_arrow": {
             "fill": 1
@@ -581,10 +583,33 @@
         "iconColor": "icon.active"
       },
       "unselected": {
-        "background": "transparent",
-        "border": "none",
+        "background": "surface.default",
+        "border": "border.default",
+        "borderWidth": "1px",
         "textColor": "text.secondary",
         "iconColor": "icon.default"
+      },
+      "selector": {
+        "icon": "keyboard_arrow_down",
+        "width": "44px",
+        "minHeight": "44px",
+        "borderRadius": "large",
+        "closed": {
+          "background": "surface.default",
+          "border": "border.default",
+          "iconColor": "icon.default"
+        },
+        "open": {
+          "background": "surface.hover",
+          "border": "accent.primary",
+          "iconColor": "icon.active"
+        },
+        "hover": {
+          "background": "surface.hover"
+        },
+        "focus": {
+          "outline": "accent.primary"
+        }
       },
       "countBadge": {
         "shape": "pill",
@@ -597,24 +622,19 @@
           "background": "accent.muted"
         }
       },
-      "divider": {
-        "color": "border.separator",
-        "width": "1px",
-        "placement": "between unselected segments only",
-        "inset": "spacing.scale.sm"
-      },
       "rules": [
-        "A segmented control is one shared surface, not a row of separate buttons.",
+        "Home category navigation is two flexible tabs and one compact selector in a single row.",
         "For compact selection controls, prefer a subtle selected surface and a thin accent border over a solid primary accent background.",
         "Reserve solid teal fills for primary action buttons and the floating action button.",
-        "Selected and unselected segments share one height, icon size and weight.",
-        "Inactive segments have no border. Only the selected segment has the accent outline.",
-        "Draw one vertical divider between two adjacent unselected segments. Do not draw a divider against the selected outline. Inset the divider from the container's top and bottom edges.",
+        "Selected and unselected tabs share one height, icon size and weight. The selector matches that height.",
+        "Unselected tabs and the closed selector use a subtle default border. Only the selected tab, the open selector and keyboard focus use the accent outline.",
+        "Do not scroll the row horizontally, and do not truncate the category labels at supported mobile widths.",
         "Icons use Material Symbols Rounded at fill 0, weight 400, grade 0 and optical size 24. play_arrow is the exception and uses fill 1.",
         "Do not apply fill 1 to every icon in the control.",
         "Count badges stay visually separate from the label and have no border. Unselected badges use a blue-gray surface. The selected badge uses a teal-tinted fill.",
-        "Group the icon, label and count in the center of the segment with a spacing-scale gap. Do not stretch them apart.",
-        "Do not use drop shadows, thick borders, or different segment heights."
+        "Group the icon, label and count in the center of the tab with a spacing-scale gap. Do not stretch them apart.",
+        "The selector stays neutral when closed. Its open menu reuses the context menu and aligns to the selector's right edge.",
+        "Do not use drop shadows, thick borders, or different tab heights."
       ]
     },
 

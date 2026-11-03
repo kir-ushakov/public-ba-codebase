@@ -1,10 +1,12 @@
 import { ETaskCondition, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import {
+  homeCategoryMenuModes,
   homeModeAfterSwipe,
   homeModeCounts,
   homeModeForStatus,
   homeModeForTask,
   homeModeItemLabel,
+  isHomeSecondaryMode,
   statusForHomeMode,
   tasksForHomeMode,
 } from 'src/app/mobile-app/components/screens/home-screen/helpers/home-content-mode.function';
@@ -66,6 +68,16 @@ describe('home content mode', () => {
     expect(homeModeAfterSwipe('active', 80, 10)).toBe('active');
     expect(homeModeAfterSwipe('todo', -20, 10)).toBe('todo');
     expect(homeModeAfterSwipe('todo', -80, 90)).toBe('todo');
+  });
+
+  it('offers the other secondary categories and never Active', () => {
+    expect(homeCategoryMenuModes('todo')).toEqual(['waiting', 'notes']);
+    expect(homeCategoryMenuModes('waiting')).toEqual(['todo', 'notes']);
+    expect(homeCategoryMenuModes('notes')).toEqual(['todo', 'waiting']);
+    expect(isHomeSecondaryMode('todo')).toBe(true);
+    expect(isHomeSecondaryMode('waiting')).toBe(true);
+    expect(isHomeSecondaryMode('notes')).toBe(true);
+    expect(isHomeSecondaryMode('active')).toBe(false);
   });
 
   it('lists a waiting task with a todo condition in both To do and Waiting', () => {

@@ -416,6 +416,7 @@ Rules:
 - Standard icon size: use the icon size tokens from `design-system.json`.
 - Icon color must use design-system color tokens.
 - Default fill is 0. The Home segmented Active `play_arrow` uses fill 1 from `segmentedControl.segment.filledIcons`. Do not set fill 1 on the other segments.
+- The Home category selector uses `keyboard_arrow_down`. Closed, the icon stays neutral gray. Open, the button uses the accent border and the active icon color.
 
 Do not use `mat-icon` (Material Icons) for new UI. Render a symbol with:
 

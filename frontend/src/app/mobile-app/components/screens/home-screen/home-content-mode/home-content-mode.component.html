@@ -1,27 +1,51 @@
-<div class="mode-switcher" role="tablist" aria-label="Home content" data-test="home-content-mode">
-  @for (option of options; track option.id) {
-    <button
-      class="mode-segment"
-      type="button"
-      role="tab"
-      [attr.data-test]="'home-mode-' + option.id"
-      [class.is-selected]="selected() === option.id"
-      [attr.aria-selected]="selected() === option.id"
-      (click)="select(option.id)"
-    >
-      @if (hasDivider(option.id)) {
-        <span class="mode-divider" data-test="home-mode-divider" aria-hidden="true"></span>
-      }
-      <span
-        class="material-symbols-rounded"
-        [class.is-filled]="option.iconFill === 1"
-        aria-hidden="true"
-        >{{ option.icon }}</span
+<div class="category-nav" data-test="home-content-mode">
+  <div class="mode-switcher" role="tablist" aria-label="Home content">
+    @for (option of visibleOptions(); track option.id) {
+      <button
+        class="mode-segment"
+        type="button"
+        role="tab"
+        [attr.data-test]="'home-mode-' + option.id"
+        [class.is-selected]="selected() === option.id"
+        [attr.aria-selected]="selected() === option.id"
+        (click)="select(option.id)"
       >
-      <span class="mode-label">{{ option.label }}</span>
-      <span class="mode-count" [attr.data-test]="'home-mode-count-' + option.id">{{
-        counts()[option.id]
-      }}</span>
+        <span
+          class="material-symbols-rounded"
+          [class.is-filled]="option.iconFill === 1"
+          aria-hidden="true"
+          >{{ option.icon }}</span
+        >
+        <span class="mode-label">{{ option.label }}</span>
+        <span class="mode-count" [attr.data-test]="'home-mode-count-' + option.id">{{
+          counts()[option.id]
+        }}</span>
+      </button>
+    }
+  </div>
+  <div class="mode-selector">
+    <button
+      class="mode-selector-btn"
+      type="button"
+      data-test="home-category-selector"
+      #selectorButton
+      aria-label="Choose task category"
+      aria-haspopup="menu"
+      [class.is-open]="menuOpen()"
+      [attr.aria-expanded]="menuOpen()"
+      (click)="toggleMenu()"
+      (keydown)="onSelectorKeydown($event)"
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">keyboard_arrow_down</span>
     </button>
-  }
+    @if (menuOpen()) {
+      <ba-context-menu
+        ariaLabel="Task categories"
+        testId="home-category-menu"
+        [items]="menuItems()"
+        (closed)="closeMenu()"
+        (selected)="onMenuSelected($event)"
+      ></ba-context-menu>
+    }
+  </div>
 </div>

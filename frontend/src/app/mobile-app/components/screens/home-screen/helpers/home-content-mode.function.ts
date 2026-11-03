@@ -9,6 +9,18 @@ export const HOME_CONTENT_MODES = ['active', 'todo', 'waiting', 'notes'] as cons
 
 export type HomeContentMode = (typeof HOME_CONTENT_MODES)[number];
 
+export const HOME_SECONDARY_MODES = ['todo', 'waiting', 'notes'] as const;
+
+export type HomeSecondaryMode = (typeof HOME_SECONDARY_MODES)[number];
+
+export function isHomeSecondaryMode(mode: string): mode is HomeSecondaryMode {
+  return (HOME_SECONDARY_MODES as readonly string[]).includes(mode);
+}
+
+export function homeCategoryMenuModes(secondary: HomeSecondaryMode): HomeSecondaryMode[] {
+  return HOME_SECONDARY_MODES.filter(mode => mode !== secondary);
+}
+
 export type HomeContentModeCounts = Record<HomeContentMode, number>;
 
 const SWIPE_AXIS_PX = 48;
