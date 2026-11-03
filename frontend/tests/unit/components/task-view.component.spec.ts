@@ -7,6 +7,8 @@ import {
   TaskScreenState,
 } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
 import { ImageService } from 'src/app/shared/services/application/image.service';
+import { AudioService } from 'src/app/shared/services/application/audio.service';
+import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/speech-to-text.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
@@ -23,6 +25,8 @@ describe('TaskViewComponent title', () => {
       providers: [
         provideStore([TaskScreenState, TagsState, UserState]),
         { provide: ImageService, useValue: {} },
+        { provide: AudioService, useValue: {} },
+        { provide: SpeechToTextService, useValue: {} },
         { provide: DeviceCameraService, useValue: {} },
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },

@@ -6,6 +6,7 @@ import { Change } from 'src/app/shared/models/change.model';
 import { ETaskStatus, ETaskType, Task } from 'src/app/shared/models/task.model';
 import { ClientChangesService } from 'src/app/shared/services/api/client-changes.service';
 import { ImageService } from 'src/app/shared/services/application/image.service';
+import { AudioService } from 'src/app/shared/services/application/audio.service';
 import { OutboundSyncService } from 'src/app/shared/services/application/outbound-sync.service';
 
 describe('OutboundSyncService', () => {
@@ -48,6 +49,10 @@ describe('OutboundSyncService', () => {
         OutboundSyncService,
         { provide: ClientChangesService, useValue: clientChangesService },
         { provide: ImageService, useValue: imageService },
+        {
+          provide: AudioService,
+          useValue: { ensureUploaded: jest.fn().mockResolvedValue('alreadyRemote') },
+        },
       ],
     });
     service = TestBed.inject(OutboundSyncService);

@@ -24,6 +24,7 @@ import {
   type GalleryImage,
 } from '../task-edit/helpers/to-gallery-images.function';
 import { renderTaskDescriptionHtml } from './helpers/render-task-description-html.function';
+import { AudioAttachmentsComponent } from '../audio-attachments/audio-attachments.component';
 
 type TaskViewContent = {
   task: Task | DefaultTask;
@@ -39,6 +40,7 @@ type TaskViewContent = {
     TagSelectorComponent,
     TaskContentSwitchComponent,
     ChecklistEditorComponent,
+    AudioAttachmentsComponent,
   ],
   templateUrl: './task-view.component.html',
   styleUrl: './task-view.component.scss',

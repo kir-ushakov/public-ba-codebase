@@ -1,7 +1,7 @@
 {
   "designSystem": {
     "name": "Brain Assistant Dark Technical",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "scope": "product",
 
     "tokenNaming": {
@@ -177,7 +177,7 @@
       "rules": [
         "Use 8px radius for normal cards and controls",
         "Use 12px radius only for large containers or dialogs",
-        "Circular shapes are reserved for avatars and floating action buttons",
+        "Circular shapes are reserved for avatars, the floating action button, and the voice recorder controls defined by voiceRecorder",
         "Avoid excessive pill-shaped controls except tags and statuses"
       ]
     },
@@ -649,6 +649,132 @@
         "Do not use teal simply as decoration",
         "Interactive elements must have clear pressed and disabled states",
         "Dangerous actions must use semantic danger color rather than teal"
+      ]
+    },
+
+    "voiceRecorder": {
+      "layout": {
+        "presentation": "fullscreen",
+        "background": "background.app",
+        "horizontalPadding": "spacing.screen.horizontalPadding",
+        "composition": "compact group in the upper-middle of the screen",
+        "groupGap": "spacing.scale.lg"
+      },
+
+      "header": {
+        "titleStyle": "sectionTitle",
+        "subtitleStyle": "secondary",
+        "subtitleColor": "text.secondary"
+      },
+
+      "microphone": {
+        "icon": "mic",
+        "iconSize": "icons.sizes.large",
+        "iconColor": "icon.active",
+        "discSize": "96px",
+        "discBackground": "surface.default"
+      },
+
+      "ring": {
+        "color": "accent.primary",
+        "trackColor": "border.default",
+        "strokeWidth": "4px",
+        "diameter": "160px"
+      },
+
+      "timer": {
+        "style": "pageTitle",
+        "color": "text.primary",
+        "alignment": "center"
+      },
+
+      "status": {
+        "style": "caption",
+        "recordingColor": "accent.primary",
+        "pausedColor": "text.secondary"
+      },
+
+      "actions": {
+        "placement": "bottom",
+        "gap": "spacing.scale.xl",
+        "diameter": "56px",
+        "iconSize": "icons.sizes.default",
+        "secondary": {
+          "background": "surface.elevated",
+          "iconColor": "icon.default"
+        },
+        "primary": {
+          "background": "accent.primary",
+          "iconColor": "accent.onAccent"
+        }
+      },
+
+      "rules": [
+        "Both recording modes use this component. Mode-specific copy, duration and buttons live in the screen spec.",
+        "Use accent.primary for the ring, the active microphone and the primary action. Do not add a second palette.",
+        "The ring is a thin stroke. Do not add a glow, a pulsing halo or a color cycle.",
+        "Keep the microphone, ring, timer and waveform as one compact group. Do not stretch them apart to fill the screen.",
+        "Round recorder actions are allowed in addition to avatars and the floating action button.",
+        "Primary action is the only solid teal control. Cancel and Pause use the secondary round treatment.",
+        "Icons are Material Symbols Rounded."
+      ]
+    },
+
+    "audioAttachment": {
+      "card": {
+        "background": "surface.default",
+        "border": "border.default",
+        "borderRadius": "shape.radius.default",
+        "padding": "spacing.card.padding",
+        "gap": "spacing.card.gap"
+      },
+
+      "title": {
+        "style": "cardTitle",
+        "color": "text.primary"
+      },
+
+      "meta": {
+        "style": "secondary",
+        "color": "text.secondary"
+      },
+
+      "playback": {
+        "iconSize": "icons.sizes.default",
+        "iconColor": "icon.active",
+        "trackColor": "border.default",
+        "progressColor": "accent.primary"
+      },
+
+      "actions": {
+        "style": "buttons.ghost",
+        "textColor": "accent.primary",
+        "dangerColor": "semantic.danger"
+      },
+
+      "rules": [
+        "An audio attachment is a card in the task form or task view, not part of the recorder screen.",
+        "Reuse the card, typography and button tokens. Do not invent an attachment palette.",
+        "Play and Transcribe with AI use the accent. Delete uses semantic danger.",
+        "Do not use a glow, a waveform decoration or a sparkle to mark AI transcription.",
+        "The card shows duration and whether a transcription exists. The transcript text is a separate read-only block opened from the card."
+      ]
+    },
+
+    "audioWaveform": {
+      "height": "32px",
+      "color": "accent.primary",
+      "barWidth": "4px",
+      "barGap": "spacing.scale.xs",
+      "barRadius": "shape.radius.circle",
+      "alignment": "center",
+
+      "rules": [
+        "Bars show the live microphone level while recording.",
+        "Do not play a looping decorative animation.",
+        "While paused or before capture starts, bars rest at the minimum height.",
+        "Use accent.primary only. Do not add a gradient or a glow.",
+        "The meter sits in the recorder group. It is not part of the saved attachment card."
       ]
     },
 

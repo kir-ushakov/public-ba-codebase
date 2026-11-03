@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 
-import type { IVoiceRecorder } from './voice-recorder.interface';
+import type { IVoiceRecorder, VoiceCaptureEngine } from './voice-recorder.interface';
 import { WebVoiceRecorder } from './impl/web-voice-recorder';
 import { NativeVoiceRecorder } from './impl/native-voice-recorder';
 
@@ -9,6 +9,7 @@ export enum VoiceRecorderState {
   Idle = 'idle',
   Starting = 'starting',
   Recording = 'recording',
+  Paused = 'paused',
   Stopping = 'stopping',
 }
 
@@ -45,7 +46,7 @@ export class VoiceRecorderService implements IVoiceRecorder {
   }
 
   async stop(): Promise<Blob> {
-    if (this.state !== VoiceRecorderState.Recording) {
+    if (this.state !== VoiceRecorderState.Recording && this.state !== VoiceRecorderState.Paused) {
       throw new Error('Not recording');
     }
     this.state = VoiceRecorderState.Stopping;
@@ -64,5 +65,36 @@ export class VoiceRecorderService implements IVoiceRecorder {
 
   get isRecording(): boolean {
     return this.state === VoiceRecorderState.Recording;
+  }
+
+  get engine(): VoiceCaptureEngine | null {
+    return this.impl.engine;
+  }
+
+  async pause(): Promise<void> {
+    if (this.state !== VoiceRecorderState.Recording) {
+      throw new Error('Not recording');
+    }
+    await this.impl.pause();
+    this.state = VoiceRecorderState.Paused;
+  }
+
+  async resume(): Promise<void> {
+    if (this.state !== VoiceRecorderState.Paused) {
+      throw new Error('Not paused');
+    }
+    await this.impl.resume();
+    this.state = VoiceRecorderState.Recording;
+  }
+
+  capturedBytes(): number {
+    return this.impl.capturedBytes();
+  }
+
+  level(): number {
+    if (this.state !== VoiceRecorderState.Recording) {
+      return 0;
+    }
+    return this.impl.level();
   }
 }

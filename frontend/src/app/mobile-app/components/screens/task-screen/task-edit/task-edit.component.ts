@@ -44,9 +44,12 @@ import {
   projectTaskType,
 } from 'src/app/shared/helpers/task-conditions.function';
 import { HomeContentModeService } from '../../home-screen/home-content-mode.service';
+import { AppAction } from 'src/app/shared/state/app.actions';
+import { appendTranscriptionToDescription } from 'src/app/shared/helpers/append-transcription-to-description.function';
 import { TaskContentSwitchComponent } from '../task-content-switch/task-content-switch.component';
 import type { TaskContentMode } from '../task-content-switch/task-content-switch.component';
 import { ChecklistEditorComponent } from './checklist-editor/checklist-editor.component';
+import { AudioAttachmentsComponent } from '../audio-attachments/audio-attachments.component';
 import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-description.function';
 import type { ChecklistItem } from 'src/app/shared/models/task.model';
 
@@ -64,6 +67,7 @@ import type { ChecklistItem } from 'src/app/shared/models/task.model';
     TaskTypeChipComponent,
     TaskContentSwitchComponent,
     ChecklistEditorComponent,
+    AudioAttachmentsComponent,
     ReactiveFormsModule,
   ],
   templateUrl: './task-edit.component.html',
@@ -149,6 +153,22 @@ export class TaskEditComponent {
 
   onChecklistChange(checklist: ChecklistItem[]): void {
     this.store.dispatch(new TaskScreenAction.ChecklistChanged(checklist));
+  }
+
+  appendTranscription(text: string): void {
+    const control = this.form.controls.description;
+    if (!control) {
+      return;
+    }
+    const next = appendTranscriptionToDescription(control.value, text);
+    if (!next) {
+      this.store.dispatch(
+        new AppAction.ShowErrorInUI('The description is too long for this transcription.'),
+      );
+      return;
+    }
+    control.setValue(next);
+    this.contentMode.set('description');
   }
 
   onTagIdsChange(tagIds: string[]): void {

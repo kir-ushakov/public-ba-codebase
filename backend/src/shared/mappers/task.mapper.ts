@@ -3,6 +3,7 @@ import {
   TaskDTO,
   ETaskStatus,
   ETaskType,
+  type AudioAttachment,
   type TaskDescriptionDoc,
 } from '@brainassistant/contracts';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
@@ -20,6 +21,7 @@ export class TaskMapper {
       images,
       description,
       checklist,
+      audioAttachments,
       tagIds,
       _id,
       createdAt,
@@ -40,6 +42,7 @@ export class TaskMapper {
         images: TaskMapper.definedImages(images),
         description: TaskMapper.toValidDescription(description),
         checklist,
+        audioAttachments: TaskMapper.definedAudio(audioAttachments),
         tagIds: tagIds ?? [],
         createdAt,
         modifiedAt,
@@ -59,6 +62,7 @@ export class TaskMapper {
       images,
       description,
       checklist,
+      audioAttachments,
       tagIds,
       createdAt,
       modifiedAt,
@@ -88,6 +92,10 @@ export class TaskMapper {
 
     if (checklist?.length) {
       persisted.checklist = checklist;
+    }
+
+    if (audioAttachments !== undefined) {
+      persisted.audioAttachments = audioAttachments;
     }
 
     if (conditions?.length) {
@@ -128,7 +136,20 @@ export class TaskMapper {
       dto.checklist = task.checklist;
     }
 
+    if (task.audioAttachments !== undefined) {
+      dto.audioAttachments = task.audioAttachments;
+    }
+
     return dto;
+  }
+
+  private static definedAudio(
+    attachments: AudioAttachment[] | undefined,
+  ): AudioAttachment[] | undefined {
+    if (!attachments) {
+      return undefined;
+    }
+    return attachments.length > 0 ? attachments : [];
   }
 
   private static definedImages(images: string[] | undefined): string[] | undefined {

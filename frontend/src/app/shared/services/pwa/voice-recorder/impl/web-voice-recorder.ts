@@ -6,7 +6,7 @@ export type VoiceRecorderEngine = 'media-recorder' | 'web-audio-wav';
 
 /**
  * #VIWAI_FE_WEB-VOICE-RECORDER:
- * 
+ *
  * Pluggable **web** capture implementation used after the browser already exposed a mic
  * `MediaStream` from `navigator.mediaDevices.getUserMedia()` (the stream is opened in
  * {@link WebVoiceRecorder}).
@@ -21,6 +21,9 @@ export type VoiceRecorderEngine = 'media-recorder' | 'web-audio-wav';
  */
 export interface IWebRecordingStrategy {
   readonly engine: VoiceRecorderEngine;
+  pause(): Promise<void>;
+  resume(): Promise<void>;
+  capturedBytes(): number;
   /**
    * Optional "warm-up" time before the capture is considered stable.
    *
@@ -50,6 +53,9 @@ export class WebVoiceRecorder implements IVoiceRecorder {
   private stream: MediaStream | null = null;
   private abortController: AbortController | null = null;
   private strategy: IWebRecordingStrategy | null = null;
+  private levelContext: AudioContext | null = null;
+  private analyser: AnalyserNode | null = null;
+  private levelSamples: Uint8Array | null = null;
 
   async start(): Promise<void> {
     this.cancel();
@@ -96,7 +102,9 @@ export class WebVoiceRecorder implements IVoiceRecorder {
     // - Prefer MediaRecorder when available (small, browser-native codecs like WebM/Opus).
     // - Fall back to WebAudio→WAV when MediaRecorder is missing or cannot be constructed (common on Safari/iOS).
     this.strategy =
-      MediaRecorderStrategy.tryCreate(this.stream, warmupMs) ?? new WebAudioWavStrategy(this.stream, warmupMs);
+      MediaRecorderStrategy.tryCreate(this.stream, warmupMs) ??
+      new WebAudioWavStrategy(this.stream, warmupMs);
+    this.startLevelMeter(this.stream);
 
     try {
       // Warm-up delay before capture starts (lets the mic "stabilize").
@@ -126,6 +134,7 @@ export class WebVoiceRecorder implements IVoiceRecorder {
       this.strategy.dispose();
       this.strategy = null;
       this.releaseStreamOnly();
+      this.releaseLevelMeter();
       this.abortController = null;
       throw e;
     }
@@ -142,6 +151,7 @@ export class WebVoiceRecorder implements IVoiceRecorder {
       this.strategy.dispose();
       this.strategy = null;
       this.releaseStreamOnly();
+      this.releaseLevelMeter();
       this.abortController = null;
     }
   }
@@ -153,6 +163,43 @@ export class WebVoiceRecorder implements IVoiceRecorder {
     this.releaseAll();
   }
 
+  get engine(): VoiceRecorderEngine | null {
+    return this.strategy?.engine ?? null;
+  }
+
+  async pause(): Promise<void> {
+    if (!this.strategy) {
+      throw new Error('Not recording');
+    }
+    await this.strategy.pause();
+  }
+
+  async resume(): Promise<void> {
+    if (!this.strategy) {
+      throw new Error('Not recording');
+    }
+    await this.strategy.resume();
+  }
+
+  capturedBytes(): number {
+    return this.strategy?.capturedBytes() ?? 0;
+  }
+
+  level(): number {
+    const analyser = this.analyser;
+    const samples = this.levelSamples;
+    if (!analyser || !samples) {
+      return 0;
+    }
+    analyser.getByteTimeDomainData(samples);
+    let sum = 0;
+    for (const value of samples) {
+      const centered = (value - 128) / 128;
+      sum += centered * centered;
+    }
+    return Math.min(1, Math.sqrt(sum / samples.length) * 4);
+  }
+
   private releaseStreamOnly(): void {
     this.stream?.getTracks().forEach(t => t.stop());
     this.stream = null;
@@ -162,6 +209,26 @@ export class WebVoiceRecorder implements IVoiceRecorder {
     this.strategy?.dispose();
     this.strategy = null;
     this.releaseStreamOnly();
+    this.releaseLevelMeter();
     this.abortController = null;
+  }
+
+  private startLevelMeter(stream: MediaStream): void {
+    this.releaseLevelMeter();
+    const context = new AudioContext();
+    const source = context.createMediaStreamSource(stream);
+    const analyser = context.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    this.levelContext = context;
+    this.analyser = analyser;
+    this.levelSamples = new Uint8Array(analyser.fftSize);
+  }
+
+  private releaseLevelMeter(): void {
+    void this.levelContext?.close();
+    this.levelContext = null;
+    this.analyser = null;
+    this.levelSamples = null;
   }
 }

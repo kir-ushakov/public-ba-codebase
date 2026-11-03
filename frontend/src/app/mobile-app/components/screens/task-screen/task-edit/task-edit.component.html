@@ -49,6 +49,14 @@
         />
       </div>
     </div>
+    @if (!isNote()) {
+      <ba-audio-attachments
+        [canAdd]="true"
+        [canRemove]="true"
+        [mutatesDescription]="true"
+        (descriptionAppend)="appendTranscription($event)"
+      />
+    }
     <ba-image-gallery-editor
       [images]="galleryImages()"
       (addImage)="addPictureBtnPressed()"

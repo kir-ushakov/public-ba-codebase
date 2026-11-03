@@ -1,0 +1,97 @@
+<section class="audio-section" data-test="audio-attachments-section">
+  <div class="audio-header">
+    <p class="field-label">Audio attachments</p>
+    @if (canAdd()) {
+      <button
+        type="button"
+        class="add-audio"
+        data-test="audio-attachment-add"
+        [disabled]="atLimit()"
+        (click)="record()"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">mic</span>
+        Add audio recording
+      </button>
+    }
+  </div>
+
+  @for (item of attachments(); track item.id) {
+    <article class="audio-card" data-test="audio-attachment-card">
+      <div class="audio-card-main">
+        <button
+          type="button"
+          class="play-button"
+          data-test="audio-attachment-play"
+          [attr.aria-label]="playingId() === item.id ? 'Pause' : 'Play'"
+          (click)="togglePlay(item.id)"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">
+            {{ playingId() === item.id ? 'pause' : 'play_arrow' }}
+          </span>
+        </button>
+        <div class="audio-card-copy">
+          <p class="audio-title">Voice recording</p>
+          <p class="audio-meta">{{ durationLabel(item.durationMs) }}</p>
+          @if (item.transcription) {
+            <p class="audio-meta">Transcription available</p>
+          }
+        </div>
+        @if (canRemove()) {
+          <button
+            type="button"
+            class="remove-audio"
+            data-test="audio-attachment-remove"
+            aria-label="Remove audio attachment"
+            (click)="remove(item.id)"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          </button>
+        }
+      </div>
+
+      @if (!item.transcription) {
+        <button
+          type="button"
+          class="audio-text-action"
+          data-test="audio-attachment-transcribe"
+          [disabled]="!online() || transcribingId() === item.id"
+          (click)="transcribe(item.id)"
+        >
+          Transcribe with AI
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="audio-text-action"
+          data-test="audio-attachment-view-transcription"
+          (click)="toggleTranscription(item.id)"
+        >
+          View transcription
+        </button>
+        @if (openTranscriptionId() === item.id) {
+          <p class="transcription" data-test="audio-attachment-transcription">
+            {{ item.transcription.text }}
+          </p>
+          <div class="transcription-actions">
+            <button
+              type="button"
+              class="audio-text-action"
+              data-test="audio-attachment-copy"
+              (click)="copy(item.transcription.text)"
+            >
+              Copy transcription
+            </button>
+            <button
+              type="button"
+              class="audio-text-action"
+              data-test="audio-attachment-add-to-description"
+              (click)="addToDescription(item.transcription.text)"
+            >
+              Add to description
+            </button>
+          </div>
+        }
+      }
+    </article>
+  }
+</section>

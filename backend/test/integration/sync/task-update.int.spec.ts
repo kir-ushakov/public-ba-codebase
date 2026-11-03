@@ -334,4 +334,88 @@ describe('Integration: UpdateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(persisted?.type).toBe(ETaskType.Location);
     expect(persisted?.title).toBe('Buy more lemons');
   });
+
+  it('stores an audio attachment and keeps it when the field is omitted', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const created = await createTaskViaApi(app, jwtCookie, {
+      id: 'task-audio-keep',
+      title: 'Discuss sync',
+    });
+    const attachment = {
+      id: 'audio-1',
+      durationMs: 12500,
+      mimeType: 'audio/webm',
+      createdAt: '2024-06-01T08:00:00.000Z',
+      transcription: {
+        text: 'Discuss the sync plan',
+        createdAt: '2024-06-01T08:05:00.000Z',
+        model: 'whisper-1',
+      },
+    };
+
+    const saved = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          ...created,
+          audioAttachments: [attachment],
+          modifiedAt: '2024-06-01T08:01:00.000Z',
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(saved.status).toBe(200);
+    expect(saved.body.audioAttachments).toEqual([attachment]);
+
+    const { audioAttachments: _audio, ...withoutAudio } = saved.body;
+    const kept = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          ...withoutAudio,
+          title: 'Discuss sync later',
+          modifiedAt: '2024-06-01T08:02:00.000Z',
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(kept.status).toBe(200);
+    expect(kept.body.audioAttachments).toEqual([attachment]);
+    expect(kept.body.title).toBe('Discuss sync later');
+
+    const persisted = await models.TaskModel.findById(created.id).lean();
+    expect(persisted?.audioAttachments).toEqual([attachment]);
+  });
+
+  it('rejects an invalid audio attachment', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const created = await createTaskViaApi(app, jwtCookie, {
+      id: 'task-audio-invalid',
+      title: 'Valid task title',
+    });
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          ...created,
+          audioAttachments: [
+            {
+              id: 'not valid',
+              durationMs: 1,
+              mimeType: 'audio/webm',
+              createdAt: '2024-06-01T08:00:00.000Z',
+            },
+          ],
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(400);
+    expect(res.body.name).toBe(ETaskError.AudioAttachmentsInvalid);
+    expect(res.body).toHaveProperty('message');
+
+    const persisted = await models.TaskModel.findById(created.id).lean();
+    expect(persisted?.audioAttachments).toBeUndefined();
+  });
 });

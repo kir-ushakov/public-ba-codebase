@@ -47,8 +47,13 @@ export class TaskRepoService {
     const taskId = task.id.toString();
 
     const filter = { _id: taskId };
-    const { description, checklist, conditions, ...rest } = taskPresitant;
-    const $unset: { description?: 1; checklist?: 1; conditions?: 1 } = {};
+    const { description, checklist, conditions, audioAttachments, ...rest } = taskPresitant;
+    const $unset: {
+      description?: 1;
+      checklist?: 1;
+      conditions?: 1;
+      audioAttachments?: 1;
+    } = {};
     if (description === undefined) {
       $unset.description = 1;
     }
@@ -58,11 +63,15 @@ export class TaskRepoService {
     if (conditions === undefined) {
       $unset.conditions = 1;
     }
+    if (audioAttachments === undefined) {
+      $unset.audioAttachments = 1;
+    }
     const $set = {
       ...rest,
       ...(description !== undefined ? { description } : {}),
       ...(checklist !== undefined ? { checklist } : {}),
       ...(conditions !== undefined ? { conditions } : {}),
+      ...(audioAttachments !== undefined ? { audioAttachments } : {}),
     };
     const update = Object.keys($unset).length > 0 ? { $set, $unset } : { $set };
 

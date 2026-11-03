@@ -52,7 +52,7 @@ Create `backend/src/modules/<module>/usecases/<name>/` and build it in dependenc
 3. `<name>.usecase.ts` — implements `UseCase<Params, Promise<Result>>`, takes repos and services through the constructor, returns `Result`. No Express types cross this boundary.
 4. `<name>.mapper.ts` — only when request-to-params mapping is non-trivial.
 5. `<name>.controller.ts` — extends `BaseController`, reads `req.user`, branches on `result.isSuccess`, keeps the `try/catch`.
-6. `index.ts` — the composition root. Instantiate repos and services, then the use case, then the controller, and export the controller singleton. There is no DI container; this file is the wiring.
+6. `index.ts` — the composition root. Instantiate repos and services, then the use case, then the controller, and export the controller singleton. There is no DI container; this file is the wiring. Do not put a class or a function body in it. Controller, use case and error factories stay in their own files. A neighbour folder that uses `_index.ts` keeps that filename.
 
 ## 5. Wire the route
 

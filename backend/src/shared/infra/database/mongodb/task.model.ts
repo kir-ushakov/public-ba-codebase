@@ -13,6 +13,7 @@ const TaskSchema = new Schema({
   imageId: { type: String, require: false },
   images: { type: [String], required: false },
   description: { type: Schema.Types.Mixed, require: false },
+  audioAttachments: { type: [Schema.Types.Mixed], required: false, default: undefined },
   checklist: {
     type: [
       {

@@ -1,0 +1,118 @@
+:host {
+  display: block;
+  margin-top: var(--spacing-md);
+}
+
+.audio-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.audio-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.field-label {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--typography-secondary-size);
+  font-weight: var(--typography-secondary-weight);
+  line-height: var(--typography-secondary-line-height);
+}
+
+.add-audio,
+.audio-text-action,
+.remove-audio,
+.play-button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.add-audio,
+.audio-text-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-height: var(--button-min-height);
+  padding: 0;
+  color: var(--color-accent-primary);
+  font-size: var(--typography-secondary-size);
+  font-weight: var(--typography-secondary-weight);
+  line-height: var(--typography-secondary-line-height);
+}
+
+.add-audio:disabled,
+.audio-text-action:disabled {
+  color: var(--color-text-secondary);
+  cursor: default;
+}
+
+.audio-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-surface-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+}
+
+.audio-card-main {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.play-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--color-icon-active);
+}
+
+.audio-card-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.audio-title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--typography-card-title-size);
+  font-weight: var(--typography-card-title-weight);
+  line-height: var(--typography-card-title-line-height);
+}
+
+.audio-meta,
+.transcription {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--typography-secondary-size);
+  font-weight: var(--typography-secondary-weight);
+  line-height: var(--typography-secondary-line-height);
+}
+
+.transcription {
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+}
+
+.remove-audio {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--color-semantic-danger);
+}
+
+.transcription-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.material-symbols-rounded {
+  font-size: var(--icon-size-default);
+}

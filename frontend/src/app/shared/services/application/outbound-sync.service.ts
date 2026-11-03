@@ -5,6 +5,7 @@ import { lastValueFrom } from 'rxjs';
 import { Change } from '../../models/change.model';
 import { ClientChangesService } from '../api/client-changes.service';
 import { ImageService } from './image.service';
+import { AudioService } from './audio.service';
 
 export type MissingBlobDiscard = {
   taskId: string;
@@ -23,6 +24,7 @@ export class OutboundSyncService {
   constructor(
     private readonly clientChangesService: ClientChangesService,
     private readonly imageService: ImageService,
+    private readonly audioService: AudioService,
   ) {}
 
   public async process(changes: Change[]): Promise<OutboundSyncResult> {
@@ -38,6 +40,7 @@ export class OutboundSyncService {
       }
 
       const imageIds = this.taskImageIdsToUpload(change);
+      const audioIds = this.taskAudioIdsToUpload(change);
       let imageUploadBlocked = false;
       for (const imageId of imageIds) {
         const uploadResult = await this.imageService.ensureUploaded(imageId);
@@ -50,6 +53,15 @@ export class OutboundSyncService {
           if (entityId) {
             discards.push({ taskId: entityId, imageId });
             await this.imageService.deleteImage(imageId);
+          }
+        }
+      }
+      if (!imageUploadBlocked) {
+        for (const audioId of audioIds) {
+          const uploadResult = await this.audioService.ensureUploaded(audioId);
+          if (uploadResult === 'failed' || uploadResult === 'missingBlob') {
+            imageUploadBlocked = true;
+            break;
           }
         }
       }
@@ -118,6 +130,19 @@ export class OutboundSyncService {
     }
 
     return ids;
+  }
+
+  private taskAudioIdsToUpload(change: Change): string[] {
+    if (change.entity !== EChangedEntity.Task || change.action === EChangeAction.Deleted) {
+      return [];
+    }
+    const object = change.object as { audioAttachments?: { id?: unknown }[] } | undefined;
+    if (!object?.audioAttachments) {
+      return [];
+    }
+    return object.audioAttachments
+      .map(item => item.id)
+      .filter((id): id is string => typeof id === 'string' && id.length > 0);
   }
 
   private uniqueDiscards(discards: MissingBlobDiscard[]): MissingBlobDiscard[] {

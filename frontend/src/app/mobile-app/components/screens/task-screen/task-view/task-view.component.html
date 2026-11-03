@@ -27,6 +27,9 @@
       />
     }
   </section>
+  @if (view.task.status !== ETaskStatus.Notes && (view.task.audioAttachments?.length ?? 0) > 0) {
+    <ba-audio-attachments [canAdd]="false" [canRemove]="false" [mutatesDescription]="false" />
+  }
   <ba-image-gallery-editor
     presentation="view"
     [images]="galleryImages()"

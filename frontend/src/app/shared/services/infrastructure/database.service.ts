@@ -6,9 +6,10 @@ import { Tag } from '../../models/tag.model';
 import { Task } from '../../models/task.model';
 
 export const DATABASE_CONFIG = {
-  VERSION: 3,
+  VERSION: 4,
   STORES: {
     IMAGES: 'images' as const,
+    AUDIO: 'audio' as const,
     TASKS: 'tasks' as const,
     TAGS: 'tags' as const,
     OUTBOX: 'outbox' as const,
@@ -24,6 +25,12 @@ export const LEGACY_NGXS_STATE_KEY = '@@STATE';
 export function userDatabaseName(userId: string): string {
   return `ba-${userId}`;
 }
+
+type AudioRecord = {
+  id: string;
+  blob?: Blob;
+  uploaded: boolean;
+};
 
 type ImageRecord = {
   id: string;
@@ -42,6 +49,10 @@ export interface AppDB extends DBSchema {
     key: string;
     value: ImageRecord;
     indexes: { uploaded: IDBValidKey };
+  };
+  audio: {
+    key: string;
+    value: AudioRecord;
   };
   tasks: {
     key: string;
@@ -63,6 +74,10 @@ export interface AppDB extends DBSchema {
 }
 
 function upgradeDatabase(db: IDBPDatabase<AppDB>): void {
+  if (!db.objectStoreNames.contains(DATABASE_CONFIG.STORES.AUDIO)) {
+    db.createObjectStore(DATABASE_CONFIG.STORES.AUDIO, { keyPath: 'id' });
+  }
+
   if (!db.objectStoreNames.contains(DATABASE_CONFIG.STORES.IMAGES)) {
     const images = db.createObjectStore(DATABASE_CONFIG.STORES.IMAGES, { keyPath: 'id' });
     images.createIndex('uploaded', 'uploaded', { unique: false });
@@ -142,6 +157,7 @@ export class DatabaseService {
     const db = await this.getDatabase();
     const stores = [
       DATABASE_CONFIG.STORES.IMAGES,
+      DATABASE_CONFIG.STORES.AUDIO,
       DATABASE_CONFIG.STORES.TASKS,
       DATABASE_CONFIG.STORES.TAGS,
       DATABASE_CONFIG.STORES.OUTBOX,

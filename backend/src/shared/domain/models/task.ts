@@ -4,6 +4,7 @@ import {
   ETaskStatus,
   ETaskType,
   TaskConst,
+  type AudioAttachment,
   type ChecklistItemDTO,
   type TaskDescriptionDoc,
 } from '@brainassistant/contracts';
@@ -27,6 +28,7 @@ export interface ITaskProps {
   images?: string[];
   description?: TaskDescriptionDoc;
   checklist?: ChecklistItemDTO[];
+  audioAttachments?: AudioAttachment[];
   tagIds?: string[];
   createdAt: Date;
   modifiedAt: Date;
@@ -44,6 +46,7 @@ export interface TaskPresitant {
   images?: string[];
   description?: TaskDescriptionDoc;
   checklist?: ChecklistItemDTO[];
+  audioAttachments?: AudioAttachment[];
   tagIds?: string[];
   createdAt: Date;
   modifiedAt: Date;
@@ -94,6 +97,10 @@ export class Task extends AggregateRoot<ITaskProps> {
     return this.props.checklist;
   }
 
+  get audioAttachments(): AudioAttachment[] | undefined {
+    return this.props.audioAttachments;
+  }
+
   get tagIds(): string[] {
     return this.props.tagIds ?? [];
   }
@@ -123,6 +130,10 @@ export class Task extends AggregateRoot<ITaskProps> {
     if (checklistResult.isFailure) {
       return checklistResult as Result<never, DomainError<Task, ETaskError>>;
     }
+    const audioResult = Task.normalizeAudioAttachments(props.audioAttachments);
+    if (audioResult.isFailure) {
+      return audioResult as Result<never, DomainError<Task, ETaskError>>;
+    }
     const conditionsResult = Task.acceptConditions(
       props.status,
       props.type,
@@ -139,6 +150,7 @@ export class Task extends AggregateRoot<ITaskProps> {
       ...props,
       description: descriptionResult.getValue(),
       checklist: checklistResult.getValue(),
+      audioAttachments: audioResult.getValue(),
       conditions,
       type: conditions ? projectTaskType(conditions) : props.type,
       tagIds: props.tagIds ?? [],
@@ -181,12 +193,20 @@ export class Task extends AggregateRoot<ITaskProps> {
     if (checklistResult.isFailure) {
       return checklistResult as Result<never, DomainError<Task, ETaskError>>;
     }
+    const audioResult =
+      'audioAttachments' in props
+        ? Task.normalizeAudioAttachments(props.audioAttachments)
+        : Result.ok<AudioAttachment[] | undefined>(this.props.audioAttachments);
+    if (audioResult.isFailure) {
+      return audioResult as Result<never, DomainError<Task, ETaskError>>;
+    }
 
     const drafted: ITaskProps = {
       ...this.props,
       ...props,
       description: descriptionResult.getValue(),
       checklist: checklistResult.getValue(),
+      audioAttachments: audioResult.getValue(),
       createdAt: this.props.createdAt,
       modifiedAt: Task.instantOrNow(props.modifiedAt, new Date()),
     };
@@ -225,6 +245,9 @@ export class Task extends AggregateRoot<ITaskProps> {
     }
     if ('checklist' in props) {
       this.props.checklist = newProps.checklist;
+    }
+    if ('audioAttachments' in props) {
+      this.props.audioAttachments = newProps.audioAttachments;
     }
     this.props.description = newProps.description;
     return Result.ok<Task>();
@@ -304,6 +327,76 @@ export class Task extends AggregateRoot<ITaskProps> {
     return Result.ok<ChecklistItemDTO[] | undefined>(items);
   }
 
+  private static normalizeAudioAttachments(
+    raw: AudioAttachment[] | undefined,
+  ): Result<AudioAttachment[] | undefined, DomainError<Task, ETaskError>> {
+    if (raw === undefined) {
+      return Result.ok<AudioAttachment[] | undefined>(undefined);
+    }
+    if (!Array.isArray(raw) || raw.length > TaskConst.AUDIO_ATTACHMENT_MAX_COUNT) {
+      return Task.audioError('Too many audio attachments');
+    }
+
+    const ids = new Set<string>();
+    const items: AudioAttachment[] = [];
+    for (const item of raw) {
+      if (
+        !item ||
+        typeof item.id !== 'string' ||
+        !/^[A-Za-z0-9-]{1,64}$/.test(item.id) ||
+        ids.has(item.id) ||
+        !Number.isInteger(item.durationMs) ||
+        item.durationMs < 0 ||
+        typeof item.mimeType !== 'string' ||
+        item.mimeType.trim().length === 0 ||
+        item.mimeType.length > 100 ||
+        typeof item.createdAt !== 'string' ||
+        Number.isNaN(Date.parse(item.createdAt))
+      ) {
+        return Task.audioError('An audio attachment is invalid');
+      }
+
+      let transcription: AudioAttachment['transcription'];
+      if (item.transcription !== undefined) {
+        const text = item.transcription.text;
+        const createdAt = item.transcription.createdAt;
+        if (
+          typeof text !== 'string' ||
+          text.length === 0 ||
+          text.length > TaskConst.AUDIO_TRANSCRIPTION_MAX_LENGTH ||
+          typeof createdAt !== 'string' ||
+          Number.isNaN(Date.parse(createdAt))
+        ) {
+          return Task.audioError('An audio transcription is invalid');
+        }
+        transcription = {
+          text,
+          createdAt,
+          ...(typeof item.transcription.model === 'string'
+            ? { model: item.transcription.model }
+            : {}),
+        };
+      }
+
+      ids.add(item.id);
+      items.push({
+        id: item.id,
+        durationMs: item.durationMs,
+        mimeType: item.mimeType,
+        createdAt: item.createdAt,
+        ...(transcription ? { transcription } : {}),
+      });
+    }
+
+    return Result.ok<AudioAttachment[] | undefined>(items);
+  }
+
+  private static audioError(message: string): Result<never, DomainError<Task, ETaskError>> {
+    return Result.fail<never, DomainError<Task, ETaskError>>(
+      new DomainError<Task, ETaskError>(ETaskError.AudioAttachmentsInvalid, message),
+    );
+  }
+
   private static checklistError(message: string): Result<never, DomainError<Task, ETaskError>> {
     return Result.fail<never, DomainError<Task, ETaskError>>(
       new DomainError<Task, ETaskError>(ETaskError.ChecklistInvalid, message),
@@ -362,6 +455,11 @@ export class Task extends AggregateRoot<ITaskProps> {
     const checklistResult = Task.normalizeChecklist(props.checklist);
     if (checklistResult.isFailure) {
       return Result.fail<never, DomainError<Task, ETaskError>>(checklistResult.error);
+    }
+
+    const audioResult = Task.normalizeAudioAttachments(props.audioAttachments);
+    if (audioResult.isFailure) {
+      return Result.fail<never, DomainError<Task, ETaskError>>(audioResult.error);
     }
 
     if (props.status === ETaskStatus.Notes) {
