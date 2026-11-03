@@ -647,6 +647,18 @@ Cards may have different heights when their content requires it.
 
 Do not artificially force all cards to the same height.
 
+### Scrollbars
+
+Scrollbars are global chrome, specified in `design-system.json` → `scrollbar`. They stay native. The thumb helps a person see where they are on a long screen. It is not a separate control.
+
+Desktop, where a fine pointer can hover: a 4px rounded thumb `#647B83`, `#8299A1` on hover, transparent track, 999px radius, no arrow buttons, border, gradient or shadow. Hover may widen the thumb to 6px where the browser supports it. Keep a 4px inset from the edge (`spacing.xs`). Map the values through `frontend/src/scss/` as `--scrollbar-*` and apply them with the `app-scrollable` class on the scroll container.
+
+Touch: keep native momentum scrolling and let the operating system show or hide the overlay thumb. Do not force the bar to stay visible.
+
+When standard CSS cannot provide the exact width, the hover width and auto-hide at the same time, keep native scrolling and the dark thumb. Do not replace the scrollbar with JavaScript.
+
+A screen that scrolls keeps its header and footer in normal layout, outside the scroll container. Only the central region scrolls vertically. Use a column flex or grid layout and `min-height: 0` on the scroll child. Do not pin the header or footer with `position: fixed` when they can sit outside that container.
+
 ---
 
 ## 20. Interaction States

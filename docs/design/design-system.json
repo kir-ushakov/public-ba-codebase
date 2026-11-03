@@ -1,7 +1,7 @@
 {
   "designSystem": {
     "name": "Brain Assistant Dark Technical",
-    "version": "1.7.0",
+    "version": "1.8.0",
     "scope": "product",
 
     "tokenNaming": {
@@ -269,6 +269,33 @@
         "Do not fill empty areas with decorative content. An empty collection may use the emptyState mascot in place of its list or grid",
         "Cards may have different heights when content requires it",
         "Maintain consistent horizontal alignment"
+      ]
+    },
+
+    "scrollbar": {
+      "type": "native",
+      "style": "minimal-dark",
+      "width": "4px",
+      "hoverWidth": "6px",
+      "thumbColor": "#647B83",
+      "thumbHoverColor": "#8299A1",
+      "trackColor": "transparent",
+      "borderRadius": "999px",
+      "buttons": "none",
+      "insetInlineEnd": "spacing.scale.xs",
+      "behavior": {
+        "desktop": "native-scrollbar-with-custom-styling",
+        "touch": "native-overlay-scrollbar",
+        "autoHide": "platform-controlled",
+        "scrollbarGutter": "stable-only-if-needed"
+      },
+      "rules": [
+        "This is a design specification, not a CSS implementation. Exact width, hover width and auto-hide cannot be guaranteed together with standard CSS.",
+        "Priority is native scrolling, then a dark minimal thumb, then compatibility. Hover width applies only where scrollbar pseudo-elements support it.",
+        "Do not build a JavaScript scrollbar and do not disable native scrolling.",
+        "No arrow buttons, border, gradient or shadow.",
+        "On touch platforms, leave overlay visibility to the operating system. Do not force a permanently visible scrollbar or add padding that imitates a desktop gutter.",
+        "Apply the style to scroll containers. Do not style every element, and do not set overflow hidden on the application."
       ]
     },
 

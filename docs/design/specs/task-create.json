@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-create",
     "name": "Create Task",
-    "version": "1.6.0",
+    "version": "1.7.0",
 
     "purpose": "Create a new task with title, rich description, audio attachments, images, tags, status and due date.",
 
@@ -20,6 +20,25 @@
         "task-form",
         "bottom-actions"
       ]
+    },
+
+    "scrollLayout": {
+      "type": "fixed-header-footer",
+      "header": {
+        "position": "fixed-within-screen",
+        "scrollable": false
+      },
+      "content": {
+        "scrollable": true,
+        "direction": "vertical",
+        "scrollbar": "design-system.scrollbar",
+        "horizontalOverflow": "hidden",
+        "overscrollBehavior": "contain"
+      },
+      "footer": {
+        "position": "fixed-within-screen",
+        "scrollable": false
+      }
     },
 
     "header": {
@@ -290,6 +309,7 @@
     "visualRules": [
       "Use global design tokens from design-system.json.",
       "Do not define screen-specific colors, radii or arbitrary spacing.",
+      "The header and bottom actions stay fixed within the screen. Only the central form scrolls vertically, using design-system.scrollbar.",
       "The reference PNG is a visual target, not a source of token values. Do not measure colors, spacing, or radii from it.",
       "Create and Edit must use the same task-form composition.",
       "Create Task has no header overflow menu. The only header action is Back.",

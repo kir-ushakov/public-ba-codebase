@@ -1,0 +1,103 @@
+// Windows Chrome/Edge keep the classic light scrollbar, including arrow
+// buttons, when only scrollbar-width and scrollbar-color are set. The
+// ::-webkit-scrollbar rules are what replace that control. Standard
+// properties stay as the fallback for engines without those pseudos.
+
+@mixin scrollbar-fallback {
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+    scrollbar-width: thin;
+  }
+}
+
+@mixin scrollbar-thumb($edge: 'inline-end') {
+  border: 0 solid transparent;
+  border-radius: var(--scrollbar-border-radius);
+  background-color: var(--scrollbar-thumb-color);
+  background-clip: padding-box;
+
+  @if $edge == 'inline-end' {
+    border-inline-end-width: var(--spacing-xs);
+  } @else {
+    border-block-end-width: var(--spacing-xs);
+  }
+
+  &:hover {
+    background-color: var(--scrollbar-thumb-hover-color);
+  }
+}
+
+@mixin scrollbar-buttons {
+  &::-webkit-scrollbar-button,
+  &::-webkit-scrollbar-button:single-button,
+  &::-webkit-scrollbar-button:vertical:start:decrement,
+  &::-webkit-scrollbar-button:vertical:end:increment,
+  &::-webkit-scrollbar-button:horizontal:start:decrement,
+  &::-webkit-scrollbar-button:horizontal:end:increment {
+    display: none;
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+}
+
+.app-scrollable {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: var(--spacing-lg);
+  color-scheme: dark;
+
+  @include scrollbar-fallback;
+  @include scrollbar-buttons;
+
+  &::-webkit-scrollbar {
+    width: calc(var(--scrollbar-width) + var(--spacing-xs));
+    height: calc(var(--scrollbar-width) + var(--spacing-xs));
+  }
+
+  &:hover::-webkit-scrollbar {
+    width: calc(var(--scrollbar-hover-width) + var(--spacing-xs));
+    height: calc(var(--scrollbar-hover-width) + var(--spacing-xs));
+  }
+
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+    border: 0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    @include scrollbar-thumb;
+  }
+}
+
+.app-scrollable-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior: contain;
+  color-scheme: dark;
+
+  @include scrollbar-fallback;
+  @include scrollbar-buttons;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: calc(var(--scrollbar-width) + var(--spacing-xs));
+  }
+
+  &:hover::-webkit-scrollbar {
+    width: 0;
+    height: calc(var(--scrollbar-hover-width) + var(--spacing-xs));
+  }
+
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+    border: 0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    @include scrollbar-thumb('block-end');
+  }
+}
