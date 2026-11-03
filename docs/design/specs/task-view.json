@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-view",
     "name": "Task View",
-    "version": "1.8.0",
+    "version": "1.9.0",
 
     "purpose": "Read a task and perform focused task actions without entering full edit mode.",
 
@@ -108,46 +108,72 @@
       "audioAttachments": {
         "label": "Audio attachments",
         "component": "audio-attachment-list",
+        "itemComponent": "audio-attachment-card",
+        "sharedWith": ["task-create", "task-edit"],
         "designSystemPattern": "audioAttachment",
         "source": "task.audioAttachments",
         "multiple": true,
+        "transcriptionState": "per-attachment",
         "editable": false,
         "addAction": {
           "enabled": false
         },
-        "remove": false,
+        "remove": {
+          "enabled": false
+        },
+        "menu": {
+          "enabled": false
+        },
         "visibility": "when-present",
 
         "item": {
           "title": "Voice recording",
-          "duration": true,
+          "duration": {
+            "visible": true,
+            "underOneHour": "MM:SS",
+            "fromOneHour": "HH:MM:SS"
+          },
           "playback": ["play", "pause"],
           "withoutTranscription": {
+            "id": "not-transcribed",
+            "meta": "Not transcribed",
             "action": {
               "label": "Transcribe with AI",
-              "action": "transcribe-audio-attachment"
+              "icon": "auto_awesome",
+              "action": "transcribe-audio-attachment",
+              "opensSheet": false
+            }
+          },
+          "transcribing": {
+            "label": "Transcribing...",
+            "indicator": "indeterminate",
+            "showPercent": false,
+            "disableDuplicateRequests": true,
+            "blocksOtherFields": false,
+            "playback": true,
+            "opensSheet": false
+          },
+          "transcriptionError": {
+            "label": "Transcription failed",
+            "semantic": "danger",
+            "keepsAudio": true,
+            "keepsExistingData": true,
+            "autoRetry": false,
+            "opensSheet": false,
+            "action": {
+              "label": "Retry",
+              "action": "retry-audio-transcription"
             }
           },
           "withTranscription": {
-            "meta": "Transcription available",
+            "retranscribeOnOpen": false,
             "action": {
               "label": "View transcription",
-              "action": "view-audio-transcription"
+              "icon": "article",
+              "action": "view-audio-transcription",
+              "opens": "audio-transcription-open"
             }
-          },
-          "transcriptionActions": [
-            {
-              "id": "copy",
-              "label": "Copy transcription",
-              "action": "copy-transcription"
-            },
-            {
-              "id": "add-to-description",
-              "label": "Add to description",
-              "action": "open-edit-to-add-transcription",
-              "mutatesDescription": false
-            }
-          ]
+          }
         }
       },
 
@@ -415,6 +441,12 @@
             "action": "close-dialog"
           }
         }
+      },
+
+      "audioTranscriptionOpen": {
+        "status": "draft",
+        "trigger": "content.audioAttachments.item.withTranscription.action",
+        "spec": "./audio-transcription-open.json"
       }
     },
 
@@ -447,9 +479,15 @@
       "Do not duplicate Mark as Active or Done in the header options menu.",
 
       "Audio attachments sit after Description and before Images.",
-      "Task View can play an attachment, show its transcription, copy it, and start Transcribe with AI when no transcription exists.",
-      "Add to description does not change the description on Task View. It opens Edit, where the append happens.",
-      "Task View does not add or delete audio attachments.",
+      "Task View uses the same audio-attachment-card as Create and Edit. It does not add or delete attachments, and it does not show the attachment menu.",
+      "Task View can play an attachment and start Transcribe with AI when no transcription exists. Transcribe with AI does not open a waiting sheet. The card shows Transcribing... with an indeterminate indicator and no percent. Playback stays available.",
+      "When transcription finishes, the card shows View transcription only. Do not also show Transcription available. View transcription opens the shared transcription sheet and does not call speech-to-text again.",
+      "Copy and Add to Description live in that sheet. Add to Description does not change the read-only description. It opens Edit, where the append happens.",
+      "A transcription error stays on the card as Transcription failed, with Retry. The recording remains. Do not auto-retry and do not open an error sheet.",
+      "Transcription failed uses semantic danger. Do not add a glow, a decorative waveform, or an extra sparkle on the card.",
+      "The saved transcription belongs to the audio attachment. It is stored with the attachment and synced with the task. It is not a separate sync system.",
+      "The default audio attachment card matches task-create-with-audio.png on Create/Edit. Playback progress appears only after playback starts. The transcription sheet stays draft until its own reference PNG is approved.",
+      "Title Recording is unchanged and is not part of Task View.",
       "Images are displayed as a gallery rather than as a single cover-only media block.",
       "Task View does not show an Add photo tile. New images are added only in Edit.",
       "The image count includes attached images only.",
@@ -486,13 +524,14 @@
     },
 
     "angular": {
-      "note": "The live Task View does not yet match this spec. Treat this JSON as the approved target. ETaskType.Basic stays TASK_TYPE_BASIC and is presented as To do. Location and Calendar are additional product task types represented by the same task-type chip pattern. Task type is not editable from Task View. Task View title and description are read-only. Task View has no Status section and no status selector. Mark as Active and Done are the only status actions on this screen. To do tasks do not display due-date, calendar or location-trigger information, and they omit the quick properties section. Calendar tasks display scheduling information below the title and expose Due date as a quick property. Location tasks display the configured location below the title and expose Location as a quick property. Tags, multiple image attachments, Active status, Duplicate and additional task types may be product destinations rather than current wire capabilities. Task View does not offer Add photo or cover switching on click. The bottom of Task View contains task-state actions instead of the global Home/Tasks/Tags navigation.",
+      "note": "The live Task View does not yet match this spec. Treat this JSON as the approved target. The default audio attachment card is approved via task-create-with-audio.png on Create/Edit; audio-transcription-open stays draft until its reference PNG is approved. ETaskType.Basic stays TASK_TYPE_BASIC and is presented as To do. Location and Calendar are additional product task types represented by the same task-type chip pattern. Task type is not editable from Task View. Task View title and description are read-only. Task View has no Status section and no status selector. Mark as Active and Done are the only status actions on this screen. To do tasks do not display due-date, calendar or location-trigger information, and they omit the quick properties section. Calendar tasks display scheduling information below the title and expose Due date as a quick property. Location tasks display the configured location below the title and expose Location as a quick property. Tags, multiple image attachments, Active status, Duplicate and additional task types may be product destinations rather than current wire capabilities. Task View does not offer Add photo or cover switching on click. The bottom of Task View contains task-state actions instead of the global Home/Tasks/Tags navigation.",
 
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
 
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/screens/task-screen/task-view/",
-        "frontend/src/app/shared/components/ui-elements/rich-text-editor/"
+        "frontend/src/app/shared/components/ui-elements/rich-text-editor/",
+        "frontend/src/app/shared/features/voice-input/api/speech-to-text.service.ts"
       ]
     }
   }

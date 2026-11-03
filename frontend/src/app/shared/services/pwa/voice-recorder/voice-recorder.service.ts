@@ -97,4 +97,11 @@ export class VoiceRecorderService implements IVoiceRecorder {
     }
     return this.impl.level();
   }
+
+  levels(barCount: number): number[] {
+    if (this.state !== VoiceRecorderState.Recording) {
+      return [];
+    }
+    return this.impl.levels(barCount);
+  }
 }

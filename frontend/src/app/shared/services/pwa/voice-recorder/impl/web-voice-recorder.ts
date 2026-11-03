@@ -39,6 +39,9 @@ export interface IWebRecordingStrategy {
   dispose(): void;
 }
 
+const VOICE_BINS_PER_BAR = 3;
+const FREQUENCY_BYTE_MAX = 255;
+
 /**
  * Web capture facade: acquires mic once, then delegates to a concrete strategy
  * ({@link MediaRecorderStrategy} or {@link WebAudioWavStrategy}).
@@ -56,6 +59,7 @@ export class WebVoiceRecorder implements IVoiceRecorder {
   private levelContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
   private levelSamples: Uint8Array | null = null;
+  private frequencySamples: Uint8Array | null = null;
 
   async start(): Promise<void> {
     this.cancel();
@@ -120,7 +124,7 @@ export class WebVoiceRecorder implements IVoiceRecorder {
           resolve();
         }, warmupMs);
 
-        const onAbort = () => {
+        const onAbort = (): void => {
           clearTimeout(t);
           abortController.signal.removeEventListener('abort', onAbort);
           reject(new DOMException('Aborted', 'AbortError'));
@@ -200,6 +204,30 @@ export class WebVoiceRecorder implements IVoiceRecorder {
     return Math.min(1, Math.sqrt(sum / samples.length) * 4);
   }
 
+  levels(barCount: number): number[] {
+    const analyser = this.analyser;
+    if (!analyser || barCount <= 0) {
+      return [];
+    }
+    if (!this.frequencySamples || this.frequencySamples.length !== analyser.frequencyBinCount) {
+      this.frequencySamples = new Uint8Array(analyser.frequencyBinCount);
+    }
+    const samples = this.frequencySamples;
+    analyser.getByteFrequencyData(samples);
+    const voiceBins = Math.min(samples.length, barCount * VOICE_BINS_PER_BAR);
+    const width = Math.max(1, Math.floor(voiceBins / barCount));
+    const bars: number[] = [];
+    for (let bar = 0; bar < barCount; bar += 1) {
+      const start = bar * width;
+      let sum = 0;
+      for (let bin = 0; bin < width; bin += 1) {
+        sum += samples[start + bin] ?? 0;
+      }
+      bars.push(Math.min(1, sum / width / FREQUENCY_BYTE_MAX));
+    }
+    return bars;
+  }
+
   private releaseStreamOnly(): void {
     this.stream?.getTracks().forEach(t => t.stop());
     this.stream = null;
@@ -230,5 +258,6 @@ export class WebVoiceRecorder implements IVoiceRecorder {
     this.levelContext = null;
     this.analyser = null;
     this.levelSamples = null;
+    this.frequencySamples = null;
   }
 }

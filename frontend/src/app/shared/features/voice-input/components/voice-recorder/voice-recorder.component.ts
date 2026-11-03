@@ -1,4 +1,4 @@
-import { Component, inject, output, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, output, signal, ViewChild } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,8 +24,9 @@ export type SavedVoiceRecording = {
 };
 
 const TITLE_LIMIT_MS = 12_000;
-const NATIVE_RECORDING_LIMIT_MS = 15 * 60 * 1000;
 const WAVEFORM_BARS = 16;
+const MIN_BAR_LEVEL = 0.08;
+const MEANINGFUL_CAPTURE_MS = 300;
 
 /**
  * Fullscreen recorder for a task title (12 seconds, then transcribe) or an audio attachment
@@ -36,6 +37,9 @@ const WAVEFORM_BARS = 16;
   imports: [CommonModule, MatIconModule, MatButtonModule, MicIconComponent, ProgressRingComponent],
   templateUrl: './voice-recorder.component.html',
   styleUrl: './voice-recorder.component.scss',
+  host: {
+    '[class.is-attachment]': 'mode === "attachment"',
+  },
 })
 export class VoiceRecorderComponent {
   @ViewChild(ProgressRingComponent) private progressRing?: ProgressRingComponent;
@@ -49,25 +53,40 @@ export class VoiceRecorderComponent {
     inject<VoiceRecorderDialogData | null>(MAT_DIALOG_DATA, { optional: true })?.mode ?? 'title';
   readonly titleLimitSeconds = TITLE_LIMIT_MS / 1000;
   readonly recordingDuration = TITLE_LIMIT_MS;
-  readonly phase = signal<'starting' | 'recording' | 'paused' | 'saving'>('starting');
+  readonly phase = signal<'starting' | 'recording' | 'paused' | 'saving' | 'error'>('starting');
   readonly elapsedLabel = signal(this.mode === 'title' ? '0 / 12 s' : '00:00');
-  readonly bars = signal<number[]>(Array.from({ length: WAVEFORM_BARS }, () => 0.08));
+  readonly bars = signal<number[]>(Array.from({ length: WAVEFORM_BARS }, () => MIN_BAR_LEVEL));
+  readonly meterLive = signal(false);
+  readonly confirmingCancel = signal(false);
+  readonly saveBlocked = signal(false);
 
   private readonly store = inject(Store);
   private readonly recorder = inject(VoiceRecordingFacade);
+  private readonly destroyRef = inject(DestroyRef);
 
   private recordingTimeout: number | null = null;
   private clockTimer: number | null = null;
   private elapsedMs = 0;
   private lastTick = 0;
   private isFinalized = false;
+  private pendingBlob: Blob | null = null;
+
+  constructor() {
+    this.destroyRef.onDestroy(() => this.stopClock());
+  }
 
   ngAfterViewInit(): void {
     void this.beginSessionAfterMicReady();
   }
 
   apply(): void {
-    if (this.phase() === 'starting' || this.phase() === 'saving' || this.isFinalized) {
+    if (
+      this.confirmingCancel() ||
+      this.saveBlocked() ||
+      this.phase() === 'starting' ||
+      this.phase() === 'saving' ||
+      this.isFinalized
+    ) {
       return;
     }
     if (this.mode === 'title') {
@@ -79,11 +98,22 @@ export class VoiceRecorderComponent {
   }
 
   cancel(): void {
-    if (this.isFinalized) {
+    if (this.isFinalized || this.phase() === 'saving') {
       return;
     }
-    this.canceled.emit();
-    this.finalize();
+    if (this.mode === 'attachment' && this.hasCapturableAudio()) {
+      this.confirmingCancel.set(true);
+      return;
+    }
+    this.discard();
+  }
+
+  keepRecording(): void {
+    this.confirmingCancel.set(false);
+  }
+
+  discardRecording(): void {
+    this.discard();
   }
 
   async togglePause(): Promise<void> {
@@ -102,7 +132,6 @@ export class VoiceRecorderComponent {
       }
       await this.recorder.pauseRecording();
       this.phase.set('paused');
-      this.bars.set(Array.from({ length: WAVEFORM_BARS }, () => 0.08));
     } catch {
       this.store.dispatch(new AppAction.ShowErrorInUI('Could not pause the recording.'));
     }
@@ -144,10 +173,14 @@ export class VoiceRecorderComponent {
     this.phase.set('saving');
     this.stopClock();
     try {
-      const blob = await this.recorder.stopRecording();
+      const blob = this.pendingBlob ?? (await this.recorder.stopRecording());
+      this.pendingBlob = blob;
       if (blob.size > TaskConst.AUDIO_MAX_BYTES) {
-        this.store.dispatch(new AppAction.ShowErrorInUI('The recording is too large to save.'));
-        this.finalize();
+        this.saveBlocked.set(true);
+        this.phase.set('error');
+        this.store.dispatch(
+          new AppAction.ShowErrorInUI('The recording is too large to save.', 'Not saved'),
+        );
         return;
       }
       this.audioReady.emit({
@@ -156,13 +189,21 @@ export class VoiceRecorderComponent {
       });
       this.finalize();
     } catch {
-      this.store.dispatch(new AppAction.ShowErrorInUI('Could not save the recording.'));
-      this.finalize();
+      this.phase.set('error');
+      this.store.dispatch(
+        new AppAction.ShowErrorInUI(
+          'Could not save the recording. It is still here if you want to try again.',
+          'Not saved',
+        ),
+      );
     }
   }
 
   private startClock(): void {
     this.lastTick = performance.now();
+    if (this.mode === 'attachment') {
+      this.readLevels();
+    }
     this.clockTimer = window.setInterval(() => this.tick(), 200);
   }
 
@@ -178,11 +219,9 @@ export class VoiceRecorderComponent {
       return;
     }
     this.elapsedLabel.set(this.formatElapsed());
-    this.bars.set(this.barsFromLevel(this.recorder.level()));
+    this.readLevels();
     const bytes = this.recorder.capturedBytes();
-    const nativeCap =
-      this.recorder.engine === 'native' && this.elapsedMs >= NATIVE_RECORDING_LIMIT_MS;
-    if ((bytes > 0 && bytes >= TaskConst.AUDIO_RECORDING_STOP_BYTES) || nativeCap) {
+    if (bytes > 0 && bytes >= TaskConst.AUDIO_RECORDING_STOP_BYTES) {
       this.apply();
     }
   }
@@ -205,11 +244,31 @@ export class VoiceRecorderComponent {
     return `${mm}:${ss}`;
   }
 
-  private barsFromLevel(level: number): number[] {
-    return Array.from({ length: WAVEFORM_BARS }, (_, index) => {
-      const shape = 0.35 + 0.65 * Math.abs(Math.sin(index + level * 6));
-      return Math.max(0.08, Math.min(1, level * shape));
-    });
+  private readLevels(): void {
+    const levels = this.recorder.levels(WAVEFORM_BARS);
+    if (levels.length !== WAVEFORM_BARS) {
+      return;
+    }
+    this.meterLive.set(true);
+    this.bars.set(levels.map(value => Math.max(MIN_BAR_LEVEL, Math.min(1, value))));
+  }
+
+  private hasCapturableAudio(): boolean {
+    return (
+      this.pendingBlob !== null ||
+      this.elapsedMs >= MEANINGFUL_CAPTURE_MS ||
+      this.recorder.capturedBytes() > 0
+    );
+  }
+
+  private discard(): void {
+    this.confirmingCancel.set(false);
+    if (this.mode === 'attachment' && !this.pendingBlob) {
+      this.recorder.cancelRecording();
+    }
+    this.pendingBlob = null;
+    this.canceled.emit();
+    this.finalize();
   }
 
   private stopClock(): void {

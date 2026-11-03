@@ -1,97 +1,164 @@
 <section class="audio-section" data-test="audio-attachments-section">
-  <div class="audio-header">
-    <p class="field-label">Audio attachments</p>
-    @if (canAdd()) {
-      <button
-        type="button"
-        class="add-audio"
-        data-test="audio-attachment-add"
-        [disabled]="atLimit()"
-        (click)="record()"
-      >
-        <span class="material-symbols-rounded" aria-hidden="true">mic</span>
-        Add audio recording
-      </button>
-    }
-  </div>
+  <p class="field-label">Audio attachments</p>
+  @if (canAdd()) {
+    <button
+      class="add-audio"
+      type="button"
+      data-test="audio-attachment-add"
+      [disabled]="atLimit()"
+      (click)="record()"
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">add</span>
+      Add audio recording
+    </button>
+  }
 
   @for (item of attachments(); track item.id) {
     <article class="audio-card" data-test="audio-attachment-card">
       <div class="audio-card-main">
         <button
-          type="button"
           class="play-button"
+          type="button"
           data-test="audio-attachment-play"
           [attr.aria-label]="playingId() === item.id ? 'Pause' : 'Play'"
           (click)="togglePlay(item.id)"
         >
-          <span class="material-symbols-rounded" aria-hidden="true">
-            {{ playingId() === item.id ? 'pause' : 'play_arrow' }}
+          <span class="play-glyph">
+            <span class="material-symbols-rounded" aria-hidden="true">
+              {{ playingId() === item.id ? 'pause' : 'play_arrow' }}
+            </span>
           </span>
         </button>
         <div class="audio-card-copy">
           <p class="audio-title">Voice recording</p>
-          <p class="audio-meta">{{ durationLabel(item.durationMs) }}</p>
-          @if (item.transcription) {
-            <p class="audio-meta">Transcription available</p>
+          <p class="audio-meta">
+            <span data-test="audio-attachment-duration">{{ playbackLabel(item) }}</span>
+            @if (createdLabel(item.createdAt); as created) {
+              <span aria-hidden="true">·</span>
+              <span data-test="audio-attachment-created">{{ created }}</span>
+            }
+          </p>
+          @if (showProgress(item.id)) {
+            <div class="playback" [style.--playback-ratio]="progressValue(item.id) / progressMax">
+              <div class="playback-track" aria-hidden="true">
+                <div class="playback-fill"></div>
+              </div>
+              <input
+                class="playback-progress"
+                type="range"
+                min="0"
+                step="1"
+                data-test="audio-attachment-progress"
+                aria-label="Playback position"
+                [max]="progressMax"
+                [value]="progressValue(item.id)"
+                (input)="seek(item.id, $event)"
+              />
+            </div>
           }
         </div>
         @if (canRemove()) {
-          <button
-            type="button"
-            class="remove-audio"
-            data-test="audio-attachment-remove"
-            aria-label="Remove audio attachment"
-            (click)="remove(item.id)"
-          >
-            <span class="material-symbols-rounded" aria-hidden="true">close</span>
-          </button>
+          <div class="audio-menu">
+            <button
+              class="more-audio"
+              type="button"
+              data-test="audio-attachment-menu"
+              aria-label="Recording options"
+              [attr.aria-expanded]="openMenuId() === item.id"
+              (click)="toggleMenu(item.id, $event)"
+            >
+              <span class="material-symbols-rounded" aria-hidden="true">more_vert</span>
+            </button>
+            @if (openMenuId() === item.id) {
+              <ba-context-menu
+                ariaLabel="Recording options"
+                testId="audio-attachment-menu-list"
+                [items]="deleteMenuItems"
+                (closed)="closeMenu()"
+                (selected)="onMenu(item.id, $event)"
+              ></ba-context-menu>
+            }
+          </div>
         }
       </div>
 
-      @if (!item.transcription) {
-        <button
-          type="button"
-          class="audio-text-action"
-          data-test="audio-attachment-transcribe"
-          [disabled]="!online() || transcribingId() === item.id"
-          (click)="transcribe(item.id)"
-        >
-          Transcribe with AI
-        </button>
-      } @else {
-        <button
-          type="button"
-          class="audio-text-action"
-          data-test="audio-attachment-view-transcription"
-          (click)="toggleTranscription(item.id)"
-        >
-          View transcription
-        </button>
-        @if (openTranscriptionId() === item.id) {
-          <p class="transcription" data-test="audio-attachment-transcription">
-            {{ item.transcription.text }}
+      <div class="audio-card-action">
+        @if (isTranscribing(item.id)) {
+          <p class="audio-progress" data-test="audio-attachment-transcribing">
+            <span class="material-symbols-rounded audio-spinner" aria-hidden="true"
+              >progress_activity</span
+            >
+            Transcribing...
           </p>
-          <div class="transcription-actions">
+        } @else if (hasFailed(item.id) && !item.transcription) {
+          <div class="audio-error">
+            <p class="audio-failed" data-test="audio-attachment-error">Transcription failed</p>
+            <span aria-hidden="true">·</span>
             <button
-              type="button"
               class="audio-text-action"
-              data-test="audio-attachment-copy"
-              (click)="copy(item.transcription.text)"
-            >
-              Copy transcription
-            </button>
-            <button
               type="button"
-              class="audio-text-action"
-              data-test="audio-attachment-add-to-description"
-              (click)="addToDescription(item.transcription.text)"
+              data-test="audio-attachment-retry"
+              [disabled]="!online()"
+              (click)="transcribe(item.id)"
             >
-              Add to description
+              Retry
             </button>
           </div>
+        } @else if (!item.transcription) {
+          <button
+            class="audio-text-action"
+            type="button"
+            data-test="audio-attachment-transcribe"
+            [disabled]="!online()"
+            (click)="transcribe(item.id)"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>
+            Transcribe with AI
+          </button>
+        } @else {
+          <button
+            class="audio-text-action"
+            type="button"
+            data-test="audio-attachment-view-transcription"
+            (click)="openTranscription(item.id)"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">article</span>
+            View transcription
+          </button>
         }
-      }
+      </div>
     </article>
   }
 </section>
+@if (openTranscript(); as transcript) {
+  <ba-bottom-sheet title="Transcription" icon="auto_awesome" (dismissed)="closeTranscription()">
+    <p class="sheet-meta">Voice recording · {{ durationLabel(transcript.durationMs) }}</p>
+    <p class="sheet-transcript" data-test="audio-attachment-transcription">{{ transcript.text }}</p>
+    <div class="sheet-actions">
+      <button
+        class="sheet-secondary"
+        type="button"
+        data-test="audio-attachment-copy"
+        (click)="copy(transcript.text)"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">content_copy</span>
+        Copy
+      </button>
+      @if (wasAdded(transcript.id)) {
+        <button class="sheet-secondary" type="button" disabled data-test="audio-attachment-added">
+          Added to description
+        </button>
+      } @else {
+        <button
+          class="sheet-primary"
+          type="button"
+          data-test="audio-attachment-add-to-description"
+          (click)="addToDescription(transcript.id, transcript.text)"
+        >
+          <span class="material-symbols-rounded" aria-hidden="true">add</span>
+          Add to Description
+        </button>
+      }
+    </div>
+  </ba-bottom-sheet>
+}

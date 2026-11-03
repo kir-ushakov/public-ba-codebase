@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Actions, ofActionDispatched, provideStore, Store } from '@ngxs/store';
 import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
-import { firstValueFrom, of } from 'rxjs';
+import { firstValueFrom, of, Subject } from 'rxjs';
 import {
   ETaskViewMode,
   TaskScreenState,
@@ -35,6 +35,7 @@ describe('TaskScreenState', () => {
   let audioService: {
     saveBlob: jest.Mock;
     deleteBlob: jest.Mock;
+    discardDraft: jest.Mock;
     deleteRemote: jest.Mock;
     getRecord: jest.Mock;
     objectUrl: jest.Mock;
@@ -59,6 +60,7 @@ describe('TaskScreenState', () => {
     audioService = {
       saveBlob: jest.fn(),
       deleteBlob: jest.fn().mockResolvedValue(undefined),
+      discardDraft: jest.fn().mockResolvedValue(undefined),
       deleteRemote: jest.fn().mockResolvedValue(undefined),
       getRecord: jest.fn().mockResolvedValue(undefined),
       objectUrl: jest.fn().mockResolvedValue(null),
@@ -981,7 +983,112 @@ describe('TaskScreenState', () => {
 
     await firstValueFrom(store.dispatch(TaskScreenAction.CancelButtonPressed));
 
-    expect(audioService.deleteBlob).toHaveBeenCalledWith('aud-1');
+    expect(audioService.discardDraft).toHaveBeenCalledWith('aud-1');
+  });
+
+  it('does not restore a recording deleted while transcription is still running', async () => {
+    const transcript = new Subject<{ transcript: string }>();
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob.mockResolvedValue({
+      id: 'aud-1',
+      durationMs: 500,
+      mimeType: 'audio/webm',
+      createdAt: '2024-06-01T10:00:00.000Z',
+    });
+    audioService.getRecord.mockResolvedValue({
+      blob: new Blob(['a'], { type: 'audio/webm' }),
+      uploaded: false,
+    });
+    speechToText.uploadAudio.mockReturnValue(transcript.asObservable());
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+
+    const pending = firstValueFrom(
+      store.dispatch(new TaskScreenAction.TranscribeAudioAttachment('aud-1')),
+    );
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(speechToText.uploadAudio).toHaveBeenCalled();
+    await firstValueFrom(store.dispatch(new TaskScreenAction.AudioAttachmentRemoved('aud-1')));
+    transcript.next({ transcript: 'late text' });
+    transcript.complete();
+    await pending;
+
+    expect(store.selectSnapshot(TaskScreenState.task).audioAttachments ?? []).toEqual([]);
+  });
+
+  it('keeps the create draft when the task cannot be saved', async () => {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob.mockResolvedValue({
+      id: 'aud-1',
+      durationMs: 500,
+      mimeType: 'audio/webm',
+      createdAt: '2024-06-01T10:00:00.000Z',
+    });
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+    jest
+      .spyOn(TestBed.inject(LocalStore), 'saveTaskAndEnqueue')
+      .mockRejectedValueOnce(new Error('disk'));
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Not saved yet',
+          description: null,
+        }),
+      ),
+    );
+
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    expect(store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0]?.id).toBe('aud-1');
+    expect(
+      store
+        .selectSnapshot(TasksState.allTasks)
+        .some(task => task.audioAttachments?.some(item => item.id === 'aud-1')),
+    ).toBe(false);
+    expect(audioService.discardDraft).not.toHaveBeenCalled();
+  });
+
+  it('copies every draft recording onto the created task', async () => {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob
+      .mockResolvedValueOnce({
+        id: 'aud-1',
+        durationMs: 500,
+        mimeType: 'audio/webm',
+        createdAt: '2024-06-01T10:00:00.000Z',
+      })
+      .mockResolvedValueOnce({
+        id: 'aud-2',
+        durationMs: 800,
+        mimeType: 'audio/webm',
+        createdAt: '2024-06-02T15:30:00.000Z',
+      });
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['b']), 800)),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Task with recordings',
+          description: null,
+        }),
+      ),
+    );
+
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const created = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => task.id !== existingWithPhoto.id);
+    expect(created?.audioAttachments?.map(item => item.id)).toEqual(['aud-1', 'aud-2']);
+    expect(store.selectSnapshot(TaskScreenState.task).audioAttachments).toBeUndefined();
+    expect(audioService.discardDraft).not.toHaveBeenCalled();
   });
 
   it('does not show a transcription when the device write fails', async () => {

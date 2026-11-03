@@ -423,6 +423,8 @@ Do not use `mat-icon` (Material Icons) for new UI. Render a symbol with:
 <span class="material-symbols-rounded">add</span>
 ```
 
+The font request is a named subset, not the full Material Symbols set. Add every new symbol name, in alphabetical order, to `icon_names` in both `frontend/src/index.html` and `frontend/ngsw-config.json`, and keep the two lists the same. A name that is not in the subset is drawn as its text.
+
 Icons should normally use neutral gray (`--color-icon-default`).
 
 Use teal (`--color-icon-active` / `--color-accent-primary`) for:
