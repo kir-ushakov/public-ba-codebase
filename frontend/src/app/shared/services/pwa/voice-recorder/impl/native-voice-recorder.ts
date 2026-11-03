@@ -47,6 +47,11 @@ export class NativeVoiceRecorder implements IVoiceRecorder {
     void VoiceRecorder.stopRecording();
   }
 
+  /**
+   * Real pause on the Capacitor plugin (`capacitor-voice-recorder` 6.0.3).
+   * Android, iOS and the plugin web shim expose `pauseRecording`. Older OS
+   * versions reject with `NOT_SUPPORTED_OS_VERSION`; that must surface as a failure.
+   */
   async pause(): Promise<void> {
     const result = await VoiceRecorder.pauseRecording();
     if (!result.value) {
@@ -67,5 +72,10 @@ export class NativeVoiceRecorder implements IVoiceRecorder {
 
   level(): number {
     return 0;
+  }
+
+  /** The Capacitor plugin does not expose microphone levels, so there is no meter. */
+  levels(): number[] {
+    return [];
   }
 }

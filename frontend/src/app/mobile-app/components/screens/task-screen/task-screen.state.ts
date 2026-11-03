@@ -236,8 +236,15 @@ export class TaskScreenState {
     const finalTaskData = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: finalTaskData });
-    this.homeContentMode.showTask(finalTaskData);
+    const beforeIds = new Set(this.store.selectSnapshot(TasksState.allTasks).map(task => task.id));
     await firstValueFrom(ctx.dispatch(new TasksAction.CreateTask(finalTaskData, userId)));
+    const created = this.store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => !beforeIds.has(task.id));
+    if (!created || !this.draftAudioSaved(finalTaskData.audioAttachments, created)) {
+      return;
+    }
+    this.homeContentMode.showTask(created);
     ctx.dispatch(TaskScreenAction.Close);
   }
 
@@ -389,11 +396,17 @@ export class TaskScreenState {
     const next = current.filter(item => item.id !== id);
     const taskId = state.taskData.id;
     if (state.mode === ETaskViewMode.Create || !taskId) {
+      try {
+        await this.audioService.discardDraft(id);
+      } catch {
+        ctx.dispatch(new AppAction.ShowErrorInUI('Could not remove the recording.', 'Not saved'));
+        return;
+      }
+      const fresh = ctx.getState();
       ctx.patchState({
-        taskData: { ...state.taskData, audioAttachments: next },
-        uncommittedAudioIds: (state.uncommittedAudioIds ?? []).filter(audioId => audioId !== id),
+        taskData: { ...fresh.taskData, audioAttachments: next },
+        uncommittedAudioIds: (fresh.uncommittedAudioIds ?? []).filter(audioId => audioId !== id),
       });
-      await this.audioService.deleteBlob(id);
       return;
     }
 
@@ -448,7 +461,13 @@ export class TaskScreenState {
       return;
     }
 
-    const next = current.map(item =>
+    const latest = ctx.getState();
+    const latestAttachments = latest.taskData.audioAttachments ?? [];
+    if (!latestAttachments.some(item => item.id === id)) {
+      return;
+    }
+
+    const next = latestAttachments.map(item =>
       item.id === id
         ? {
             ...item,
@@ -460,8 +479,8 @@ export class TaskScreenState {
           }
         : item,
     );
-    const taskId = state.taskData.id;
-    if (state.mode === ETaskViewMode.Create || !taskId) {
+    const taskId = latest.taskData.id;
+    if (latest.mode === ETaskViewMode.Create || !taskId) {
       ctx.patchState({
         taskData: { ...ctx.getState().taskData, audioAttachments: next },
       });
@@ -514,7 +533,7 @@ export class TaskScreenState {
   async cancelChanges(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
     const { mode, uncommittedAudioIds } = ctx.getState();
     if (mode === ETaskViewMode.Create) {
-      await Promise.all((uncommittedAudioIds ?? []).map(id => this.audioService.deleteBlob(id)));
+      await Promise.all((uncommittedAudioIds ?? []).map(id => this.audioService.discardDraft(id)));
     }
     ctx.dispatch(TaskScreenAction.Close);
   }
@@ -681,6 +700,11 @@ export class TaskScreenState {
     );
     const stored = this.taskInStore(taskId)?.audioAttachments;
     return stored ?? null;
+  }
+
+  private draftAudioSaved(draft: AudioAttachment[] | undefined, created: Task): boolean {
+    const saved = created.audioAttachments ?? [];
+    return (draft ?? []).every(item => saved.some(stored => stored.id === item.id));
   }
 
   private taskInStore(taskId: string): Task | undefined {

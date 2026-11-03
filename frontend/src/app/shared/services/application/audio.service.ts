@@ -45,6 +45,15 @@ export class AudioService {
     return this.audioDb.deleteAudio(id);
   }
 
+  /** Drops a create-mode recording. A file already on the server is removed there first. */
+  public async discardDraft(id: string): Promise<void> {
+    const record = await this.getRecord(id);
+    if (record?.uploaded) {
+      await this.deleteRemote(id);
+    }
+    await this.deleteBlob(id);
+  }
+
   public async objectUrl(id: string): Promise<string | null> {
     const record = await this.audioDb.getAudio(id);
     if (record?.blob) {

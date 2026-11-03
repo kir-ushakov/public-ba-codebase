@@ -57,6 +57,10 @@ export class VoiceRecordingFacade {
     return this.recorder.level();
   }
 
+  levels(barCount: number): number[] {
+    return this.recorder.levels(barCount);
+  }
+
   get engine(): VoiceCaptureEngine | null {
     return this.recorder.engine;
   }

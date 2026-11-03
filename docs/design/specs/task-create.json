@@ -2,7 +2,7 @@
   "screen": {
     "id": "task-create",
     "name": "Create Task",
-    "version": "1.5.0",
+    "version": "1.6.0",
 
     "purpose": "Create a new task with title, rich description, audio attachments, images, tags, status and due date.",
 
@@ -74,33 +74,82 @@
           "id": "audio-attachments",
           "label": "Audio attachments",
           "component": "audio-attachment-list",
+          "itemComponent": "audio-attachment-card",
+          "sharedWith": ["task-edit", "task-view"],
           "designSystemPattern": "audioAttachment",
           "multiple": true,
+          "transcriptionState": "per-attachment",
           "addAction": {
             "label": "Add audio recording",
-            "icon": "mic",
+            "icon": "add",
             "action": "open-voice-record-audio",
             "spec": "./voice-record-audio.json"
           },
           "item": {
             "title": "Voice recording",
-            "duration": true,
+            "duration": {
+              "visible": true,
+              "underOneHour": "MM:SS",
+              "fromOneHour": "HH:MM:SS"
+            },
             "playback": ["play", "pause"],
+            "menu": {
+              "icon": "more_vert",
+              "items": [
+                {
+                  "id": "delete",
+                  "label": "Delete recording",
+                  "icon": "delete",
+                  "semantic": "danger",
+                  "action": "remove-audio-attachment"
+                }
+              ]
+            },
+            "remove": {
+              "enabled": true,
+              "removesTranscription": true,
+              "persistedWhen": "task is created"
+            },
             "withoutTranscription": {
+              "id": "not-transcribed",
+              "meta": "Not transcribed",
               "action": {
                 "label": "Transcribe with AI",
-                "action": "transcribe-audio-attachment"
+                "icon": "auto_awesome",
+                "action": "transcribe-audio-attachment",
+                "opensSheet": false
+              }
+            },
+            "transcribing": {
+              "label": "Transcribing...",
+              "indicator": "indeterminate",
+              "showPercent": false,
+              "disableDuplicateRequests": true,
+              "blocksOtherFields": false,
+              "playback": true,
+              "opensSheet": false
+            },
+            "transcriptionError": {
+              "label": "Transcription failed",
+              "semantic": "danger",
+              "keepsAudio": true,
+              "keepsExistingData": true,
+              "autoRetry": false,
+              "opensSheet": false,
+              "action": {
+                "label": "Retry",
+                "action": "retry-audio-transcription"
               }
             },
             "withTranscription": {
-              "meta": "Transcription available",
+              "retranscribeOnOpen": false,
               "action": {
                 "label": "View transcription",
-                "action": "view-audio-transcription"
+                "icon": "article",
+                "action": "view-audio-transcription",
+                "opens": "audio-transcription-open"
               }
-            },
-            "transcriptionActions": ["copy-transcription", "add-transcription-to-description"],
-            "remove": false
+            }
           }
         },
         {
@@ -201,6 +250,16 @@
         "trigger": "form.sections.audio-attachments",
         "spec": "./voice-record-audio.json",
         "referenceImage": "../references/voice-record-audio.png"
+      },
+      "withAudioAttachment": {
+        "trigger": "form.sections.audio-attachments",
+        "referenceImage": "../references/task-create-with-audio.png",
+        "description": "Create Task after at least one audio attachment is saved. Compact card with Play, Voice recording, duration, more_vert, and Transcribe with AI. No progress bar until playback starts."
+      },
+      "audioTranscriptionOpen": {
+        "status": "draft",
+        "trigger": "form.sections.audio-attachments.item.withTranscription.action",
+        "spec": "./audio-transcription-open.json"
       }
     },
 
@@ -212,13 +271,20 @@
       "Create Task has no header overflow menu. The only header action is Back.",
       "A note is created from the Notes home mode on Create Note, not from this status selector.",
       "Images are attachments; the cover is a role of one attached image, not a separate image field.",
-      "The title microphone opens Title Recording. It does not create an audio attachment.",
+      "The title microphone opens Title Recording. It does not create an audio attachment and does not use this transcription flow.",
       "Audio attachments sit after Description and before Images. Add audio recording opens Audio Attachment Recording.",
-      "A new recording appears in the list after it is saved. Transcribe with AI is on the attachment, not on the recorder.",
-      "Create does not delete an audio attachment. Leaving without creating the task discards recordings that were not saved with it.",
+      "Create and Edit render attachments with the same audio-attachment-list and audio-attachment-card. Do not fork a second attachment component.",
+      "A new recording appears in the list after it is saved. Several recordings are allowed, and each keeps its own transcription state.",
+      "Transcribe with AI stays on the attachment. It does not open a waiting sheet. The card shows Transcribing... with an indeterminate indicator and no percent. Other fields stay editable, and playback stays available.",
+      "When transcription finishes, the card shows View transcription only. Do not also show Transcription available. View transcription opens the shared transcription sheet. It does not call speech-to-text again.",
+      "A transcription error stays on the card as Transcription failed · Retry. The recording remains. Do not auto-retry and do not open an error sheet.",
+      "Transcription failed uses semantic danger. auto_awesome is only the Transcribe action icon. Do not add a glow, a decorative waveform, or an extra sparkle on the card.",
+      "The saved transcription belongs to the audio attachment, not to the description. It is stored with the attachment and synced with the task. It is not a separate sync system.",
+      "Create allows removing temporary audio attachments before task creation. Removing an attachment also removes its saved transcription. Leaving Create without saving discards unsaved recordings.",
+      "The default audio attachment card is approved in states.withAudioAttachment. Playback progress appears only after playback starts. Processing and error card states follow the same card layout. The transcription sheet stays draft until its own reference PNG is approved.",
       "Tags have a single entry point. Use the Add tags selector to add or create tags; do not render a separate Add tag action beside selected tag chips.",
       "Teal marks the cover selection, selected status and primary action.",
-      "Do not add a delete action or title-clear action to this screen."
+      "Do not add a delete-task action or a title-clear control. The only delete on this screen is Delete recording in the audio attachment menu."
     ],
 
     "reference": {
@@ -228,12 +294,16 @@
     },
 
     "angular": {
-      "note": "The live Create Task screen does not yet match this spec. Treat this JSON as the approved target. TaskDTO currently has a single optional imageId, no tags field, and no dueDate. The form offers To do and Active (ETaskStatus.Todo and ETaskStatus.Active). Notes are created on Create Note. Mark as Active and Done are Task View actions, not form options. Task View does not show a status section. Character counters in the PNG (200/1000) are visual placeholders; live limits stay in TaskConst until a separate product decision changes them.",
+      "note": "Treat this JSON as the approved target. The default audio attachment card is approved via task-create-with-audio.png. audio-transcription-open stays draft until its reference PNG is approved. TaskDTO currently has a single optional imageId, no tags field, and no dueDate. The form offers To do and Active (ETaskStatus.Todo and ETaskStatus.Active). Notes are created on Create Note. Mark as Active and Done are Task View actions, not form options. Task View does not show a status section. Character counters in the PNG (200/1000) are visual placeholders; live limits stay in TaskConst until a separate product decision changes them. Speech-to-text returns only a transcript string and no progress percent.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/screens/task-screen/task-edit/",
         "frontend/src/app/shared/components/ui-elements/rich-text-editor/",
-        "frontend/src/app/shared/features/voice-input/components/voice-input-trigger/"
+        "frontend/src/app/shared/features/voice-input/components/voice-input-trigger/",
+        "frontend/src/app/shared/features/voice-input/components/voice-recorder/",
+        "frontend/src/app/shared/features/voice-input/voice-recording.facade.ts",
+        "frontend/src/app/shared/features/voice-input/api/speech-to-text.service.ts",
+        "frontend/src/app/shared/services/pwa/voice-recorder/voice-recorder.service.ts"
       ]
     }
   }

@@ -63,6 +63,19 @@
   }
 }
 
+.sheet-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+.sheet-icon {
+  flex-shrink: 0;
+  color: var(--color-accent-primary);
+  font-size: var(--icon-size-default);
+}
+
 .sheet-title {
   margin: 0;
   color: var(--color-text-primary);
@@ -71,6 +84,7 @@
   line-height: var(--typography-section-title-line-height);
 
   &.is-centered {
+    flex: 1;
     text-align: center;
   }
 }
