@@ -68,4 +68,8 @@ export class VoiceRecordingFacade {
   get recordingState(): VoiceRecorderState {
     return this.recorder.recordingState;
   }
+
+  whenCaptureEnds(handler: () => void): void {
+    this.recorder.whenCaptureEnds(handler);
+  }
 }

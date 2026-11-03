@@ -48,6 +48,7 @@
         "example": "03:42"
       },
       "statusLabel": {
+        "preparing": "Preparing microphone...",
         "recording": "Recording",
         "paused": "Paused",
         "saving": "Saving..."
@@ -67,11 +68,11 @@
       "visibleLimit": false,
       "clock": "elapsed capture time",
       "pausesWhen": "recording is paused",
-      "startsWhen": "the microphone is capturing audio",
+      "startsWhen": "audio capture has started, after microphone preparation",
       "excludes": [
         "time spent opening the screen",
         "microphone permission",
-        "capture warm-up before the first sample",
+        "time until the recorder confirms capture has started",
         "time spent paused"
       ]
     },
@@ -122,6 +123,8 @@
       "onPause": "Stop appending audio and freeze the timer and the level meter. The button becomes Resume. Already captured audio stays.",
       "onResume": "Continue the same recording from the elapsed time already shown. Do not reset the timer.",
       "sizeLimit": "Stop and save when the captured file reaches the product audio size limit. There is no countdown and no fixed minute cap. If the device cannot continue because it is out of space or memory, say so and keep whatever audio can still be saved.",
+      "onOpen": "Open immediately in preparing. Request the microphone, then start capture automatically. Do not show a Start button and do not run the timer until capture starts.",
+      "onPrepareFailed": "Leave preparing. Show the failure, Retry and Cancel. Release the microphone.",
       "unavailableCapture": "When the device can only produce uncompressed audio, this screen does not start. Title recording stays available.",
       "transcription": "Not available on this screen. Transcribe with AI is an action on the saved attachment."
     },
@@ -130,8 +133,17 @@
       "idle": {
         "description": "Recorder is ready."
       },
+      "preparing": {
+        "description": "The screen is open and capture has not started. The microphone indicator stays neutral, an indeterminate indicator is shown, and the timer is hidden. Pause and Save are disabled. Cancel stays available.",
+        "statusLabel": "Preparing microphone...",
+        "microphone": "icon.default",
+        "indicator": "indeterminate",
+        "timer": false,
+        "actions": ["cancel"]
+      },
       "starting": {
-        "description": "Requesting microphone access. The timer has not started."
+        "description": "Same as preparing. Kept so older references to the startup state still point here.",
+        "sameAs": "preparing"
       },
       "recording": {
         "description": "Audio capture is active. The timer advances and the level meter follows the microphone.",
@@ -158,8 +170,8 @@
         "actions": []
       },
       "error": {
-        "description": "Recording or saving failed. Permission and pause failures leave no new attachment. A failed save keeps the current take so the user can retry or discard it.",
-        "actions": ["cancel", "stop"]
+        "description": "Permission denied, no microphone, device or recorder initialization failed, or the microphone disconnected. The screen leaves preparing and shows the message with Retry and Cancel. The microphone is released. A failed save keeps the current take so the user can retry or discard it.",
+        "actions": ["cancel", "retry"]
       }
     },
 
@@ -168,7 +180,8 @@
       "Do not define screen-specific colors, radii or spacing.",
       "The reference PNG is a visual target for composition and density, not a source of token values.",
       "Do not reproduce the glowing halo from the reference. The microphone uses the thin accent ring from voiceRecorder.",
-      "The ring shows microphone activity. It is teal while recording and neutral while paused. It is not a duration countdown.",
+      "The ring shows microphone activity. It is teal while recording and neutral while paused or preparing. It is not a duration countdown.",
+      "Preparing shows Preparing microphone... and an indeterminate indicator. The timer stays hidden until capture starts.",
       "The waveform is a live level meter of about 16 bars. Do not use a decorative row of dots or a looping animation.",
       "There is no close control in the header. Cancel under the buttons is the only discard action.",
       "Cancel, Pause or Resume, and Save have visible labels. Save does not mean transcribe.",

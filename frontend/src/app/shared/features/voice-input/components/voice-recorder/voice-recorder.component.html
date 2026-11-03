@@ -26,18 +26,34 @@
       <div
         class="activity-ring"
         aria-hidden="true"
+        [class.is-preparing]="phase() === 'preparing'"
         [class.is-paused]="phase() === 'paused' || phase() === 'error'"
         [class.is-saving]="phase() === 'saving'"
       ></div>
     }
     <div class="mic-icon-wrapper">
-      <ba-mic-icon color="var(--color-icon-active)"></ba-mic-icon>
+      <ba-mic-icon [color]="micColor()"></ba-mic-icon>
     </div>
   </div>
 
-  <p class="recorder-clock" data-test="voice-recorder-clock">{{ elapsedLabel() }}</p>
+  @if (phase() === 'preparing') {
+    <p class="recorder-status" data-test="voice-recorder-preparing">
+      <span class="material-symbols-rounded audio-spinner" aria-hidden="true"
+        >progress_activity</span
+      >
+      Preparing microphone...
+    </p>
+  } @else if (phase() === 'error') {
+    <p class="recorder-error" data-test="voice-recorder-error">{{ errorMessage() }}</p>
+    <button class="recorder-retry" type="button" data-test="voice-recorder-retry" (click)="retry()">
+      <span class="material-symbols-rounded" aria-hidden="true">refresh</span>
+      Retry
+    </button>
+  } @else {
+    <p class="recorder-clock" data-test="voice-recorder-clock">{{ elapsedLabel() }}</p>
+  }
 
-  @if (mode === 'attachment' && phase() !== 'starting') {
+  @if (mode === 'attachment' && phase() !== 'preparing' && phase() !== 'error') {
     <p
       class="recorder-status"
       data-test="voice-recorder-status"
@@ -93,7 +109,7 @@
         type="button"
         data-test="voice-recorder-pause"
         [attr.aria-label]="phase() === 'paused' ? 'Resume' : 'Pause'"
-        [disabled]="phase() === 'starting' || phase() === 'saving' || phase() === 'error'"
+        [disabled]="phase() === 'preparing' || phase() === 'saving' || phase() === 'error'"
         (click)="togglePause()"
       >
         <span class="material-symbols-rounded" aria-hidden="true">{{
@@ -111,7 +127,7 @@
       type="button"
       data-test="voice-recorder-apply"
       [attr.aria-label]="mode === 'title' ? 'Apply' : 'Save'"
-      [disabled]="phase() === 'starting' || phase() === 'saving' || saveBlocked()"
+      [disabled]="!canSave()"
       (click)="apply()"
     >
       <span class="material-symbols-rounded" aria-hidden="true">check</span>

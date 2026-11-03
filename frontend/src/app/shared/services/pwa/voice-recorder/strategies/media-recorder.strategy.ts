@@ -21,21 +21,19 @@ const MEDIARECORDER_TIMESLICE_MS = 250;
  */
 export class MediaRecorderStrategy implements IWebRecordingStrategy {
   readonly engine = 'media-recorder' as const;
-  readonly warmupMs: number;
 
   private mediaRecorder: MediaRecorder | null = null;
   private chunks: Blob[] = [];
   private activeMimeType = DEFAULT_WEBM_MIME;
+  private rejectStart: ((error: Error) => void) | null = null;
 
-  private constructor(warmupMs: number) {
-    this.warmupMs = Math.max(0, warmupMs);
-  }
+  private constructor() {}
 
   /**
    * Returns a strategy instance if `MediaRecorder` can be constructed for this stream;
    * otherwise `null` (caller should use `WebAudioWavStrategy`).
    */
-  static tryCreate(stream: MediaStream, warmupMs: number): MediaRecorderStrategy | null {
+  static tryCreate(stream: MediaStream): MediaRecorderStrategy | null {
     if (typeof MediaRecorder === 'undefined') return null;
 
     const candidates = [
@@ -51,7 +49,7 @@ export class MediaRecorderStrategy implements IWebRecordingStrategy {
         ? new MediaRecorder(stream, { mimeType: mime })
         : new MediaRecorder(stream);
 
-      const inst = new MediaRecorderStrategy(warmupMs);
+      const inst = new MediaRecorderStrategy();
       inst.mediaRecorder = recorder;
       inst.activeMimeType = recorder.mimeType || mime || DEFAULT_WEBM_MIME;
       inst.chunks = [];
@@ -66,9 +64,45 @@ export class MediaRecorderStrategy implements IWebRecordingStrategy {
     }
   }
 
-  async start(): Promise<void> {
-    // Emit data in small chunks to reduce memory pressure and avoid "single giant blob" finalization quirks.
-    this.mediaRecorder?.start(MEDIARECORDER_TIMESLICE_MS);
+  start(): Promise<void> {
+    const recorder = this.mediaRecorder;
+    if (!recorder) {
+      return Promise.reject(new Error('Recorder is not initialized'));
+    }
+    if (recorder.state === 'recording') {
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve, reject) => {
+      const cleanup = (): void => {
+        this.rejectStart = null;
+        recorder.removeEventListener('start', onStart);
+        recorder.removeEventListener('error', onError);
+      };
+      const onStart = (): void => {
+        cleanup();
+        if (!this.mediaRecorder) {
+          reject(new DOMException('Aborted', 'AbortError'));
+          return;
+        }
+        resolve();
+      };
+      const onError = (): void => {
+        cleanup();
+        reject(new Error('MediaRecorder error'));
+      };
+
+      this.rejectStart = reject;
+      recorder.addEventListener('start', onStart);
+      recorder.addEventListener('error', onError);
+      try {
+        // Emit data in small chunks to reduce memory pressure and avoid one giant final blob.
+        recorder.start(MEDIARECORDER_TIMESLICE_MS);
+      } catch (error) {
+        cleanup();
+        reject(error instanceof Error ? error : new Error('Failed to start recorder'));
+      }
+    });
   }
 
   async pause(): Promise<void> {
@@ -121,6 +155,8 @@ export class MediaRecorderStrategy implements IWebRecordingStrategy {
   }
 
   dispose(): void {
+    this.rejectStart?.(new DOMException('Aborted', 'AbortError'));
+    this.rejectStart = null;
     const recorder = this.mediaRecorder;
     if (recorder && recorder.state !== 'inactive') {
       recorder.onstop = () => this.disposeRecorderOnly();

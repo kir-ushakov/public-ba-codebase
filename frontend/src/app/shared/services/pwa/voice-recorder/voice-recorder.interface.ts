@@ -15,4 +15,9 @@ export interface IVoiceRecorder {
    * Empty when this capture path has no meter.
    */
   levels(barCount: number): number[];
+  /**
+   * Fired when the capture device ends on its own, for example the microphone
+   * is unplugged. Implementations that cannot observe this omit the method.
+   */
+  observeUnexpectedEnd?(handler: () => void): void;
 }
