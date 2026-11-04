@@ -6,6 +6,7 @@ import { getImageController } from './usecases/get-image/_index.js';
 import { uploadAudioController } from './usecases/upload-audio/index.js';
 import { getAudioController } from './usecases/get-audio/index.js';
 import { deleteAudioController } from './usecases/delete-audio/index.js';
+import { deleteImageController } from './usecases/delete-image/index.js';
 import { MAX_IMAGE_UPLOAD_FILE_BYTES } from './config.js';
 import { BaseController } from '../../shared/infra/http/models/base-controller.js';
 import { asyncHandler } from '../../shared/core/async-handler.function.js';
@@ -29,6 +30,11 @@ filesRouter.post(
 filesRouter.get(
   '/image/:imageId',
   asyncHandler(getImageController.execute.bind(getImageController)),
+);
+
+filesRouter.delete(
+  '/image/:imageId',
+  asyncHandler(deleteImageController.execute.bind(deleteImageController)),
 );
 
 const audioUploader: multer.Multer = multer({

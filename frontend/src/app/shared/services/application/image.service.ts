@@ -37,6 +37,16 @@ export class ImageService {
     await this.imageDbService.deleteImage(imageId);
   }
 
+  /** Drops a picture the task no longer references. A missing server file is success. */
+  public async discardRemoved(imageId: string): Promise<void> {
+    await this.deleteImage(imageId);
+    try {
+      await this.imageUploaderService.deleteImage(imageId);
+    } catch {
+      // The task no longer references the file. A later cleanup can drop the remote copy.
+    }
+  }
+
   public async convertBlobUriToBlob(imageUri: string): Promise<Blob> {
     const blob = await this.fetchService.fetchBlob(imageUri);
     return this.imageOptimizerService.optimizeImage(blob);

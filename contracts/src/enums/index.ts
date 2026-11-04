@@ -14,6 +14,8 @@ export {
   EUploadAudioUseCaseError,
   EGetAudioUseCaseError,
   EDeleteAudioUseCaseError,
+  EDeleteImageUseCaseError,
+  EDeleteTaskUseCaseError,
   EGetImageUseCaseError,
   ELoginUseCaseError,
   ESignUpUseCaseError,

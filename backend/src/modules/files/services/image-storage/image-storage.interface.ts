@@ -23,4 +23,6 @@ export interface IImageStorage {
   /** Returns the storage-specific fileId to persist on the Image. */
   put(params: PutImageParams): Promise<ImageStorageResult<string>>;
   get(fileId: string): Promise<ImageStorageResult<StoredImageFile>>;
+  /** Removes the stored file. A missing file is success. */
+  delete(fileId: string): Promise<ImageStorageResult<void>>;
 }

@@ -255,6 +255,7 @@ export class TaskScreenState {
       return;
     }
 
+    const previousImageIds = imageIdsOn(taskData);
     const saved = await this.savedImagesFromDrafts(draftImages, taskData.imageId, coverDraftKey);
     const changes = { ...taskData, ...saved };
 
@@ -268,6 +269,7 @@ export class TaskScreenState {
         }),
       ),
     );
+    await this.dropImagesMissingFromTask(taskData.id, previousImageIds);
     ctx.dispatch(TaskScreenAction.Close);
   }
 
@@ -601,6 +603,7 @@ export class TaskScreenState {
       return;
     }
 
+    const removedImageId = drafts[removedIndex]?.imageId;
     const nextDrafts = drafts.filter((_, index) => index !== removedIndex);
     const coverKey = activeCoverKey(drafts, taskData.imageId, coverDraftKey);
     ctx.patchState({
@@ -608,6 +611,9 @@ export class TaskScreenState {
       coverDraftKey: coverKey === removedKey ? draftImageKey(nextDrafts[0]) : coverDraftKey,
     });
     await this.persistViewGallery(ctx);
+    if (removedImageId && ctx.getState().mode === ETaskViewMode.View && taskData.id) {
+      await this.dropImagesMissingFromTask(taskData.id, [removedImageId]);
+    }
   }
 
   @Action(TaskScreenAction.UpdateFormData)
@@ -682,6 +688,19 @@ export class TaskScreenState {
     return { imageId, images };
   }
 
+  private async dropImagesMissingFromTask(taskId: string, previousIds: string[]): Promise<void> {
+    const stored = this.taskInStore(taskId);
+    if (!stored) {
+      return;
+    }
+    const kept = new Set(imageIdsOn(stored));
+    for (const imageId of previousIds) {
+      if (!kept.has(imageId)) {
+        await this.imageService.discardRemoved(imageId);
+      }
+    }
+  }
+
   private async persistAttachments(
     ctx: StateContext<ITaskScreenStateModel>,
     taskId: string,
@@ -740,6 +759,19 @@ export class TaskScreenState {
       ]),
     );
   }
+}
+
+function imageIdsOn(task: { imageId?: string; images?: string[] }): string[] {
+  const ids: string[] = [];
+  for (const imageId of task.images ?? []) {
+    if (imageId.length > 0 && !ids.includes(imageId)) {
+      ids.push(imageId);
+    }
+  }
+  if (task.imageId && !ids.includes(task.imageId)) {
+    ids.push(task.imageId);
+  }
+  return ids;
 }
 
 function draftImageKey(draft: DraftTaskImage | undefined): string | undefined {

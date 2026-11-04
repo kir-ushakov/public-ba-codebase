@@ -42,6 +42,15 @@ export enum EDeleteAudioUseCaseError {
   DeleteFailed = 'DELETE_AUDIO_ERROR__DELETE_FAILED',
 }
 
+export enum EDeleteImageUseCaseError {
+  InvalidImageId = 'DELETE_IMAGE_ERROR__INVALID_IMAGE_ID',
+  DeleteFailed = 'DELETE_IMAGE_ERROR__DELETE_FAILED',
+}
+
+export enum EDeleteTaskUseCaseError {
+  AttachmentCleanupFailed = 'DELETE_TASK_ERROR__ATTACHMENT_CLEANUP_FAILED',
+}
+
 export enum EGetImageUseCaseError {
   GoogleRefreshTokenInvalid = 'GET_IMAGE_ERROR__GOOGLE_REFRESH_TOKEN_INVALID',
   GoogleDriveRequestFailed = 'GET_IMAGE_ERROR__GOOGLE_DRIVE_REQUEST_FAILED',

@@ -131,6 +131,69 @@ describe('LocalStore', () => {
     expect((await store.loadAll()).tasks).toEqual([]);
   });
 
+  it('drops image and audio blobs when the task is deleted locally', async () => {
+    const row = taskWithMedia('task-local-delete', userA);
+    await seedMedia(store, database, row, ['keep-image']);
+
+    await store.deleteTaskAndEnqueue(userA, row.id, {
+      id: 'entry-delete',
+      entityId: row.id,
+      change: {
+        entity: EChangedEntity.Task,
+        action: EChangeAction.Deleted,
+        object: { id: row.id, modifiedAt: row.modifiedAt },
+      },
+    });
+
+    const db = await database.getDatabase();
+    expect(await db.get(DATABASE_CONFIG.STORES.TASKS, row.id)).toBeUndefined();
+    expect(await db.get(DATABASE_CONFIG.STORES.IMAGES, 'cover-image')).toBeUndefined();
+    expect(await db.get(DATABASE_CONFIG.STORES.IMAGES, 'gallery-image')).toBeUndefined();
+    expect(await db.get(DATABASE_CONFIG.STORES.AUDIO, 'audio-clip')).toBeUndefined();
+    expect(await db.get(DATABASE_CONFIG.STORES.IMAGES, 'keep-image')).toMatchObject({
+      id: 'keep-image',
+    });
+    expect((await store.listOutbox()).map(entry => entry.id)).toEqual(['entry-delete']);
+  });
+
+  it('drops image and audio blobs when a server delete arrives', async () => {
+    const row = taskWithMedia('task-server-delete', userA);
+    await seedMedia(store, database, row, ['keep-image']);
+
+    const applied = await store.applyServerChangesAndRevision(
+      [
+        {
+          entity: EChangedEntity.Task,
+          action: EChangeAction.Deleted,
+          object: { id: row.id, modifiedAt: row.modifiedAt },
+        },
+      ],
+      4,
+    );
+
+    const db = await database.getDatabase();
+    expect(applied.map(change => change.object?.id)).toEqual([row.id]);
+    expect(await db.get(DATABASE_CONFIG.STORES.TASKS, row.id)).toBeUndefined();
+    expect(await db.get(DATABASE_CONFIG.STORES.IMAGES, 'cover-image')).toBeUndefined();
+    expect(await db.get(DATABASE_CONFIG.STORES.IMAGES, 'gallery-image')).toBeUndefined();
+    expect(await db.get(DATABASE_CONFIG.STORES.AUDIO, 'audio-clip')).toBeUndefined();
+    expect(await db.get(DATABASE_CONFIG.STORES.IMAGES, 'keep-image')).toMatchObject({
+      id: 'keep-image',
+    });
+  });
+
+  it('drops image and audio blobs when the local task is removed after a 404', async () => {
+    const row = taskWithMedia('task-not-found', userA);
+    await seedMedia(store, database, row, []);
+
+    await store.removeLocalEntity(EChangedEntity.Task, row.id);
+
+    const db = await database.getDatabase();
+    expect(await db.get(DATABASE_CONFIG.STORES.TASKS, row.id)).toBeUndefined();
+    expect(await db.get(DATABASE_CONFIG.STORES.IMAGES, 'cover-image')).toBeUndefined();
+    expect(await db.get(DATABASE_CONFIG.STORES.AUDIO, 'audio-clip')).toBeUndefined();
+  });
+
   it('removes the legacy store key only after the database opens', async () => {
     const session = TestBed.inject(LocalSessionService);
     localStorage.setItem(LEGACY_NGXS_STATE_KEY, '{"tasks":{"entities":[]}}');
@@ -144,6 +207,43 @@ describe('LocalStore', () => {
     expect(localStorage.getItem(LEGACY_NGXS_STATE_KEY)).toBe('keep');
   });
 });
+
+function taskWithMedia(id: string, userId: string): Task {
+  return {
+    ...task(id, userId, 'With media'),
+    imageId: 'cover-image',
+    images: ['gallery-image'],
+    audioAttachments: [
+      {
+        id: 'audio-clip',
+        durationMs: 1000,
+        mimeType: 'audio/webm',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+    ],
+  };
+}
+
+async function seedMedia(
+  store: LocalStore,
+  database: DatabaseService,
+  row: Task,
+  extraImageIds: string[],
+): Promise<void> {
+  await store.open(row.userId);
+  const db = await database.getDatabase();
+  await commitReadWrite(
+    db,
+    [DATABASE_CONFIG.STORES.TASKS, DATABASE_CONFIG.STORES.IMAGES, DATABASE_CONFIG.STORES.AUDIO],
+    async tx => {
+      await tx.objectStore(DATABASE_CONFIG.STORES.TASKS).put(row);
+      for (const id of ['cover-image', 'gallery-image', ...extraImageIds]) {
+        await tx.objectStore(DATABASE_CONFIG.STORES.IMAGES).put({ id, uploaded: true });
+      }
+      await tx.objectStore(DATABASE_CONFIG.STORES.AUDIO).put({ id: 'audio-clip', uploaded: false });
+    },
+  );
+}
 
 function deleteDatabase(name: string): Promise<void> {
   return new Promise((resolve, reject) => {

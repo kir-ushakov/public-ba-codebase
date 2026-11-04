@@ -59,6 +59,24 @@ export class LocalImageStorage implements IImageStorage {
       return failRead(error, fileId);
     }
   }
+
+  public async delete(fileId: string): Promise<ImageStorageResult<void>> {
+    const filePath = resolveInsideRoot(this.rootDir, fileId);
+    if (!filePath) {
+      return failInvalidPath({ fileId });
+    }
+
+    try {
+      await fsp.rm(filePath, { force: true });
+      return Result.ok(undefined);
+    } catch (error) {
+      return serviceFail('Failed to delete image', EImageStorageError.WriteFailed, {
+        error,
+        level: ServiceErrorLevel.High,
+        metadata: { fileId },
+      });
+    }
+  }
 }
 
 function failInvalidPath(metadata: Record<string, unknown>): ImageStorageResult<never> {
