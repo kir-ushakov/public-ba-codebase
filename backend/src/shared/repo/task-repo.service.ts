@@ -84,24 +84,28 @@ export class TaskRepoService {
     return updatedTask;
   }
 
+  public async findUserTaskById(userId: string, taskId: string): Promise<Task | null> {
+    const taskDocument = await this.models.TaskModel.findOne({
+      _id: taskId,
+      userId,
+    }).lean();
+    if (!taskDocument) {
+      return null;
+    }
+    return TaskMapper.toDomain(taskDocument);
+  }
+
   public async getUserTaskById(
     userId: string,
     taskId: string,
   ): Promise<Result<Task, ServiceError<ETaskRepoServiceError>>> {
-    const TaskModel = this.models.TaskModel;
-    const params = {
-      _id: taskId,
-      userId: userId,
-    };
-    const taskDocument = await TaskModel.findOne(params).lean();
-
-    if (!taskDocument)
+    const task = await this.findUserTaskById(userId, taskId);
+    if (!task) {
       return serviceFail<ETaskRepoServiceError>(
         `The task with id = "${taskId}" for user with id = ${userId} dosn't exists`,
         ETaskRepoServiceError.UserTaskNotFound,
       );
-
-    const task = TaskMapper.toDomain(taskDocument);
+    }
     return Result.ok<Task, ServiceError<ETaskRepoServiceError>>(task);
   }
 

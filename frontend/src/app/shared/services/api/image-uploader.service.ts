@@ -35,6 +35,12 @@ export class ImageUploaderService {
     }
   }
 
+  public deleteImage(imageId: string): Promise<void> {
+    return firstValueFrom(this.http.delete<void>(`${API_ENDPOINTS.FILES.IMAGE}/${imageId}`)).then(
+      () => undefined,
+    );
+  }
+
   /**
    * Converts UploadImageContract.Request to FormData
    * Maps contract fields to multipart/form-data format

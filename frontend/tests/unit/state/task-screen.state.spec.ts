@@ -36,7 +36,7 @@ import { EUserAuthState, UserState } from 'src/app/shared/state/user.state';
 
 describe('TaskScreenState', () => {
   let store: Store;
-  let imageService: { saveImage: jest.Mock };
+  let imageService: { saveImage: jest.Mock; discardRemoved: jest.Mock };
   let deviceCameraService: { takePicture: jest.Mock };
   let audioService: {
     saveBlob: jest.Mock;
@@ -61,7 +61,10 @@ describe('TaskScreenState', () => {
   };
 
   beforeEach(() => {
-    imageService = { saveImage: jest.fn().mockResolvedValue('new-image-id') };
+    imageService = {
+      saveImage: jest.fn().mockResolvedValue('new-image-id'),
+      discardRemoved: jest.fn().mockResolvedValue(undefined),
+    };
     deviceCameraService = { takePicture: jest.fn() };
     audioService = {
       saveBlob: jest.fn(),
@@ -340,6 +343,7 @@ describe('TaskScreenState', () => {
 
     expect(imageService.saveImage).toHaveBeenCalledTimes(1);
     expect(imageService.saveImage).toHaveBeenCalledWith('blob:second-photo');
+    expect(imageService.discardRemoved).not.toHaveBeenCalled();
     expect(created?.imageId).toBe('second-image-id');
     expect(created?.images).toEqual(['second-image-id']);
   });
@@ -434,6 +438,7 @@ describe('TaskScreenState', () => {
 
     const updated = store.selectSnapshot(TasksState.allTasks).find(t => t.id === withGallery.id);
     expect(imageService.saveImage).not.toHaveBeenCalled();
+    expect(imageService.discardRemoved).toHaveBeenCalledWith('cover-id');
     expect(updated?.imageId).toBe('second-id');
     expect(updated?.images).toEqual(['second-id']);
     expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.View);
@@ -566,6 +571,7 @@ describe('TaskScreenState', () => {
 
     const updated = store.selectSnapshot(TasksState.allTasks).find(t => t.id === withGallery.id);
     expect(imageService.saveImage).not.toHaveBeenCalled();
+    expect(imageService.discardRemoved).not.toHaveBeenCalled();
     expect(updated?.imageId).toBe('second-id');
     expect(updated?.images).toEqual(['cover-id', 'second-id']);
   });
@@ -600,6 +606,7 @@ describe('TaskScreenState', () => {
 
     const updated = store.selectSnapshot(TasksState.allTasks).find(t => t.id === withGallery.id);
     expect(imageService.saveImage).not.toHaveBeenCalled();
+    expect(imageService.discardRemoved).toHaveBeenCalledWith('cover-id');
     expect(updated?.imageId).toBe('second-id');
     expect(updated?.images).toEqual(['second-id']);
   });
@@ -626,6 +633,7 @@ describe('TaskScreenState', () => {
       .find(t => t.id === existingWithPhoto.id);
     expect(updated?.imageId).toBeUndefined();
     expect(updated?.images).toEqual([]);
+    expect(imageService.discardRemoved).toHaveBeenCalledWith('old-image-id');
   });
 
   it('marks a viewed task active and closes the view', async () => {

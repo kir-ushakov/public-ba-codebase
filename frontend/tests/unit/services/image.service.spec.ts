@@ -13,7 +13,7 @@ describe('ImageService', () => {
     updateImage: jest.Mock;
     deleteImage: jest.Mock;
   };
-  let imageUploaderService: { uploadImageBlob: jest.Mock };
+  let imageUploaderService: { uploadImageBlob: jest.Mock; deleteImage: jest.Mock };
   let service: ImageService;
 
   beforeEach(() => {
@@ -22,7 +22,7 @@ describe('ImageService', () => {
       updateImage: jest.fn(),
       deleteImage: jest.fn(),
     };
-    imageUploaderService = { uploadImageBlob: jest.fn() };
+    imageUploaderService = { uploadImageBlob: jest.fn(), deleteImage: jest.fn() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -35,6 +35,25 @@ describe('ImageService', () => {
       ],
     });
     service = TestBed.inject(ImageService);
+  });
+
+  it('drops the local record and asks the server to delete the file', async () => {
+    imageDbService.deleteImage.mockResolvedValue(undefined);
+    imageUploaderService.deleteImage.mockResolvedValue(undefined);
+
+    await service.discardRemoved('img-1');
+
+    expect(imageDbService.deleteImage).toHaveBeenCalledWith('img-1');
+    expect(imageUploaderService.deleteImage).toHaveBeenCalledWith('img-1');
+  });
+
+  it('drops the local record when the server delete fails', async () => {
+    imageDbService.deleteImage.mockResolvedValue(undefined);
+    imageUploaderService.deleteImage.mockRejectedValue(new HttpErrorResponse({ status: 500 }));
+
+    await expect(service.discardRemoved('img-1')).resolves.toBeUndefined();
+
+    expect(imageDbService.deleteImage).toHaveBeenCalledWith('img-1');
   });
 
   it('uploads a local blob and marks it uploaded', async () => {

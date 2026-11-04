@@ -22,6 +22,14 @@ const SERVER_STORES = [
   DATABASE_CONFIG.STORES.TAGS,
   DATABASE_CONFIG.STORES.OUTBOX,
   DATABASE_CONFIG.STORES.META,
+  DATABASE_CONFIG.STORES.IMAGES,
+  DATABASE_CONFIG.STORES.AUDIO,
+] as const;
+
+const TASK_ATTACHMENT_STORES = [
+  DATABASE_CONFIG.STORES.TASKS,
+  DATABASE_CONFIG.STORES.IMAGES,
+  DATABASE_CONFIG.STORES.AUDIO,
 ] as const;
 
 /**
@@ -115,8 +123,9 @@ export class LocalStore {
     const db = await this.database.getDatabase();
     await commitReadWrite(
       db,
-      [DATABASE_CONFIG.STORES.TASKS, DATABASE_CONFIG.STORES.OUTBOX],
+      [...TASK_ATTACHMENT_STORES, DATABASE_CONFIG.STORES.OUTBOX],
       async tx => {
+        await deleteStoredAttachments(tx, taskId);
         await tx.objectStore(DATABASE_CONFIG.STORES.TASKS).delete(taskId);
         await tx.objectStore(DATABASE_CONFIG.STORES.OUTBOX).put(entry);
       },
@@ -193,10 +202,15 @@ export class LocalStore {
   /** Drops a local row after the server says the entity is already gone. Does not enqueue. */
   public async removeLocalEntity(entity: EChangedEntity, entityId: string): Promise<void> {
     const db = await this.database.getDatabase();
-    const storeName =
-      entity === EChangedEntity.Tag ? DATABASE_CONFIG.STORES.TAGS : DATABASE_CONFIG.STORES.TASKS;
-    await commitReadWrite(db, [storeName], async tx => {
-      await tx.objectStore(storeName).delete(entityId);
+    if (entity === EChangedEntity.Tag) {
+      await commitReadWrite(db, [DATABASE_CONFIG.STORES.TAGS], async tx => {
+        await tx.objectStore(DATABASE_CONFIG.STORES.TAGS).delete(entityId);
+      });
+      return;
+    }
+    await commitReadWrite(db, [...TASK_ATTACHMENT_STORES], async tx => {
+      await deleteStoredAttachments(tx, entityId);
+      await tx.objectStore(DATABASE_CONFIG.STORES.TASKS).delete(entityId);
     });
   }
 
@@ -208,6 +222,7 @@ export class LocalStore {
 
     if (change.entity === EChangedEntity.Task) {
       if (change.action === EChangeAction.Deleted) {
+        await deleteStoredAttachments(tx, entityId);
         await tx.objectStore(DATABASE_CONFIG.STORES.TASKS).delete(entityId);
         return;
       }
@@ -223,4 +238,40 @@ export class LocalStore {
       await tx.objectStore(DATABASE_CONFIG.STORES.TAGS).put(change.object as Tag);
     }
   }
+}
+
+async function deleteStoredAttachments(tx: LocalTx, taskId: string): Promise<void> {
+  const task = await tx.objectStore(DATABASE_CONFIG.STORES.TASKS).get(taskId);
+  if (!task) {
+    return;
+  }
+  for (const imageId of imageIdsOf(task)) {
+    await tx.objectStore(DATABASE_CONFIG.STORES.IMAGES).delete(imageId);
+  }
+  for (const audioId of audioIdsOf(task)) {
+    await tx.objectStore(DATABASE_CONFIG.STORES.AUDIO).delete(audioId);
+  }
+}
+
+function imageIdsOf(task: Task): string[] {
+  const ids: string[] = [];
+  for (const imageId of task.images ?? []) {
+    if (imageId.length > 0 && !ids.includes(imageId)) {
+      ids.push(imageId);
+    }
+  }
+  if (task.imageId && !ids.includes(task.imageId)) {
+    ids.push(task.imageId);
+  }
+  return ids;
+}
+
+function audioIdsOf(task: Task): string[] {
+  const ids: string[] = [];
+  for (const attachment of task.audioAttachments ?? []) {
+    if (attachment.id.length > 0 && !ids.includes(attachment.id)) {
+      ids.push(attachment.id);
+    }
+  }
+  return ids;
 }

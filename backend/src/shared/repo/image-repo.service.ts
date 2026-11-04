@@ -45,4 +45,22 @@ export class ImageRepoService {
       ImageMapper.toDomain(imageDocument).getValue(),
     );
   }
+
+  public async findUserImagesByIds(userId: string, imageIds: string[]): Promise<Image[]> {
+    if (imageIds.length === 0) {
+      return [];
+    }
+    const rows = await this._models.ImageModel.find({
+      userId,
+      imageId: { $in: imageIds },
+    }).lean();
+    return rows.map(raw => ImageMapper.toDomain(raw).getValue());
+  }
+
+  public async deleteUserImages(userId: string, imageIds: string[]): Promise<void> {
+    if (imageIds.length === 0) {
+      return;
+    }
+    await this._models.ImageModel.deleteMany({ userId, imageId: { $in: imageIds } });
+  }
 }
