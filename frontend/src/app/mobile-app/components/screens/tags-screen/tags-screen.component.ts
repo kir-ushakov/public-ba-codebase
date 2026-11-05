@@ -158,20 +158,21 @@ export class TagsScreenComponent implements OnInit {
 
   private async deleteTag(tagId: string): Promise<void> {
     const tasks = this.selectors.tasks().filter(task => task.tagIds?.includes(tagId));
-    await tasks.reduce(
-      (pending, task) =>
-        pending.then(() =>
-          firstValueFrom(
-            this.store.dispatch(
-              new TasksAction.UpdateTask({
-                taskId: task.id,
-                changes: { tagIds: (task.tagIds ?? []).filter(id => id !== tagId) },
-              }),
-            ),
+    let pending = Promise.resolve();
+    for (const task of tasks) {
+      const tagIds = (task.tagIds ?? []).filter(id => id !== tagId);
+      pending = pending.then(() =>
+        firstValueFrom(
+          this.store.dispatch(
+            new TasksAction.UpdateTask({
+              taskId: task.id,
+              changes: { tagIds },
+            }),
           ),
-        ),
-      Promise.resolve(undefined),
-    );
+        ).then(() => undefined),
+      );
+    }
+    await pending;
     await firstValueFrom(this.store.dispatch(new TagsAction.DeleteTag(tagId)));
     this.contentMode.clearTag(tagId);
   }
