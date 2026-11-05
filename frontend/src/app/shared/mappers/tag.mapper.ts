@@ -8,6 +8,7 @@ export class TagMapper {
       userId: tagDto.userId,
       name: tagDto.name,
       color: tagDto.color,
+      isPinned: tagDto.isPinned === true,
       createdAt: tagDto.createdAt,
       modifiedAt: tagDto.modifiedAt,
     };
@@ -19,6 +20,7 @@ export class TagMapper {
       userId: tag.userId,
       name: tag.name,
       color: tag.color,
+      isPinned: tag.isPinned === true,
       createdAt: tag.createdAt,
       modifiedAt: tag.modifiedAt,
     };

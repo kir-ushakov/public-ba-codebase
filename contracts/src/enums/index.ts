@@ -25,6 +25,7 @@ export {
   ESlackEventReceivedUseCaseError,
   ETaskError,
   ETagError,
+  ETagRepoServiceError,
   ETaskRepoServiceError,
   EImageRepoServiceError,
 } from './api-error.enum';

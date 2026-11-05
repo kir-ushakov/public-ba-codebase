@@ -178,6 +178,7 @@ describe('Integration: GetChanges (Controller -> UseCase -> Repo -> MongoDB)', (
       }),
     ]);
     expect(res.body.changes[0].object).not.toHaveProperty('isCategory');
+    expect(res.body.changes[0].object.isPinned).toBe(false);
   });
 
   it('delivers a created tag and then its deletion', async () => {

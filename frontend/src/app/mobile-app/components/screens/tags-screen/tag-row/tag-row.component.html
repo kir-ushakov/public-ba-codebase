@@ -1,0 +1,17 @@
+<div class="tag-row" data-test="tag-row" [class.is-pinned]="tag().isPinned">
+  <button class="tag-open" type="button" data-test="tag-open" (click)="opened.emit(tag().id)">
+    <span class="material-symbols-rounded tag-sell" aria-hidden="true">sell</span>
+    <span class="tag-name">{{ tag().name }}</span>
+    <span class="tag-count">{{ tag().countLabel }}</span>
+  </button>
+  <button
+    class="tag-pin"
+    type="button"
+    data-test="tag-pin"
+    [attr.aria-label]="tag().isPinned ? 'Unpin tag' : 'Pin tag'"
+    [attr.aria-pressed]="tag().isPinned"
+    (click)="pinned.emit({ id: tag().id, isPinned: tag().isPinned })"
+  >
+    <span class="material-symbols-rounded" aria-hidden="true">push_pin</span>
+  </button>
+</div>

@@ -59,6 +59,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
     expect(responseBody.id).toBe(dto.id);
     expect(responseBody.name).toBe(dto.name);
     expect(responseBody.color).toBe(dto.color);
+    expect(responseBody.isPinned).toBe(false);
     expect(responseBody).not.toHaveProperty('isCategory');
     expect(responseBody.userId).toBe(userId);
     expect(responseBody.createdAt).toBe(dto.createdAt);
@@ -71,6 +72,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
     }
     expect(persisted.name).toBe(dto.name);
     expect(persisted.color).toBe(dto.color);
+    expect(persisted.isPinned).toBe(false);
     expect(persisted).not.toHaveProperty('isCategory');
     expect(String(persisted.userId)).toBe(userId);
     expect(new Date(persisted.createdAt).toISOString()).toBe(dto.createdAt);

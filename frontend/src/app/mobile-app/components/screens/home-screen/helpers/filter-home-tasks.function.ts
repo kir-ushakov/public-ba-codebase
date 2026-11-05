@@ -2,6 +2,13 @@ import { taskDescriptionText } from 'src/app/shared/helpers/is-empty-task-descri
 import type { Tag } from 'src/app/shared/models/tag.model';
 import type { Task } from 'src/app/shared/models/task.model';
 
+export function tasksMatchingTag(tasks: Task[], tagId: string | null): Task[] {
+  if (!tagId) {
+    return tasks;
+  }
+  return tasks.filter(task => (task.tagIds ?? []).includes(tagId));
+}
+
 export function filterHomeTasks(tasks: Task[], query: string, tags: Tag[]): Task[] {
   const needle = query.trim().toLowerCase();
   if (needle.length === 0) {

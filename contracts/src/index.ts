@@ -55,6 +55,7 @@ export {
   ESlackEventReceivedUseCaseError,
   ETaskError,
   ETagError,
+  ETagRepoServiceError,
   ETaskRepoServiceError,
   EImageRepoServiceError,
 } from './enums';

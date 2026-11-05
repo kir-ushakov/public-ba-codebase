@@ -112,6 +112,10 @@ export enum ETaskRepoServiceError {
   UserTaskNotFound = 'TASK_REPO_SERVICE_ERROR__USER_TASK_NOT_FOUND',
 }
 
+export enum ETagRepoServiceError {
+  UserTagNotFound = 'TAG_REPO_SERVICE_ERROR__USER_TAG_NOT_FOUND',
+}
+
 export enum EImageRepoServiceError {
   UserImageNotFound = 'IMAGE_REPO_SERVICE_ERROR__USER_IMAGE_NOT_FOUND',
 }

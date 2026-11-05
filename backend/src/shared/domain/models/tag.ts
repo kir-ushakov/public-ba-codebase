@@ -11,6 +11,7 @@ export type TagProps = {
   userId: string;
   name: string;
   color: string;
+  isPinned: boolean;
   createdAt: Date;
   modifiedAt: Date;
 };
@@ -21,6 +22,7 @@ export type TagPersistent = {
   userId: string;
   name: string;
   color: string;
+  isPinned?: boolean;
   createdAt: Date;
   modifiedAt: Date;
   syncRevision?: number;
@@ -44,6 +46,10 @@ export class Tag extends AggregateRoot<TagProps> {
 
   get color(): string {
     return this.props.color;
+  }
+
+  get isPinned(): boolean {
+    return this.props.isPinned;
   }
 
   get createdAt(): Date {

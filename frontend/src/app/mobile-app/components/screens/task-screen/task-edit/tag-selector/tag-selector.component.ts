@@ -25,6 +25,7 @@ import { UserState } from 'src/app/shared/state/user.state';
 export class TagSelectorComponent {
   readonly showSelectedTags = input(false);
   readonly presentation = input<'field' | 'inline'>('field');
+  readonly flow = input<'select' | 'create'>('select');
   readonly selectedIds = model<string[]>([]);
   readonly open = signal(false);
   readonly creating = signal(false);
@@ -73,6 +74,20 @@ export class TagSelectorComponent {
     this.creating.set(true);
   }
 
+  openCreateSheet(): void {
+    this.draftName.set('');
+    this.creating.set(true);
+    this.open.set(true);
+  }
+
+  back(): void {
+    if (this.flow() === 'create') {
+      this.closeSheet();
+      return;
+    }
+    this.closeCreate();
+  }
+
   closeCreate(): void {
     this.draftName.set('');
     this.creating.set(false);
@@ -114,6 +129,10 @@ export class TagSelectorComponent {
 
     const id = uuidv4();
     this.store.dispatch(new TagsAction.CreateTag({ id, name }, userId));
+    if (this.flow() === 'create') {
+      this.closeSheet();
+      return;
+    }
     this.selectedIds.set([...this.selectedIds(), id]);
     this.draftName.set('');
     this.creating.set(false);
