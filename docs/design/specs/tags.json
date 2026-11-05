@@ -2,7 +2,7 @@
   "screen": {
     "id": "tags",
     "name": "Tags",
-    "version": "1.1.0",
+    "version": "1.2.0",
 
     "purpose": "Manage every tag, pin the ones that should filter Home, and open the tasks for a tag.",
 
@@ -79,13 +79,26 @@
       "taskCount": "tasks already on the device that include the tag",
       "rowAction": "toggle this tag in the Home filter without leaving the page. Several tags can be selected.",
       "pinAction": {
-        "icon": "push_pin",
         "toggles": "isPinned",
         "doesNot": "open the tag",
-        "pinned": "filled push_pin, teal accent, selected surface",
-        "unpinned": "outlined push_pin, neutral icon, default surface",
-        "labels": ["Pin tag", "Unpin tag"]
-      }
+        "pinned": {
+          "icon": "push_pin",
+          "fill": 1,
+          "direction": "pointing down",
+          "color": "teal accent",
+          "row": "selected surface"
+        },
+        "unpinned": {
+          "icon": "keep_off",
+          "fill": 0,
+          "direction": "the same downward pin with a slash",
+          "color": "neutral icon",
+          "row": "default surface"
+        },
+        "labels": ["Pin tag", "Unpin tag"],
+        "glyph": "In Material Symbols Rounded, push_pin is a pin pointing down. keep is the same drawing. keep_off is that pin with a slash. Pin state is these two glyphs, not the same pin in two colors."
+      },
+      "chosen": "teal accent border. The tag color does not replace this border."
     },
 
     "actionsMenu": {
@@ -121,6 +134,7 @@
       "Do not add a second tag-creation form.",
       "Do not duplicate a pinned tag in Other tags.",
       "Rows stay full width. Long names truncate. Pin buttons keep a 44px target.",
+      "Tag color is applied only to the sell icon. Do not paint the row background or border with the tag color. A chosen tag keeps the teal accent border here and on Home.",
       "The reference image shows composition. Do not measure colors, spacing, or radii from it."
     ],
 

@@ -541,6 +541,9 @@ describe('HomeScreenComponent search', () => {
       host.querySelector('[data-test="home-pinned-tag"]') as HTMLButtonElement;
 
     expect(host.querySelector('[data-test="home-pinned-tags"]')?.textContent).toContain('Errands');
+    expect(chip().querySelector('[data-test="home-tag-pin"]')?.textContent?.trim()).toBe(
+      'push_pin',
+    );
     expect(host.querySelector('[data-test="home-pinned-tags"]')?.textContent).not.toContain(
       'Ideas',
     );
@@ -591,6 +594,16 @@ describe('HomeScreenComponent search', () => {
     expect(
       chips.find(item => item.textContent?.includes('Ideas'))?.getAttribute('aria-pressed'),
     ).toBe('true');
+    expect(
+      chips
+        .find(item => item.textContent?.includes('Errands'))
+        ?.querySelector('[data-test="home-tag-pin"]')?.textContent,
+    ).toContain('push_pin');
+    expect(
+      chips
+        .find(item => item.textContent?.includes('Ideas'))
+        ?.querySelector('[data-test="home-tag-pin"]'),
+    ).toBeNull();
     expect(host.querySelector('[data-test="home-empty-title"]')?.textContent).toContain(
       'Nothing active right now.',
     );

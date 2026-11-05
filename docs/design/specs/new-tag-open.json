@@ -2,7 +2,7 @@
   "state": {
     "id": "new-tag-open",
     "name": "Create New Tag — Open",
-    "version": "1.1.0",
+    "version": "1.2.0",
 
     "purpose": "Create a new tag while selecting tags for a task.",
 
@@ -53,9 +53,10 @@
         {
           "id": "color",
           "label": "Tag color",
+          "helper": "Choose a color to identify this tag.",
           "component": "palette",
           "default": "TagConst.DEFAULT_COLOR",
-          "preview": "sell icon and current name"
+          "preview": "sell icon in the selected color and the current name"
         }
       ],
 
