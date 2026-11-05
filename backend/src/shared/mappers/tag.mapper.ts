@@ -1,4 +1,4 @@
-import { TagDTO } from '@brainassistant/contracts';
+import { canonicalTagColor, TagConst, TagDTO } from '@brainassistant/contracts';
 import { Tag, TagPersistent } from '../domain/models/tag.js';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 
@@ -10,7 +10,7 @@ export class TagMapper {
       {
         userId,
         name: name ?? '',
-        color: color ?? '',
+        color: canonicalTagColor(color) ?? TagConst.DEFAULT_COLOR,
         isPinned: isPinned === true,
         createdAt,
         modifiedAt,

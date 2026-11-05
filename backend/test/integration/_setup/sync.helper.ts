@@ -2,6 +2,7 @@ import { Application } from 'express';
 import {
   TaskDTO,
   TagDTO,
+  TagConst,
   ETaskCondition,
   ETaskStatus,
   ETaskType,
@@ -64,7 +65,7 @@ export async function createTagViaApi(
   const dto = {
     id: seed.id,
     name: seed.name ?? 'Work',
-    color: seed.color ?? 'teal',
+    color: seed.color ?? TagConst.DEFAULT_COLOR,
   };
 
   const res = await authenticatedRequest(app, jwtCookie)
