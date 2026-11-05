@@ -17,10 +17,14 @@ import { HomeBottomPanelComponent } from '../home-screen/home-bottom-panel/home-
 import { HomeContentModeService } from '../home-screen/home-content-mode.service';
 import { TagSelectorComponent } from '../task-screen/task-edit/tag-selector/tag-selector.component';
 import { IUserAvatarInputData } from 'src/app/shared/components/ui-elements/user-avatar/user-avatar.interface';
+import { firstValueFrom } from 'rxjs';
+import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import { TagsAction } from 'src/app/shared/state/tags.action';
 import { TagsState } from 'src/app/shared/state/tags.state';
+import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
+import { DeleteTagDialogComponent } from './delete-tag-dialog/delete-tag-dialog.component';
 import { buildTagRows, filterTagRows, tagsPageSubtitle } from './helpers/tag-list.function';
 import { TagRowComponent } from './tag-row/tag-row.component';
 
@@ -48,6 +52,7 @@ export class TagsScreenComponent implements OnInit {
   avatarInputData!: IUserAvatarInputData;
 
   readonly searchOpen = signal(false);
+  readonly openMenuId = signal<string | null>(null);
   readonly queryControl = new FormControl('', { nonNullable: true });
   readonly rows = computed(() => buildTagRows(this.selectors.tags(), this.selectors.tasks()));
   readonly subtitle = computed(() =>
@@ -64,6 +69,7 @@ export class TagsScreenComponent implements OnInit {
   private readonly query = toSignal(this.queryControl.valueChanges, { initialValue: '' });
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
   private readonly tagCreator = viewChild.required(TagSelectorComponent);
+  private readonly dialog = inject(DialogService);
 
   constructor() {
     effect(() => {
@@ -108,6 +114,54 @@ export class TagsScreenComponent implements OnInit {
   }
 
   openCreate(): void {
+    this.openMenuId.set(null);
     this.tagCreator().openCreateSheet();
+  }
+
+  openMenu(tagId: string): void {
+    this.openMenuId.set(tagId);
+  }
+
+  closeMenu(): void {
+    this.openMenuId.set(null);
+  }
+
+  editTag(tagId: string): void {
+    const tag = this.rows().find(row => row.id === tagId);
+    if (!tag) {
+      return;
+    }
+    this.tagCreator().openEditSheet(tag);
+  }
+
+  confirmDelete(tagId: string): void {
+    const tag = this.rows().find(row => row.id === tagId);
+    if (!tag) {
+      return;
+    }
+    this.dialog
+      .showModalDialog(DeleteTagDialogComponent, { name: tag.name, taskCount: tag.taskCount })
+      .afterClosed()
+      .subscribe(confirmed => {
+        if (confirmed === true) {
+          void this.deleteTag(tag.id);
+        }
+      });
+  }
+
+  private async deleteTag(tagId: string): Promise<void> {
+    const tasks = this.selectors.tasks().filter(task => task.tagIds?.includes(tagId));
+    for (const task of tasks) {
+      await firstValueFrom(
+        this.store.dispatch(
+          new TasksAction.UpdateTask({
+            taskId: task.id,
+            changes: { tagIds: (task.tagIds ?? []).filter(id => id !== tagId) },
+          }),
+        ),
+      );
+    }
+    await firstValueFrom(this.store.dispatch(new TagsAction.DeleteTag(tagId)));
+    this.contentMode.clearTag(tagId);
   }
 }

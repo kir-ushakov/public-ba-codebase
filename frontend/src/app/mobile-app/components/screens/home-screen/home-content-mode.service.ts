@@ -49,6 +49,20 @@ export class HomeContentModeService {
    * Clears the filter when the selected tag was pinned and no longer is.
    * A tag opened from the Tags page while unpinned stays selected.
    */
+  clearTag(tagId: string): void {
+    if (this.selectedTagId() === tagId) {
+      this.selectedTagId.set(null);
+    }
+  }
+
+  /** Drops the filter when the selected tag no longer exists. */
+  noteTags(ids: readonly string[]): void {
+    const selected = this.selectedTagId();
+    if (selected && !ids.includes(selected)) {
+      this.selectedTagId.set(null);
+    }
+  }
+
   notePinned(ids: readonly string[]): void {
     const next = new Set(ids);
     if (this.seenPins) {

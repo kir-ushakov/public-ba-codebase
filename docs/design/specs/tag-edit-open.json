@@ -1,0 +1,31 @@
+{
+  "state": {
+    "id": "tag-edit-open",
+    "name": "Edit Tag — Open",
+    "version": "1.0.0",
+    "purpose": "Rename a tag and choose its color in the same sheet used to create a tag.",
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+    "status": "approved",
+    "implementationStatus": "implemented",
+    "parentScreen": "tags",
+    "presentation": {
+      "component": "bottom-sheet",
+      "designSystemPattern": "bottomSheet"
+    },
+    "header": {
+      "title": "Edit tag"
+    },
+    "form": {
+      "fields": ["name", "color"],
+      "palette": "TagConst.COLORS",
+      "preview": "sell icon in the selected color and the current name",
+      "primaryAction": "Save changes"
+    },
+    "behavior": {
+      "prefill": "existing name and color",
+      "save": "update name and color together, keep id, pin state, and task links",
+      "cancel": "discard unsaved changes"
+    }
+  }
+}

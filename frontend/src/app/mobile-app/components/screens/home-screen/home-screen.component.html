@@ -96,7 +96,12 @@
         [attr.aria-pressed]="selectedTagId() === tag.id"
         (click)="togglePinnedTag(tag.id)"
       >
-        <span class="material-symbols-rounded" aria-hidden="true">sell</span>
+        <span
+          class="material-symbols-rounded"
+          [style.color]="tagIconColor(tag.color)"
+          aria-hidden="true"
+          >sell</span
+        >
         <span class="pinned-tag-name">{{ tag.name }}</span>
       </button>
     }

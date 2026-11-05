@@ -1,13 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { Actions, ofActionSuccessful, provideStore, Store } from '@ngxs/store';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
 import { TagsScreenComponent } from 'src/app/mobile-app/components/screens/tags-screen/tags-screen.component';
 import { HomeContentModeService } from 'src/app/mobile-app/components/screens/home-screen/home-content-mode.service';
 import { TAG_COLOR } from 'src/app/shared/models/tag.model';
 import type { Tag } from 'src/app/shared/models/tag.model';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
+import { DialogService } from 'src/app/shared/services/utility/dialog.service';
+import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { TagsAction } from 'src/app/shared/state/tags.action';
 import { TagsState } from 'src/app/shared/state/tags.state';
 import { TasksState } from 'src/app/shared/state/tasks.state';
@@ -30,6 +32,7 @@ function tag(id: string, name: string, isPinned = false): Tag {
 describe('TagsScreenComponent', () => {
   let fixture: ComponentFixture<TagsScreenComponent>;
   let store: Store;
+  let confirmDeletion = false;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -39,9 +42,14 @@ describe('TagsScreenComponent', () => {
         provideStore([TagsState, TasksState, UserState]),
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
+        {
+          provide: DialogService,
+          useValue: { showModalDialog: () => ({ afterClosed: () => of(confirmDeletion) }) },
+        },
       ],
     }).compileComponents();
 
+    confirmDeletion = false;
     store = TestBed.inject(Store);
     store.reset({
       tags: {
@@ -170,6 +178,119 @@ describe('TagsScreenComponent', () => {
     expect(host.querySelector('[data-test="tags-pinned-section"]')).toBeNull();
   });
 
+  it('opens one action menu with edit and delete', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const more = host.querySelector('[data-test="tag-more"]') as HTMLButtonElement;
+
+    more.click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="tag-menu-edit"]')?.textContent).toContain('Edit tag');
+    expect(host.querySelector('[data-test="tag-menu-delete"]')?.textContent).toContain(
+      'Delete tag',
+    );
+    expect(host.querySelectorAll('[data-test="tag-menu"]')).toHaveLength(1);
+    expect(more.getAttribute('aria-expanded')).toBe('true');
+
+    const pinnedPin = host
+      .querySelector('[data-test="tags-pinned-section"]')
+      ?.querySelector('[data-test="tag-pin"]');
+    const otherPin = host
+      .querySelector('[data-test="tags-other-section"]')
+      ?.querySelector('[data-test="tag-pin"]');
+    expect(pinnedPin?.classList.contains('is-on')).toBe(true);
+    expect(pinnedPin?.getAttribute('aria-pressed')).toBe('true');
+    expect(otherPin?.classList.contains('is-on')).toBe(false);
+    expect(otherPin?.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('opens edit with the current name and saves a new color', async () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const ideas = Array.from(host.querySelectorAll('[data-test="tag-row"]')).find(row =>
+      row.textContent?.includes('Ideas'),
+    );
+
+    (ideas?.querySelector('[data-test="tag-more"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (ideas?.querySelector('[data-test="tag-menu-edit"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="bottom-sheet-title"]')?.textContent).toContain(
+      'Edit tag',
+    );
+    const input = host.querySelector('[data-test="new-tag-name"]') as HTMLInputElement;
+    expect(input.value).toBe('Ideas');
+    expect(host.querySelector('[data-test="new-tag-submit"]')?.textContent).toContain(
+      'Save changes',
+    );
+
+    const red = Array.from(
+      host.querySelectorAll<HTMLButtonElement>('[data-test="tag-color"]'),
+    ).find(swatch => swatch.getAttribute('aria-label') === '#d95c5c');
+    red?.click();
+    fixture.detectChanges();
+    expect(host.querySelector('[data-test="tag-preview"]')?.textContent).toContain('Ideas');
+
+    const saved = firstValueFrom(
+      TestBed.inject(Actions).pipe(ofActionSuccessful(TagsAction.UpdateTag)),
+    );
+    (host.querySelector('[data-test="new-tag-submit"]') as HTMLButtonElement).click();
+    await saved;
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="bottom-sheet"]')).toBeNull();
+    expect(store.selectSnapshot(TagsState.forCurrentUser).find(tag => tag.id === 'ideas')).toEqual(
+      expect.objectContaining({ name: 'Ideas', color: '#d95c5c' }),
+    );
+  });
+
+  it('deletes the tag, keeps the task, and clears the Home filter', async () => {
+    confirmDeletion = true;
+    store.reset({
+      ...store.snapshot(),
+      tasks: {
+        entities: [
+          {
+            id: 'task-1',
+            userId,
+            type: ETaskType.Basic,
+            title: 'Buy milk',
+            status: ETaskStatus.Todo,
+            tagIds: ['ideas', 'work'],
+            createdAt: '2026-01-01T00:00:00.000Z',
+            modifiedAt: '2026-01-01T00:00:00.000Z',
+          },
+        ],
+      },
+    });
+    fixture.detectChanges();
+    const modes = TestBed.inject(HomeContentModeService);
+    modes.showTag('ideas');
+
+    const host = fixture.nativeElement as HTMLElement;
+    const ideas = Array.from(host.querySelectorAll('[data-test="tag-row"]')).find(row =>
+      row.textContent?.includes('Ideas'),
+    );
+    (ideas?.querySelector('[data-test="tag-more"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const deleted = firstValueFrom(
+      TestBed.inject(Actions).pipe(ofActionSuccessful(TagsAction.DeleteTag)),
+    );
+    (host.querySelector('[data-test="tag-menu-delete"]') as HTMLButtonElement).click();
+    await deleted;
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(store.selectSnapshot(TagsState.forCurrentUser).map(tag => tag.id)).not.toContain(
+      'ideas',
+    );
+    expect(store.selectSnapshot(TasksState.actualTasks)[0]?.tagIds).toEqual(['work']);
+    expect(modes.selectedTagId()).toBeNull();
+    expect(host.textContent).not.toContain('Ideas');
+  });
+
   it('opens the create tag sheet and lists the new tag unpinned', async () => {
     const host = fixture.nativeElement as HTMLElement;
 
@@ -191,6 +312,7 @@ describe('TagsScreenComponent', () => {
     );
     (host.querySelector('[data-test="new-tag-submit"]') as HTMLButtonElement).click();
     await saved;
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(host.querySelector('[data-test="bottom-sheet"]')).toBeNull();

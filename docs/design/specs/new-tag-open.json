@@ -2,7 +2,7 @@
   "state": {
     "id": "new-tag-open",
     "name": "Create New Tag — Open",
-    "version": "1.0.0",
+    "version": "1.1.0",
 
     "purpose": "Create a new tag while selecting tags for a task.",
 
@@ -49,6 +49,13 @@
           "placeholder": "Enter tag name...",
           "autofocus": true,
           "characterCount": true
+        },
+        {
+          "id": "color",
+          "label": "Tag color",
+          "component": "palette",
+          "default": "TagConst.DEFAULT_COLOR",
+          "preview": "sell icon and current name"
         }
       ],
 
@@ -79,8 +86,8 @@
       "Use the existing global text-input and primary-button patterns.",
       "Use Material Symbols Rounded for Back and Close.",
       "Do not allow users to choose an icon for a tag.",
-      "Tag identity is represented by its text label.",
-      "Do not introduce a tag color selector.",
+      "Tag identity is the text label plus a color from TagConst.COLORS. The color is applied to the sell icon and the preview, not to the row or the button.",
+      "The same sheet edits a tag. The title becomes Edit tag and the button becomes Save changes.",
       "Create tag is the only primary action.",
       "Back returns to the Tag Selector without closing the entire tag flow.",
       "Close dismisses the entire tag flow.",

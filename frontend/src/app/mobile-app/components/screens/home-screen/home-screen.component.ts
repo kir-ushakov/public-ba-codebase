@@ -19,6 +19,7 @@ import { TagsState } from 'src/app/shared/state/tags.state';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
 import { IUserAvatarInputData } from 'src/app/shared/components/ui-elements/user-avatar/user-avatar.interface';
+import { displayTagColor } from 'src/app/shared/models/tag.model';
 import { HomeBottomPanelComponent } from './home-bottom-panel/home-bottom-panel.component';
 import { HomeAccountMenuComponent } from './home-account-menu/home-account-menu.component';
 import { HomeContentModeComponent } from './home-content-mode/home-content-mode.component';
@@ -61,6 +62,7 @@ export class HomeScreenComponent implements OnInit, AfterViewInit {
   });
 
   avatarInputData!: IUserAvatarInputData;
+  readonly tagIconColor = displayTagColor;
 
   readonly searchOpen = signal(false);
   readonly queryControl = new FormControl('', { nonNullable: true });
@@ -125,6 +127,7 @@ export class HomeScreenComponent implements OnInit, AfterViewInit {
     });
 
     effect(() => {
+      this.contentModeService.noteTags(this.selectors.tags().map(tag => tag.id));
       this.contentModeService.notePinned(this.pinnedTags().map(tag => tag.id));
     });
   }

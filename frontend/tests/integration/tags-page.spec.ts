@@ -26,6 +26,7 @@ test('creates a tag, pins it, and uses it as a Home filter', async ({ page }) =>
   expect(createResponse.status()).toBe(201);
   expect(createResponse.request().postDataJSON().changeableObjectDto).toMatchObject({
     name: 'Work',
+    color: '#00a991',
     isPinned: false,
   });
 
@@ -50,6 +51,7 @@ test('creates a tag, pins it, and uses it as a Home filter', async ({ page }) =>
   await expect(page.locator('[data-test="tags-pinned-section"]')).toContainText('Shown on Home');
   await expect(page.locator('[data-test="tags-other-section"]')).toHaveCount(0);
   await expect(page.locator('[data-test="tag-pin"]')).toHaveAttribute('aria-label', 'Unpin tag');
+  await expect(page.locator('[data-test="tag-pin"]')).toHaveAttribute('aria-pressed', 'true');
 
   await page.click('[data-test="bottom-nav-home"]');
   const chip = page.locator('[data-test="home-pinned-tag"]', { hasText: 'Work' });
@@ -60,4 +62,58 @@ test('creates a tag, pins it, and uses it as a Home filter', async ({ page }) =>
   await expect(chip).toHaveAttribute('aria-pressed', 'true');
   await chip.click();
   await expect(chip).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('renames a tag, changes its color, and deletes it without removing tasks', async ({
+  page,
+}) => {
+  await setupApiMocks(page);
+  await signIn(page);
+
+  await page.click('[data-test="bottom-nav-tags"]');
+  await page.click('[data-test="tags-create"]');
+  await page.fill('[data-test="new-tag-name"]', 'Home');
+  const created = page.waitForResponse(
+    response => response.url().includes('/api/sync/tag') && response.request().method() === 'POST',
+  );
+  await page.click('[data-test="new-tag-submit"]');
+  await created;
+  await expect(page.locator('[data-test="tags-other-section"]')).toContainText('Home');
+
+  await page.click('[data-test="tag-more"]');
+  await page.click('[data-test="tag-menu-edit"]');
+  await expect(page.locator('[data-test="bottom-sheet-title"]')).toHaveText('Edit tag');
+  await expect(page.locator('[data-test="new-tag-name"]')).toHaveValue('Home');
+  await page.fill('[data-test="new-tag-name"]', 'House');
+  await page.locator('[data-test="tag-color"][aria-label="#9b8ad0"]').click();
+  await expect(page.locator('[data-test="tag-preview"]')).toContainText('House');
+
+  const updated = page.waitForResponse(
+    response => response.url().includes('/api/sync/tag') && response.request().method() === 'PATCH',
+  );
+  await page.click('[data-test="new-tag-submit"]');
+  const updateResponse = await updated;
+  expect(updateResponse.request().postDataJSON().changeableObjectDto).toMatchObject({
+    name: 'House',
+    color: '#9b8ad0',
+  });
+
+  await expect(page.locator('[data-test="bottom-sheet"]')).toHaveCount(0);
+  await expect(page.locator('[data-test="tags-other-section"]')).toContainText('House');
+  await expect(page.locator('[data-test="tag-sell"]')).toHaveCSS('color', 'rgb(155, 138, 208)');
+
+  await page.click('[data-test="tag-more"]');
+  await page.click('[data-test="tag-menu-delete"]');
+  await expect(page.locator('[data-test="delete-tag-title"]')).toHaveText('Delete tag?');
+  await expect(page.locator('[data-test="delete-tag-message"]')).toContainText(
+    'removed from 0 tasks',
+  );
+
+  const deleted = page.waitForResponse(
+    response =>
+      response.url().includes('/api/sync/tag') && response.request().method() === 'DELETE',
+  );
+  await page.click('[data-test="delete-tag-confirm"]');
+  expect((await deleted).status()).toBe(200);
+  await expect(page.locator('[data-test="tags-empty"]')).toHaveText('No tags yet');
 });

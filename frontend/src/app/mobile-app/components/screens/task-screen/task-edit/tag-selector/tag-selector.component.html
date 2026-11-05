@@ -4,7 +4,15 @@
     @if (isInline()) {
       <div class="selected-tags" data-test="selected-tags">
         @for (tag of selectedTags(); track tag.id) {
-          <span class="selected-tag" data-test="selected-tag">{{ tag.name }}</span>
+          <span class="selected-tag" data-test="selected-tag">
+            <span
+              class="material-symbols-rounded"
+              [style.color]="tagIconColor(tag.color)"
+              aria-hidden="true"
+              >sell</span
+            >
+            {{ tag.name }}
+          </span>
         }
         <button class="add-tag" type="button" data-test="task-tags-add" (click)="openSheet()">
           <span class="material-symbols-rounded" aria-hidden="true">add</span>
@@ -26,6 +34,12 @@
         <div class="selected-tags" data-test="selected-tags">
           @for (tag of selectedTags(); track tag.id) {
             <span class="selected-tag" data-test="selected-tag">
+              <span
+                class="material-symbols-rounded"
+                [style.color]="tagIconColor(tag.color)"
+                aria-hidden="true"
+                >sell</span
+              >
               {{ tag.name }}
               <button
                 class="selected-tag-remove"
@@ -73,14 +87,46 @@
       <p class="helper" data-test="new-tag-helper">
         Use a short name that helps you find this tag later.
       </p>
+      <div class="color-field">
+        <span class="field-label">Tag color</span>
+        <p class="helper">Choose a color to identify this tag.</p>
+        <div class="swatches" data-test="tag-colors" role="listbox" aria-label="Tag color">
+          @for (color of colors; track color) {
+            <button
+              class="swatch"
+              type="button"
+              role="option"
+              data-test="tag-color"
+              [class.is-selected]="draftColor() === color"
+              [attr.aria-selected]="draftColor() === color"
+              [attr.aria-label]="color"
+              [style.background]="color"
+              (click)="selectColor(color)"
+            >
+              @if (draftColor() === color) {
+                <span class="material-symbols-rounded" aria-hidden="true">check</span>
+              }
+            </button>
+          }
+        </div>
+      </div>
+      <div class="preview" data-test="tag-preview">
+        <span class="field-label">Preview</span>
+        <span class="preview-chip">
+          <span class="material-symbols-rounded" [style.color]="draftColor()" aria-hidden="true"
+            >sell</span
+          >
+          {{ previewName() }}
+        </span>
+      </div>
       <button
         class="create-submit"
         type="button"
         data-test="new-tag-submit"
-        [disabled]="!nameValid()"
-        (click)="createTag()"
+        [disabled]="!nameValid() || saving()"
+        (click)="saveTag()"
       >
-        Create tag
+        {{ submitLabel() }}
       </button>
     } @else {
       <label class="search-field">
@@ -105,6 +151,12 @@
             [attr.aria-pressed]="tag.selected"
             (click)="toggleTag(tag.id)"
           >
+            <span
+              class="material-symbols-rounded"
+              [style.color]="tagIconColor(tag.color)"
+              aria-hidden="true"
+              >sell</span
+            >
             @if (tag.selected) {
               <span class="material-symbols-rounded" aria-hidden="true">check</span>
             }

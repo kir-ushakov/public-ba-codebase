@@ -1,9 +1,10 @@
-import type { Tag } from 'src/app/shared/models/tag.model';
+import { displayTagColor, type Tag } from 'src/app/shared/models/tag.model';
 import type { Task } from 'src/app/shared/models/task.model';
 
 export type TagListItem = {
   id: string;
   name: string;
+  color: string;
   isPinned: boolean;
   taskCount: number;
   countLabel: string;
@@ -11,6 +12,11 @@ export type TagListItem = {
 
 export function tagCountLabel(count: number): string {
   return `${count} ${count === 1 ? 'task' : 'tasks'}`;
+}
+
+export function deleteTagMessage(name: string, taskCount: number): string {
+  const tasks = `${taskCount} ${taskCount === 1 ? 'task' : 'tasks'}`;
+  return `Delete "${name}"? This tag will be removed from ${tasks}. The tasks themselves will not be deleted.`;
 }
 
 export function tagsPageSubtitle(total: number, pinned: number): string {
@@ -35,6 +41,7 @@ export function buildTagRows(tags: Tag[], tasks: Task[]): TagListItem[] {
       return {
         id: tag.id,
         name: tag.name,
+        color: displayTagColor(tag.color),
         isPinned: tag.isPinned === true,
         taskCount,
         countLabel: tagCountLabel(taskCount),

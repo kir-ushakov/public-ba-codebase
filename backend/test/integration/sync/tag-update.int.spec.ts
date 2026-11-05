@@ -29,7 +29,7 @@ describe('Integration: UpdateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
         changeableObjectDto: {
           id: 'tag-unauth',
           name: 'Work',
-          color: 'teal',
+          color: '#00a991',
           isPinned: true,
         },
       });
@@ -45,7 +45,7 @@ describe('Integration: UpdateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
         changeableObjectDto: {
           id: 'tag-pin',
           name: 'Work',
-          color: 'teal',
+          color: '#00a991',
           createdAt: '2020-05-01T10:00:00.000Z',
           modifiedAt: '2020-05-01T10:05:00.000Z',
         },
@@ -58,7 +58,7 @@ describe('Integration: UpdateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
         changeableObjectDto: {
           id: 'tag-pin',
           name: 'Work',
-          color: 'teal',
+          color: '#00a991',
           isPinned: true,
           createdAt: '2020-05-01T10:00:00.000Z',
           modifiedAt: '2020-05-02T10:00:00.000Z',
@@ -72,7 +72,7 @@ describe('Integration: UpdateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
       id: 'tag-pin',
       userId,
       name: 'Work',
-      color: 'teal',
+      color: '#00a991',
       isPinned: true,
       createdAt: '2020-05-01T10:00:00.000Z',
       modifiedAt: '2020-05-02T10:00:00.000Z',
@@ -88,7 +88,7 @@ describe('Integration: UpdateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
         changeableObjectDto: {
           id: 'tag-pin',
           name: 'Work',
-          color: 'teal',
+          color: '#00a991',
           createdAt: '2020-05-01T10:00:00.000Z',
           modifiedAt: '2020-05-03T10:00:00.000Z',
         },
@@ -108,7 +108,7 @@ describe('Integration: UpdateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
       _id: 'tag-other',
       userId: 'someone-else',
       name: 'Secret',
-      color: 'teal',
+      color: '#00a991',
       createdAt: new Date('2020-05-01T10:00:00.000Z'),
       modifiedAt: new Date('2020-05-01T10:00:00.000Z'),
     } as never);
@@ -119,7 +119,7 @@ describe('Integration: UpdateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
         changeableObjectDto: {
           id: 'tag-other',
           name: 'Secret',
-          color: 'teal',
+          color: '#00a991',
           isPinned: true,
           createdAt: '2020-05-01T10:00:00.000Z',
           modifiedAt: '2020-05-02T10:00:00.000Z',
@@ -142,7 +142,7 @@ describe('Integration: UpdateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
         changeableObjectDto: {
           id: 'tag-empty',
           name: 'Work',
-          color: 'teal',
+          color: '#00a991',
           createdAt: '2020-05-01T10:00:00.000Z',
           modifiedAt: '2020-05-01T10:05:00.000Z',
         },
@@ -154,7 +154,7 @@ describe('Integration: UpdateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
         changeableObjectDto: {
           id: 'tag-empty',
           name: '',
-          color: 'teal',
+          color: '#00a991',
           isPinned: true,
           createdAt: '2020-05-01T10:00:00.000Z',
           modifiedAt: '2020-05-02T10:00:00.000Z',
@@ -168,5 +168,38 @@ describe('Integration: UpdateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
     const persisted = await models.TagModel.findById('tag-empty').lean();
     expect(persisted?.name).toBe('Work');
     expect(persisted?.isPinned).toBe(false);
+  });
+
+  it('rejects a color outside the palette and keeps the stored color', async () => {
+    const { jwtCookie } = await seedTestUser();
+    await authenticatedRequest(app, jwtCookie)
+      .post('/api/sync/tag')
+      .send({
+        changeableObjectDto: {
+          id: 'tag-color',
+          name: 'Work',
+          color: '#00A991',
+          createdAt: '2020-05-01T10:00:00.000Z',
+          modifiedAt: '2020-05-01T10:05:00.000Z',
+        },
+      });
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .patch('/api/sync/tag')
+      .send({
+        changeableObjectDto: {
+          id: 'tag-color',
+          name: 'Work',
+          color: 'purple',
+          createdAt: '2020-05-01T10:00:00.000Z',
+          modifiedAt: '2020-05-02T10:00:00.000Z',
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(400);
+    expect(res.body.name).toBe(ETagError.ColorMissed);
+    const persisted = await models.TagModel.findById('tag-color').lean();
+    expect(persisted?.color).toBe('#00a991');
   });
 });

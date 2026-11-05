@@ -1,6 +1,7 @@
 import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import {
   buildTagRows,
+  deleteTagMessage,
   filterTagRows,
   tagsPageSubtitle,
 } from 'src/app/mobile-app/components/screens/tags-screen/helpers/tag-list.function';
@@ -63,12 +64,25 @@ describe('tag list', () => {
     expect(rows.find(row => row.id === 'ideas')?.countLabel).toBe('1 task');
   });
 
+  it('shows the default teal when a stored color is outside the palette', () => {
+    const rows = buildTagRows([{ ...tags[0], color: 'teal' }], []);
+
+    expect(rows[0]?.color).toBe('#00a991');
+  });
+
   it('filters by name without case and leaves the source list intact', () => {
     const rows = buildTagRows(tags, tasks);
 
     expect(filterTagRows(rows, '  WORK ').map(row => row.id)).toEqual(['work']);
     expect(filterTagRows(rows, 'missing')).toEqual([]);
     expect(rows).toHaveLength(2);
+  });
+
+  it('uses singular grammar when a tag is on one task', () => {
+    expect(deleteTagMessage('Home', 1)).toBe(
+      'Delete "Home"? This tag will be removed from 1 task. The tasks themselves will not be deleted.',
+    );
+    expect(deleteTagMessage('Home', 12)).toContain('12 tasks');
   });
 
   it('mentions the pinned count only when a tag is pinned', () => {

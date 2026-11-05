@@ -132,6 +132,23 @@ export class LocalStore {
     );
   }
 
+  public async deleteTagAndEnqueue(
+    userId: string,
+    tagId: string,
+    entry: OutboxEntry,
+  ): Promise<void> {
+    await this.database.open(userId);
+    const db = await this.database.getDatabase();
+    await commitReadWrite(
+      db,
+      [DATABASE_CONFIG.STORES.TAGS, DATABASE_CONFIG.STORES.OUTBOX],
+      async tx => {
+        await tx.objectStore(DATABASE_CONFIG.STORES.TAGS).delete(tagId);
+        await tx.objectStore(DATABASE_CONFIG.STORES.OUTBOX).put(entry);
+      },
+    );
+  }
+
   public async saveTagAndEnqueue(tag: Tag, entry: OutboxEntry): Promise<void> {
     await this.database.open(tag.userId);
     const db = await this.database.getDatabase();

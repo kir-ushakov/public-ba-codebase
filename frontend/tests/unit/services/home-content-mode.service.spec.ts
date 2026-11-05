@@ -42,4 +42,16 @@ describe('HomeContentModeService tag filter', () => {
     service.notePinned([]);
     expect(service.selectedTagId()).toBe('ideas');
   });
+
+  it('clears the filter when the selected tag is gone', () => {
+    service.showTag('work');
+    service.noteTags(['ideas']);
+    expect(service.selectedTagId()).toBeNull();
+
+    service.showTag('work');
+    service.clearTag('ideas');
+    expect(service.selectedTagId()).toBe('work');
+    service.clearTag('work');
+    expect(service.selectedTagId()).toBeNull();
+  });
 });

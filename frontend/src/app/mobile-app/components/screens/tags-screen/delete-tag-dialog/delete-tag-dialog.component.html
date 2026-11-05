@@ -1,0 +1,18 @@
+<div
+  class="delete-tag"
+  role="dialog"
+  aria-labelledby="delete-tag-title"
+  data-test="delete-tag-dialog"
+>
+  <span class="material-symbols-rounded delete-icon" aria-hidden="true">delete</span>
+  <h2 id="delete-tag-title" class="title" data-test="delete-tag-title">Delete tag?</h2>
+  <p class="message" data-test="delete-tag-message">{{ message }}</p>
+  <div class="actions">
+    <button class="cancel" type="button" data-test="delete-tag-cancel" (click)="cancel()">
+      Cancel
+    </button>
+    <button class="confirm" type="button" data-test="delete-tag-confirm" (click)="confirm()">
+      Delete tag
+    </button>
+  </div>
+</div>

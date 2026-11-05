@@ -424,7 +424,19 @@
     },
     "TagConst": {
       "NAME_MIN_LENGTH": 1,
-      "NAME_MAX_LENGTH": 40
+      "NAME_MAX_LENGTH": 40,
+      "DEFAULT_COLOR": "#00a991",
+      "COLORS": [
+        "#00a991",
+        "#668fa8",
+        "#9b8ad0",
+        "#d6a34a",
+        "#d95c5c",
+        "#80b96b",
+        "#86adb2",
+        "#d68aa8",
+        "#e87d45"
+      ]
     }
   }
 }

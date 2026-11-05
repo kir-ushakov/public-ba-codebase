@@ -77,8 +77,13 @@
         @for (tag of visibleRows(); track tag.id) {
           <ba-tag-row
             [tag]="tag"
+            [menuOpen]="openMenuId() === tag.id"
             (opened)="openTag($event)"
             (pinned)="togglePin($event)"
+            (menuRequested)="openMenu($event)"
+            (menuClosed)="closeMenu()"
+            (edit)="editTag($event)"
+            (remove)="confirmDelete($event)"
           ></ba-tag-row>
         }
       </div>
@@ -96,8 +101,13 @@
           @for (tag of pinnedRows(); track tag.id) {
             <ba-tag-row
               [tag]="tag"
+              [menuOpen]="openMenuId() === tag.id"
               (opened)="openTag($event)"
               (pinned)="togglePin($event)"
+              (menuRequested)="openMenu($event)"
+              (menuClosed)="closeMenu()"
+              (edit)="editTag($event)"
+              (remove)="confirmDelete($event)"
             ></ba-tag-row>
           }
         </div>
@@ -112,8 +122,13 @@
           @for (tag of otherRows(); track tag.id) {
             <ba-tag-row
               [tag]="tag"
+              [menuOpen]="openMenuId() === tag.id"
               (opened)="openTag($event)"
               (pinned)="togglePin($event)"
+              (menuRequested)="openMenu($event)"
+              (menuClosed)="closeMenu()"
+              (edit)="editTag($event)"
+              (remove)="confirmDelete($event)"
             ></ba-tag-row>
           }
         </div>

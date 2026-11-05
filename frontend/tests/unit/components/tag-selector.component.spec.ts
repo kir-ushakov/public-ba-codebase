@@ -132,6 +132,7 @@ describe('TagSelectorComponent', () => {
     );
     host.querySelector<HTMLButtonElement>('[data-test="new-tag-submit"]')!.click();
     await saved;
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(host.querySelector('[data-test="bottom-sheet-title"]')?.textContent).toContain(
@@ -162,7 +163,7 @@ describe('TagSelectorComponent', () => {
     const labels = [...host.querySelectorAll('[data-test="tag-chip"]')].map(item =>
       item.textContent?.trim(),
     );
-    expect(labels).toEqual(['Travel']);
+    expect(labels).toEqual([expect.stringContaining('Travel')]);
 
     chip(host, 'Travel')!.click();
     fixture.detectChanges();
@@ -185,8 +186,44 @@ describe('TagSelectorComponent', () => {
 
     expect(host.querySelector('[data-test="task-tags-selector"]')).toBeNull();
     expect(host.querySelector('[data-test="selected-tag-remove"]')).toBeNull();
-    expect(chips.map(item => item.textContent?.trim())).toEqual(['Work']);
+    expect(chips.map(item => item.textContent?.trim())).toEqual([expect.stringContaining('Work')]);
     expect(addTag?.textContent).toContain('Add tag');
+  });
+
+  it('stores the color chosen in the create sheet', async () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.querySelector<HTMLButtonElement>('[data-test="task-tags-selector"]')!.click();
+    fixture.detectChanges();
+    host.querySelector<HTMLButtonElement>('[data-test="create-new-tag"]')!.click();
+    fixture.detectChanges();
+
+    expect(
+      host
+        .querySelector('[data-test="tag-color"][aria-selected="true"]')
+        ?.getAttribute('aria-label'),
+    ).toBe(TAG_COLOR);
+
+    const purple = [...host.querySelectorAll<HTMLButtonElement>('[data-test="tag-color"]')].find(
+      swatch => swatch.getAttribute('aria-label') === '#9b8ad0',
+    );
+    purple!.click();
+    fixture.detectChanges();
+
+    const name = host.querySelector<HTMLInputElement>('[data-test="new-tag-name"]');
+    name!.value = 'Errands';
+    name!.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(host.querySelector('[data-test="tag-preview"]')?.textContent).toContain('Errands');
+
+    const saved = firstValueFrom(
+      TestBed.inject(Actions).pipe(ofActionSuccessful(TagsAction.CreateTag)),
+    );
+    host.querySelector<HTMLButtonElement>('[data-test="new-tag-submit"]')!.click();
+    await saved;
+    await fixture.whenStable();
+
+    expect(store.selectSnapshot(TagsState.forCurrentUser)[0]?.color).toBe('#9b8ad0');
   });
 });
 

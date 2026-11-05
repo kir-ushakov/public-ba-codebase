@@ -18,7 +18,7 @@ export class DialogService {
     });
   }
 
-  public showModalDialog<C extends ComponentType<unknown>>(componentClass: C) {
+  public showModalDialog<C extends ComponentType<unknown>>(componentClass: C, data?: unknown) {
     return this.dialog.open(componentClass, {
       maxWidth: '400px',
       width: '90vw',
@@ -28,6 +28,7 @@ export class DialogService {
       backdropClass: 'pwa-install-backdrop',
       disableClose: false,
       autoFocus: false,
+      data,
     });
   }
 }

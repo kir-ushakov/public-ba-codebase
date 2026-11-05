@@ -145,6 +145,11 @@ export async function setupApiMocks(
       return;
     }
 
+    if (url.includes('/api/sync/tag') && method === 'DELETE') {
+      await route.fulfill(json(200, {}));
+      return;
+    }
+
     if (url.includes('/api/files/image') && method === 'POST') {
       if (options.failImageUpload) {
         const body: ApiErrorDto = { name: EApiError.Unexpected, message: 'image upload failed' };
