@@ -77,7 +77,7 @@
         "more actions"
       ],
       "taskCount": "tasks already on the device that include the tag",
-      "rowAction": "open Home filtered by this tag",
+      "rowAction": "toggle this tag in the Home filter without leaving the page. Several tags can be selected.",
       "pinAction": {
         "icon": "push_pin",
         "toggles": "isPinned",

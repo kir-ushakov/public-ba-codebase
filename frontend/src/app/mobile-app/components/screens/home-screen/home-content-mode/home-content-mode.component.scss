@@ -117,17 +117,19 @@
 
 .mode-selector {
   position: relative;
-  flex: 0 0 var(--button-min-height);
+  flex: 0 0 auto;
 }
 
 .mode-selector-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  gap: var(--spacing-xs);
+  width: auto;
   height: 100%;
+  min-width: var(--button-min-height);
   min-height: var(--button-min-height);
-  padding: 0;
+  padding: 0 var(--spacing-sm);
   appearance: none;
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-large);

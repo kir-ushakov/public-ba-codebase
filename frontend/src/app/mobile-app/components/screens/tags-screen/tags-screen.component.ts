@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { createSelectMap, Store } from '@ngxs/store';
 import { HomeAccountMenuComponent } from '../home-screen/home-account-menu/home-account-menu.component';
 import { HomeBottomPanelComponent } from '../home-screen/home-bottom-panel/home-bottom-panel.component';
@@ -64,7 +63,6 @@ export class TagsScreenComponent implements OnInit {
   readonly otherRows = computed(() => this.rows().filter(row => !row.isPinned));
 
   private readonly store = inject(Store);
-  private readonly router = inject(Router);
   private readonly contentMode = inject(HomeContentModeService);
   private readonly query = toSignal(this.queryControl.valueChanges, { initialValue: '' });
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
@@ -80,7 +78,7 @@ export class TagsScreenComponent implements OnInit {
     });
 
     effect(() => {
-      this.contentMode.notePinned(this.pinnedRows().map(row => row.id));
+      this.contentMode.noteTags(this.rows().map(row => row.id));
     });
   }
 
@@ -104,9 +102,12 @@ export class TagsScreenComponent implements OnInit {
     this.searchOpen.set(false);
   }
 
-  openTag(tagId: string): void {
-    this.contentMode.showTag(tagId);
-    void this.router.navigate(['/home']);
+  chooseTag(tagId: string): void {
+    this.contentMode.toggleTag(tagId);
+  }
+
+  isChosen(tagId: string): boolean {
+    return this.contentMode.selectedTagIds().includes(tagId);
   }
 
   togglePin(change: { id: string; isPinned: boolean }): void {

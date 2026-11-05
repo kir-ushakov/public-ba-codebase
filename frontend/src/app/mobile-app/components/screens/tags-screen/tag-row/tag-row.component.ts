@@ -16,6 +16,7 @@ const TAG_MENU: ContextMenuItem[] = [
 })
 export class TagRowComponent {
   readonly tag = input.required<TagListItem>();
+  readonly chosen = input(false);
   readonly menuOpen = input(false);
   readonly opened = output<string>();
   readonly pinned = output<{ id: string; isPinned: boolean }>();

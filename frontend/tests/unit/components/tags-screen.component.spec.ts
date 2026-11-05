@@ -127,7 +127,7 @@ describe('TagsScreenComponent', () => {
     );
   });
 
-  it('pins from the row without opening Home, and opens Home when the row is clicked', async () => {
+  it('pins from the row and selects several tags without leaving the page', async () => {
     const host = fixture.nativeElement as HTMLElement;
     const router = TestBed.inject(Router);
     const navigate = jest.spyOn(router, 'navigate').mockResolvedValue(true);
@@ -150,16 +150,23 @@ describe('TagsScreenComponent', () => {
     expect(pinned?.textContent).toContain('Ideas');
     expect(host.querySelector('[data-test="tags-subtitle"]')?.textContent).toContain('2 pinned');
 
-    const workRow = Array.from(host.querySelectorAll('[data-test="tag-row"]')).find(row =>
-      row.textContent?.includes('Work'),
-    );
-    (workRow?.querySelector('[data-test="tag-open"]') as HTMLButtonElement).click();
+    const workOpen = Array.from(host.querySelectorAll('[data-test="tag-row"]'))
+      .find(row => row.textContent?.includes('Work'))
+      ?.querySelector('[data-test="tag-open"]') as HTMLButtonElement;
+    const ideasOpen = Array.from(host.querySelectorAll('[data-test="tag-row"]'))
+      .find(row => row.textContent?.includes('Ideas'))
+      ?.querySelector('[data-test="tag-open"]') as HTMLButtonElement;
+    workOpen.click();
+    ideasOpen.click();
+    fixture.detectChanges();
 
-    expect(navigate).toHaveBeenCalledWith(['/home']);
-    expect(TestBed.inject(HomeContentModeService).selectedTagId()).toBe('work');
+    expect(navigate).not.toHaveBeenCalled();
+    expect(TestBed.inject(HomeContentModeService).selectedTagIds()).toEqual(['work', 'ideas']);
+    expect(workOpen.getAttribute('aria-pressed')).toBe('true');
+    expect(ideasOpen.getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('clears the Home filter when the selected tag is unpinned', async () => {
+  it('keeps a selected tag in the Home filter after it is unpinned', async () => {
     const host = fixture.nativeElement as HTMLElement;
     const modes = TestBed.inject(HomeContentModeService);
     modes.showTag('work');
@@ -174,7 +181,7 @@ describe('TagsScreenComponent', () => {
     await saved;
     fixture.detectChanges();
 
-    expect(modes.selectedTagId()).toBeNull();
+    expect(modes.selectedTagIds()).toEqual(['work']);
     expect(host.querySelector('[data-test="tags-pinned-section"]')).toBeNull();
   });
 
@@ -287,7 +294,7 @@ describe('TagsScreenComponent', () => {
       'ideas',
     );
     expect(store.selectSnapshot(TasksState.actualTasks)[0]?.tagIds).toEqual(['work']);
-    expect(modes.selectedTagId()).toBeNull();
+    expect(modes.selectedTagIds()).toEqual([]);
     expect(host.textContent).not.toContain('Ideas');
   });
 

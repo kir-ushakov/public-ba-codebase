@@ -13,6 +13,10 @@
   &.is-pinned {
     background: var(--color-surface-selected);
   }
+
+  &.is-chosen {
+    border-color: var(--color-accent-primary);
+  }
 }
 
 .tag-open {

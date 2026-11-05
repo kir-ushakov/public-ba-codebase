@@ -37,6 +37,7 @@
       (keydown)="onSelectorKeydown($event)"
     >
       <span class="material-symbols-rounded" aria-hidden="true">keyboard_arrow_down</span>
+      <span class="mode-count" data-test="home-category-count">{{ hiddenCount() }}</span>
     </button>
     @if (menuOpen()) {
       <ba-context-menu

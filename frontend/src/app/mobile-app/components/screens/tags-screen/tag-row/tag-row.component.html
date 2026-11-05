@@ -1,5 +1,16 @@
-<div class="tag-row" data-test="tag-row" [class.is-pinned]="tag().isPinned">
-  <button class="tag-open" type="button" data-test="tag-open" (click)="opened.emit(tag().id)">
+<div
+  class="tag-row"
+  data-test="tag-row"
+  [class.is-pinned]="tag().isPinned"
+  [class.is-chosen]="chosen()"
+>
+  <button
+    class="tag-open"
+    type="button"
+    data-test="tag-open"
+    [attr.aria-pressed]="chosen()"
+    (click)="opened.emit(tag().id)"
+  >
     <span
       class="material-symbols-rounded tag-sell"
       data-test="tag-sell"
