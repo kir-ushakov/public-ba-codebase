@@ -111,6 +111,9 @@
       "TAG_ERROR__NAME_TOO_LONG",
       "TAG_ERROR__COLOR_MISSED"
     ],
+    "ETagRepoServiceError": [
+      "TAG_REPO_SERVICE_ERROR__USER_TAG_NOT_FOUND"
+    ],
     "ETaskRepoServiceError": [
       "TASK_REPO_SERVICE_ERROR__USER_TASK_NOT_FOUND"
     ],
@@ -225,9 +228,12 @@
         "name",
         "color",
         "createdAt",
-        "modifiedAt"
+        "modifiedAt",
+        "isPinned"
       ],
-      "optional": []
+      "optional": [
+        "isPinned"
+      ]
     },
     "IChangeableObjectDTO": {
       "keys": [

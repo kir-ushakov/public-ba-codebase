@@ -22,5 +22,25 @@ describe('HomeBottomPanelComponent', () => {
     expect(host.querySelector('[data-test="bottom-nav-home"]')?.textContent).toContain('Home');
     expect(host.querySelector('[data-test="bottom-nav-tasks"]')).not.toBeNull();
     expect(host.querySelector('[data-test="bottom-nav-tags"]')).not.toBeNull();
+    expect(host.querySelector('[data-test="bottom-nav-home"]')?.getAttribute('aria-current')).toBe(
+      'page',
+    );
+  });
+
+  it('marks Tags as the current destination and offers create tag', () => {
+    fixture.componentRef.setInput('page', 'tags');
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-test="bottom-nav-tags"]')?.getAttribute('aria-current')).toBe(
+      'page',
+    );
+    expect(
+      host.querySelector('[data-test="bottom-nav-home"]')?.getAttribute('aria-current'),
+    ).toBeNull();
+    expect(host.querySelector('[data-test="tags-create"]')?.getAttribute('aria-label')).toBe(
+      'Create tag',
+    );
+    expect(host.querySelector('[data-test="new-task-btn"]')).toBeNull();
   });
 });

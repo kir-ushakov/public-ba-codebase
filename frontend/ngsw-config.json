@@ -44,7 +44,7 @@
       "installMode": "prefetch",
       "resources": {
         "urls": [
-          "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add,article,arrow_back,arrow_downward,arrow_upward,auto_awesome,calendar_month,check,checklist,close,content_copy,delete,edit,error,error_outline,expand_more,format_bold,format_italic,format_list_bulleted,format_list_numbered,home,hourglass_empty,hub,image,keyboard_arrow_down,link,location_on,lock,logout,mail,mic,more_vert,pause,person,play_arrow,progress_activity,radio_button_unchecked,refresh,search,sell,settings,star,swap_horiz,sync,visibility,visibility_off,warning&display=block"
+          "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add,article,arrow_back,arrow_downward,arrow_upward,auto_awesome,calendar_month,check,checklist,close,content_copy,delete,edit,error,error_outline,expand_more,format_bold,format_italic,format_list_bulleted,format_list_numbered,home,hourglass_empty,hub,image,keyboard_arrow_down,link,location_on,lock,logout,mail,mic,more_vert,pause,person,play_arrow,progress_activity,push_pin,radio_button_unchecked,refresh,search,sell,settings,star,swap_horiz,sync,visibility,visibility_off,warning&display=block"
         ]
       }
     },

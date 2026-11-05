@@ -56,6 +56,7 @@ import {
   ESlackEventReceivedUseCaseError,
   ESpeechToTextUseCaseError,
   ETagError,
+  ETagRepoServiceError,
   ETaskCondition,
   ETaskError,
   ETaskRepoServiceError,
@@ -149,6 +150,7 @@ const TAG_DTO_KEYS = [
   'color',
   'createdAt',
   'modifiedAt',
+  'isPinned',
 ] as const satisfies readonly (keyof TagDTO)[];
 const _tagDto: ExactKeys<TagDTO, typeof TAG_DTO_KEYS> = true;
 
@@ -268,6 +270,7 @@ export const PUBLIC_API_SHAPE = {
     ESlackEventReceivedUseCaseError: Object.values(ESlackEventReceivedUseCaseError),
     ETaskError: Object.values(ETaskError),
     ETagError: Object.values(ETagError),
+    ETagRepoServiceError: Object.values(ETagRepoServiceError),
     ETaskRepoServiceError: Object.values(ETaskRepoServiceError),
     EImageRepoServiceError: Object.values(EImageRepoServiceError),
   },
@@ -301,7 +304,7 @@ export const PUBLIC_API_SHAPE = {
       optional: ['attrs'],
     },
     UserDto: { keys: [...USER_DTO_KEYS], optional: [] as string[] },
-    TagDTO: { keys: [...TAG_DTO_KEYS], optional: [] as string[] },
+    TagDTO: { keys: [...TAG_DTO_KEYS], optional: ['isPinned'] },
     IChangeableObjectDTO: { keys: [...CHANGEABLE_OBJECT_KEYS], optional: [] as string[] },
     ChangeDTO: { keys: [...CHANGE_DTO_KEYS], optional: [] as string[] },
     LoginRequestDTO: { keys: [...LOGIN_REQUEST_KEYS], optional: [] as string[] },

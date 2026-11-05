@@ -12,4 +12,13 @@ export namespace TagsAction {
       public userId: string,
     ) {}
   }
+
+  export class SetPinned {
+    static readonly type = '[Tags] Set Pinned';
+
+    constructor(
+      public tagId: string,
+      public isPinned: boolean,
+    ) {}
+  }
 }

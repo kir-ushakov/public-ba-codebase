@@ -2,7 +2,7 @@
   "screen": {
     "id": "home",
     "name": "Home",
-    "version": "1.8.0",
+    "version": "1.10.0",
 
     "purpose": "Main overview screen displaying the user's recent content and providing quick access to primary application areas.",
 
@@ -17,6 +17,7 @@
       "structure": [
         "header",
         "content-mode-switcher",
+        "pinned-tag-filters",
         "sync-status-banner",
         "content-grid",
         "floating-create-action",
@@ -322,6 +323,10 @@
       "The selector menu lists the secondary categories that are not the current second tab, each with its category icon and label. Active is never in the menu. Choosing one replaces the second tab, activates it, updates the task list and closes the menu.",
       "Choosing Active activates Active and leaves the second tab unchanged. Choosing the visible second tab activates that category.",
       "The selected secondary category and the active category survive ordinary in-app navigation, including Task View, Create and Edit. A full application restart may return the second tab to To do. Do not persist this preference in storage.",
+      "Pinned tags are a headerless row of compact wrapping chips directly below the category navigation and above the sync banner. Do not add a heading, helper label, pin icon, section background, or divider.",
+      "Only pinned tags appear. If none are pinned, render nothing and keep the category navigation's normal spacing. One tag filter can be active. Tapping it again clears the filter. Changing Active, To do, Waiting or Notes keeps the selected tag.",
+      "The tag filter narrows the current category. Category counts stay the unfiltered totals. A category with no tasks for the selected tag uses that category's existing empty state.",
+      "Each chip is a 22px capsule: 8px horizontal padding, a 4px gap, a 12px sell icon and a 12px/500 label. The ends stay fully rounded. Unselected chips are transparent with the default border, a neutral icon and primary text. Selected chips use the segmentedControl selected treatment: dark selected surface, a 1px teal border, a teal icon and primary text. Do not use a solid teal fill, an 8px or 12px radius, or a percentage radius.",
       "Switching modes filters the existing two-column masonry grid without changing bottom navigation.",
       "A horizontal swipe on the content moves one mode. Active, To do, Waiting and Notes stay in that order. Landing on To do, Waiting or Notes replaces the second tab with that category.",
       "The header count names the selected mode: \"3 active items\", \"8 to do items\", \"2 waiting items\", \"12 notes\".",
@@ -507,6 +512,7 @@
       "preserves": [
         "header",
         "content-mode-switcher",
+        "pinned-tag-filters",
         "sync-status-banner",
         "floating-create-action",
         "bottom-navigation"
@@ -540,6 +546,54 @@
           "title": "No notes yet.",
           "body": "Capture ideas, links, images or anything you want to remember for later."
         }
+      }
+    },
+
+    "pinnedTagFilters": {
+      "id": "home-pinned-tags",
+      "placement": "directly below the category navigation and above the sync banner",
+      "heading": "none",
+      "helperText": "none",
+      "sectionChrome": "none",
+      "visibleWhen": "at least one tag is pinned",
+      "hiddenWhenEmpty": "Render nothing. Keep the category navigation's normal bottom spacing.",
+      "source": "tags where isPinned is true",
+      "spacing": {
+        "horizontalPadding": "spacing.screen.horizontalPadding",
+        "gapBelowCategory": "spacing.scale.md",
+        "chipGap": "spacing.scale.sm"
+      },
+      "item": {
+        "component": "tag-chip",
+        "shape": "capsule",
+        "height": "half of button.minHeight",
+        "radius": "9999px",
+        "icon": "sell",
+        "label": "tag name",
+        "pinIcon": "none"
+      },
+      "selection": "single",
+      "behavior": {
+        "select": "Filter the current Home category to tasks that include this tag. Category counts stay unfiltered.",
+        "selectAgain": "Clear the tag filter.",
+        "changeCategory": "Keep the selected tag.",
+        "unpinSelected": "Clear the tag filter.",
+        "openFromTagsPage": "Show Home with that tag selected, including a tag that is not pinned.",
+        "emptyMatch": "Show the current category empty state. The header count still names every item in the category."
+      },
+      "visual": {
+        "layout": "wrap to additional rows, no horizontal scrolling",
+        "selectedTreatment": "surface.selected, 1px accent border, active icon, primary text",
+        "unselectedTreatment": "transparent, default border, default icon, primary text",
+        "prohibited": [
+          "Pinned tags heading",
+          "Quick filters label",
+          "pin icon on the Home chip",
+          "solid teal chip background",
+          "horizontal scrolling",
+          "section background, divider, or extra heading",
+          "adding pinned tags to the Active / To do / Waiting / Notes selector"
+        ]
       }
     },
 

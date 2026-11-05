@@ -49,6 +49,7 @@ export class TagsState {
       userId,
       name: tagInitData.name,
       color: TAG_COLOR,
+      isPinned: false,
       createdAt: now,
       modifiedAt: now,
     };
@@ -73,6 +74,49 @@ export class TagsState {
     ctx.setState(
       patch({
         entities: append([tag]),
+      }),
+    );
+    ctx.dispatch(new AppAction.ClearErrorInUI());
+    ctx.dispatch(new SyncAction.ChangeForSyncOccurred(entry));
+  }
+
+  @Action(TagsAction.SetPinned)
+  async setPinned(
+    ctx: StateContext<ITagsStateModel>,
+    { tagId, isPinned }: TagsAction.SetPinned,
+  ): Promise<void> {
+    const current = ctx.getState().entities.find(tag => tag.id === tagId);
+    if (!current || (current.isPinned === true) === isPinned) {
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const tag: Tag = {
+      ...current,
+      isPinned,
+      modifiedAt: now,
+    };
+    const entry: OutboxEntry = {
+      id: uuidv4(),
+      entityId: tag.id,
+      change: {
+        entity: EChangedEntity.Tag,
+        action: EChangeAction.Updated,
+        object: tag,
+        modifiedAt: now,
+      },
+    };
+
+    try {
+      await this.localStore.saveTagAndEnqueue(tag, entry);
+    } catch {
+      ctx.dispatch(new AppAction.ShowErrorInUI(SAVE_FAILED, 'Not saved'));
+      return;
+    }
+
+    ctx.setState(
+      patch({
+        entities: updateItem(item => item.id === tag.id, patch(tag)),
       }),
     );
     ctx.dispatch(new AppAction.ClearErrorInUI());

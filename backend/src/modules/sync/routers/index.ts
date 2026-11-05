@@ -4,6 +4,7 @@ import { createTaskController } from '../usecases/task/create/index.js';
 import { updateTaskController } from '../usecases/task/update/index.js';
 import { deleteTaskController } from '../usecases/task/delete/index.js';
 import { createTagController } from '../usecases/tag/create/index.js';
+import { updateTagController } from '../usecases/tag/update/index.js';
 import { deleteTagController } from '../usecases/tag/delete/index.js';
 import { getChnagesController } from '../usecases/get-changes/_index.js';
 
@@ -17,6 +18,7 @@ syncRouter.delete(
 );
 
 syncRouter.post('/tag', asyncHandler(createTagController.execute.bind(createTagController)));
+syncRouter.patch('/tag', asyncHandler(updateTagController.execute.bind(updateTagController)));
 syncRouter.delete(
   '/tag/:tagId',
   asyncHandler(deleteTagController.execute.bind(deleteTagController)),

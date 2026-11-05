@@ -13,6 +13,7 @@ export function requestToUsecaseParams(
       userId,
       name: tagDto.name,
       color: tagDto.color,
+      isPinned: tagDto.isPinned === true,
       createdAt: new Date(tagDto.createdAt),
       modifiedAt: new Date(tagDto.modifiedAt),
     },

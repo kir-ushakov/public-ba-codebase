@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ETaskViewMode } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
 
@@ -9,9 +9,16 @@ import { ETaskViewMode } from 'src/app/mobile-app/components/screens/task-screen
   imports: [RouterLink],
 })
 export class HomeBottomPanelComponent {
+  readonly page = input<'home' | 'tags'>('home');
+  readonly createTag = output<void>();
+
   constructor(private router: Router) {}
 
-  createTask(): void {
-    void this.router.navigate(['task/' + ETaskViewMode.Create]);
+  onCreate(): void {
+    if (this.page() === 'tags') {
+      this.createTag.emit();
+      return;
+    }
+    void this.router.navigate([`task/${ETaskViewMode.Create}`]);
   }
 }

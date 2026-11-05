@@ -6,6 +6,7 @@ import {
   type GetChangesContract,
   type RefreshSessionContract,
   type SendChangeContract,
+  type TagDTO,
   type TaskDTO,
   type UploadImageContract,
 } from '@brainassistant/contracts';
@@ -30,6 +31,18 @@ function json(status: number, body: unknown) {
     contentType: 'application/json',
     body: JSON.stringify(body),
   };
+}
+
+function parseSendChangeTag(postData: string | null): TagDTO | null {
+  if (!postData) {
+    return null;
+  }
+  try {
+    const body = JSON.parse(postData) as SendChangeContract.Request<TagDTO>;
+    return body.changeableObjectDto ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function parseSendChangeTask(postData: string | null): TaskDTO | null {
@@ -115,6 +128,20 @@ export async function setupApiMocks(
 
     if (url.includes('/api/sync/task') && method === 'DELETE') {
       await route.fulfill(json(200, {}));
+      return;
+    }
+
+    if (url.includes('/api/sync/tag') && method === 'POST') {
+      const tag = parseSendChangeTag(request.postData());
+      const body: SendChangeContract.Response<TagDTO> = tag ?? undefined;
+      await route.fulfill(json(201, body ?? {}));
+      return;
+    }
+
+    if (url.includes('/api/sync/tag') && method === 'PATCH') {
+      const tag = parseSendChangeTag(request.postData());
+      const body: SendChangeContract.Response<TagDTO> = tag ?? undefined;
+      await route.fulfill(json(200, body ?? {}));
       return;
     }
 

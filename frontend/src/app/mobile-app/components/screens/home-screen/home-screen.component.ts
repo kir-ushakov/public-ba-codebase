@@ -26,7 +26,7 @@ import { HomeContentModeService } from './home-content-mode.service';
 import { HomeEmptyStateComponent } from './home-empty-state/home-empty-state.component';
 import { HomeSyncStatusComponent } from './home-sync-status/home-sync-status.component';
 import { TaskTilesPanelComponent } from '../../common/task-tiles-panel/task-tiles-panel.component';
-import { filterHomeTasks } from './helpers/filter-home-tasks.function';
+import { filterHomeTasks, tasksMatchingTag } from './helpers/filter-home-tasks.function';
 import {
   homeModeAfterSwipe,
   homeModeCounts,
@@ -66,6 +66,15 @@ export class HomeScreenComponent implements OnInit, AfterViewInit {
   readonly queryControl = new FormControl('', { nonNullable: true });
   readonly contentMode = inject(HomeContentModeService).mode;
   readonly secondaryCategory = inject(HomeContentModeService).secondary;
+  readonly selectedTagId = inject(HomeContentModeService).selectedTagId;
+  readonly pinnedTags = computed(() =>
+    this.selectors
+      .tags()
+      .filter(tag => tag.isPinned === true)
+      .sort((left, right) =>
+        left.name.localeCompare(right.name, undefined, { sensitivity: 'base' }),
+      ),
+  );
   readonly modeCounts = computed(() => homeModeCounts(this.selectors.tasks()));
   readonly tabCounts = computed(() => {
     const query = this.query();
@@ -76,17 +85,23 @@ export class HomeScreenComponent implements OnInit, AfterViewInit {
     return homeModeCounts(filterHomeTasks(tasks, query, this.selectors.tags()));
   });
   readonly hasQuery = computed(() => this.query().trim().length > 0);
+  readonly categoryTasks = computed(() =>
+    tasksForHomeMode(this.selectors.tasks(), this.contentMode()),
+  );
+  readonly tagFilteredTasks = computed(() =>
+    tasksMatchingTag(this.categoryTasks(), this.selectedTagId()),
+  );
   readonly filteredTasks = computed(() =>
-    filterHomeTasks(
-      tasksForHomeMode(this.selectors.tasks(), this.contentMode()),
-      this.query(),
-      this.selectors.tags(),
-    ),
+    filterHomeTasks(this.tagFilteredTasks(), this.query(), this.selectors.tags()),
   );
   readonly itemCountLabel = computed(() =>
     homeModeItemLabel(this.contentMode(), this.modeCounts()[this.contentMode()]),
   );
-  readonly showEmptyState = computed(() => this.modeCounts()[this.contentMode()] === 0);
+  readonly showEmptyState = computed(
+    () =>
+      this.modeCounts()[this.contentMode()] === 0 ||
+      (this.selectedTagId() !== null && this.tagFilteredTasks().length === 0),
+  );
   readonly showNoResults = computed(
     () =>
       !this.showEmptyState() &&
@@ -108,9 +123,14 @@ export class HomeScreenComponent implements OnInit, AfterViewInit {
 
       this.searchInput()?.nativeElement.focus();
     });
+
+    effect(() => {
+      this.contentModeService.notePinned(this.pinnedTags().map(tag => tag.id));
+    });
   }
 
   ngOnInit(): void {
+    this.contentModeService.bindUser(this.store.selectSnapshot(UserState.userId));
     this.store.dispatch(AppAction.Opened);
     this.setAvatarInputData();
   }
@@ -137,6 +157,10 @@ export class HomeScreenComponent implements OnInit, AfterViewInit {
 
   selectContentMode(mode: HomeContentMode): void {
     this.contentModeService.select(mode);
+  }
+
+  togglePinnedTag(tagId: string): void {
+    this.contentModeService.toggleTag(tagId);
   }
 
   onContentTouchStart(event: TouchEvent): void {
