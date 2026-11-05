@@ -30,7 +30,9 @@
     [attr.aria-pressed]="tag().isPinned"
     (click)="pinned.emit({ id: tag().id, isPinned: tag().isPinned })"
   >
-    <span class="material-symbols-rounded" aria-hidden="true">push_pin</span>
+    <span class="material-symbols-rounded" data-test="tag-pin-icon" aria-hidden="true">{{
+      pinIcon()
+    }}</span>
   </button>
   <div class="tag-menu">
     <button

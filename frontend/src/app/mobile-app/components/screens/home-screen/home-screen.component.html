@@ -103,6 +103,14 @@
           >sell</span
         >
         <span class="pinned-tag-name">{{ tag.name }}</span>
+        @if (tag.isPinned === true) {
+          <span
+            class="material-symbols-rounded pinned-tag-pin"
+            data-test="home-tag-pin"
+            aria-hidden="true"
+            >push_pin</span
+          >
+        }
       </button>
     }
   </div>

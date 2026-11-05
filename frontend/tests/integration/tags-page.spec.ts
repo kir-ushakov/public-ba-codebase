@@ -33,6 +33,7 @@ test('creates a tag, pins it, and uses it as a Home filter', async ({ page }) =>
   await expect(page.locator('[data-test="bottom-sheet"]')).toHaveCount(0);
   await expect(page.locator('[data-test="tags-other-section"]')).toContainText('Work');
   await expect(page.locator('[data-test="tags-pinned-section"]')).toHaveCount(0);
+  await expect(page.locator('[data-test="tag-pin-icon"]')).toHaveText('keep_off');
 
   await page.click('[data-test="tags-search"]');
   await page.fill('[data-test="tags-search-input"]', 'nope');
@@ -52,10 +53,12 @@ test('creates a tag, pins it, and uses it as a Home filter', async ({ page }) =>
   await expect(page.locator('[data-test="tags-other-section"]')).toHaveCount(0);
   await expect(page.locator('[data-test="tag-pin"]')).toHaveAttribute('aria-label', 'Unpin tag');
   await expect(page.locator('[data-test="tag-pin"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-test="tag-pin-icon"]')).toHaveText('push_pin');
 
   await page.click('[data-test="bottom-nav-home"]');
   const chip = page.locator('[data-test="home-pinned-tag"]', { hasText: 'Work' });
   await expect(chip).toBeVisible();
+  await expect(chip.locator('[data-test="home-tag-pin"]')).toHaveText('push_pin');
   await expect(chip).toHaveAttribute('aria-pressed', 'false');
 
   await chip.click();

@@ -241,6 +241,15 @@
       'GRAD' var(--icon-grade),
       'opsz' var(--icon-optical-size);
     color: var(--color-icon-default);
+
+    &.pinned-tag-pin {
+      color: var(--color-icon-active);
+      font-variation-settings:
+        'FILL' var(--icon-fill-solid),
+        'wght' var(--icon-weight),
+        'GRAD' var(--icon-grade),
+        'opsz' var(--icon-optical-size);
+    }
   }
 
   .pinned-tag-name {

@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { ContextMenuComponent } from 'src/app/shared/components/ui-elements/context-menu/context-menu.component';
 import type { ContextMenuItem } from 'src/app/shared/components/ui-elements/context-menu/context-menu-item.type';
 import type { TagListItem } from '../helpers/tag-list.function';
@@ -26,6 +26,7 @@ export class TagRowComponent {
   readonly remove = output<string>();
 
   readonly menuItems = TAG_MENU;
+  readonly pinIcon = computed(() => (this.tag().isPinned ? 'push_pin' : 'keep_off'));
 
   onMenu(itemId: string): void {
     this.menuClosed.emit();

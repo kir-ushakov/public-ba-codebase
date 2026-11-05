@@ -141,6 +141,7 @@ describe('TagsScreenComponent', () => {
 
     expect(pin.getAttribute('aria-label')).toBe('Pin tag');
     expect(pin.getAttribute('aria-pressed')).toBe('false');
+    expect(pin.querySelector('[data-test="tag-pin-icon"]')?.textContent?.trim()).toBe('keep_off');
     pin.click();
     await saved;
     fixture.detectChanges();
@@ -148,6 +149,9 @@ describe('TagsScreenComponent', () => {
     expect(navigate).not.toHaveBeenCalled();
     const pinned = host.querySelector('[data-test="tags-pinned-section"]');
     expect(pinned?.textContent).toContain('Ideas');
+    expect(pinned?.querySelector('[data-test="tag-pin-icon"]')?.textContent?.trim()).toBe(
+      'push_pin',
+    );
     expect(host.querySelector('[data-test="tags-subtitle"]')?.textContent).toContain('2 pinned');
 
     const workOpen = Array.from(host.querySelectorAll('[data-test="tag-row"]'))
@@ -205,9 +209,13 @@ describe('TagsScreenComponent', () => {
     const otherPin = host
       .querySelector('[data-test="tags-other-section"]')
       ?.querySelector('[data-test="tag-pin"]');
-    expect(pinnedPin?.classList.contains('is-on')).toBe(true);
+    expect(pinnedPin?.querySelector('[data-test="tag-pin-icon"]')?.textContent?.trim()).toBe(
+      'push_pin',
+    );
     expect(pinnedPin?.getAttribute('aria-pressed')).toBe('true');
-    expect(otherPin?.classList.contains('is-on')).toBe(false);
+    expect(otherPin?.querySelector('[data-test="tag-pin-icon"]')?.textContent?.trim()).toBe(
+      'keep_off',
+    );
     expect(otherPin?.getAttribute('aria-pressed')).toBe('false');
   });
 

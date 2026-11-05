@@ -2,7 +2,7 @@
   "screen": {
     "id": "home",
     "name": "Home",
-    "version": "1.10.0",
+    "version": "1.11.0",
 
     "purpose": "Main overview screen displaying the user's recent content and providing quick access to primary application areas.",
 
@@ -323,10 +323,10 @@
       "The selector menu lists the secondary categories that are not the current second tab, each with its category icon, label, and count. The selector button shows the sum of those hidden counts. Active is never in the menu. Choosing one replaces the second tab, activates it, updates the task list and closes the menu.",
       "Choosing Active activates Active and leaves the second tab unchanged. Choosing the visible second tab activates that category.",
       "The selected secondary category and the active category survive ordinary in-app navigation, including Task View, Create and Edit. A full application restart may return the second tab to To do. Do not persist this preference in storage.",
-      "Pinned tags are a headerless row of compact wrapping chips directly below the category navigation and above the sync banner. Do not add a heading, helper label, pin icon, section background, or divider.",
+      "Pinned tags are a headerless row of compact wrapping chips directly below the category navigation and above the sync banner. Do not add a heading, helper label, section background, or divider. A pinned chip has a small filled push_pin on the right. A tag that is only selected, not pinned, has no pin.",
       "Pinned tags appear as chips. A tag selected on the Tags page also appears here, selected, even when it is not pinned. Several tags can be selected. A task matches when it has any selected tag. Tapping a chip again clears that tag. Changing Active, To do, Waiting or Notes keeps the selection.",
       "The tag filter narrows every category. Tab counts, the selector total, and the header count are the tasks that match the selected tags. A category with no matching tasks uses that category's existing empty state.",
-      "Each chip is a 22px capsule: 8px horizontal padding, a 4px gap, a 12px sell icon in the tag color and a 12px/500 label. The ends stay fully rounded. Unselected chips are transparent with the default border and primary text. Selected chips keep that tag-colored icon and use the segmentedControl selected treatment: dark selected surface and a 1px teal border. Do not replace the teal selection border with the tag color, and do not use a solid teal fill, an 8px or 12px radius, or a percentage radius.",
+      "Each chip is a 22px capsule: 8px horizontal padding, a 4px gap, a 12px sell icon in the tag color, a 12px/500 label, and, when the tag is pinned, a 12px filled push_pin in the teal accent on the right. The ends stay fully rounded. Unselected chips are transparent with the default border and primary text. Selected chips keep that tag-colored icon and use the segmentedControl selected treatment: dark selected surface and a 1px teal border. Do not replace the teal selection border with the tag color, and do not use a solid teal fill, an 8px or 12px radius, or a percentage radius.",
       "Switching modes filters the existing two-column masonry grid without changing bottom navigation.",
       "A horizontal swipe on the content moves one mode. Active, To do, Waiting and Notes stay in that order. Landing on To do, Waiting or Notes replaces the second tab with that category.",
       "The header count names the selected mode: \"3 active items\", \"8 to do items\", \"2 waiting items\", \"12 notes\".",
@@ -570,7 +570,7 @@
         "radius": "9999px",
         "icon": "sell",
         "label": "tag name",
-        "pinIcon": "none"
+        "pinIcon": "trailing push_pin, FILL 1, same 12px size as the sell icon, teal accent. Present only when isPinned is true."
       },
       "selection": "single",
       "behavior": {
@@ -588,7 +588,6 @@
         "prohibited": [
           "Pinned tags heading",
           "Quick filters label",
-          "pin icon on the Home chip",
           "solid teal chip background",
           "horizontal scrolling",
           "section background, divider, or extra heading",
