@@ -148,6 +148,53 @@ describe('TagsState', () => {
     expect(save).not.toHaveBeenCalled();
   });
 
+  it('renames a tag and stores the chosen palette color', async () => {
+    await firstValueFrom(
+      store.dispatch(new TagsAction.CreateTag({ id: 'tag-1', name: 'Errands' }, userId)),
+    );
+
+    await firstValueFrom(
+      store.dispatch(
+        new TagsAction.UpdateTag({ tagId: 'tag-1', name: 'Groceries', color: '#D95C5C' }),
+      ),
+    );
+
+    expect(store.selectSnapshot(TagsState.forCurrentUser)[0]).toEqual(
+      expect.objectContaining({ name: 'Groceries', color: '#d95c5c', isPinned: false }),
+    );
+  });
+
+  it('leaves the tag unchanged when the name or color is not allowed', async () => {
+    await firstValueFrom(
+      store.dispatch(new TagsAction.CreateTag({ id: 'tag-1', name: 'Errands' }, userId)),
+    );
+
+    await firstValueFrom(
+      store.dispatch(new TagsAction.UpdateTag({ tagId: 'tag-1', name: '   ', color: '#d95c5c' })),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TagsAction.UpdateTag({ tagId: 'tag-1', name: 'Groceries', color: 'purple' }),
+      ),
+    );
+
+    expect(store.selectSnapshot(TagsState.forCurrentUser)[0]).toEqual(
+      expect.objectContaining({ name: 'Errands', color: TAG_COLOR }),
+    );
+  });
+
+  it('deletes a tag from the device', async () => {
+    await firstValueFrom(
+      store.dispatch(new TagsAction.CreateTag({ id: 'tag-1', name: 'Errands' }, userId)),
+    );
+    const remove = jest.spyOn(TestBed.inject(LocalStore), 'deleteTagAndEnqueue');
+
+    await firstValueFrom(store.dispatch(new TagsAction.DeleteTag('tag-1')));
+
+    expect(remove).toHaveBeenCalled();
+    expect(store.selectSnapshot(TagsState.forCurrentUser)).toEqual([]);
+  });
+
   it('applies a pinned flag arriving from the server', async () => {
     await firstValueFrom(
       store.dispatch(

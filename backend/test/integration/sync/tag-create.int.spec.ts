@@ -30,7 +30,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
         changeableObjectDto: {
           id: 'tag-unauth',
           name: 'Should not be created',
-          color: 'teal',
+          color: '#00a991',
         },
       });
 
@@ -43,7 +43,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
     const dto = {
       id: 'tag-123',
       name: 'Work',
-      color: 'teal',
+      color: '#00a991',
       createdAt: '2020-05-01T10:00:00.000Z',
       modifiedAt: '2020-05-01T10:05:00.000Z',
     };
@@ -88,7 +88,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
         changeableObjectDto: {
           id: 'tag-empty-name',
           name: '',
-          color: 'teal',
+          color: '#00a991',
         },
       })
       .set('Accept', 'application/json');

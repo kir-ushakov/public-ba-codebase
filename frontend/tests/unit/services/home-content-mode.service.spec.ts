@@ -11,35 +11,36 @@ describe('HomeContentModeService tag filter', () => {
     service.toggleTag('work');
     service.select('todo');
 
-    expect(service.selectedTagId()).toBe('work');
+    expect(service.selectedTagIds()).toEqual(['work']);
     expect(service.mode()).toBe('todo');
 
+    service.toggleTag('ideas');
+    expect(service.selectedTagIds()).toEqual(['work', 'ideas']);
+
     service.toggleTag('work');
-    expect(service.selectedTagId()).toBeNull();
+    expect(service.selectedTagIds()).toEqual(['ideas']);
   });
 
   it('clears the filter when the signed-in user changes and keeps it for the same user', () => {
     service.showTag('work');
     service.bindUser('user-1');
-    expect(service.selectedTagId()).toBeNull();
+    expect(service.selectedTagIds()).toEqual([]);
 
     service.showTag('work');
     service.bindUser('user-1');
-    expect(service.selectedTagId()).toBe('work');
+    expect(service.selectedTagIds()).toEqual(['work']);
 
     service.bindUser('user-2');
-    expect(service.selectedTagId()).toBeNull();
+    expect(service.selectedTagIds()).toEqual([]);
   });
 
-  it('clears a pinned filter when that tag is unpinned and keeps an unpinned one', () => {
-    service.notePinned(['work']);
-    service.showTag('work');
-    service.notePinned([]);
-    expect(service.selectedTagId()).toBeNull();
+  it('clears the filter when the selected tag is gone', () => {
+    service.toggleTag('work');
+    service.toggleTag('ideas');
+    service.noteTags(['ideas']);
+    expect(service.selectedTagIds()).toEqual(['ideas']);
 
-    service.notePinned(['work']);
-    service.showTag('ideas');
-    service.notePinned([]);
-    expect(service.selectedTagId()).toBe('ideas');
+    service.clearTag('ideas');
+    expect(service.selectedTagIds()).toEqual([]);
   });
 });

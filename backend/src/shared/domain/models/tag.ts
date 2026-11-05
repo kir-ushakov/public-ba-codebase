@@ -1,4 +1,4 @@
-import { ETagError, TagConst } from '@brainassistant/contracts';
+import { canonicalTagColor, ETagError, TagConst } from '@brainassistant/contracts';
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 import { Result } from '../../core/result.js';
@@ -121,7 +121,7 @@ export class Tag extends AggregateRoot<TagProps> {
       );
     }
 
-    if (!Guard.notEmptyString(props.color)) {
+    if (!canonicalTagColor(props.color)) {
       return Result.fail<never, DomainError<Tag, ETagError>>(
         new DomainError<Tag, ETagError>(ETagError.ColorMissed, 'Tag color is required'),
       );

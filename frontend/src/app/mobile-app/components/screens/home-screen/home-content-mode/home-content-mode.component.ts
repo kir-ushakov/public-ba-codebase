@@ -50,12 +50,16 @@ export class HomeContentModeComponent {
     HOME_CONTENT_MODE_OPTIONS.active,
     HOME_CONTENT_MODE_OPTIONS[this.secondary()],
   ]);
+  readonly hiddenModes = computed(() => homeCategoryMenuModes(this.secondary()));
+  readonly hiddenCount = computed(() =>
+    this.hiddenModes().reduce((sum, mode) => sum + this.counts()[mode], 0),
+  );
   readonly menuItems = computed((): ContextMenuItem[] =>
-    homeCategoryMenuModes(this.secondary()).map(id => {
+    this.hiddenModes().map(id => {
       const option = HOME_CONTENT_MODE_OPTIONS[id];
       return {
         id: option.id,
-        label: option.label,
+        label: `${option.label} ${this.counts()[id]}`,
         icon: option.icon,
         testId: `home-mode-option-${option.id}`,
       };

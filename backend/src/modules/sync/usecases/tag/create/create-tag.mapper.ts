@@ -1,4 +1,4 @@
-import { SendChangeContract, TagDTO } from '@brainassistant/contracts';
+import { canonicalTagColor, SendChangeContract, TagDTO } from '@brainassistant/contracts';
 import { UniqueEntityID } from '../../../../../shared/domain/UniqueEntityID.js';
 import type { CreateTagParams } from './create-tag.usecase.js';
 
@@ -12,7 +12,7 @@ export function requestToUsecaseParams(
     tagProps: {
       userId,
       name: tagDto.name,
-      color: tagDto.color,
+      color: canonicalTagColor(tagDto.color) ?? tagDto.color,
       isPinned: tagDto.isPinned === true,
       createdAt: new Date(tagDto.createdAt),
       modifiedAt: new Date(tagDto.modifiedAt),

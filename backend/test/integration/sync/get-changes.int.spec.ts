@@ -174,7 +174,11 @@ describe('Integration: GetChanges (Controller -> UseCase -> Repo -> MongoDB)', (
       expect.objectContaining({
         entity: EChangedEntity.Tag,
         action: EChangeAction.Updated,
-        object: expect.objectContaining({ id: 'legacy-category', name: 'Legacy' }),
+        object: expect.objectContaining({
+          id: 'legacy-category',
+          name: 'Legacy',
+          color: '#00a991',
+        }),
       }),
     ]);
     expect(res.body.changes[0].object).not.toHaveProperty('isCategory');

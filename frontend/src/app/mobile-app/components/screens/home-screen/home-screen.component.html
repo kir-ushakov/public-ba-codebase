@@ -85,18 +85,23 @@
     (modeChange)="selectContentMode($event)"
   ></ba-home-content-mode>
 </div>
-@if (pinnedTags().length) {
+@if (filterTags().length) {
   <div class="pinned-tags" data-test="home-pinned-tags">
-    @for (tag of pinnedTags(); track tag.id) {
+    @for (tag of filterTags(); track tag.id) {
       <button
         class="pinned-tag"
         type="button"
         data-test="home-pinned-tag"
-        [class.is-selected]="selectedTagId() === tag.id"
-        [attr.aria-pressed]="selectedTagId() === tag.id"
+        [class.is-selected]="selectedTagIds().includes(tag.id)"
+        [attr.aria-pressed]="selectedTagIds().includes(tag.id)"
         (click)="togglePinnedTag(tag.id)"
       >
-        <span class="material-symbols-rounded" aria-hidden="true">sell</span>
+        <span
+          class="material-symbols-rounded"
+          [style.color]="tagIconColor(tag.color)"
+          aria-hidden="true"
+          >sell</span
+        >
         <span class="pinned-tag-name">{{ tag.name }}</span>
       </button>
     }

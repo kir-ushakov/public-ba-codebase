@@ -170,7 +170,7 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('1');
     expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
-      '2 active items',
+      '1 active item',
     );
 
     typeQuery(fixture, 'litter');
@@ -183,11 +183,11 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('0');
     expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
-      '2 active items',
+      '0 active items',
     );
   });
 
-  it('hides tiles that do not match and keeps the full item count', () => {
+  it('hides tiles that do not match and shows the found item count', () => {
     const host = openSearch(fixture);
 
     typeQuery(fixture, 'cat');
@@ -195,7 +195,7 @@ describe('HomeScreenComponent search', () => {
     expect(tileText(host)).toContain('Buy cat food');
     expect(tileText(host)).not.toContain('Lamp photo');
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
-      '2 active items',
+      '1 active item',
     );
     expect(host.querySelector('[data-test="home-search-clear"]')).not.toBeNull();
   });
@@ -231,7 +231,7 @@ describe('HomeScreenComponent search', () => {
     );
     expect(host.querySelector('[data-test="home-empty"]')).toBeNull();
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
-      '2 active items',
+      '0 active items',
     );
   });
 
@@ -475,7 +475,7 @@ describe('HomeScreenComponent search', () => {
     ).toBe('true');
   });
 
-  it('filters the current category by a pinned tag without changing category counts', () => {
+  it('filters the current category by selected tags and updates every category count', () => {
     const store = TestBed.inject(Store);
     const todoErrand: Task = {
       id: 'task-brief',
@@ -555,16 +555,17 @@ describe('HomeScreenComponent search', () => {
     expect(tileText(host)).toContain('Lamp photo');
     expect(tileText(host)).not.toContain('Buy cat food');
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
-      '2 active items',
+      '1 active item',
     );
-    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('2');
+    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-category-count"]')?.textContent).toContain('0');
 
     (host.querySelector('[data-test="home-mode-todo"]') as HTMLButtonElement).click();
     fixture.detectChanges();
 
     expect(chip().getAttribute('aria-pressed')).toBe('true');
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
-      '2 to do items',
+      '1 to do item',
     );
     expect(tileText(host)).toContain('Write the brief');
     expect(tileText(host)).not.toContain('Other todo');
@@ -580,11 +581,21 @@ describe('HomeScreenComponent search', () => {
     (host.querySelector('[data-test="home-mode-active"]') as HTMLButtonElement).click();
     fixture.detectChanges();
 
+    const chips = [...host.querySelectorAll('[data-test="home-pinned-tag"]')];
+    expect(chips.map(item => item.textContent?.trim())).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('Ideas'),
+        expect.stringContaining('Errands'),
+      ]),
+    );
+    expect(
+      chips.find(item => item.textContent?.includes('Ideas'))?.getAttribute('aria-pressed'),
+    ).toBe('true');
     expect(host.querySelector('[data-test="home-empty-title"]')?.textContent).toContain(
       'Nothing active right now.',
     );
     expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
-      '2 active items',
+      '0 active items',
     );
     expect(host.querySelector('[data-test="task-tile"]')).toBeNull();
   });

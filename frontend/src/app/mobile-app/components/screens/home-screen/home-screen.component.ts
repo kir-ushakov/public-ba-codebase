@@ -19,6 +19,7 @@ import { TagsState } from 'src/app/shared/state/tags.state';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
 import { IUserAvatarInputData } from 'src/app/shared/components/ui-elements/user-avatar/user-avatar.interface';
+import { displayTagColor } from 'src/app/shared/models/tag.model';
 import { HomeBottomPanelComponent } from './home-bottom-panel/home-bottom-panel.component';
 import { HomeAccountMenuComponent } from './home-account-menu/home-account-menu.component';
 import { HomeContentModeComponent } from './home-content-mode/home-content-mode.component';
@@ -26,7 +27,7 @@ import { HomeContentModeService } from './home-content-mode.service';
 import { HomeEmptyStateComponent } from './home-empty-state/home-empty-state.component';
 import { HomeSyncStatusComponent } from './home-sync-status/home-sync-status.component';
 import { TaskTilesPanelComponent } from '../../common/task-tiles-panel/task-tiles-panel.component';
-import { filterHomeTasks, tasksMatchingTag } from './helpers/filter-home-tasks.function';
+import { filterHomeTasks, tasksMatchingTags } from './helpers/filter-home-tasks.function';
 import {
   homeModeAfterSwipe,
   homeModeCounts,
@@ -61,47 +62,39 @@ export class HomeScreenComponent implements OnInit, AfterViewInit {
   });
 
   avatarInputData!: IUserAvatarInputData;
+  readonly tagIconColor = displayTagColor;
 
   readonly searchOpen = signal(false);
   readonly queryControl = new FormControl('', { nonNullable: true });
   readonly contentMode = inject(HomeContentModeService).mode;
   readonly secondaryCategory = inject(HomeContentModeService).secondary;
-  readonly selectedTagId = inject(HomeContentModeService).selectedTagId;
-  readonly pinnedTags = computed(() =>
-    this.selectors
+  readonly selectedTagIds = inject(HomeContentModeService).selectedTagIds;
+  readonly filterTags = computed(() => {
+    const selected = new Set(this.selectedTagIds());
+    return this.selectors
       .tags()
-      .filter(tag => tag.isPinned === true)
+      .filter(tag => tag.isPinned === true || selected.has(tag.id))
       .sort((left, right) =>
         left.name.localeCompare(right.name, undefined, { sensitivity: 'base' }),
-      ),
-  );
-  readonly modeCounts = computed(() => homeModeCounts(this.selectors.tasks()));
-  readonly tabCounts = computed(() => {
-    const query = this.query();
-    const tasks = this.selectors.tasks();
-    if (query.trim().length === 0) {
-      return homeModeCounts(tasks);
-    }
-    return homeModeCounts(filterHomeTasks(tasks, query, this.selectors.tags()));
+      );
   });
+  readonly tagScopedTasks = computed(() =>
+    tasksMatchingTags(this.selectors.tasks(), this.selectedTagIds()),
+  );
+  readonly tabCounts = computed(() =>
+    homeModeCounts(filterHomeTasks(this.tagScopedTasks(), this.query(), this.selectors.tags())),
+  );
   readonly hasQuery = computed(() => this.query().trim().length > 0);
   readonly categoryTasks = computed(() =>
-    tasksForHomeMode(this.selectors.tasks(), this.contentMode()),
-  );
-  readonly tagFilteredTasks = computed(() =>
-    tasksMatchingTag(this.categoryTasks(), this.selectedTagId()),
+    tasksForHomeMode(this.tagScopedTasks(), this.contentMode()),
   );
   readonly filteredTasks = computed(() =>
-    filterHomeTasks(this.tagFilteredTasks(), this.query(), this.selectors.tags()),
+    filterHomeTasks(this.categoryTasks(), this.query(), this.selectors.tags()),
   );
   readonly itemCountLabel = computed(() =>
-    homeModeItemLabel(this.contentMode(), this.modeCounts()[this.contentMode()]),
+    homeModeItemLabel(this.contentMode(), this.tabCounts()[this.contentMode()]),
   );
-  readonly showEmptyState = computed(
-    () =>
-      this.modeCounts()[this.contentMode()] === 0 ||
-      (this.selectedTagId() !== null && this.tagFilteredTasks().length === 0),
-  );
+  readonly showEmptyState = computed(() => this.categoryTasks().length === 0);
   readonly showNoResults = computed(
     () =>
       !this.showEmptyState() &&
@@ -125,7 +118,7 @@ export class HomeScreenComponent implements OnInit, AfterViewInit {
     });
 
     effect(() => {
-      this.contentModeService.notePinned(this.pinnedTags().map(tag => tag.id));
+      this.contentModeService.noteTags(this.selectors.tags().map(tag => tag.id));
     });
   }
 

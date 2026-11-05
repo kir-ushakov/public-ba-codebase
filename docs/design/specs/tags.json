@@ -2,7 +2,7 @@
   "screen": {
     "id": "tags",
     "name": "Tags",
-    "version": "1.0.0",
+    "version": "1.1.0",
 
     "purpose": "Manage every tag, pin the ones that should filter Home, and open the tasks for a tag.",
 
@@ -70,21 +70,29 @@
     "tagRow": {
       "component": "compact full-width row",
       "contents": [
-        "sell icon",
+        "sell icon in the tag color",
         "name",
         "task count",
-        "pin action"
+        "pin action",
+        "more actions"
       ],
       "taskCount": "tasks already on the device that include the tag",
-      "rowAction": "open Home filtered by this tag",
+      "rowAction": "toggle this tag in the Home filter without leaving the page. Several tags can be selected.",
       "pinAction": {
         "icon": "push_pin",
         "toggles": "isPinned",
         "doesNot": "open the tag",
-        "pinned": "teal accent icon and selected surface",
-        "unpinned": "neutral icon and default surface",
+        "pinned": "filled push_pin, teal accent, selected surface",
+        "unpinned": "outlined push_pin, neutral icon, default surface",
         "labels": ["Pin tag", "Unpin tag"]
       }
+    },
+
+    "actionsMenu": {
+      "icon": "more_vert",
+      "items": ["Edit tag", "Delete tag"],
+      "delete": "opens confirmation and does not delete from the menu",
+      "editSpec": "./tag-edit-open.json"
     },
 
     "create": {
@@ -119,7 +127,8 @@
     "reference": {
       "status": "approved",
       "image": "../references/tags.jpg",
-      "description": "Tags management screen with pinned rows above the other tags, a pin control on each row, search, create, and Home / Tasks / Tags navigation."
+      "managementImage": "../references/tag-management.jpg",
+      "description": "Tags management screen with pinned rows above the other tags, a pin control and actions menu on each row, search, create, and Home / Tasks / Tags navigation. The management image shows the menu, edit sheet, and delete confirmation."
     },
 
     "angular": {

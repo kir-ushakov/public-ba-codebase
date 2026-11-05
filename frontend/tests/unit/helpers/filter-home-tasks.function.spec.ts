@@ -2,6 +2,7 @@ import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import {
   filterHomeTasks,
   tasksMatchingTag,
+  tasksMatchingTags,
 } from 'src/app/mobile-app/components/screens/home-screen/helpers/filter-home-tasks.function';
 import type { Tag } from 'src/app/shared/models/tag.model';
 import type { Task } from 'src/app/shared/models/task.model';
@@ -84,5 +85,8 @@ describe('filterHomeTasks', () => {
 
   it('keeps only tasks that include the selected tag', () => {
     expect(tasksMatchingTag(tasks, 'tag-errands').map(task => task.id)).toEqual(['task-lamp']);
+    expect(tasksMatchingTags(tasks, ['tag-errands', 'missing']).map(task => task.id)).toEqual([
+      'task-lamp',
+    ]);
   });
 });
