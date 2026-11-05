@@ -8,7 +8,7 @@ import {
 } from '@brainassistant/contracts';
 import { append, iif, insertItem, patch, removeItem, updateItem } from '@ngxs/store/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { Change } from 'src/app/shared/models/change.model';
+import { Change, type IChangeableObject } from 'src/app/shared/models/change.model';
 import { TAG_COLOR, Tag } from 'src/app/shared/models/tag.model';
 import { OutboxEntry } from '../models/outbox-entry.type';
 import { LocalStore } from '../services/infrastructure/local-store.service';
@@ -58,31 +58,18 @@ export class TagsState {
       createdAt: now,
       modifiedAt: now,
     };
-    const entry: OutboxEntry = {
-      id: uuidv4(),
-      entityId: tag.id,
-      change: {
-        entity: EChangedEntity.Tag,
-        action: EChangeAction.Created,
-        object: tag,
-        modifiedAt: now,
-      },
-    };
-
-    try {
-      await this.localStore.saveTagAndEnqueue(tag, entry);
-    } catch {
-      ctx.dispatch(new AppAction.ShowErrorInUI(SAVE_FAILED, 'Not saved'));
-      return;
-    }
-
-    ctx.setState(
-      patch({
-        entities: append([tag]),
-      }),
+    const entry = this.outboxEntry(tag.id, EChangeAction.Created, tag, now);
+    await this.persist(
+      ctx,
+      entry,
+      () => this.localStore.saveTagAndEnqueue(tag, entry),
+      () =>
+        ctx.setState(
+          patch({
+            entities: append([tag]),
+          }),
+        ),
     );
-    ctx.dispatch(new AppAction.ClearErrorInUI());
-    ctx.dispatch(new SyncAction.ChangeForSyncOccurred(entry));
   }
 
   @Action(TagsAction.UpdateTag)
@@ -109,31 +96,18 @@ export class TagsState {
       color,
       modifiedAt: now,
     };
-    const entry: OutboxEntry = {
-      id: uuidv4(),
-      entityId: tag.id,
-      change: {
-        entity: EChangedEntity.Tag,
-        action: EChangeAction.Updated,
-        object: tag,
-        modifiedAt: now,
-      },
-    };
-
-    try {
-      await this.localStore.saveTagAndEnqueue(tag, entry);
-    } catch {
-      ctx.dispatch(new AppAction.ShowErrorInUI(SAVE_FAILED, 'Not saved'));
-      return;
-    }
-
-    ctx.setState(
-      patch({
-        entities: updateItem(item => item.id === tag.id, patch(tag)),
-      }),
+    const entry = this.outboxEntry(tag.id, EChangeAction.Updated, tag, now);
+    await this.persist(
+      ctx,
+      entry,
+      () => this.localStore.saveTagAndEnqueue(tag, entry),
+      () =>
+        ctx.setState(
+          patch({
+            entities: updateItem(item => item.id === tag.id, patch(tag)),
+          }),
+        ),
     );
-    ctx.dispatch(new AppAction.ClearErrorInUI());
-    ctx.dispatch(new SyncAction.ChangeForSyncOccurred(entry));
   }
 
   @Action(TagsAction.DeleteTag)
@@ -147,31 +121,23 @@ export class TagsState {
     }
 
     const now = new Date().toISOString();
-    const entry: OutboxEntry = {
-      id: uuidv4(),
-      entityId: tagId,
-      change: {
-        entity: EChangedEntity.Tag,
-        action: EChangeAction.Deleted,
-        object: { id: tagId, modifiedAt: now },
-        modifiedAt: now,
-      },
-    };
-
-    try {
-      await this.localStore.deleteTagAndEnqueue(current.userId, tagId, entry);
-    } catch {
-      ctx.dispatch(new AppAction.ShowErrorInUI(SAVE_FAILED, 'Not saved'));
-      return;
-    }
-
-    ctx.setState(
-      patch({
-        entities: removeItem<Tag>(tag => tag.id === tagId),
-      }),
+    const entry = this.outboxEntry(
+      tagId,
+      EChangeAction.Deleted,
+      { id: tagId, modifiedAt: now },
+      now,
     );
-    ctx.dispatch(new AppAction.ClearErrorInUI());
-    ctx.dispatch(new SyncAction.ChangeForSyncOccurred(entry));
+    await this.persist(
+      ctx,
+      entry,
+      () => this.localStore.deleteTagAndEnqueue(current.userId, tagId, entry),
+      () =>
+        ctx.setState(
+          patch({
+            entities: removeItem<Tag>(tag => tag.id === tagId),
+          }),
+        ),
+    );
   }
 
   @Action(TagsAction.SetPinned)
@@ -190,29 +156,52 @@ export class TagsState {
       isPinned,
       modifiedAt: now,
     };
-    const entry: OutboxEntry = {
+    const entry = this.outboxEntry(tag.id, EChangeAction.Updated, tag, now);
+    await this.persist(
+      ctx,
+      entry,
+      () => this.localStore.saveTagAndEnqueue(tag, entry),
+      () =>
+        ctx.setState(
+          patch({
+            entities: updateItem(item => item.id === tag.id, patch(tag)),
+          }),
+        ),
+    );
+  }
+
+  private outboxEntry(
+    entityId: string,
+    action: EChangeAction,
+    object: IChangeableObject,
+    modifiedAt: string,
+  ): OutboxEntry {
+    return {
       id: uuidv4(),
-      entityId: tag.id,
+      entityId,
       change: {
         entity: EChangedEntity.Tag,
-        action: EChangeAction.Updated,
-        object: tag,
-        modifiedAt: now,
+        action,
+        object,
+        modifiedAt,
       },
     };
+  }
 
+  private async persist(
+    ctx: StateContext<ITagsStateModel>,
+    entry: OutboxEntry,
+    write: () => Promise<void>,
+    apply: () => void,
+  ): Promise<void> {
     try {
-      await this.localStore.saveTagAndEnqueue(tag, entry);
+      await write();
     } catch {
       ctx.dispatch(new AppAction.ShowErrorInUI(SAVE_FAILED, 'Not saved'));
       return;
     }
 
-    ctx.setState(
-      patch({
-        entities: updateItem(item => item.id === tag.id, patch(tag)),
-      }),
-    );
+    apply();
     ctx.dispatch(new AppAction.ClearErrorInUI());
     ctx.dispatch(new SyncAction.ChangeForSyncOccurred(entry));
   }

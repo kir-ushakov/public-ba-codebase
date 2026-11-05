@@ -75,17 +75,10 @@
     } @else {
       <div class="tag-list" data-test="tags-search-results">
         @for (tag of visibleRows(); track tag.id) {
-          <ba-tag-row
-            [tag]="tag"
-            [chosen]="isChosen(tag.id)"
-            [menuOpen]="openMenuId() === tag.id"
-            (opened)="chooseTag($event)"
-            (pinned)="togglePin($event)"
-            (menuRequested)="openMenu($event)"
-            (menuClosed)="closeMenu()"
-            (edit)="editTag($event)"
-            (remove)="confirmDelete($event)"
-          ></ba-tag-row>
+          <ng-container
+            [ngTemplateOutlet]="tagRow"
+            [ngTemplateOutletContext]="{ $implicit: tag }"
+          />
         }
       </div>
     }
@@ -100,17 +93,10 @@
         </div>
         <div class="tag-list">
           @for (tag of pinnedRows(); track tag.id) {
-            <ba-tag-row
-              [tag]="tag"
-              [chosen]="isChosen(tag.id)"
-              [menuOpen]="openMenuId() === tag.id"
-              (opened)="chooseTag($event)"
-              (pinned)="togglePin($event)"
-              (menuRequested)="openMenu($event)"
-              (menuClosed)="closeMenu()"
-              (edit)="editTag($event)"
-              (remove)="confirmDelete($event)"
-            ></ba-tag-row>
+            <ng-container
+              [ngTemplateOutlet]="tagRow"
+              [ngTemplateOutletContext]="{ $implicit: tag }"
+            />
           }
         </div>
       </section>
@@ -122,17 +108,10 @@
         </div>
         <div class="tag-list">
           @for (tag of otherRows(); track tag.id) {
-            <ba-tag-row
-              [tag]="tag"
-              [chosen]="isChosen(tag.id)"
-              [menuOpen]="openMenuId() === tag.id"
-              (opened)="chooseTag($event)"
-              (pinned)="togglePin($event)"
-              (menuRequested)="openMenu($event)"
-              (menuClosed)="closeMenu()"
-              (edit)="editTag($event)"
-              (remove)="confirmDelete($event)"
-            ></ba-tag-row>
+            <ng-container
+              [ngTemplateOutlet]="tagRow"
+              [ngTemplateOutletContext]="{ $implicit: tag }"
+            />
           }
         </div>
       </section>
@@ -145,3 +124,17 @@
 </div>
 
 <ba-tag-selector flow="create"></ba-tag-selector>
+
+<ng-template #tagRow let-tag>
+  <ba-tag-row
+    [tag]="tag"
+    [chosen]="isChosen(tag.id)"
+    [menuOpen]="openMenuId() === tag.id"
+    (opened)="chooseTag($event)"
+    (pinned)="togglePin($event)"
+    (menuRequested)="openMenu($event)"
+    (menuClosed)="closeMenu()"
+    (edit)="editTag($event)"
+    (remove)="confirmDelete($event)"
+  ></ba-tag-row>
+</ng-template>

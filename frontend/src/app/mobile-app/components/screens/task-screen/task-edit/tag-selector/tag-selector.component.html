@@ -90,15 +90,14 @@
       <div class="color-field">
         <span class="field-label">Tag color</span>
         <p class="helper">Choose a color to identify this tag.</p>
-        <div class="swatches" data-test="tag-colors" role="listbox" aria-label="Tag color">
+        <div class="swatches" data-test="tag-colors">
           @for (color of colors; track color) {
             <button
               class="swatch"
               type="button"
-              role="option"
               data-test="tag-color"
               [class.is-selected]="draftColor() === color"
-              [attr.aria-selected]="draftColor() === color"
+              [attr.aria-pressed]="draftColor() === color"
               [attr.aria-label]="color"
               [style.background]="color"
               (click)="selectColor(color)"
@@ -124,7 +123,7 @@
         type="button"
         data-test="new-tag-submit"
         [disabled]="!nameValid() || saving()"
-        (click)="saveTag()"
+        (click)="onSave()"
       >
         {{ submitLabel() }}
       </button>

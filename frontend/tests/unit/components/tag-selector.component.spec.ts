@@ -200,7 +200,7 @@ describe('TagSelectorComponent', () => {
 
     expect(
       host
-        .querySelector('[data-test="tag-color"][aria-selected="true"]')
+        .querySelector('[data-test="tag-color"][aria-pressed="true"]')
         ?.getAttribute('aria-label'),
     ).toBe(TAG_COLOR);
 

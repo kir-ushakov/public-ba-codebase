@@ -140,7 +140,11 @@ export class TagSelectorComponent {
       return;
     }
     event.preventDefault();
-    this.saveTag();
+    this.onSave();
+  }
+
+  onSave(): void {
+    void this.saveTag();
   }
 
   toggleTag(id: string): void {
@@ -185,6 +189,8 @@ export class TagSelectorComponent {
       this.draftName.set('');
       this.draftColor.set(TagConst.DEFAULT_COLOR);
       this.creating.set(false);
+    } catch {
+      return;
     } finally {
       this.saving.set(false);
     }

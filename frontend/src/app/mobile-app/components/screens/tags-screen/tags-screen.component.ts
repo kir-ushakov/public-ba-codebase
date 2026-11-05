@@ -8,6 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { createSelectMap, Store } from '@ngxs/store';
@@ -32,6 +33,7 @@ import { TagRowComponent } from './tag-row/tag-row.component';
   templateUrl: './tags-screen.component.html',
   styleUrl: './tags-screen.component.scss',
   imports: [
+    NgTemplateOutlet,
     ReactiveFormsModule,
     HomeAccountMenuComponent,
     HomeBottomPanelComponent,
@@ -141,7 +143,11 @@ export class TagsScreenComponent implements OnInit {
       return;
     }
     this.dialog
-      .showModalDialog(DeleteTagDialogComponent, { name: tag.name, taskCount: tag.taskCount })
+      .showModalDialog(
+        DeleteTagDialogComponent,
+        { name: tag.name, taskCount: tag.taskCount },
+        'delete-tag-title',
+      )
       .afterClosed()
       .subscribe(confirmed => {
         if (confirmed === true) {
@@ -152,16 +158,20 @@ export class TagsScreenComponent implements OnInit {
 
   private async deleteTag(tagId: string): Promise<void> {
     const tasks = this.selectors.tasks().filter(task => task.tagIds?.includes(tagId));
-    for (const task of tasks) {
-      await firstValueFrom(
-        this.store.dispatch(
-          new TasksAction.UpdateTask({
-            taskId: task.id,
-            changes: { tagIds: (task.tagIds ?? []).filter(id => id !== tagId) },
-          }),
+    await tasks.reduce(
+      (pending, task) =>
+        pending.then(() =>
+          firstValueFrom(
+            this.store.dispatch(
+              new TasksAction.UpdateTask({
+                taskId: task.id,
+                changes: { tagIds: (task.tagIds ?? []).filter(id => id !== tagId) },
+              }),
+            ),
+          ),
         ),
-      );
-    }
+      Promise.resolve(undefined),
+    );
     await firstValueFrom(this.store.dispatch(new TagsAction.DeleteTag(tagId)));
     this.contentMode.clearTag(tagId);
   }
