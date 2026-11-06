@@ -18,6 +18,7 @@ export type RefreshSessionValue = {
   login: LoginResponseDTO;
   refreshToken: string;
   expiresAt: Date;
+  sessionId: string;
 };
 
 export type RefreshSessionResult = Result<
@@ -39,8 +40,12 @@ export class RefreshSessionUsecase
       return RefreshSessionErrors.Invalid();
     }
 
-    const session = await this.refreshSessions.consume(hashRefreshToken(params.refreshToken));
-    if (!session || session.expiresAt.getTime() <= Date.now()) {
+    const session = await this.refreshSessions.present(
+      hashRefreshToken(params.refreshToken),
+      new Date(),
+      LoginService.REFRESH_REUSE_GRACE_MS,
+    );
+    if (!session) {
       return RefreshSessionErrors.Invalid();
     }
 
@@ -51,7 +56,10 @@ export class RefreshSessionUsecase
       return RefreshSessionErrors.Invalid();
     }
 
-    const created = await this.loginService.createRefreshSession(user.id.toString());
+    const created = await this.loginService.createRefreshSession(
+      user.id.toString(),
+      session.familyId,
+    );
     const login: LoginResponseDTO = {
       user: {
         firstName: user.firstname,
@@ -65,6 +73,7 @@ export class RefreshSessionUsecase
       login,
       refreshToken: created.rawToken,
       expiresAt: created.expiresAt,
+      sessionId: created.sessionId,
     });
   }
 }

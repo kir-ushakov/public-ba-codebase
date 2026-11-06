@@ -16,7 +16,7 @@ export class RefreshSessionController extends BaseController {
       const result = await this.usecase.execute({ refreshToken });
       if (result.isSuccess) {
         const value = result.getValue();
-        LoginService.setJwtCookie(res, value.login);
+        LoginService.setJwtCookie(res, value.login, value.sessionId);
         LoginService.setRefreshCookie(res, value.refreshToken, value.expiresAt);
         const response: RefreshSessionContract.Response = { refreshed: true };
         this.ok(res, response);
