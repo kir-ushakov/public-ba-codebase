@@ -7,7 +7,6 @@ import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/spe
 import { DialogService } from 'src/app/shared/services/utility/dialog.service';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
-import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { AppState } from 'src/app/shared/state/app.state';
 import { EUserAuthState, UserState } from 'src/app/shared/state/user.state';
 
@@ -33,7 +32,6 @@ describe('VoiceInputTriggerComponent', () => {
         { provide: DialogService, useValue: {} },
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
-        { provide: GoogleOAuthConsentService, useValue: {} },
       ],
     }).compileComponents();
 

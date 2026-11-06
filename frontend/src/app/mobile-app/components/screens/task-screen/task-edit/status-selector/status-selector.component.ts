@@ -14,7 +14,7 @@ const TASK_FORM_STATUSES: TaskStatusOption[] = [
   {
     id: ETaskStatus.Todo,
     testId: 'todo',
-    label: 'To do',
+    label: 'Waiting',
     icon: 'radio_button_unchecked',
   },
   {

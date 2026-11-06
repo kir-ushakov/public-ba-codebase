@@ -58,11 +58,6 @@ export class VoiceInputState {
       if (err instanceof DOMException && err.name === 'AbortError') {
         return;
       }
-      this.store.dispatch(
-        new AppAction.ShowErrorInUI(
-          'Could not access the microphone. Check permissions and try again.',
-        ),
-      );
       throw err;
     }
   }

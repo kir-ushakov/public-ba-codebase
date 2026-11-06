@@ -3,10 +3,12 @@ import {
   TaskDTO,
   ETaskStatus,
   ETaskType,
+  type AudioAttachment,
   type TaskDescriptionDoc,
 } from '@brainassistant/contracts';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 import { TaskDescription } from '../domain/values/task/task-description.js';
+import { projectTaskType, storedTaskConditions } from '../domain/models/task-conditions.js';
 
 export class TaskMapper {
   public static toDomain(raw: TaskPresitant): Task {
@@ -18,21 +20,29 @@ export class TaskMapper {
       imageId,
       images,
       description,
+      checklist,
+      audioAttachments,
       tagIds,
       _id,
       createdAt,
       modifiedAt,
+      conditions,
     } = raw;
+
+    const storedConditions = storedTaskConditions(status, type, conditions);
 
     return Task.reconstitute(
       {
         userId,
-        type: type as ETaskType,
+        type: storedConditions ? projectTaskType(storedConditions) : (type as ETaskType),
         title: title ?? '',
         status: status as ETaskStatus,
+        conditions: storedConditions,
         imageId,
         images: TaskMapper.definedImages(images),
         description: TaskMapper.toValidDescription(description),
+        checklist,
+        audioAttachments: TaskMapper.definedAudio(audioAttachments),
         tagIds: tagIds ?? [],
         createdAt,
         modifiedAt,
@@ -51,9 +61,12 @@ export class TaskMapper {
       imageId,
       images,
       description,
+      checklist,
+      audioAttachments,
       tagIds,
       createdAt,
       modifiedAt,
+      conditions,
     } = task;
 
     const persisted: TaskPresitant = {
@@ -77,6 +90,18 @@ export class TaskMapper {
       persisted.description = description;
     }
 
+    if (checklist?.length) {
+      persisted.checklist = checklist;
+    }
+
+    if (audioAttachments !== undefined) {
+      persisted.audioAttachments = audioAttachments;
+    }
+
+    if (conditions?.length) {
+      persisted.conditions = conditions;
+    }
+
     return persisted;
   }
 
@@ -93,6 +118,11 @@ export class TaskMapper {
       modifiedAt: task.modifiedAt.toISOString(),
     };
 
+    if (task.conditions?.length) {
+      dto.conditions = task.conditions;
+      dto.type = projectTaskType(task.conditions);
+    }
+
     const definedImages = TaskMapper.definedImages(task.images);
     if (definedImages) {
       dto.images = definedImages;
@@ -102,7 +132,24 @@ export class TaskMapper {
       dto.description = task.description;
     }
 
+    if (task.checklist?.length) {
+      dto.checklist = task.checklist;
+    }
+
+    if (task.audioAttachments !== undefined) {
+      dto.audioAttachments = task.audioAttachments;
+    }
+
     return dto;
+  }
+
+  private static definedAudio(
+    attachments: AudioAttachment[] | undefined,
+  ): AudioAttachment[] | undefined {
+    if (!attachments) {
+      return undefined;
+    }
+    return attachments.length > 0 ? attachments : [];
   }
 
   private static definedImages(images: string[] | undefined): string[] | undefined {

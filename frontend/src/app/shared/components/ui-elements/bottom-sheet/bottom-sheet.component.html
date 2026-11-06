@@ -35,14 +35,19 @@
         <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>
       </button>
     }
-    <h2
-      class="sheet-title"
-      id="bottom-sheet-title"
-      data-test="bottom-sheet-title"
-      [class.is-centered]="showBack()"
-    >
-      {{ title() }}
-    </h2>
+    <div class="sheet-heading">
+      @if (icon()) {
+        <span class="material-symbols-rounded sheet-icon" aria-hidden="true">{{ icon() }}</span>
+      }
+      <h2
+        class="sheet-title"
+        id="bottom-sheet-title"
+        data-test="bottom-sheet-title"
+        [class.is-centered]="showBack()"
+      >
+        {{ title() }}
+      </h2>
+    </div>
     <button
       class="close"
       type="button"
@@ -53,7 +58,7 @@
       <span class="material-symbols-rounded" aria-hidden="true">close</span>
     </button>
   </header>
-  <div class="sheet-body">
+  <div class="sheet-body app-scrollable">
     <ng-content />
   </div>
 </section>

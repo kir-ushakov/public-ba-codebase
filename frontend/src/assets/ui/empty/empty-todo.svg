@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 440" role="img" aria-labelledby="title desc">
+<title id="title">Brain Assistant — empty to-do list</title>
+<desc id="desc">A puzzled mint green BA mascot beside an empty checklist, with a question mark.</desc>
+<ellipse cx="316" cy="387" rx="206" ry="16" fill="#001015" opacity=".4"/>
+<g transform="rotate(10 257 220)">
+<rect x="125" y="92" width="266" height="244" rx="44" fill="#8DEB8C" stroke="#061820" stroke-width="9"/>
+<path d="M150 282 Q104 299 113 347 Q123 381 151 353 Q137 342 146 323" fill="#8DEB8C" stroke="#061820" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M367 284 Q416 294 407 348 Q396 379 370 357 Q387 340 376 322" fill="#8DEB8C" stroke="#061820" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="179" y="203" font-family="Georgia,serif" font-size="71" font-weight="bold" fill="#061820">B</text>
+<text x="289" y="203" font-family="Georgia,serif" font-size="71" font-weight="bold" fill="#061820">A</text>
+<path d="M219 270 Q265 223 320 267" fill="none" stroke="#061820" stroke-width="10" stroke-linecap="round"/>
+</g>
+<g transform="rotate(5 477 284)">
+<rect x="405" y="190" width="170" height="190" rx="23" fill="#102129" stroke="#8297A3" stroke-width="7"/>
+<g fill="none" stroke="#8297A3" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+<rect x="427" y="220" width="26" height="26" rx="5"/><path d="M468 234h80"/>
+<rect x="427" y="270" width="26" height="26" rx="5"/><path d="M468 284h80"/>
+<rect x="427" y="320" width="26" height="26" rx="5"/><path d="M468 334h80"/>
+</g>
+</g>
+<path d="M369 85 C369 45 424 37 443 70 C457 99 424 111 414 130" fill="none" stroke="#AAB9C3" stroke-width="8" stroke-linecap="round"/>
+<circle cx="412" cy="151" r="5" fill="#AAB9C3"/>
+<path d="M482 120l16-20M511 141l23-9" fill="none" stroke="#AAB9C3" stroke-width="6" stroke-linecap="round"/>
+</svg>

@@ -1,18 +1,161 @@
-<div class="recording-indicator">
-  <ba-progress-ring
-    [duration]="recordingDuration"
-    (colorChange)="micColor.set($event)"
-  />
-  <div class="mic-icon-wrapper">
-    <ba-mic-icon [color]="micColor()"></ba-mic-icon>
+<header class="recorder-header" [class.is-attachment]="mode === 'attachment'">
+  @if (mode === 'title') {
+    <button
+      class="recorder-dismiss"
+      type="button"
+      aria-label="Cancel recording"
+      data-test="voice-recorder-dismiss"
+      (click)="cancel()"
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">close</span>
+    </button>
+  }
+  <div class="recorder-heading">
+    <h1 class="recorder-title">{{ mode === 'title' ? 'Voice input' : 'Record Audio' }}</h1>
+    <p class="recorder-subtitle">
+      {{ mode === 'title' ? 'Task title · up to 12 seconds' : 'Voice attachment' }}
+    </p>
   </div>
-</div>
-<div class="recorder-bottom">
-  <button mat-icon-button (click)="cancel()" aria-label="Close">
-    <mat-icon class="close-icon">close</mat-icon>
-  </button>
-  <button mat-icon-button (click)="stopRecording()" aria-label="OK">
-    <mat-icon class="ok-icon">check</mat-icon>
-  </button>
+</header>
+
+<div class="recorder-stage">
+  <div class="recording-indicator">
+    @if (mode === 'title') {
+      <ba-progress-ring [duration]="recordingDuration" [blurStdDev]="0" />
+    } @else {
+      <div
+        class="activity-ring"
+        aria-hidden="true"
+        [class.is-preparing]="phase() === 'preparing'"
+        [class.is-paused]="phase() === 'paused' || phase() === 'error'"
+        [class.is-saving]="phase() === 'saving'"
+      ></div>
+    }
+    <div class="mic-icon-wrapper">
+      <ba-mic-icon [color]="micColor()"></ba-mic-icon>
+    </div>
+  </div>
+
+  @if (phase() === 'preparing') {
+    <p class="recorder-status" data-test="voice-recorder-preparing">
+      <span class="material-symbols-rounded audio-spinner" aria-hidden="true"
+        >progress_activity</span
+      >
+      Preparing microphone...
+    </p>
+  } @else if (phase() === 'error') {
+    <p class="recorder-error" data-test="voice-recorder-error">{{ errorMessage() }}</p>
+    <button class="recorder-retry" type="button" data-test="voice-recorder-retry" (click)="retry()">
+      <span class="material-symbols-rounded" aria-hidden="true">refresh</span>
+      Retry
+    </button>
+  } @else {
+    <p class="recorder-clock" data-test="voice-recorder-clock">{{ elapsedLabel() }}</p>
+  }
+
+  @if (mode === 'attachment' && phase() !== 'preparing' && phase() !== 'error') {
+    <p
+      class="recorder-status"
+      data-test="voice-recorder-status"
+      [class.is-paused]="phase() === 'paused' || phase() === 'error'"
+      [class.is-saving]="phase() === 'saving'"
+    >
+      @if (phase() === 'saving') {
+        <span class="material-symbols-rounded audio-spinner" aria-hidden="true"
+          >progress_activity</span
+        >
+        Saving...
+      } @else if (phase() === 'paused') {
+        Paused
+      } @else if (phase() === 'recording') {
+        Recording
+      }
+    </p>
+    @if (meterLive()) {
+      <div
+        class="waveform"
+        data-test="voice-recorder-waveform"
+        aria-hidden="true"
+        [class.is-paused]="phase() !== 'recording'"
+      >
+        @for (bar of bars(); track $index) {
+          <span class="waveform-bar" [style.transform]="'scaleY(' + bar + ')'"></span>
+        }
+      </div>
+    }
+  }
 </div>
 
+<div class="recorder-bottom">
+  <div class="recorder-control">
+    <button
+      class="recorder-action recorder-action-secondary"
+      type="button"
+      aria-label="Cancel"
+      data-test="voice-recorder-cancel"
+      [disabled]="phase() === 'saving'"
+      (click)="cancel()"
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">close</span>
+    </button>
+    @if (mode === 'attachment') {
+      <span class="recorder-control-label">Cancel</span>
+    }
+  </div>
+  @if (mode === 'attachment') {
+    <div class="recorder-control">
+      <button
+        class="recorder-action recorder-action-secondary"
+        type="button"
+        data-test="voice-recorder-pause"
+        [attr.aria-label]="phase() === 'paused' ? 'Resume' : 'Pause'"
+        [disabled]="phase() === 'preparing' || phase() === 'saving' || phase() === 'error'"
+        (click)="togglePause()"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">{{
+          phase() === 'paused' ? 'play_arrow' : 'pause'
+        }}</span>
+      </button>
+      <span class="recorder-control-label" data-test="voice-recorder-pause-label">{{
+        phase() === 'paused' ? 'Resume' : 'Pause'
+      }}</span>
+    </div>
+  }
+  <div class="recorder-control">
+    <button
+      class="recorder-action recorder-action-primary"
+      type="button"
+      data-test="voice-recorder-apply"
+      [attr.aria-label]="mode === 'title' ? 'Apply' : 'Save'"
+      [disabled]="!canSave()"
+      (click)="apply()"
+    >
+      <span class="material-symbols-rounded" aria-hidden="true">check</span>
+    </button>
+    @if (mode === 'attachment') {
+      <span class="recorder-control-label">Save</span>
+    }
+  </div>
+</div>
+
+@if (confirmingCancel()) {
+  <div class="discard-confirm" role="dialog" aria-labelledby="discard-recording-title">
+    <p class="discard-title" id="discard-recording-title">Discard this recording?</p>
+    <button
+      class="discard-keep"
+      type="button"
+      data-test="voice-recorder-keep"
+      (click)="keepRecording()"
+    >
+      Keep recording
+    </button>
+    <button
+      class="discard-drop"
+      type="button"
+      data-test="voice-recorder-discard"
+      (click)="discardRecording()"
+    >
+      Discard recording
+    </button>
+  </div>
+}

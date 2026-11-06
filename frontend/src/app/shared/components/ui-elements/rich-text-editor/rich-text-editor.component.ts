@@ -33,6 +33,7 @@ import { EMPTY_TASK_DESCRIPTION } from './helpers/empty-task-description.const';
 export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy {
   readonly readonly = input(false);
   readonly content = input<TaskDescriptionDoc | null>(null);
+  readonly placeholder = input('Write additional details about this task...');
 
   readonly isBold = signal(false);
   readonly isItalic = signal(false);
@@ -135,7 +136,7 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
 
     this.editor = new Editor({
       element: this.host().nativeElement,
-      extensions: createTaskDescriptionExtensions(readonly),
+      extensions: createTaskDescriptionExtensions(readonly, this.placeholder()),
       content: initialContent,
       editable: !readonly && !this.disabled,
       editorProps: {

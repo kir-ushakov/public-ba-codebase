@@ -17,6 +17,7 @@ const DISMISS_DRAG_DISTANCE = 48;
 })
 export class BottomSheetComponent {
   readonly title = input.required<string>();
+  readonly icon = input('');
   readonly showBack = input(false);
   readonly dismissed = output<void>();
   readonly back = output<void>();

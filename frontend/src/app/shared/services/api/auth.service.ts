@@ -1,5 +1,7 @@
+import { RefreshSessionContract } from '@brainassistant/contracts';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
+import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
 import { UserDto } from '../../dto/user.dto';
 import { UserMapper } from '../../mappers/user.mapper';
 import { User } from '../../models/user.model';
@@ -53,6 +55,12 @@ export class AuthService {
 
   public logout(): Observable<void> {
     return this.http.delete<void>(AuthService.API_ENDPOINTS.LOGOUT);
+  }
+
+  public refresh(): Observable<void> {
+    return this.http
+      .post<RefreshSessionContract.Response>(API_ENDPOINTS.AUTH.REFRESH, {})
+      .pipe(map(() => undefined));
   }
 
   public signUp(data: SignUpRequestDTO): Observable<SignUpResponseDTO> {

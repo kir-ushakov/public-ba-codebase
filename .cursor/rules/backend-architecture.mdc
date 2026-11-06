@@ -26,9 +26,11 @@ Business flows live in `backend/src/modules/<module>/usecases/<use-case>/` and c
 - `<name>.usecase.ts` — implements `UseCase<Params, Promise<Result>>`, contains no Express types
 - `<name>.errors.ts` — `<Name>Errors` factories that return `Result.fail(new UseCaseError(...))` with `httpCode`. Codes that go out as JSON `name` live in `@brainassistant/contracts` and are re-exported from this file: use-case HTTP enums are `E<Name>UseCaseError`, domain `E<Entity>Error`, repo `E<Repo>ServiceError`. Do not declare a second local enum of the same wire values. Internal-only service/domain codes stay in the backend. Do not add an empty `UseCaseError` subclass or a `Result` subclass per error. If the use case cannot fail yet, still keep the file and `type XxxError = UseCaseError<never>` so `Result` matches neighbouring folders.
 - `<name>.mapper.ts` / `<name>.dto.ts` — only when mapping is non-trivial
-- `index.ts` — composition root: instantiates repos, services, use-case and controller, exports the controller singleton
+- `index.ts` — composition root only. Instantiate repos, services, the use case and the controller, then export the controller singleton. A few folders name this file `_index.ts`; match the neighbours.
 
-Add new flows as a use-case folder matching its neighbours. Do not introduce new layers: no application-level `*.service.ts` wrapper, no `*.validation.ts`, no DI container. Match the local naming (a few folders use `_index.ts`).
+`index.ts` / `_index.ts` contains no class and no function body. The controller class belongs in `<name>.controller.ts`, the use case in `<name>.usecase.ts`, error factories in `<name>.errors.ts`. Do not declare any of them in the index file.
+
+Add new flows as a use-case folder matching its neighbours. Do not introduce new layers: no application-level `*.service.ts` wrapper, no `*.validation.ts`, no DI container.
 
 Routers only wire HTTP to a controller and hold no logic:
 
@@ -39,6 +41,18 @@ syncRouter.post('/task', (req, res) => createTaskController.execute(req, res));
 ## Errors are values, not exceptions
 
 Use-cases and repos return `Result` (`shared/core/result.ts`) and fail with a typed error from `*.errors.ts` or `serviceFail()` for outcomes that layer **understands**. Do not add `Unexpected` to a use-case error union — that is already `BaseController.fail()` / `EApiError.Unexpected` on an uncaught exception. There is no centralized Express error middleware — never write code that assumes one exists.
+
+Three outcomes, and they are not interchangeable:
+
+| Outcome | What to do |
+|---|---|
+| This layer understands it (not found, invalid row, duplicate it treats as success, notification transport down) | `serviceFail(message, Code, { level })`. The code is an enum next to that service (`task-repo.service.error.ts`), internal unless it is also a wire `name`. Pick `ServiceErrorLevel`: `Low` for a skipped poison row, `Medium` for a failed side effect that does not lose the write, `High` for a broken invariant on one user, `Critical` for auth, data loss, or a failure that takes the process down. |
+| A Mongo driver code this layer has a branch for (`EMongoErrorCode`) | Handle it in that `catch`. `NamespaceExists` and `DuplicateKey` live in `shared/infra/database/mongodb/mongo-error.ts` because every collection shares them. Do not copy that enum next to one service. |
+| Anything else (network, auth to the database, an unrecognized driver error) | Rethrow the original value. Do not wrap it in `new Error(...)`, do not invent a service code, do not `console.error` it. The controller `catch` turns it into `500 UNEXPECTED_ERROR`. |
+
+`serviceFail` records the level for later log routing. A bare `throw new Error` or `console.error` does not.
+
+A Mongo transaction aborts only when the callback throws. An understood failure inside `withTransaction` still calls `serviceFail` first, then throws that `ServiceError` so the `$inc` rolls back. Do not catch that error and return success.
 
 Controllers branch on `result.isSuccess` and respond via `BaseController.jsonResponse(res, error.httpCode, { name, message })`, keeping the `try/catch` in `executeImpl` like neighbouring controllers.
 

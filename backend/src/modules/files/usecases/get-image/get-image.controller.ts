@@ -1,8 +1,17 @@
 import { Request, Response } from 'express';
+import { ImageConst } from '@brainassistant/contracts';
 import { UserPersistent } from '../../../../shared/domain/models/user.js';
-import { BaseController } from '../../../../shared/infra/http/models/base-controller.js';
-import { GetImageRequest, GetImageResult, GetImageUsecase } from './get-image.usecase.js';
-import { UserMapper } from '../../../../shared/mappers/user.mapper.js';
+import {
+  BaseController,
+  EHttpStatus,
+} from '../../../../shared/infra/http/models/base-controller.js';
+import {
+  GetImageRequest,
+  GetImageResult,
+  GetImageUsecase,
+  ImageFile,
+} from './get-image.usecase.js';
+import { IMAGE_CACHE_CONTROL } from '../../config.js';
 
 export class GetImageController extends BaseController {
   private useCase: GetImageUsecase;
@@ -15,11 +24,10 @@ export class GetImageController extends BaseController {
   protected async executeImpl(req: Request, res: Response): Promise<void> {
     const authenticatedUser: UserPersistent = req.user as UserPersistent;
 
-    const MAX_IMAGE_WIDTH = 1000;
     let imageWidth = req.query.width ? parseInt(req.query.width as string) : undefined;
 
-    if (imageWidth && imageWidth > MAX_IMAGE_WIDTH) {
-      imageWidth = MAX_IMAGE_WIDTH;
+    if (imageWidth && imageWidth > ImageConst.MAX_LONG_EDGE_PX) {
+      imageWidth = ImageConst.MAX_LONG_EDGE_PX;
     }
 
     try {
@@ -30,7 +38,7 @@ export class GetImageController extends BaseController {
       }
       const getImageRequest: GetImageRequest = {
         imageId,
-        user: UserMapper.toDomain(authenticatedUser),
+        userId: String(authenticatedUser._id),
         imageWidth,
       };
 
@@ -44,14 +52,32 @@ export class GetImageController extends BaseController {
           message: error.message,
         });
       } else {
-        const file = result.getValue();
-
-        res.writeHead(200, file.headers);
-
-        file.data.pipe(res);
+        this.sendImage(req, res, result.getValue());
       }
     } catch (err) {
       this.fail(res, err);
     }
+  }
+
+  private sendImage(req: Request, res: Response, file: ImageFile): void {
+    const cacheHeaders = { ETag: file.etag, 'Cache-Control': IMAGE_CACHE_CONTROL };
+
+    if (req.headers['if-none-match'] === file.etag) {
+      file.data.destroy();
+      res.writeHead(EHttpStatus.NotModified, cacheHeaders);
+      res.end();
+      return;
+    }
+
+    const headers: Record<string, string> = { ...cacheHeaders, 'Content-Type': file.contentType };
+    if (file.contentLength !== undefined) {
+      headers['Content-Length'] = String(file.contentLength);
+    }
+
+    // Headers are already sent once bytes flow, so a read error can only abort the response.
+    file.data.once('error', () => res.destroy());
+    res.once('close', () => file.data.destroy());
+    res.writeHead(EHttpStatus.Ok, headers);
+    file.data.pipe(res);
   }
 }
