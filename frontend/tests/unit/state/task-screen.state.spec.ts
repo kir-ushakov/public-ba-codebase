@@ -1,25 +1,52 @@
 import { TestBed } from '@angular/core/testing';
 import { Actions, ofActionDispatched, provideStore, Store } from '@ngxs/store';
-import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
-import { firstValueFrom } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import {
+  EChangeAction,
+  EChangedEntity,
+  ESpeechToTextUseCaseError,
+} from '@brainassistant/contracts';
+import { firstValueFrom, of, Subject, throwError } from 'rxjs';
+import { TranscriptionFailure } from 'src/app/shared/helpers/transcription-failure.function';
 import {
   ETaskViewMode,
   TaskScreenState,
 } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
 import { TaskScreenAction } from 'src/app/mobile-app/components/screens/task-screen/task-screen.actions';
-import { ETaskStatus, ETaskType, Task, defaultTask } from 'src/app/shared/models/task.model';
+import {
+  ETaskCondition,
+  ETaskStatus,
+  ETaskType,
+  Task,
+  defaultTask,
+} from 'src/app/shared/models/task.model';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { ImageService } from 'src/app/shared/services/application/image.service';
+import { AudioService } from 'src/app/shared/services/application/audio.service';
+import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/speech-to-text.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
+import { HomeContentModeService } from 'src/app/mobile-app/components/screens/home-screen/home-content-mode.service';
+import { ChecklistCompletionPromptService } from 'src/app/shared/services/application/checklist-completion-prompt.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
+import { LocalStore } from 'src/app/shared/services/infrastructure/local-store.service';
 import { SyncAction } from 'src/app/shared/state/sync.action';
+import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { EUserAuthState, UserState } from 'src/app/shared/state/user.state';
 
 describe('TaskScreenState', () => {
   let store: Store;
-  let imageService: { saveImage: jest.Mock };
+  let imageService: { saveImage: jest.Mock; discardRemoved: jest.Mock };
   let deviceCameraService: { takePicture: jest.Mock };
+  let audioService: {
+    saveBlob: jest.Mock;
+    deleteBlob: jest.Mock;
+    discardDraft: jest.Mock;
+    deleteRemote: jest.Mock;
+    getRecord: jest.Mock;
+    objectUrl: jest.Mock;
+  };
+  let speechToText: { uploadAudio: jest.Mock };
 
   const userId = 'user-1';
   const existingWithPhoto: Task = {
@@ -34,8 +61,20 @@ describe('TaskScreenState', () => {
   };
 
   beforeEach(() => {
-    imageService = { saveImage: jest.fn().mockResolvedValue('new-image-id') };
+    imageService = {
+      saveImage: jest.fn().mockResolvedValue('new-image-id'),
+      discardRemoved: jest.fn().mockResolvedValue(undefined),
+    };
     deviceCameraService = { takePicture: jest.fn() };
+    audioService = {
+      saveBlob: jest.fn(),
+      deleteBlob: jest.fn().mockResolvedValue(undefined),
+      discardDraft: jest.fn().mockResolvedValue(undefined),
+      deleteRemote: jest.fn().mockResolvedValue(undefined),
+      getRecord: jest.fn().mockResolvedValue(undefined),
+      objectUrl: jest.fn().mockResolvedValue(null),
+    };
+    speechToText = { uploadAudio: jest.fn() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -43,11 +82,14 @@ describe('TaskScreenState', () => {
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
         { provide: ImageService, useValue: imageService },
+        { provide: AudioService, useValue: audioService },
+        { provide: SpeechToTextService, useValue: speechToText },
         { provide: DeviceCameraService, useValue: deviceCameraService },
       ],
     });
 
     store = TestBed.inject(Store);
+    TestBed.inject(HomeContentModeService).select('active');
     store.reset({
       taskViewState: leftoverCreateState(),
       tasks: { entities: [existingWithPhoto] },
@@ -120,7 +162,8 @@ describe('TaskScreenState', () => {
 
     expect(created?.title).toBe('Task with details');
     expect(created?.description).toEqual(description);
-    expect(created?.status).toBe(ETaskStatus.Todo);
+    expect(created?.status).toBe(ETaskStatus.Active);
+    expect(TestBed.inject(HomeContentModeService).mode()).toBe('active');
   });
 
   it('attaches selected tag ids when creating a task', async () => {
@@ -159,7 +202,7 @@ describe('TaskScreenState', () => {
       store.selectSnapshot(TasksState.allTasks).find(task => task.id === existingWithPhoto.id)
         ?.tagIds,
     ).toEqual(['tag-1', 'tag-2']);
-    expect(synced.map(action => action.change)).toEqual([
+    expect(synced.map(action => action.entry.change)).toEqual([
       expect.objectContaining({
         entity: EChangedEntity.Task,
         action: EChangeAction.Updated,
@@ -173,7 +216,7 @@ describe('TaskScreenState', () => {
     await firstValueFrom(store.dispatch(new TaskScreenAction.TagIdsChanged(['tag-2'])));
 
     expect(store.selectSnapshot(TaskScreenState.task).tagIds).toEqual(['tag-2']);
-    expect(synced[1]?.change.object).toEqual(
+    expect(synced[1]?.entry.change.object).toEqual(
       expect.objectContaining({ id: existingWithPhoto.id, tagIds: ['tag-2'] }),
     );
     subscription.unsubscribe();
@@ -300,6 +343,7 @@ describe('TaskScreenState', () => {
 
     expect(imageService.saveImage).toHaveBeenCalledTimes(1);
     expect(imageService.saveImage).toHaveBeenCalledWith('blob:second-photo');
+    expect(imageService.discardRemoved).not.toHaveBeenCalled();
     expect(created?.imageId).toBe('second-image-id');
     expect(created?.images).toEqual(['second-image-id']);
   });
@@ -394,6 +438,7 @@ describe('TaskScreenState', () => {
 
     const updated = store.selectSnapshot(TasksState.allTasks).find(t => t.id === withGallery.id);
     expect(imageService.saveImage).not.toHaveBeenCalled();
+    expect(imageService.discardRemoved).toHaveBeenCalledWith('cover-id');
     expect(updated?.imageId).toBe('second-id');
     expect(updated?.images).toEqual(['second-id']);
     expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.View);
@@ -526,6 +571,7 @@ describe('TaskScreenState', () => {
 
     const updated = store.selectSnapshot(TasksState.allTasks).find(t => t.id === withGallery.id);
     expect(imageService.saveImage).not.toHaveBeenCalled();
+    expect(imageService.discardRemoved).not.toHaveBeenCalled();
     expect(updated?.imageId).toBe('second-id');
     expect(updated?.images).toEqual(['cover-id', 'second-id']);
   });
@@ -560,6 +606,7 @@ describe('TaskScreenState', () => {
 
     const updated = store.selectSnapshot(TasksState.allTasks).find(t => t.id === withGallery.id);
     expect(imageService.saveImage).not.toHaveBeenCalled();
+    expect(imageService.discardRemoved).toHaveBeenCalledWith('cover-id');
     expect(updated?.imageId).toBe('second-id');
     expect(updated?.images).toEqual(['second-id']);
   });
@@ -586,6 +633,7 @@ describe('TaskScreenState', () => {
       .find(t => t.id === existingWithPhoto.id);
     expect(updated?.imageId).toBeUndefined();
     expect(updated?.images).toEqual([]);
+    expect(imageService.discardRemoved).toHaveBeenCalledWith('old-image-id');
   });
 
   it('marks a viewed task active and closes the view', async () => {
@@ -604,11 +652,12 @@ describe('TaskScreenState', () => {
     ).toBe(true);
   });
 
-  it('does not mark a calendar task active', async () => {
+  it('does not mark a calendar-only task active', async () => {
     const calendarTask: Task = {
       ...existingWithPhoto,
       id: 'task-calendar',
       type: ETaskType.Calendar,
+      conditions: [ETaskCondition.Calendar],
     };
     store.reset({
       ...store.snapshot(),
@@ -643,6 +692,270 @@ describe('TaskScreenState', () => {
     ).toBe(false);
   });
 
+  it('converts a to-do task into a note and keeps its type and image', async () => {
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    const updated = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => task.id === existingWithPhoto.id);
+    expect(updated?.status).toBe(ETaskStatus.Notes);
+    expect(updated?.type).toBe(ETaskType.Basic);
+    expect(updated?.imageId).toBe(existingWithPhoto.imageId);
+    expect(updated?.id).toBe(existingWithPhoto.id);
+  });
+
+  it('converts a note back into a to-do task', async () => {
+    const note: Task = { ...existingWithPhoto, id: 'note-1', status: ETaskStatus.Notes };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [note] },
+    });
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, note.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    const updated = store.selectSnapshot(TasksState.allTasks).find(task => task.id === note.id);
+    expect(updated?.status).toBe(ETaskStatus.Todo);
+    expect(updated?.type).toBe(ETaskType.Basic);
+    expect(updated?.imageId).toBe(note.imageId);
+  });
+
+  it('converts an active calendar task into a note and keeps the calendar type', async () => {
+    const calendarTask: Task = {
+      ...existingWithPhoto,
+      id: 'task-calendar-active',
+      type: ETaskType.Calendar,
+      status: ETaskStatus.Active,
+    };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [calendarTask] },
+    });
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, calendarTask.id)),
+    );
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    const updated = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => task.id === calendarTask.id);
+    expect(updated?.status).toBe(ETaskStatus.Notes);
+    expect(updated?.type).toBe(ETaskType.Calendar);
+  });
+
+  it('checks an item without offering completion until the last one is checked', async () => {
+    const checklist = [
+      { id: 'a', text: 'Buy cat food', completed: false },
+      { id: 'b', text: 'Check salmon variant', completed: false },
+    ];
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [{ ...existingWithPhoto, checklist }] },
+    });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.ChecklistChanged([
+          { id: 'a', text: 'Buy cat food', completed: true },
+          { id: 'b', text: 'Check salmon variant', completed: false },
+        ]),
+      ),
+    );
+
+    expect(prompts.prompt()).toBeNull();
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.status).toBe(ETaskStatus.Todo);
+
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.ChecklistChanged([
+          { id: 'a', text: 'Buy cat food', completed: true },
+          { id: 'b', text: 'Check salmon variant', completed: true },
+        ]),
+      ),
+    );
+
+    expect(prompts.prompt()).toEqual({ taskId: existingWithPhoto.id, status: ETaskStatus.Todo });
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.status).toBe(ETaskStatus.Todo);
+    prompts.dismiss();
+  });
+
+  it('offers completion when the last item of an active task is checked', async () => {
+    const checklist = [{ id: 'a', text: 'Buy cat food', completed: false }];
+    store.reset({
+      ...store.snapshot(),
+      tasks: {
+        entities: [
+          { ...existingWithPhoto, id: 'task-active', status: ETaskStatus.Active, checklist },
+        ],
+      },
+    });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, 'task-active')),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.ChecklistChanged([{ id: 'a', text: 'Buy cat food', completed: true }]),
+      ),
+    );
+
+    expect(prompts.prompt()).toEqual({ taskId: 'task-active', status: ETaskStatus.Active });
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.status).toBe(ETaskStatus.Active);
+    prompts.dismiss();
+  });
+
+  it('does not offer completion when the last item of a note is checked', async () => {
+    const checklist = [{ id: 'a', text: 'Buy cat food', completed: false }];
+    store.reset({
+      ...store.snapshot(),
+      tasks: {
+        entities: [{ ...existingWithPhoto, id: 'note-1', status: ETaskStatus.Notes, checklist }],
+      },
+    });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, 'note-1')));
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.ChecklistChanged([{ id: 'a', text: 'Buy cat food', completed: true }]),
+      ),
+    );
+
+    expect(prompts.prompt()).toBeNull();
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.status).toBe(ETaskStatus.Notes);
+  });
+
+  it('does not offer completion for an empty checklist or an already completed one', async () => {
+    const checklist = [{ id: 'a', text: 'Buy cat food', completed: true }];
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [{ ...existingWithPhoto, checklist }] },
+    });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, existingWithPhoto.id)),
+    );
+    expect(prompts.prompt()).toBeNull();
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.ChecklistChanged([])));
+    expect(prompts.prompt()).toBeNull();
+    expect(store.selectSnapshot(TasksState.allTasks)[0]?.status).toBe(ETaskStatus.Todo);
+  });
+
+  it('converts an incomplete note to to-do without a dialog and keeps item ids', async () => {
+    const checklist = [
+      { id: 'a', text: 'Buy cat food', completed: true },
+      { id: 'b', text: 'Check salmon variant', completed: false },
+    ];
+    const note: Task = {
+      ...existingWithPhoto,
+      id: 'note-open',
+      status: ETaskStatus.Notes,
+      checklist,
+    };
+    store.reset({ ...store.snapshot(), tasks: { entities: [note] } });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, note.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    const updated = store.selectSnapshot(TasksState.allTasks).find(task => task.id === note.id);
+    expect(updated?.status).toBe(ETaskStatus.Todo);
+    expect(updated?.checklist).toEqual(checklist);
+    expect(prompts.prompt()).toBeNull();
+  });
+
+  it('offers completion when a fully completed note becomes a to-do, and Mark as Done finishes it', async () => {
+    const checklist = [
+      { id: 'a', text: 'Buy cat food', completed: true },
+      { id: 'b', text: 'Check salmon variant', completed: true },
+    ];
+    const note: Task = {
+      ...existingWithPhoto,
+      id: 'note-done-list',
+      status: ETaskStatus.Notes,
+      checklist,
+    };
+    store.reset({ ...store.snapshot(), tasks: { entities: [note] } });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, note.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    expect(prompts.prompt()).toEqual({ taskId: note.id, status: ETaskStatus.Todo });
+    expect(store.selectSnapshot(TaskScreenState.mode)).toBe(ETaskViewMode.View);
+    let updated = store.selectSnapshot(TasksState.allTasks).find(task => task.id === note.id);
+    expect(updated?.status).toBe(ETaskStatus.Todo);
+    expect(updated?.checklist).toEqual(checklist);
+
+    await firstValueFrom(
+      store.dispatch(
+        new TasksAction.UpdateTask({ taskId: note.id, changes: { status: ETaskStatus.Done } }),
+      ),
+    );
+    prompts.dismiss();
+
+    updated = store.selectSnapshot(TasksState.allTasks).find(task => task.id === note.id);
+    expect(updated?.status).toBe(ETaskStatus.Done);
+    expect(updated?.checklist).toEqual(checklist);
+    expect(prompts.prompt()).toBeNull();
+  });
+
+  it('keeps to-do when the completion dialog is dismissed after converting a completed note', async () => {
+    const checklist = [{ id: 'a', text: 'Buy cat food', completed: true }];
+    const note: Task = {
+      ...existingWithPhoto,
+      id: 'note-keep',
+      status: ETaskStatus.Notes,
+      checklist,
+    };
+    store.reset({ ...store.snapshot(), tasks: { entities: [note] } });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, note.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+    prompts.dismiss();
+
+    const updated = store.selectSnapshot(TasksState.allTasks).find(task => task.id === note.id);
+    expect(updated?.status).toBe(ETaskStatus.Todo);
+    expect(updated?.checklist).toEqual(checklist);
+    expect(prompts.prompt()).toBeNull();
+  });
+
+  it('converts a completed to-do back to a note without a dialog, then offers again on the way back', async () => {
+    const checklist = [{ id: 'a', text: 'Buy cat food', completed: true }];
+    const task: Task = { ...existingWithPhoto, id: 'task-roundtrip', checklist };
+    store.reset({ ...store.snapshot(), tasks: { entities: [task] } });
+    const prompts = TestBed.inject(ChecklistCompletionPromptService);
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, task.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    let updated = store.selectSnapshot(TasksState.allTasks).find(item => item.id === task.id);
+    expect(updated?.status).toBe(ETaskStatus.Notes);
+    expect(updated?.checklist).toEqual(checklist);
+    expect(prompts.prompt()).toBeNull();
+
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.View, task.id)));
+    await firstValueFrom(store.dispatch(TaskScreenAction.ConvertOptionSelected));
+
+    updated = store.selectSnapshot(TasksState.allTasks).find(item => item.id === task.id);
+    expect(updated?.status).toBe(ETaskStatus.Todo);
+    expect(updated?.checklist).toEqual(checklist);
+    expect(prompts.prompt()).toEqual({ taskId: task.id, status: ETaskStatus.Todo });
+    prompts.dismiss();
+  });
+
   async function saveCreatedTaskWithTwoPhotos(
     action: TaskScreenAction.DraftImageRemoved,
   ): Promise<Task | undefined> {
@@ -665,6 +978,226 @@ describe('TaskScreenState', () => {
     await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
 
     return store.selectSnapshot(TasksState.allTasks).find(task => task.id !== existingWithPhoto.id);
+  }
+
+  it('keeps a create-mode recording until cancel, then deletes the blob', async () => {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob.mockResolvedValue({
+      id: 'aud-1',
+      durationMs: 500,
+      mimeType: 'audio/webm',
+      createdAt: '2024-06-01T10:00:00.000Z',
+    });
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+
+    expect(store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0]?.id).toBe('aud-1');
+
+    await firstValueFrom(store.dispatch(TaskScreenAction.CancelButtonPressed));
+
+    expect(audioService.discardDraft).toHaveBeenCalledWith('aud-1');
+  });
+
+  it('does not restore a recording deleted while transcription is still running', async () => {
+    const transcript = new Subject<{ transcript: string }>();
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob.mockResolvedValue({
+      id: 'aud-1',
+      durationMs: 500,
+      mimeType: 'audio/webm',
+      createdAt: '2024-06-01T10:00:00.000Z',
+    });
+    audioService.getRecord.mockResolvedValue({
+      blob: new Blob(['a'], { type: 'audio/webm' }),
+      uploaded: false,
+    });
+    speechToText.uploadAudio.mockReturnValue(transcript.asObservable());
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+
+    const pending = firstValueFrom(
+      store.dispatch(new TaskScreenAction.TranscribeAudioAttachment('aud-1')),
+    );
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(speechToText.uploadAudio).toHaveBeenCalled();
+    await firstValueFrom(store.dispatch(new TaskScreenAction.AudioAttachmentRemoved('aud-1')));
+    transcript.next({ transcript: 'late text' });
+    transcript.complete();
+    await pending;
+
+    expect(store.selectSnapshot(TaskScreenState.task).audioAttachments ?? []).toEqual([]);
+  });
+
+  it('keeps the recording and does not offer another format retry when audio is unsupported', async () => {
+    speechToText.uploadAudio.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: { name: ESpeechToTextUseCaseError.UnsupportedMimeType, message: 'nope' },
+          }),
+      ),
+    );
+    const failure = await transcribeCreateDraft('aud-1');
+
+    expect(failure).toBeInstanceOf(TranscriptionFailure);
+    expect((failure as TranscriptionFailure).kind).toBe('permanent');
+    expect(savedDraftAttachment('aud-1')?.transcription).toBeUndefined();
+  });
+
+  it('keeps the recording and does not report an error when the transcript is empty', async () => {
+    speechToText.uploadAudio.mockReturnValue(of({ transcript: '   ' }));
+    const failure = await transcribeCreateDraft('aud-1');
+
+    expect(failure).toBeInstanceOf(TranscriptionFailure);
+    expect((failure as TranscriptionFailure).kind).toBe('empty');
+    expect((failure as TranscriptionFailure).message).toBe('No text in this recording.');
+    expect(savedDraftAttachment('aud-1')?.transcription).toBeUndefined();
+  });
+
+  it('keeps the create draft when the task cannot be saved', async () => {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob.mockResolvedValue({
+      id: 'aud-1',
+      durationMs: 500,
+      mimeType: 'audio/webm',
+      createdAt: '2024-06-01T10:00:00.000Z',
+    });
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+    jest
+      .spyOn(TestBed.inject(LocalStore), 'saveTaskAndEnqueue')
+      .mockRejectedValueOnce(new Error('disk'));
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Not saved yet',
+          description: null,
+        }),
+      ),
+    );
+
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    expect(store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0]?.id).toBe('aud-1');
+    expect(
+      store
+        .selectSnapshot(TasksState.allTasks)
+        .some(task => task.audioAttachments?.some(item => item.id === 'aud-1')),
+    ).toBe(false);
+    expect(audioService.discardDraft).not.toHaveBeenCalled();
+  });
+
+  it('copies every draft recording onto the created task', async () => {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob
+      .mockResolvedValueOnce({
+        id: 'aud-1',
+        durationMs: 500,
+        mimeType: 'audio/webm',
+        createdAt: '2024-06-01T10:00:00.000Z',
+      })
+      .mockResolvedValueOnce({
+        id: 'aud-2',
+        durationMs: 800,
+        mimeType: 'audio/webm',
+        createdAt: '2024-06-02T15:30:00.000Z',
+      });
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['b']), 800)),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TaskScreenAction.UpdateFormData(true, {
+          title: 'Task with recordings',
+          description: null,
+        }),
+      ),
+    );
+
+    await firstValueFrom(store.dispatch(TaskScreenAction.ApplyButtonPressed));
+
+    const created = store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => task.id !== existingWithPhoto.id);
+    expect(created?.audioAttachments?.map(item => item.id)).toEqual(['aud-1', 'aud-2']);
+    expect(store.selectSnapshot(TaskScreenState.task).audioAttachments).toBeUndefined();
+    expect(audioService.discardDraft).not.toHaveBeenCalled();
+  });
+
+  it('does not show a transcription when the device write fails', async () => {
+    const withAudio: Task = {
+      ...existingWithPhoto,
+      audioAttachments: [
+        {
+          id: 'aud-1',
+          durationMs: 1000,
+          mimeType: 'audio/webm',
+          createdAt: '2024-06-01T10:00:00.000Z',
+        },
+      ],
+    };
+    store.reset({
+      ...store.snapshot(),
+      tasks: { entities: [withAudio] },
+    });
+    jest
+      .spyOn(TestBed.inject(LocalStore), 'saveTaskAndEnqueue')
+      .mockRejectedValueOnce(new Error('disk'));
+    audioService.getRecord.mockResolvedValue({
+      blob: new Blob(['a'], { type: 'audio/webm' }),
+    });
+    speechToText.uploadAudio.mockReturnValue(of({ transcript: 'hello from voice' }));
+
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Edit, withAudio.id)),
+    );
+    await firstValueFrom(store.dispatch(new TaskScreenAction.TranscribeAudioAttachment('aud-1')));
+
+    expect(
+      store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0]?.transcription,
+    ).toBeUndefined();
+    expect(
+      store.selectSnapshot(TasksState.allTasks).find(task => task.id === withAudio.id)
+        ?.audioAttachments?.[0]?.transcription,
+    ).toBeUndefined();
+  });
+
+  async function transcribeCreateDraft(id: string): Promise<unknown> {
+    await firstValueFrom(store.dispatch(new TaskScreenAction.Opened(ETaskViewMode.Create, null)));
+    audioService.saveBlob.mockResolvedValue({
+      id,
+      durationMs: 500,
+      mimeType: 'audio/webm',
+      createdAt: '2024-06-01T10:00:00.000Z',
+    });
+    audioService.getRecord.mockResolvedValue({
+      blob: new Blob(['a'], { type: 'audio/webm' }),
+      uploaded: false,
+    });
+    await firstValueFrom(
+      store.dispatch(new TaskScreenAction.AudioAttachmentCaptured(new Blob(['a']), 500)),
+    );
+
+    try {
+      await firstValueFrom(store.dispatch(new TaskScreenAction.TranscribeAudioAttachment(id)));
+      return undefined;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  function savedDraftAttachment(id: string) {
+    const attachment = store.selectSnapshot(TaskScreenState.task).audioAttachments?.[0];
+    expect(attachment?.id).toBe(id);
+    return attachment;
   }
 });
 

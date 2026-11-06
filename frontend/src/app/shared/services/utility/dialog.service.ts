@@ -8,16 +8,21 @@ import { MatDialog } from '@angular/material/dialog';
 export class DialogService {
   private dialog = inject(MatDialog);
 
-  public showFullScreenDialog<C extends ComponentType<unknown>>(componentClass: C) {
+  public showFullScreenDialog<C extends ComponentType<unknown>>(componentClass: C, data?: unknown) {
     return this.dialog.open(componentClass, {
       maxWidth: '100vw',
       width: '100vw',
       height: '100vh',
       autoFocus: false,
+      data,
     });
   }
 
-  public showModalDialog<C extends ComponentType<unknown>>(componentClass: C) {
+  public showModalDialog<C extends ComponentType<unknown>>(
+    componentClass: C,
+    data?: unknown,
+    ariaLabelledBy?: string,
+  ) {
     return this.dialog.open(componentClass, {
       maxWidth: '400px',
       width: '90vw',
@@ -27,6 +32,8 @@ export class DialogService {
       backdropClass: 'pwa-install-backdrop',
       disableClose: false,
       autoFocus: false,
+      ariaLabelledBy,
+      data,
     });
   }
 }

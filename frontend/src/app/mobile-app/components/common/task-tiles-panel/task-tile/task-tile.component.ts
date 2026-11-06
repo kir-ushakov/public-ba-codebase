@@ -1,48 +1,66 @@
-import { Component, ElementRef, Input, HostListener, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, HostListener, inject, Input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
+import { firstValueFrom } from 'rxjs';
 import { TaskTileAction } from './task-tile.actions';
 import { ETaskViewMode } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
-import { Task } from 'src/app/shared/models/task.model';
+import { ETaskStatus, Task } from 'src/app/shared/models/task.model';
 import { ContextMenuComponent } from 'src/app/shared/components/ui-elements/context-menu/context-menu.component';
 import type { ContextMenuItem } from 'src/app/shared/components/ui-elements/context-menu/context-menu-item.type';
 import { SpinnerComponent } from 'src/app/shared/components/ui-elements/spinner/spinner.component';
-import { ImageService } from 'src/app/shared/services/application/image.service';
-import { ImageSrcPipe } from 'src/app/shared/pipes/image-src.pipe';
-import { formatTaskTileDate } from './helpers/format-task-tile-date.function';
+import { TASK_TILE_DATE_LOCALE } from './helpers/format-task-tile-date.function';
+import { TaskTileCalendar } from './task-tile-calendar.service';
+import { TaskTileDatePipe } from './task-tile-date.pipe';
+import { TaskTileImagePipe } from './task-tile-image.pipe';
 import { taskTypeIcon } from './helpers/task-type-icon.function';
+import { projectTaskType, taskConditions } from 'src/app/shared/helpers/task-conditions.function';
+import { shouldOfferChecklistCompletionOnNoteConversion } from 'src/app/shared/helpers/checklist.function';
+import {
+  confirmActiveToNote,
+  statusAfterConversion,
+} from 'src/app/shared/helpers/task-status-conversion.function';
+import { ChecklistCompletionPromptService } from 'src/app/shared/services/application/checklist-completion-prompt.service';
 
-const menuItems: ContextMenuItem[] = [
-  { id: 'edit', label: 'Edit', icon: 'edit', testId: 'task-tile-menu-edit' },
-  {
-    id: 'duplicate',
-    label: 'Duplicate',
-    icon: 'content_copy',
-    testId: 'task-tile-menu-duplicate',
-    disabled: true,
-  },
-  {
-    id: 'add-to-tags',
-    label: 'Add to tags',
-    icon: 'sell',
-    testId: 'task-tile-menu-add-to-tags',
-    disabled: true,
-  },
-  {
-    id: 'delete',
-    label: 'Delete',
-    icon: 'delete',
-    testId: 'task-tile-menu-delete',
-    danger: true,
-    separatorBefore: true,
-  },
-];
+function menuItemsFor(status: ETaskStatus): ContextMenuItem[] {
+  const note = status === ETaskStatus.Notes;
+  return [
+    { id: 'edit', label: 'Edit', icon: 'edit', testId: 'task-tile-menu-edit' },
+    {
+      id: 'duplicate',
+      label: 'Duplicate',
+      icon: 'content_copy',
+      testId: 'task-tile-menu-duplicate',
+      disabled: true,
+    },
+    {
+      id: 'add-to-tags',
+      label: 'Add to tags',
+      icon: 'sell',
+      testId: 'task-tile-menu-add-to-tags',
+      disabled: true,
+    },
+    {
+      id: 'convert',
+      label: note ? 'Convert to task' : 'Convert to note',
+      icon: 'swap_horiz',
+      testId: 'task-tile-menu-convert',
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: 'delete',
+      testId: 'task-tile-menu-delete',
+      danger: true,
+      separatorBefore: true,
+    },
+  ];
+}
 
 @Component({
   selector: 'ba-task-tile',
   templateUrl: './task-tile.component.html',
   styleUrls: ['./task-tile.component.scss'],
-  imports: [ContextMenuComponent, SpinnerComponent, ImageSrcPipe],
+  imports: [ContextMenuComponent, SpinnerComponent, TaskTileDatePipe, TaskTileImagePipe],
   host: {
     '[class.is-menu-open]': 'isMenuOpen()',
   },
@@ -56,32 +74,31 @@ export class TaskTileComponent {
     void this.router.navigate([`task/${ETaskViewMode.View}/${this.task.id}`]);
   }
 
-  @ViewChild(SpinnerComponent, { static: false }) spinnerComponent!: SpinnerComponent;
-
-  DEFAULT_IMAGE_WIDTH = 50;
-
   isLoading = signal(true);
-  calculatedImageWidth = signal<number | undefined>(undefined);
   readonly isMenuOpen = signal(false);
-  readonly menuItems = menuItems;
+  readonly dateLocale = TASK_TILE_DATE_LOCALE;
+
+  private readonly calendar = inject(TaskTileCalendar);
+  private readonly checklistPrompts = inject(ChecklistCompletionPromptService);
+  readonly dayKey = this.calendar.dayKey;
 
   constructor(
     private store: Store,
-    private imageService: ImageService,
-    private host: ElementRef<HTMLElement>,
     private router: Router,
-  ) {}
+  ) {
+    this.calendar.retain();
+    inject(DestroyRef).onDestroy(() => this.calendar.release());
+  }
 
   get typeIcon(): string {
-    return taskTypeIcon(this.task.type);
+    if (this.task.status === ETaskStatus.Notes) {
+      return 'article';
+    }
+    return taskTypeIcon(projectTaskType(taskConditions(this.task)));
   }
 
-  get createdAtLabel(): string {
-    return formatTaskTileDate(this.task.createdAt);
-  }
-
-  ngAfterViewInit() {
-    this.calculateImageWidth();
+  get menuItems(): ContextMenuItem[] {
+    return menuItemsFor(this.task.status);
   }
 
   onMoreClick(event: Event): void {
@@ -101,28 +118,31 @@ export class TaskTileComponent {
     }
     if (id === 'delete') {
       this.store.dispatch(new TaskTileAction.DeleteSelected(this.task.id));
-    }
-  }
-
-  onImageError(event: Event): void {
-    this.isLoading.set(false);
-    if (!this.isRemoteImageEvent(event) || !this.task.imageId) {
       return;
     }
-    this.imageService.probeRemoteImage(this.task.imageId);
+    if (id === 'convert') {
+      void this.convertSelected();
+    }
   }
 
-  private isRemoteImageEvent(event: Event): boolean {
-    const image = event.target;
-    return image instanceof HTMLImageElement && !image.src.startsWith('blob:');
+  private async convertSelected(): Promise<void> {
+    if (!confirmActiveToNote(this.task.status)) {
+      return;
+    }
+    const from = this.task.status;
+    const to = statusAfterConversion(from);
+    const checklist = this.task.checklist;
+    const taskId = this.task.id;
+    await firstValueFrom(this.store.dispatch(new TaskTileAction.ConvertSelected(taskId, to)));
+    if (
+      to === ETaskStatus.Todo &&
+      shouldOfferChecklistCompletionOnNoteConversion(from, to, checklist)
+    ) {
+      this.checklistPrompts.offer({ taskId, status: ETaskStatus.Todo });
+    }
   }
 
-  private calculateImageWidth(): void {
-    const width =
-      this.host.nativeElement.offsetWidth ||
-      this.spinnerComponent?.getNativeElement()?.offsetWidth ||
-      this.DEFAULT_IMAGE_WIDTH;
-    const dpr = window.devicePixelRatio || 1;
-    this.calculatedImageWidth.set(dpr * width);
+  onImageError(): void {
+    this.isLoading.set(false);
   }
 }

@@ -19,6 +19,9 @@ type LoginFormValue = {
   selector: 'ba-login',
   templateUrl: './login-screen.component.html',
   styleUrls: ['./login-screen.component.scss'],
+  host: {
+    class: 'app-scrollable',
+  },
   imports: [ReactiveFormsModule, SignInWithGoogleBtnComponent],
 })
 export class LoginScreenComponent implements OnInit {

@@ -1,6 +1,7 @@
 import { ETaskError, Task } from '../../../src/shared/domain/models/task.js';
 import { UniqueEntityID } from '../../../src/shared/domain/UniqueEntityID.js';
 import {
+  ETaskCondition,
   ETaskStatus,
   ETaskType,
   TaskConst,
@@ -38,6 +39,7 @@ describe('Task', () => {
       expect(task.status).toBe(ETaskStatus.Todo);
       expect(task.createdAt).toEqual(new Date('2025-01-15T12:00:00.000Z'));
       expect(task.modifiedAt).toEqual(new Date('2025-01-15T12:00:00.000Z'));
+      expect(task.conditions).toEqual([ETaskCondition.Todo]);
     });
 
     it('accepts a two-character title when no imageId is provided', () => {
@@ -214,6 +216,81 @@ describe('Task', () => {
       expect(cleared.isSuccess).toBe(true);
       expect(task.description).toBeUndefined();
     });
+
+    it('stores a checklist and keeps it when a later update omits the field', () => {
+      const checklist = [
+        { id: 'item-1', text: 'Buy cat food', completed: false },
+        { id: 'item-2', text: 'Check salmon variant', completed: true },
+      ];
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        checklist,
+      });
+
+      expect(created.isSuccess).toBe(true);
+      const task = created.getValue();
+      expect(task.checklist).toEqual(checklist);
+
+      const renamed = task.update({ title: 'Renamed task' });
+
+      expect(renamed.isSuccess).toBe(true);
+      expect(task.checklist).toEqual(checklist);
+      expect(task.title).toBe('Renamed task');
+    });
+
+    it('clears a checklist when the update sends an empty list', () => {
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        checklist: [{ id: 'item-1', text: 'Buy cat food', completed: false }],
+      });
+      const task = created.getValue();
+
+      const cleared = task.update({ checklist: [] });
+
+      expect(cleared.isSuccess).toBe(true);
+      expect(task.checklist).toBeUndefined();
+    });
+
+    it('rejects a checklist item without text', () => {
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        checklist: [{ id: 'item-1', text: '   ', completed: false }],
+      });
+
+      expect(created.isFailure).toBe(true);
+      expect(created.error.code).toBe(ETaskError.ChecklistInvalid);
+    });
+
+    it('rejects a checklist with a duplicate item id', () => {
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Valid task title',
+        checklist: [
+          { id: 'same', text: 'One', completed: false },
+          { id: 'same', text: 'Two', completed: false },
+        ],
+      });
+
+      expect(created.isFailure).toBe(true);
+      expect(created.error.code).toBe(ETaskError.ChecklistInvalid);
+    });
+
+    it('creates a note that keeps its checklist', () => {
+      const checklist = [{ id: 'item-1', text: 'Buy cat food', completed: true }];
+      const created = Task.create({
+        ...baseTaskProps,
+        status: ETaskStatus.Notes,
+        title: 'Note title here',
+        checklist,
+      });
+
+      expect(created.isSuccess).toBe(true);
+      expect(created.getValue().status).toBe(ETaskStatus.Notes);
+      expect(created.getValue().checklist).toEqual(checklist);
+    });
   });
 
   describe('reconstitute', () => {
@@ -239,6 +316,72 @@ describe('Task', () => {
       const invariants = task.checkWriteInvariants();
       expect(invariants.isFailure).toBe(true);
       expect(invariants.error.code).toBe(ETaskError.TitleMissed);
+    });
+  });
+
+  describe('conditions', () => {
+    it('stores todo and location together and projects the type older clients read', () => {
+      const result = Task.create({
+        ...baseTaskProps,
+        title: 'Buy lemons',
+        conditions: [ETaskCondition.Todo, ETaskCondition.Location],
+      });
+
+      expect(result.isSuccess).toBe(true);
+      const task = result.getValue();
+      expect(task.conditions).toEqual([ETaskCondition.Todo, ETaskCondition.Location]);
+      expect(task.type).toBe(ETaskType.Location);
+    });
+
+    it('rejects an empty condition list and conditions on a note', () => {
+      const empty = Task.create({
+        ...baseTaskProps,
+        title: 'Buy lemons',
+        conditions: [],
+      });
+      const note = Task.create({
+        ...baseTaskProps,
+        title: 'A note',
+        status: ETaskStatus.Notes,
+        conditions: [ETaskCondition.Todo],
+      });
+
+      expect(empty.isFailure).toBe(true);
+      expect(empty.error.code).toBe(ETaskError.ConditionsInvalid);
+      expect(note.isFailure).toBe(true);
+      expect(note.error.code).toBe(ETaskError.ConditionsInvalid);
+    });
+
+    it('keeps stored conditions when an older client omits them', () => {
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Buy lemons',
+        conditions: [ETaskCondition.Todo, ETaskCondition.Location],
+      }).getValue();
+
+      const updated = created.update({
+        title: 'Buy more lemons',
+        type: ETaskType.Basic,
+        status: ETaskStatus.Todo,
+      });
+
+      expect(updated.isSuccess).toBe(true);
+      expect(created.conditions).toEqual([ETaskCondition.Todo, ETaskCondition.Location]);
+      expect(created.type).toBe(ETaskType.Location);
+    });
+
+    it('clears conditions when the task becomes a note', () => {
+      const created = Task.create({
+        ...baseTaskProps,
+        title: 'Buy lemons',
+        conditions: [ETaskCondition.Location],
+      }).getValue();
+
+      const updated = created.update({ status: ETaskStatus.Notes });
+
+      expect(updated.isSuccess).toBe(true);
+      expect(created.status).toBe(ETaskStatus.Notes);
+      expect(created.conditions).toBeUndefined();
     });
   });
 });

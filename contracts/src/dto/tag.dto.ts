@@ -9,5 +9,10 @@ export interface TagDTO {
   color: string;
   createdAt: string;
   modifiedAt: string;
+  /**
+   * Quick filter on Home. Omitted by older clients and by documents written
+   * before pinning existed. Missing means not pinned.
+   */
+  isPinned?: boolean;
 }
 

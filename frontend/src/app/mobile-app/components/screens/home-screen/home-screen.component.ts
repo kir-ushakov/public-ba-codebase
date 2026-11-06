@@ -1,17 +1,40 @@
-import { Component, computed, effect, ElementRef, OnInit, signal, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Store, createSelectMap } from '@ngxs/store';
+import { benchMark } from 'src/app/benchmark/bench-marks';
 import { AppAction } from 'src/app/shared/state/app.actions';
+import { AppState } from 'src/app/shared/state/app.state';
 import { TagsState } from 'src/app/shared/state/tags.state';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
 import { IUserAvatarInputData } from 'src/app/shared/components/ui-elements/user-avatar/user-avatar.interface';
+import { displayTagColor } from 'src/app/shared/models/tag.model';
 import { HomeBottomPanelComponent } from './home-bottom-panel/home-bottom-panel.component';
 import { HomeAccountMenuComponent } from './home-account-menu/home-account-menu.component';
+import { HomeContentModeComponent } from './home-content-mode/home-content-mode.component';
+import { HomeContentModeService } from './home-content-mode.service';
+import { HomeEmptyStateComponent } from './home-empty-state/home-empty-state.component';
 import { HomeSyncStatusComponent } from './home-sync-status/home-sync-status.component';
 import { TaskTilesPanelComponent } from '../../common/task-tiles-panel/task-tiles-panel.component';
-import { filterHomeTasks } from './helpers/filter-home-tasks.function';
+import { filterHomeTasks, tasksMatchingTags } from './helpers/filter-home-tasks.function';
+import {
+  homeModeAfterSwipe,
+  homeModeCounts,
+  homeModeItemLabel,
+  tasksForHomeMode,
+  type HomeContentMode,
+} from './helpers/home-content-mode.function';
 
 @Component({
   selector: 'ba-home-screen',
@@ -21,38 +44,69 @@ import { filterHomeTasks } from './helpers/filter-home-tasks.function';
     ReactiveFormsModule,
     HomeAccountMenuComponent,
     HomeBottomPanelComponent,
+    HomeContentModeComponent,
+    HomeEmptyStateComponent,
     HomeSyncStatusComponent,
     TaskTilesPanelComponent,
   ],
 })
-export class HomeScreenComponent implements OnInit {
+export class HomeScreenComponent implements OnInit, AfterViewInit {
   selectors = createSelectMap({
     tasks: TasksState.actualTasks,
     tags: TagsState.forCurrentUser,
     isLoggedIn: UserState.isLoggedIn,
     isLocalAuthenticated: UserState.isLocalAuthenticated,
+    uiError: AppState.uiError,
     userFullName: UserState.userFullName,
     userEmail: UserState.userEmail,
   });
 
   avatarInputData!: IUserAvatarInputData;
+  readonly tagIconColor = displayTagColor;
 
   readonly searchOpen = signal(false);
   readonly queryControl = new FormControl('', { nonNullable: true });
-  readonly hasQuery = computed(() => this.query().trim().length > 0);
-  readonly filteredTasks = computed(() =>
-    filterHomeTasks(this.selectors.tasks(), this.query(), this.selectors.tags()),
+  readonly contentMode = inject(HomeContentModeService).mode;
+  readonly secondaryCategory = inject(HomeContentModeService).secondary;
+  readonly selectedTagIds = inject(HomeContentModeService).selectedTagIds;
+  readonly filterTags = computed(() => {
+    const selected = new Set(this.selectedTagIds());
+    return this.selectors
+      .tags()
+      .filter(tag => tag.isPinned === true || selected.has(tag.id))
+      .sort((left, right) =>
+        left.name.localeCompare(right.name, undefined, { sensitivity: 'base' }),
+      );
+  });
+  readonly tagScopedTasks = computed(() =>
+    tasksMatchingTags(this.selectors.tasks(), this.selectedTagIds()),
   );
+  readonly tabCounts = computed(() =>
+    homeModeCounts(filterHomeTasks(this.tagScopedTasks(), this.query(), this.selectors.tags())),
+  );
+  readonly hasQuery = computed(() => this.query().trim().length > 0);
+  readonly categoryTasks = computed(() =>
+    tasksForHomeMode(this.tagScopedTasks(), this.contentMode()),
+  );
+  readonly filteredTasks = computed(() =>
+    filterHomeTasks(this.categoryTasks(), this.query(), this.selectors.tags()),
+  );
+  readonly itemCountLabel = computed(() =>
+    homeModeItemLabel(this.contentMode(), this.tabCounts()[this.contentMode()]),
+  );
+  readonly showEmptyState = computed(() => this.categoryTasks().length === 0);
   readonly showNoResults = computed(
-    () => this.searchOpen() && this.hasQuery() && this.filteredTasks().length === 0,
+    () =>
+      !this.showEmptyState() &&
+      this.searchOpen() &&
+      this.hasQuery() &&
+      this.filteredTasks().length === 0,
   );
 
+  private readonly contentModeService = inject(HomeContentModeService);
   private readonly query = toSignal(this.queryControl.valueChanges, { initialValue: '' });
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
-
-  get itemCountLabel(): string {
-    return `${this.selectors.tasks().length} items`;
-  }
+  private contentTouchStart: { x: number; y: number } | undefined;
 
   constructor(private store: Store) {
     effect(() => {
@@ -62,11 +116,22 @@ export class HomeScreenComponent implements OnInit {
 
       this.searchInput()?.nativeElement.focus();
     });
+
+    effect(() => {
+      this.contentModeService.noteTags(this.selectors.tags().map(tag => tag.id));
+    });
   }
 
   ngOnInit(): void {
+    this.contentModeService.bindUser(this.store.selectSnapshot(UserState.userId));
     this.store.dispatch(AppAction.Opened);
     this.setAvatarInputData();
+  }
+
+  ngAfterViewInit(): void {
+    requestAnimationFrame(() => {
+      benchMark('ba:list-painted');
+    });
   }
 
   openSearch(): void {
@@ -81,6 +146,38 @@ export class HomeScreenComponent implements OnInit {
   cancelSearch(): void {
     this.queryControl.setValue('');
     this.searchOpen.set(false);
+  }
+
+  selectContentMode(mode: HomeContentMode): void {
+    this.contentModeService.select(mode);
+  }
+
+  togglePinnedTag(tagId: string): void {
+    this.contentModeService.toggleTag(tagId);
+  }
+
+  onContentTouchStart(event: TouchEvent): void {
+    const touch = event.changedTouches[0];
+    if (!touch) {
+      return;
+    }
+    this.contentTouchStart = { x: touch.clientX, y: touch.clientY };
+  }
+
+  onContentTouchEnd(event: TouchEvent): void {
+    const start = this.contentTouchStart;
+    const touch = event.changedTouches[0];
+    this.contentTouchStart = undefined;
+    if (!start || !touch) {
+      return;
+    }
+
+    const next = homeModeAfterSwipe(
+      this.contentMode(),
+      touch.clientX - start.x,
+      touch.clientY - start.y,
+    );
+    this.selectContentMode(next);
   }
 
   private setAvatarInputData(): void {

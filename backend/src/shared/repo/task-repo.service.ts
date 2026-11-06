@@ -47,11 +47,33 @@ export class TaskRepoService {
     const taskId = task.id.toString();
 
     const filter = { _id: taskId };
-    const { description, ...rest } = taskPresitant;
-    const update =
-      description === undefined
-        ? { $set: rest, $unset: { description: 1 as const } }
-        : { $set: { ...rest, description } };
+    const { description, checklist, conditions, audioAttachments, ...rest } = taskPresitant;
+    const $unset: {
+      description?: 1;
+      checklist?: 1;
+      conditions?: 1;
+      audioAttachments?: 1;
+    } = {};
+    if (description === undefined) {
+      $unset.description = 1;
+    }
+    if (checklist === undefined) {
+      $unset.checklist = 1;
+    }
+    if (conditions === undefined) {
+      $unset.conditions = 1;
+    }
+    if (audioAttachments === undefined) {
+      $unset.audioAttachments = 1;
+    }
+    const $set = {
+      ...rest,
+      ...(description !== undefined ? { description } : {}),
+      ...(checklist !== undefined ? { checklist } : {}),
+      ...(conditions !== undefined ? { conditions } : {}),
+      ...(audioAttachments !== undefined ? { audioAttachments } : {}),
+    };
+    const update = Object.keys($unset).length > 0 ? { $set, $unset } : { $set };
 
     const updatedTask = await taskModel.findOneAndUpdate(filter, update);
     if (!updatedTask) {
@@ -62,24 +84,28 @@ export class TaskRepoService {
     return updatedTask;
   }
 
+  public async findUserTaskById(userId: string, taskId: string): Promise<Task | null> {
+    const taskDocument = await this.models.TaskModel.findOne({
+      _id: taskId,
+      userId,
+    }).lean();
+    if (!taskDocument) {
+      return null;
+    }
+    return TaskMapper.toDomain(taskDocument);
+  }
+
   public async getUserTaskById(
     userId: string,
     taskId: string,
   ): Promise<Result<Task, ServiceError<ETaskRepoServiceError>>> {
-    const TaskModel = this.models.TaskModel;
-    const params = {
-      _id: taskId,
-      userId: userId,
-    };
-    const taskDocument = await TaskModel.findOne(params).lean();
-
-    if (!taskDocument)
+    const task = await this.findUserTaskById(userId, taskId);
+    if (!task) {
       return serviceFail<ETaskRepoServiceError>(
         `The task with id = "${taskId}" for user with id = ${userId} dosn't exists`,
         ETaskRepoServiceError.UserTaskNotFound,
       );
-
-    const task = TaskMapper.toDomain(taskDocument);
+    }
     return Result.ok<Task, ServiceError<ETaskRepoServiceError>>(task);
   }
 

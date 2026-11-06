@@ -3,8 +3,8 @@ import { provideStore, Store } from '@ngxs/store';
 import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
 import { firstValueFrom } from 'rxjs';
 import { TAG_COLOR } from 'src/app/shared/models/tag.model';
+import { LocalStore } from 'src/app/shared/services/infrastructure/local-store.service';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
-import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { SyncAction } from 'src/app/shared/state/sync.action';
 import { TagsAction } from 'src/app/shared/state/tags.action';
@@ -21,7 +21,6 @@ describe('TagsState', () => {
         provideStore([TagsState, UserState]),
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
-        { provide: GoogleOAuthConsentService, useValue: {} },
       ],
     });
 
@@ -54,6 +53,7 @@ describe('TagsState', () => {
         userId,
         name: 'Errands',
         color: TAG_COLOR,
+        isPinned: false,
       }),
     ]);
   });
@@ -95,5 +95,127 @@ describe('TagsState', () => {
     );
 
     expect(store.selectSnapshot(TagsState.forCurrentUser)).toEqual([]);
+  });
+
+  it('pins a tag locally and queues the update for sync', async () => {
+    store.reset({
+      ...store.snapshot(),
+      tags: {
+        entities: [
+          {
+            id: 'tag-1',
+            userId,
+            name: 'Work',
+            color: TAG_COLOR,
+            createdAt: '2024-01-01T00:00:00.000Z',
+            modifiedAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
+      },
+    });
+    const save = jest.spyOn(TestBed.inject(LocalStore), 'saveTagAndEnqueue');
+
+    await firstValueFrom(store.dispatch(new TagsAction.SetPinned('tag-1', true)));
+
+    expect(store.selectSnapshot(TagsState.forCurrentUser)[0]?.isPinned).toBe(true);
+    expect(save).toHaveBeenCalledTimes(1);
+    const entry = save.mock.calls[0]?.[1];
+    expect(entry?.change.action).toBe(EChangeAction.Updated);
+    expect(entry?.change.object).toMatchObject({ id: 'tag-1', isPinned: true });
+  });
+
+  it('does not queue a pin change when the tag is already in that state', async () => {
+    store.reset({
+      ...store.snapshot(),
+      tags: {
+        entities: [
+          {
+            id: 'tag-1',
+            userId,
+            name: 'Work',
+            color: TAG_COLOR,
+            isPinned: true,
+            createdAt: '2024-01-01T00:00:00.000Z',
+            modifiedAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
+      },
+    });
+    const save = jest.spyOn(TestBed.inject(LocalStore), 'saveTagAndEnqueue');
+
+    await firstValueFrom(store.dispatch(new TagsAction.SetPinned('tag-1', true)));
+
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('renames a tag and stores the chosen palette color', async () => {
+    await firstValueFrom(
+      store.dispatch(new TagsAction.CreateTag({ id: 'tag-1', name: 'Errands' }, userId)),
+    );
+
+    await firstValueFrom(
+      store.dispatch(
+        new TagsAction.UpdateTag({ tagId: 'tag-1', name: 'Groceries', color: '#D95C5C' }),
+      ),
+    );
+
+    expect(store.selectSnapshot(TagsState.forCurrentUser)[0]).toEqual(
+      expect.objectContaining({ name: 'Groceries', color: '#d95c5c', isPinned: false }),
+    );
+  });
+
+  it('leaves the tag unchanged when the name or color is not allowed', async () => {
+    await firstValueFrom(
+      store.dispatch(new TagsAction.CreateTag({ id: 'tag-1', name: 'Errands' }, userId)),
+    );
+
+    await firstValueFrom(
+      store.dispatch(new TagsAction.UpdateTag({ tagId: 'tag-1', name: '   ', color: '#d95c5c' })),
+    );
+    await firstValueFrom(
+      store.dispatch(
+        new TagsAction.UpdateTag({ tagId: 'tag-1', name: 'Groceries', color: 'purple' }),
+      ),
+    );
+
+    expect(store.selectSnapshot(TagsState.forCurrentUser)[0]).toEqual(
+      expect.objectContaining({ name: 'Errands', color: TAG_COLOR }),
+    );
+  });
+
+  it('deletes a tag from the device', async () => {
+    await firstValueFrom(
+      store.dispatch(new TagsAction.CreateTag({ id: 'tag-1', name: 'Errands' }, userId)),
+    );
+    const remove = jest.spyOn(TestBed.inject(LocalStore), 'deleteTagAndEnqueue');
+
+    await firstValueFrom(store.dispatch(new TagsAction.DeleteTag('tag-1')));
+
+    expect(remove).toHaveBeenCalled();
+    expect(store.selectSnapshot(TagsState.forCurrentUser)).toEqual([]);
+  });
+
+  it('applies a pinned flag arriving from the server', async () => {
+    await firstValueFrom(
+      store.dispatch(
+        new SyncAction.ServerChangesLoaded([
+          {
+            entity: EChangedEntity.Tag,
+            action: EChangeAction.Updated,
+            object: {
+              id: 'tag-server',
+              userId,
+              name: 'Work',
+              color: TAG_COLOR,
+              isPinned: true,
+              createdAt: '2024-01-01T00:00:00.000Z',
+              modifiedAt: '2024-01-02T00:00:00.000Z',
+            },
+          },
+        ]),
+      ),
+    );
+
+    expect(store.selectSnapshot(TagsState.forCurrentUser)[0]?.isPinned).toBe(true);
   });
 });

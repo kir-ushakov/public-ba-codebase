@@ -28,6 +28,10 @@ app-root {
   height: 100%;
   margin: 0 auto;
 
+  > router-outlet {
+    display: none;
+  }
+
   // Start narrow
   max-width: 100%;
 

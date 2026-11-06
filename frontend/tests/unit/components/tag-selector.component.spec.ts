@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideStore, Store } from '@ngxs/store';
+import { Actions, ofActionSuccessful, provideStore, Store } from '@ngxs/store';
+import { firstValueFrom } from 'rxjs';
 import { TagConst } from '@brainassistant/contracts';
 import { TAG_COLOR, Tag } from 'src/app/shared/models/tag.model';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
-import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { TagsState } from 'src/app/shared/state/tags.state';
+import { TagsAction } from 'src/app/shared/state/tags.action';
 import { EUserAuthState, UserState } from 'src/app/shared/state/user.state';
 import { TagSelectorComponent } from 'src/app/mobile-app/components/screens/task-screen/task-edit/tag-selector/tag-selector.component';
 
@@ -22,7 +23,6 @@ describe('TagSelectorComponent', () => {
         provideStore([TagsState, UserState]),
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
-        { provide: GoogleOAuthConsentService, useValue: {} },
       ],
     }).compileComponents();
 
@@ -110,7 +110,7 @@ describe('TagSelectorComponent', () => {
     );
   });
 
-  it('creates a tag optimistically and selects it in the list', () => {
+  it('creates a tag optimistically and selects it in the list', async () => {
     const host = fixture.nativeElement as HTMLElement;
 
     host.querySelector<HTMLButtonElement>('[data-test="task-tags-selector"]')!.click();
@@ -127,7 +127,12 @@ describe('TagSelectorComponent', () => {
       false,
     );
 
+    const saved = firstValueFrom(
+      TestBed.inject(Actions).pipe(ofActionSuccessful(TagsAction.CreateTag)),
+    );
     host.querySelector<HTMLButtonElement>('[data-test="new-tag-submit"]')!.click();
+    await saved;
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(host.querySelector('[data-test="bottom-sheet-title"]')?.textContent).toContain(
@@ -158,7 +163,7 @@ describe('TagSelectorComponent', () => {
     const labels = [...host.querySelectorAll('[data-test="tag-chip"]')].map(item =>
       item.textContent?.trim(),
     );
-    expect(labels).toEqual(['Travel']);
+    expect(labels).toEqual([expect.stringContaining('Travel')]);
 
     chip(host, 'Travel')!.click();
     fixture.detectChanges();
@@ -181,8 +186,44 @@ describe('TagSelectorComponent', () => {
 
     expect(host.querySelector('[data-test="task-tags-selector"]')).toBeNull();
     expect(host.querySelector('[data-test="selected-tag-remove"]')).toBeNull();
-    expect(chips.map(item => item.textContent?.trim())).toEqual(['Work']);
+    expect(chips.map(item => item.textContent?.trim())).toEqual([expect.stringContaining('Work')]);
     expect(addTag?.textContent).toContain('Add tag');
+  });
+
+  it('stores the color chosen in the create sheet', async () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.querySelector<HTMLButtonElement>('[data-test="task-tags-selector"]')!.click();
+    fixture.detectChanges();
+    host.querySelector<HTMLButtonElement>('[data-test="create-new-tag"]')!.click();
+    fixture.detectChanges();
+
+    expect(
+      host
+        .querySelector('[data-test="tag-color"][aria-pressed="true"]')
+        ?.getAttribute('aria-label'),
+    ).toBe(TAG_COLOR);
+
+    const purple = [...host.querySelectorAll<HTMLButtonElement>('[data-test="tag-color"]')].find(
+      swatch => swatch.getAttribute('aria-label') === '#9b8ad0',
+    );
+    purple!.click();
+    fixture.detectChanges();
+
+    const name = host.querySelector<HTMLInputElement>('[data-test="new-tag-name"]');
+    name!.value = 'Errands';
+    name!.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(host.querySelector('[data-test="tag-preview"]')?.textContent).toContain('Errands');
+
+    const saved = firstValueFrom(
+      TestBed.inject(Actions).pipe(ofActionSuccessful(TagsAction.CreateTag)),
+    );
+    host.querySelector<HTMLButtonElement>('[data-test="new-tag-submit"]')!.click();
+    await saved;
+    await fixture.whenStable();
+
+    expect(store.selectSnapshot(TagsState.forCurrentUser)[0]?.color).toBe('#9b8ad0');
   });
 });
 

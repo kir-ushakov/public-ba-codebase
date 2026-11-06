@@ -68,7 +68,8 @@ jobs:
   # Playwright integration tests (mocked API)
   integration-tests:
     name: Integration Tests (Playwright)
-    runs-on: ubuntu-latest
+    # ubuntu-latest is 26.04, which Playwright 1.55 cannot install Chromium on.
+    runs-on: ubuntu-24.04
     
     steps:
       - name: Checkout code

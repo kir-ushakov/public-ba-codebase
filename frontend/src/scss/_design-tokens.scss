@@ -4,6 +4,7 @@
   --color-accent-primary: #00a991;
   --color-accent-hover: #00bfa5;
   --color-accent-pressed: #008c79;
+  --color-accent-muted: rgb(0 169 145 / 35%);
   --color-accent-on-accent: #fff;
   --color-background-app: #071219;
   --color-background-content: #0b171e;
@@ -13,6 +14,7 @@
   --color-surface-default: #101e25;
   --color-surface-elevated: #14242b;
   --color-surface-hover: #182a31;
+  --color-surface-selected: #12302f;
   --color-text-primary: #f1f4f5;
   --color-text-secondary: #929da4;
   --color-text-tertiary: #69767e;
@@ -63,6 +65,7 @@
 
   --icon-family: 'Material Symbols Rounded';
   --icon-fill: 0;
+  --icon-fill-solid: 1;
   --icon-weight: 400;
   --icon-grade: 0;
   --icon-optical-size: 24;
@@ -88,4 +91,14 @@
   --elevation-floating-shadow: 0 4px 16px rgb(0 0 0 / 25%);
 
   --bottom-sheet-max-height: 90vh;
+
+  --empty-state-illustration-max-width: 192px;
+  --empty-state-illustration-max-height: 160px;
+
+  --scrollbar-width: 4px;
+  --scrollbar-hover-width: 6px;
+  --scrollbar-thumb-color: #647b83;
+  --scrollbar-thumb-hover-color: #8299a1;
+  --scrollbar-track-color: transparent;
+  --scrollbar-border-radius: 999px;
 }

@@ -1,11 +1,12 @@
 import { Change } from '../models';
+import { OutboxEntry } from '../models/outbox-entry.type';
+import { LocalSnapshot } from '../services/infrastructure/local-store.service';
 
 export namespace SyncAction {
-
   export class ChangeForSyncOccurred {
     static readonly type = '[Sync] Change For Sync Occurred';
 
-    constructor(public change: Change) {}
+    constructor(public entry: OutboxEntry) {}
   }
 
   export class ServerChangesLoaded {
@@ -17,7 +18,13 @@ export namespace SyncAction {
   export class LocalChangeWasSynchronized {
     static readonly type = '[Sync] Local Change Was Synchronized';
 
-    constructor(public change: Change) {}
+    constructor(public entryId: string) {}
+  }
+
+  export class LocalDataHydrated {
+    static readonly type = '[Sync] Local Data Hydrated';
+
+    constructor(public snapshot: LocalSnapshot) {}
   }
 
   // TODO: Handle this case in UI - possible show icon 'sync problem'

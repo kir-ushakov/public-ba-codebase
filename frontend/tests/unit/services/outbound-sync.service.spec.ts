@@ -1,11 +1,17 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
+import {
+  EChangeAction,
+  EChangedEntity,
+  ETagRepoServiceError,
+  ETaskRepoServiceError,
+} from '@brainassistant/contracts';
 import { of, Subject, throwError } from 'rxjs';
 import { Change } from 'src/app/shared/models/change.model';
 import { ETaskStatus, ETaskType, Task } from 'src/app/shared/models/task.model';
 import { ClientChangesService } from 'src/app/shared/services/api/client-changes.service';
 import { ImageService } from 'src/app/shared/services/application/image.service';
+import { AudioService } from 'src/app/shared/services/application/audio.service';
 import { OutboundSyncService } from 'src/app/shared/services/application/outbound-sync.service';
 
 describe('OutboundSyncService', () => {
@@ -48,6 +54,10 @@ describe('OutboundSyncService', () => {
         OutboundSyncService,
         { provide: ClientChangesService, useValue: clientChangesService },
         { provide: ImageService, useValue: imageService },
+        {
+          provide: AudioService,
+          useValue: { ensureUploaded: jest.fn().mockResolvedValue('alreadyRemote') },
+        },
       ],
     });
     service = TestBed.inject(OutboundSyncService);
@@ -148,12 +158,23 @@ describe('OutboundSyncService', () => {
     expect(result.sendFailed).toBe(true);
   });
 
-  it('records a 404 send as notFound and continues', async () => {
-    const first: Change = { ...pendingChange, object: { id: 'task-a', modifiedAt: 't' } };
+  it('records an update 404 named user-task-not-found as notFound and continues', async () => {
+    const first: Change = {
+      ...pendingChange,
+      action: EChangeAction.Updated,
+      object: { id: 'task-a', modifiedAt: 't' },
+    };
     const second: Change = { ...pendingChange, object: { id: 'task-b', modifiedAt: 't' } };
     clientChangesService.send
       .mockReturnValueOnce(
-        throwError(() => new HttpErrorResponse({ status: 404, statusText: 'Not Found' })),
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 404,
+              statusText: 'Not Found',
+              error: { name: ETaskRepoServiceError.UserTaskNotFound, message: 'missing' },
+            }),
+        ),
       )
       .mockReturnValue(of({}));
 
@@ -162,6 +183,65 @@ describe('OutboundSyncService', () => {
     expect(result.notFound).toEqual([first]);
     expect(result.sent).toEqual([second]);
     expect(result.sendFailed).toBe(false);
+  });
+
+  it('records an update 404 named user-tag-not-found as notFound and continues', async () => {
+    const missingTag: Change = {
+      entity: EChangedEntity.Tag,
+      action: EChangeAction.Updated,
+      object: { id: 'tag-a', modifiedAt: 't' },
+    };
+    clientChangesService.send.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 404,
+            statusText: 'Not Found',
+            error: { name: ETagRepoServiceError.UserTagNotFound, message: 'missing' },
+          }),
+      ),
+    );
+
+    const result = await service.process([missingTag]);
+
+    expect(result.notFound).toEqual([missingTag]);
+    expect(result.sendFailed).toBe(false);
+  });
+
+  it('stops the queue on a 404 that does not name a missing entity', async () => {
+    const first: Change = { ...pendingChange, object: { id: 'task-a', modifiedAt: 't' } };
+    const second: Change = { ...pendingChange, object: { id: 'task-b', modifiedAt: 't' } };
+    clientChangesService.send.mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 404, statusText: 'Not Found' })),
+    );
+
+    const result = await service.process([first, second]);
+
+    expect(clientChangesService.send).toHaveBeenCalledTimes(1);
+    expect(result.notFound).toEqual([]);
+    expect(result.sent).toEqual([]);
+    expect(result.sendFailed).toBe(true);
+  });
+
+  it('stops the queue when a create receives the missing-task name', async () => {
+    const created: Change = { ...pendingChange, object: { id: 'task-a', modifiedAt: 't' } };
+    const next: Change = { ...pendingChange, object: { id: 'task-b', modifiedAt: 't' } };
+    clientChangesService.send.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 404,
+            statusText: 'Not Found',
+            error: { name: ETaskRepoServiceError.UserTaskNotFound, message: 'missing' },
+          }),
+      ),
+    );
+
+    const result = await service.process([created, next]);
+
+    expect(clientChangesService.send).toHaveBeenCalledTimes(1);
+    expect(result.notFound).toEqual([]);
+    expect(result.sendFailed).toBe(true);
   });
 
   it('does not start the next send while one is in flight', async () => {

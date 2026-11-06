@@ -8,6 +8,7 @@ const TagSchema = new Schema({
   userId: { type: String, require: true },
   name: { type: String, require: true },
   color: { type: String, require: true },
+  isPinned: { type: Boolean, required: false },
   createdAt: { type: Date, require: true },
   modifiedAt: { type: Date, require: true },
   syncRevision: { type: Number, required: false },

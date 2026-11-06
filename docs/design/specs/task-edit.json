@@ -2,9 +2,9 @@
   "screen": {
     "id": "task-edit",
     "name": "Edit Task",
-    "version": "1.3.0",
+    "version": "1.7.0",
 
-    "purpose": "Edit an existing task using the same task-form pattern as Create Task.",
+    "purpose": "Edit an existing task using the same task-form pattern as Create Task, including its audio attachments.",
 
     "designSystem": "../design-system.json",
     "styleGuide": "../UI_STYLE_GUIDE.md",
@@ -20,6 +20,25 @@
         "task-form",
         "bottom-actions"
       ]
+    },
+
+    "scrollLayout": {
+      "type": "fixed-header-footer",
+      "header": {
+        "position": "fixed-within-screen",
+        "scrollable": false
+      },
+      "content": {
+        "scrollable": true,
+        "direction": "vertical",
+        "scrollbar": "design-system.scrollbar",
+        "horizontalOverflow": "hidden",
+        "overscrollBehavior": "contain"
+      },
+      "footer": {
+        "position": "fixed-within-screen",
+        "scrollable": false
+      }
     },
 
     "header": {
@@ -62,7 +81,9 @@
           "placeholder": "Task title here...",
           "voiceInput": {
             "enabled": true,
-            "icon": "microphone"
+            "icon": "mic",
+            "action": "open-voice-record-title",
+            "spec": "./voice-record-title.json"
           },
           "characterCount": true
         },
@@ -80,6 +101,97 @@
             "link"
           ],
           "characterCount": true
+        },
+        {
+          "id": "audio-attachments",
+          "label": "Audio attachments",
+          "component": "audio-attachment-list",
+          "itemComponent": "audio-attachment-card",
+          "sharedWith": ["task-create", "task-view"],
+          "designSystemPattern": "audioAttachment",
+          "multiple": true,
+          "transcriptionState": "per-attachment",
+          "source": "existing-task",
+          "addAction": {
+            "label": "Add audio recording",
+            "icon": "add",
+            "action": "open-voice-record-audio",
+            "spec": "./voice-record-audio.json"
+          },
+          "item": {
+            "title": "Voice recording",
+            "duration": {
+              "visible": true,
+              "underOneHour": "MM:SS",
+              "fromOneHour": "HH:MM:SS"
+            },
+            "playback": ["play", "pause"],
+            "menu": {
+              "icon": "more_vert",
+              "items": [
+                {
+                  "id": "delete",
+                  "label": "Delete recording",
+                  "icon": "delete",
+                  "semantic": "danger",
+                  "action": "remove-audio-attachment"
+                }
+              ]
+            },
+            "remove": {
+              "enabled": true,
+              "removesTranscription": true,
+              "persistedWhen": "changes are saved"
+            },
+            "withoutTranscription": {
+              "id": "not-transcribed",
+              "meta": "Not transcribed",
+              "action": {
+                "label": "Transcribe with AI",
+                "icon": "auto_awesome",
+                "action": "transcribe-audio-attachment",
+                "opensSheet": false
+              }
+            },
+            "transcribing": {
+              "label": "Transcribing...",
+              "indicator": "indeterminate",
+              "showPercent": false,
+              "disableDuplicateRequests": true,
+              "blocksOtherFields": false,
+              "playback": true,
+              "opensSheet": false
+            },
+            "emptyTranscript": {
+              "sharedWith": "./task-create.json#form.sections.audio-attachments.item.emptyTranscript"
+            },
+            "transcriptionError": {
+              "label": "Transcription failed",
+              "icon": "error_outline",
+              "semantic": "danger",
+              "keepsAudio": true,
+              "keepsExistingData": true,
+              "autoRetry": false,
+              "opensSheet": false,
+              "offlineLabel": "No connection",
+              "action": {
+                "label": "Retry transcription",
+                "icon": "refresh",
+                "style": "outlined",
+                "action": "retry-audio-transcription",
+                "hiddenWhen": "permanent"
+              }
+            },
+            "withTranscription": {
+              "retranscribeOnOpen": false,
+              "action": {
+                "label": "View transcription",
+                "icon": "article",
+                "action": "view-audio-transcription",
+                "opens": "audio-transcription-open"
+              }
+            }
+          }
         },
         {
           "id": "images",
@@ -125,13 +237,36 @@
           "options": [
             {
               "id": "todo",
-              "label": "To do",
+              "label": "Waiting",
               "icon": "status-todo"
             },
             {
               "id": "active",
               "label": "Active",
               "icon": "status-active"
+            }
+          ]
+        },
+        {
+          "id": "conditions",
+          "label": "Conditions",
+          "component": "multi-select",
+          "selection": "at-least-one",
+          "options": [
+            {
+              "id": "todo",
+              "label": "To do",
+              "icon": "radio_button_unchecked"
+            },
+            {
+              "id": "calendar",
+              "label": "Calendar",
+              "icon": "calendar_month"
+            },
+            {
+              "id": "location",
+              "label": "Location",
+              "icon": "location_on"
             }
           ]
         },
@@ -168,20 +303,59 @@
         "trigger": "form.sections.tags",
         "spec": "./tag-selector-open.json",
         "referenceImage": "../references/tag-selector-open.png"
+      },
+      "voiceRecordTitle": {
+        "trigger": "form.sections.title.voiceInput",
+        "spec": "./voice-record-title.json",
+        "referenceImage": "../references/voice-record-title.png"
+      },
+      "voiceRecordAudio": {
+        "trigger": "form.sections.audio-attachments",
+        "spec": "./voice-record-audio.json",
+        "referenceImage": "../references/voice-record-audio.png"
+      },
+      "withAudioAttachment": {
+        "trigger": "form.sections.audio-attachments",
+        "referenceImage": "../references/task-create-with-audio.png",
+        "description": "Shared with Create Task. Compact audio attachment card with Play, Voice recording, duration, more_vert, and Transcribe with AI. No progress bar until playback starts."
+      },
+      "transcriptionRetry": {
+        "status": "approved",
+        "trigger": "form.sections.audio-attachments.item.transcriptionError",
+        "referenceImage": "../references/audio-transcription-retry.jpg",
+        "description": "Shared with Create Task. Compact card error: error_outline, Transcription failed, outlined Retry transcription."
+      },
+      "audioTranscriptionOpen": {
+        "status": "draft",
+        "trigger": "form.sections.audio-attachments.item.withTranscription.action",
+        "spec": "./audio-transcription-open.json"
       }
     },
 
     "visualRules": [
       "Use global design tokens from design-system.json.",
       "Do not define screen-specific colors, radii or arbitrary spacing.",
+      "The header and bottom actions stay fixed within the screen. Only the central form scrolls vertically, using design-system.scrollbar.",
       "The reference PNG is a visual target, not a source of token values. Do not measure colors, spacing, or radii from it.",
       "Edit and Create must use the same task-form composition and shared components.",
       "Populate all fields from the existing task.",
       "Images are attachments; the selected cover image is used on task tiles.",
+      "The title microphone opens Title Recording. It does not create an audio attachment and does not use this transcription flow.",
+      "Audio attachments sit after Description and before Images. Existing recordings are listed with playback.",
+      "Create and Edit render attachments with the same audio-attachment-list and audio-attachment-card. Do not fork a second attachment component.",
+      "Several recordings are allowed, and each keeps its own transcription state.",
+      "Transcribe with AI stays on the attachment. It does not open a waiting sheet. The card shows Transcribing... with an indeterminate indicator and no percent. Other fields stay editable, and playback stays available.",
+      "When transcription finishes, the card shows View transcription only. Do not also show Transcription available. View transcription opens the shared transcription sheet. It does not call speech-to-text again.",
+      "A transcription error stays on the card: error_outline and Transcription failed, then an outlined Retry transcription button. A 200 response with no text is not an error: the card and the transcription sheet say No text in this recording, without Retry, Copy, or Add to Description. The recording remains. Do not auto-retry and do not open an error sheet.",
+      "Transcription failed uses semantic danger. auto_awesome is only the Transcribe action icon. Do not add a glow, a decorative waveform, or an extra sparkle on the card.",
+      "The saved transcription belongs to the audio attachment and is kept independently of the description. It is stored with the attachment and synced with the task. It is not a separate sync system.",
+      "Add to description appends the saved transcript to the description draft. It does not replace the description or the audio file.",
+      "Delete recording lives in the attachment more_vert menu. Removing an attachment also removes its transcription and is included when changes are saved. Task View does not delete attachments.",
+      "The default audio attachment card is approved in states.withAudioAttachment via task-create-with-audio.png. Playback progress appears only after playback starts. The transcription sheet stays draft until its own reference PNG is approved.",
       "Tags have a single entry point. Use the Add tags selector to add or create tags; do not render a separate Add tag action beside selected tag chips.",
       "Do not show a trash/delete icon in the header.",
       "Do not show a clear-X control inside the title field.",
-      "Deletion belongs to Task View options, not the Edit form."
+      "Task deletion belongs to Task View options, not the Edit form."
     ],
 
     "reference": {
@@ -191,12 +365,16 @@
     },
 
     "angular": {
-      "note": "Create and Edit share task-edit today. The live screen does not yet match this spec. Same data-shape caveats as task-create.json: single imageId, no task tags or dueDate on TaskDTO. The form offers To do and Active. Mark as Active and Done are Task View actions. Task View does not show a status section. Mockup counters are not TaskConst.",
+      "note": "Create and Edit share task-edit today. The default audio attachment card is approved via task-create-with-audio.png. audio-transcription-open stays draft until its reference PNG is approved. Same data-shape caveats as task-create.json: single imageId, no dueDate on TaskDTO. The form offers Waiting and Active, plus a conditions multi-select (To do, Calendar, Location). A note is edited without a status or conditions selector. Mark as Active requires the todo condition. Mark as Active and Done are Task View actions. Task View does not show a status section. Calendar and location conditions do not store a date or place yet. Mockup counters are not TaskConst. Speech-to-text returns only a transcript string and no progress percent.",
       "screenFolder": "frontend/src/app/mobile-app/components/screens/task-screen/",
       "existingPiecesToReuse": [
         "frontend/src/app/mobile-app/components/screens/task-screen/task-edit/",
         "frontend/src/app/shared/components/ui-elements/rich-text-editor/",
-        "frontend/src/app/shared/features/voice-input/components/voice-input-trigger/"
+        "frontend/src/app/shared/features/voice-input/components/voice-input-trigger/",
+        "frontend/src/app/shared/features/voice-input/components/voice-recorder/",
+        "frontend/src/app/shared/features/voice-input/voice-recording.facade.ts",
+        "frontend/src/app/shared/features/voice-input/api/speech-to-text.service.ts",
+        "frontend/src/app/shared/services/pwa/voice-recorder/voice-recorder.service.ts"
       ]
     }
   }
