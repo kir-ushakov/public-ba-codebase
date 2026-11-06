@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { EChangeAction, EChangedEntity } from '@brainassistant/contracts';
+import {
+  EChangeAction,
+  EChangedEntity,
+  ETagRepoServiceError,
+  ETaskRepoServiceError,
+} from '@brainassistant/contracts';
 import { lastValueFrom } from 'rxjs';
+import { readApiErrorName } from '../../helpers/http-error-body.function';
 import { Change } from '../../models/change.model';
 import { ClientChangesService } from '../api/client-changes.service';
 import { ImageService } from './image.service';
@@ -78,9 +84,7 @@ export class OutboundSyncService {
       } catch (error) {
         console.error('Sync Pending Change Error:', change, error);
 
-        // TODO: Don't rely only on HTTP status code - check error name from backend response
-        // TICKET: https://brainas.atlassian.net/browse/BA-258
-        if (error instanceof HttpErrorResponse && error.status === 404) {
+        if (this.isConfirmedMissing(change, error)) {
           notFound.push(change);
           continue;
         }
@@ -100,6 +104,27 @@ export class OutboundSyncService {
       missingBlobDiscards: this.uniqueDiscards(discards),
       sendFailed: false,
     };
+  }
+
+  /**
+   * Update is the only sync write that answers 404 with this name when the row is gone.
+   * A bare 404 (unknown route, proxy) must stay queued.
+   */
+  private isConfirmedMissing(change: Change, error: unknown): boolean {
+    if (!(error instanceof HttpErrorResponse) || error.status !== 404) {
+      return false;
+    }
+    if (change.action !== EChangeAction.Updated) {
+      return false;
+    }
+    const name = readApiErrorName(error);
+    if (change.entity === EChangedEntity.Task) {
+      return name === ETaskRepoServiceError.UserTaskNotFound;
+    }
+    if (change.entity === EChangedEntity.Tag) {
+      return name === ETagRepoServiceError.UserTagNotFound;
+    }
+    return false;
   }
 
   private taskImageIdsToUpload(change: Change): string[] {
