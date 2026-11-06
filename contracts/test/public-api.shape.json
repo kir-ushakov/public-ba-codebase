@@ -9,7 +9,13 @@
       "TASK_STATUS_TODO",
       "TASK_STATUS_ACTIVE",
       "TASK_STATUS_DONE",
-      "TASK_STATUS_CANCEL"
+      "TASK_STATUS_CANCEL",
+      "TASK_STATUS_NOTES"
+    ],
+    "ETaskCondition": [
+      "TASK_CONDITION_TODO",
+      "TASK_CONDITION_CALENDAR",
+      "TASK_CONDITION_LOCATION"
     ],
     "EChangedEntity": [
       "CHANGED_ENTITY_TASK",
@@ -27,14 +33,36 @@
       "UPLOAD_IMAGE_ERROR_CODE__NOT_SUPPORTED_TYPE",
       "UPLOAD_IMAGE_ERROR_CODE__UPLOAD_TO_GOOGLE_DRIVE_FAILED",
       "UPLOAD_IMAGE_ERROR__GOOGLE_REFRESH_TOKEN_INVALID",
-      "FILE_TOO_LARGE"
+      "FILE_TOO_LARGE",
+      "UPLOAD_IMAGE_ERROR_CODE__INVALID_IMAGE_ID",
+      "UPLOAD_IMAGE_ERROR_CODE__STORE_IMAGE_FAILED"
+    ],
+    "EUploadAudioUseCaseError": [
+      "UPLOAD_AUDIO_ERROR__NOT_SUPPORTED_TYPE",
+      "UPLOAD_AUDIO_ERROR__INVALID_AUDIO_ID",
+      "UPLOAD_AUDIO_ERROR__STORE_FAILED",
+      "UPLOAD_AUDIO_ERROR__FILE_TOO_LARGE"
+    ],
+    "EGetAudioUseCaseError": [
+      "GET_AUDIO_ERROR__INVALID_AUDIO_ID",
+      "GET_AUDIO_ERROR__FILE_MISSING"
+    ],
+    "EDeleteAudioUseCaseError": [
+      "DELETE_AUDIO_ERROR__INVALID_AUDIO_ID",
+      "DELETE_AUDIO_ERROR__DELETE_FAILED"
+    ],
+    "EDeleteImageUseCaseError": [
+      "DELETE_IMAGE_ERROR__INVALID_IMAGE_ID",
+      "DELETE_IMAGE_ERROR__DELETE_FAILED"
+    ],
+    "EDeleteTaskUseCaseError": [
+      "DELETE_TASK_ERROR__ATTACHMENT_CLEANUP_FAILED"
     ],
     "EGetImageUseCaseError": [
       "GET_IMAGE_ERROR__GOOGLE_REFRESH_TOKEN_INVALID",
-      "GET_IMAGE_ERROR__GOOGLE_DRIVE_REQUEST_FAILED"
-    ],
-    "EGetChangesUseCaseError": [
-      "GET_CHANGES_ERROR_CODE__CLIENT_NOT_FOUND"
+      "GET_IMAGE_ERROR__GOOGLE_DRIVE_REQUEST_FAILED",
+      "GET_IMAGE_ERROR__IMAGE_FILE_MISSING",
+      "GET_IMAGE_ERROR__IMAGE_READ_FAILED"
     ],
     "ELoginUseCaseError": [
       "LOGIN_USECASE_ERROR__AUTHENTICATION_FAILED",
@@ -57,8 +85,8 @@
       "VERIFY_EMAIL_ERROR__GIVEN_TOKEN_DOES_NOT_EXIST",
       "VERIFY_EMAIL_ERROR__VERIFICATION_FAILED"
     ],
-    "EReleaseClientIdUseCaseError": [
-      "RELEASE_CLIENT_ID_USECASE_ERROR__USER_DOES_NOT_EXIST"
+    "ERefreshSessionUseCaseError": [
+      "REFRESH_SESSION_USECASE_ERROR__INVALID"
     ],
     "ERemoveFromSlackUseCaseError": [
       "REMOVE_FROM_SLACK_ERROR_CODE__SLACK_OAUTH_ACCESS_NOT_FOUND"
@@ -73,12 +101,18 @@
       "TASK_ERROR__TITLE_TOO_LONG",
       "TASK_ERROR__DESCRIPTION_INVALID",
       "TASK_ERROR__DESCRIPTION_TOO_LONG",
+      "TASK_ERROR__CHECKLIST_INVALID",
+      "TASK_ERROR__AUDIO_ATTACHMENTS_INVALID",
+      "TASK_ERROR__CONDITIONS_INVALID",
       "TASK_ERROR__UNKNOWN_TAG"
     ],
     "ETagError": [
       "TAG_ERROR__NAME_MISSED",
       "TAG_ERROR__NAME_TOO_LONG",
       "TAG_ERROR__COLOR_MISSED"
+    ],
+    "ETagRepoServiceError": [
+      "TAG_REPO_SERVICE_ERROR__USER_TAG_NOT_FOUND"
     ],
     "ETaskRepoServiceError": [
       "TASK_REPO_SERVICE_ERROR__USER_TASK_NOT_FOUND"
@@ -95,9 +129,12 @@
         "type",
         "title",
         "status",
+        "conditions",
         "imageId",
         "images",
         "description",
+        "checklist",
+        "audioAttachments",
         "createdAt",
         "modifiedAt",
         "tagIds"
@@ -106,8 +143,41 @@
         "imageId",
         "images",
         "description",
-        "tagIds"
+        "checklist",
+        "audioAttachments",
+        "tagIds",
+        "conditions"
       ]
+    },
+    "AudioAttachment": {
+      "keys": [
+        "id",
+        "durationMs",
+        "mimeType",
+        "createdAt",
+        "transcription"
+      ],
+      "optional": [
+        "transcription"
+      ]
+    },
+    "AudioTranscription": {
+      "keys": [
+        "text",
+        "createdAt",
+        "model"
+      ],
+      "optional": [
+        "model"
+      ]
+    },
+    "ChecklistItemDTO": {
+      "keys": [
+        "id",
+        "text",
+        "completed"
+      ],
+      "optional": []
     },
     "TaskDescriptionDoc": {
       "keys": [
@@ -158,9 +228,12 @@
         "name",
         "color",
         "createdAt",
-        "modifiedAt"
+        "modifiedAt",
+        "isPinned"
       ],
-      "optional": []
+      "optional": [
+        "isPinned"
+      ]
     },
     "IChangeableObjectDTO": {
       "keys": [
@@ -241,12 +314,28 @@
         "imageId"
       ]
     },
-    "GetChangesContract": {
+    "UploadAudioContract": {
       "request": [
-        "clientId"
+        "audioId",
+        "file"
       ],
       "response": [
-        "changes"
+        "audioId"
+      ]
+    },
+    "GetChangesContract": {
+      "request": [
+        "afterRevision"
+      ],
+      "response": [
+        "changes",
+        "syncRevision"
+      ]
+    },
+    "RefreshSessionContract": {
+      "request": "cookie",
+      "response": [
+        "refreshed"
       ]
     },
     "SendChangeContract": {
@@ -254,19 +343,105 @@
         "changeableObjectDto"
       ],
       "response": "entity-or-void"
+    },
+    "SyncAvailableContract": {
+      "event": [
+        "version"
+      ]
     }
   },
   "consts": {
+    "ImageConst": {
+      "MAX_LONG_EDGE_PX": 1600,
+      "FALLBACK_LONG_EDGE_PX": 1280,
+      "MIN_LONG_EDGE_PX": 640,
+      "LONG_EDGE_DROP_PX": 160,
+      "MAX_BYTES": 512000,
+      "WEBP_QUALITY": 80,
+      "WEBP_QUALITY_STEP_2": 75,
+      "WEBP_QUALITY_STEP_3": 68,
+      "MIN_WEBP_QUALITY": 40,
+      "WEBP_QUALITY_DROP": 8,
+      "ENCODE_PLAN": [
+        [
+          1600,
+          80
+        ],
+        [
+          1600,
+          75
+        ],
+        [
+          1600,
+          68
+        ],
+        [
+          1280,
+          75
+        ],
+        [
+          1280,
+          67
+        ],
+        [
+          1280,
+          59
+        ],
+        [
+          1280,
+          51
+        ],
+        [
+          1280,
+          43
+        ],
+        [
+          1120,
+          40
+        ],
+        [
+          960,
+          40
+        ],
+        [
+          800,
+          40
+        ],
+        [
+          640,
+          40
+        ]
+      ]
+    },
     "TaskConst": {
       "TITLE_MIN_LENGTH": 1,
       "TITLE_MAX_LENGTH": 100,
       "DESCRIPTION_MAX_TEXT_LENGTH": 4000,
       "DESCRIPTION_MAX_JSON_BYTES": 16384,
-      "DESCRIPTION_MAX_DEPTH": 8
+      "DESCRIPTION_MAX_DEPTH": 8,
+      "CHECKLIST_MAX_ITEMS": 100,
+      "CHECKLIST_ITEM_MAX_LENGTH": 200,
+      "CHECKLIST_ITEM_ID_MAX_LENGTH": 64,
+      "AUDIO_ATTACHMENT_MAX_COUNT": 10,
+      "AUDIO_TRANSCRIPTION_MAX_LENGTH": 20000,
+      "AUDIO_MAX_BYTES": 5242880,
+      "AUDIO_RECORDING_STOP_BYTES": 4194304
     },
     "TagConst": {
       "NAME_MIN_LENGTH": 1,
-      "NAME_MAX_LENGTH": 40
+      "NAME_MAX_LENGTH": 40,
+      "DEFAULT_COLOR": "#00a991",
+      "COLORS": [
+        "#00a991",
+        "#668fa8",
+        "#9b8ad0",
+        "#d6a34a",
+        "#d95c5c",
+        "#80b96b",
+        "#86adb2",
+        "#d68aa8",
+        "#e87d45"
+      ]
     }
   }
 }

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuardService } from '../shared/services/auth/auth-guard.service';
 import { HomeScreenComponent } from './components/screens/home-screen/home-screen.component';
+import { TagsScreenComponent } from './components/screens/tags-screen/tags-screen.component';
 import { TaskScreenComponent } from './components/screens/task-screen/task-screen.component';
 import { LoginScreenComponent } from './components/screens/login-screen/login-screen.component';
 import { SignupScreenComponent } from './components/screens/signup-screen/signup-screen.component';
@@ -29,6 +30,10 @@ export const mobileRoutes: Routes = [
       {
         path: 'home',
         component: HomeScreenComponent,
+      },
+      {
+        path: 'tags',
+        component: TagsScreenComponent,
       },
       {
         path: 'profile',

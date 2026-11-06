@@ -1,8 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import type { StateContext } from '@ngxs/store';
 import { State, Action, Selector, Store } from '@ngxs/store';
+import { firstValueFrom } from 'rxjs';
 import type { DefaultTask, Task } from 'src/app/shared/models/task.model';
-import { ETaskStatus, ETaskType, defaultTask } from 'src/app/shared/models/task.model';
+import { ETaskStatus, defaultTask } from 'src/app/shared/models/task.model';
 import { TaskScreenAction } from './task-screen.actions';
 import { TasksState } from 'src/app/shared/state/tasks.state';
 import { UserState } from 'src/app/shared/state/user.state';
@@ -13,6 +14,22 @@ import { TasksAction } from 'src/app/shared/state/tasks.action';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
 import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-description.function';
+import {
+  shouldOfferChecklistCompletion,
+  shouldOfferChecklistCompletionOnNoteConversion,
+} from 'src/app/shared/helpers/checklist.function';
+import { ChecklistCompletionPromptService } from 'src/app/shared/services/application/checklist-completion-prompt.service';
+import { taskDraftForHomeMode } from '../home-screen/helpers/home-content-mode.function';
+import {
+  projectTaskType,
+  taskHasTodoCondition,
+} from 'src/app/shared/helpers/task-conditions.function';
+import { HomeContentModeService } from '../home-screen/home-content-mode.service';
+import { TaskConst, type AudioAttachment } from '@brainassistant/contracts';
+import { AudioService } from 'src/app/shared/services/application/audio.service';
+import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/speech-to-text.service';
+import { appendTranscriptionToDescription } from 'src/app/shared/helpers/append-transcription-to-description.function';
+import { TranscriptionFailure } from 'src/app/shared/helpers/transcription-failure.function';
 
 export enum ETaskViewMode {
   Create = 'TASK_VIEW_MODE_CREATE',
@@ -34,6 +51,8 @@ export interface ITaskScreenStateModel {
   };
   draftImages: DraftTaskImage[];
   coverDraftKey?: string;
+  /** Audio saved during create and not yet kept by Apply. */
+  uncommittedAudioIds: string[];
 }
 
 const defaults: ITaskScreenStateModel = {
@@ -47,6 +66,7 @@ const defaults: ITaskScreenStateModel = {
   },
   taskData: defaultTask,
   draftImages: [],
+  uncommittedAudioIds: [],
 };
 
 @State<ITaskScreenStateModel>({
@@ -58,6 +78,10 @@ export class TaskScreenState {
   private readonly store = inject(Store);
   private readonly deviceCameraService = inject(DeviceCameraService);
   private readonly imageService = inject(ImageService);
+  private readonly homeContentMode = inject(HomeContentModeService);
+  private readonly checklistPrompts = inject(ChecklistCompletionPromptService);
+  private readonly audioService = inject(AudioService);
+  private readonly speechToText = inject(SpeechToTextService);
 
   @Selector()
   static mode(state: ITaskScreenStateModel): ETaskViewMode {
@@ -90,9 +114,21 @@ export class TaskScreenState {
     { mode, taskId }: TaskScreenAction.Opened,
   ): void {
     ctx.dispatch(new VoiceInputAction.Reset());
+    const draft = taskDraftForHomeMode(this.homeContentMode.mode());
     ctx.setState({
       ...defaults,
       mode,
+      ...(mode === ETaskViewMode.Create
+        ? {
+            taskData: {
+              ...defaults.taskData,
+              status: draft.status,
+              ...(draft.conditions
+                ? { conditions: draft.conditions, type: projectTaskType(draft.conditions) }
+                : {}),
+            },
+          }
+        : {}),
     });
     if (taskId) {
       const actualTasks: Task[] = this.store.selectSnapshot(TasksState.actualTasks);
@@ -107,10 +143,10 @@ export class TaskScreenState {
   }
 
   @Action(TaskScreenAction.TagIdsChanged)
-  tagIdsChanged(
+  async tagIdsChanged(
     ctx: StateContext<ITaskScreenStateModel>,
     { tagIds }: TaskScreenAction.TagIdsChanged,
-  ): void {
+  ): Promise<void> {
     const state = ctx.getState();
     ctx.patchState({
       taskData: {
@@ -122,12 +158,48 @@ export class TaskScreenState {
       return;
     }
 
-    ctx.dispatch(
-      new TasksAction.UpdateTask({
-        taskId: state.taskData.id,
-        changes: { tagIds },
-      }),
+    await firstValueFrom(
+      ctx.dispatch(
+        new TasksAction.UpdateTask({
+          taskId: state.taskData.id,
+          changes: { tagIds },
+        }),
+      ),
     );
+  }
+
+  @Action(TaskScreenAction.ChecklistChanged)
+  async checklistChanged(
+    ctx: StateContext<ITaskScreenStateModel>,
+    { checklist }: TaskScreenAction.ChecklistChanged,
+  ): Promise<void> {
+    const state = ctx.getState();
+    const previous = state.taskData.checklist;
+    const status = state.taskData.status;
+    ctx.patchState({
+      taskData: {
+        ...state.taskData,
+        checklist,
+      },
+    });
+    if (!state.taskData.id) {
+      return;
+    }
+
+    await firstValueFrom(
+      ctx.dispatch(
+        new TasksAction.UpdateTask({
+          taskId: state.taskData.id,
+          changes: { checklist },
+        }),
+      ),
+    );
+    if (
+      shouldOfferChecklistCompletion(status, previous, checklist) &&
+      (status === ETaskStatus.Todo || status === ETaskStatus.Active)
+    ) {
+      this.checklistPrompts.offer({ taskId: state.taskData.id, status });
+    }
   }
 
   @Action(TaskScreenAction.ApplyButtonPressed)
@@ -165,7 +237,15 @@ export class TaskScreenState {
     const finalTaskData = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: finalTaskData });
-    ctx.dispatch(new TasksAction.CreateTask(finalTaskData, userId));
+    const beforeIds = new Set(this.store.selectSnapshot(TasksState.allTasks).map(task => task.id));
+    await firstValueFrom(ctx.dispatch(new TasksAction.CreateTask(finalTaskData, userId)));
+    const created = this.store
+      .selectSnapshot(TasksState.allTasks)
+      .find(task => !beforeIds.has(task.id));
+    if (!created || !this.draftAudioSaved(finalTaskData.audioAttachments, created)) {
+      return;
+    }
+    this.homeContentMode.showTask(created);
     ctx.dispatch(TaskScreenAction.Close);
   }
 
@@ -175,17 +255,22 @@ export class TaskScreenState {
       return;
     }
 
+    const previousImageIds = imageIdsOn(taskData);
     const saved = await this.savedImagesFromDrafts(draftImages, taskData.imageId, coverDraftKey);
     const changes = { ...taskData, ...saved };
 
     ctx.patchState({ taskData: changes });
-    ctx.dispatch(
-      new TasksAction.UpdateTask({
-        taskId: taskData.id,
-        changes,
-      }),
+    this.homeContentMode.showTask(changes);
+    await firstValueFrom(
+      ctx.dispatch(
+        new TasksAction.UpdateTask({
+          taskId: taskData.id,
+          changes,
+        }),
+      ),
     );
-    ctx.patchState({ mode: ETaskViewMode.View });
+    await this.dropImagesMissingFromTask(taskData.id, previousImageIds);
+    ctx.dispatch(TaskScreenAction.Close);
   }
 
   @Action(TaskScreenAction.EditTaskOptionSelected)
@@ -209,29 +294,246 @@ export class TaskScreenState {
   }
 
   @Action(TaskScreenAction.CompleteTaskOptionSelected)
-  completeTask(ctx: StateContext<ITaskScreenStateModel>): void {
+  async completeTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
     const taskUpdateData: Partial<Task> = { status: ETaskStatus.Done };
-    this.updateAndClose(ctx, taskUpdateData);
+    await this.updateAndClose(ctx, taskUpdateData);
   }
 
   @Action(TaskScreenAction.CancelTaskOptionSelected)
-  cancelTask(ctx: StateContext<ITaskScreenStateModel>): void {
+  async cancelTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
     const taskUpdateData: Partial<Task> = { status: ETaskStatus.Cancel };
-    this.updateAndClose(ctx, taskUpdateData);
+    await this.updateAndClose(ctx, taskUpdateData);
+  }
+
+  @Action(TaskScreenAction.ConvertOptionSelected)
+  async convert(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
+    const taskData = ctx.getState().taskData;
+    const status = taskData.status;
+    const next = status === ETaskStatus.Notes ? ETaskStatus.Todo : ETaskStatus.Notes;
+    if (
+      taskData.id &&
+      shouldOfferChecklistCompletionOnNoteConversion(status, next, taskData.checklist)
+    ) {
+      ctx.patchState({ taskData: { ...taskData, status: next } });
+      this.homeContentMode.showStatus(next);
+      await firstValueFrom(
+        ctx.dispatch(
+          new TasksAction.UpdateTask({
+            taskId: taskData.id,
+            changes: { status: next },
+          }),
+        ),
+      );
+      this.checklistPrompts.offer({ taskId: taskData.id, status: ETaskStatus.Todo });
+      return;
+    }
+    await this.updateAndClose(ctx, { status: next });
   }
 
   @Action(TaskScreenAction.DeleteTaskOptionSelected)
-  deleteTask(ctx: StateContext<ITaskScreenStateModel>): void {
+  async deleteTask(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
     const taskId = ctx.getState().taskData.id;
     if (taskId == null) {
       return;
     }
-    ctx.dispatch(new TasksAction.DeleteTask(taskId));
+    await firstValueFrom(ctx.dispatch(new TasksAction.DeleteTask(taskId)));
     ctx.dispatch(AppAction.NavigateToHomeScreen);
   }
 
+  @Action(TaskScreenAction.AudioAttachmentCaptured)
+  async audioAttachmentCaptured(
+    ctx: StateContext<ITaskScreenStateModel>,
+    { blob, durationMs }: TaskScreenAction.AudioAttachmentCaptured,
+  ): Promise<void> {
+    const state = ctx.getState();
+    if ((state.taskData.audioAttachments?.length ?? 0) >= TaskConst.AUDIO_ATTACHMENT_MAX_COUNT) {
+      ctx.dispatch(new AppAction.ShowErrorInUI('You can attach up to 10 recordings.'));
+      return;
+    }
+
+    let saved: Awaited<ReturnType<AudioService['saveBlob']>>;
+    try {
+      saved = await this.audioService.saveBlob(blob, durationMs);
+    } catch {
+      ctx.dispatch(new AppAction.ShowErrorInUI('Could not save the recording.', 'Not saved'));
+      return;
+    }
+
+    const attachment: AudioAttachment = {
+      id: saved.id,
+      durationMs: saved.durationMs,
+      mimeType: saved.mimeType,
+      createdAt: saved.createdAt,
+    };
+    const next = [...(ctx.getState().taskData.audioAttachments ?? []), attachment];
+    const taskId = state.taskData.id;
+    if (state.mode === ETaskViewMode.Create || !taskId) {
+      ctx.patchState({
+        taskData: { ...ctx.getState().taskData, audioAttachments: next },
+        uncommittedAudioIds: [...(ctx.getState().uncommittedAudioIds ?? []), attachment.id],
+      });
+      return;
+    }
+
+    const stored = await this.persistAttachments(ctx, taskId, next);
+    if (!stored?.some(item => item.id === attachment.id)) {
+      await this.audioService.deleteBlob(attachment.id);
+      ctx.dispatch(new AppAction.ShowErrorInUI('Could not save the recording.', 'Not saved'));
+      return;
+    }
+    ctx.patchState({
+      taskData: { ...ctx.getState().taskData, audioAttachments: stored },
+    });
+  }
+
+  @Action(TaskScreenAction.AudioAttachmentRemoved)
+  async audioAttachmentRemoved(
+    ctx: StateContext<ITaskScreenStateModel>,
+    { id }: TaskScreenAction.AudioAttachmentRemoved,
+  ): Promise<void> {
+    const state = ctx.getState();
+    const current = state.taskData.audioAttachments ?? [];
+    if (!current.some(item => item.id === id)) {
+      return;
+    }
+    const next = current.filter(item => item.id !== id);
+    const taskId = state.taskData.id;
+    if (state.mode === ETaskViewMode.Create || !taskId) {
+      try {
+        await this.audioService.discardDraft(id);
+      } catch {
+        ctx.dispatch(new AppAction.ShowErrorInUI('Could not remove the recording.', 'Not saved'));
+        return;
+      }
+      const fresh = ctx.getState();
+      ctx.patchState({
+        taskData: { ...fresh.taskData, audioAttachments: next },
+        uncommittedAudioIds: (fresh.uncommittedAudioIds ?? []).filter(audioId => audioId !== id),
+      });
+      return;
+    }
+
+    const stored = await this.persistAttachments(ctx, taskId, next);
+    if (!stored || stored.some(item => item.id === id)) {
+      ctx.dispatch(new AppAction.ShowErrorInUI('Could not remove the recording.', 'Not saved'));
+      return;
+    }
+    ctx.patchState({
+      taskData: { ...ctx.getState().taskData, audioAttachments: stored },
+    });
+    await this.audioService.deleteBlob(id);
+    try {
+      await this.audioService.deleteRemote(id);
+    } catch {
+      // The task no longer references the file. A later cleanup can drop the remote copy.
+    }
+  }
+
+  @Action(TaskScreenAction.TranscribeAudioAttachment)
+  async transcribeAudioAttachment(
+    ctx: StateContext<ITaskScreenStateModel>,
+    { id }: TaskScreenAction.TranscribeAudioAttachment,
+  ): Promise<void> {
+    if (!navigator.onLine) {
+      throw TranscriptionFailure.offline();
+    }
+    const state = ctx.getState();
+    const current = state.taskData.audioAttachments ?? [];
+    const attachment = current.find(item => item.id === id);
+    if (!attachment || attachment.transcription) {
+      return;
+    }
+
+    const blob = await this.audioBlob(id);
+    if (!blob) {
+      throw TranscriptionFailure.unreadable();
+    }
+
+    let transcript = '';
+    try {
+      const response = await firstValueFrom(this.speechToText.uploadAudio(blob));
+      transcript = response.transcript.trim();
+    } catch (error) {
+      throw TranscriptionFailure.from(error);
+    }
+    if (!transcript) {
+      throw TranscriptionFailure.empty();
+    }
+
+    const latest = ctx.getState();
+    const latestAttachments = latest.taskData.audioAttachments ?? [];
+    if (!latestAttachments.some(item => item.id === id)) {
+      return;
+    }
+
+    const next = latestAttachments.map(item =>
+      item.id === id
+        ? {
+            ...item,
+            transcription: {
+              text: transcript,
+              createdAt: new Date().toISOString(),
+              model: 'gpt-transcribe',
+            },
+          }
+        : item,
+    );
+    const taskId = latest.taskData.id;
+    if (latest.mode === ETaskViewMode.Create || !taskId) {
+      ctx.patchState({
+        taskData: { ...ctx.getState().taskData, audioAttachments: next },
+      });
+      return;
+    }
+
+    const stored = await this.persistAttachments(ctx, taskId, next);
+    if (!stored) {
+      ctx.dispatch(
+        new AppAction.ShowErrorInUI('Could not save the task on this device.', 'Not saved'),
+      );
+      return;
+    }
+    const savedText = stored.find(item => item.id === id)?.transcription?.text;
+    if (savedText !== transcript) {
+      ctx.dispatch(
+        new AppAction.ShowErrorInUI('Could not save the task on this device.', 'Not saved'),
+      );
+      return;
+    }
+    ctx.patchState({
+      taskData: { ...ctx.getState().taskData, audioAttachments: stored },
+    });
+  }
+
+  @Action(TaskScreenAction.AddTranscriptionToDescription)
+  addTranscriptionToDescription(
+    ctx: StateContext<ITaskScreenStateModel>,
+    { text }: TaskScreenAction.AddTranscriptionToDescription,
+  ): void {
+    const description = appendTranscriptionToDescription(ctx.getState().taskData.description, text);
+    if (!description) {
+      ctx.dispatch(
+        new AppAction.ShowErrorInUI('The description is too long for this transcription.'),
+      );
+      return;
+    }
+    this.editTask(ctx);
+    const state = ctx.getState();
+    ctx.patchState({
+      taskData: { ...state.taskData, description },
+      taskViewForm: {
+        ...state.taskViewForm,
+        formData: { ...state.taskViewForm.formData, description },
+      },
+    });
+  }
+
   @Action(TaskScreenAction.CancelButtonPressed)
-  cancelChanges(ctx: StateContext<ITaskScreenStateModel>): void {
+  async cancelChanges(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
+    const { mode, uncommittedAudioIds } = ctx.getState();
+    if (mode === ETaskViewMode.Create) {
+      await Promise.all((uncommittedAudioIds ?? []).map(id => this.audioService.discardDraft(id)));
+    }
     ctx.dispatch(TaskScreenAction.Close);
   }
 
@@ -242,16 +544,17 @@ export class TaskScreenState {
   }
 
   @Action(TaskScreenAction.MarkActiveButtonPressed)
-  markActive(ctx: StateContext<ITaskScreenStateModel>): void {
-    if (ctx.getState().taskData.type !== ETaskType.Basic) {
+  async markActive(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
+    const taskData = ctx.getState().taskData;
+    if (taskData.status !== ETaskStatus.Todo || !taskHasTodoCondition(taskData)) {
       return;
     }
-    this.updateAndClose(ctx, { status: ETaskStatus.Active });
+    await this.updateAndClose(ctx, { status: ETaskStatus.Active });
   }
 
   @Action(TaskScreenAction.MarkDoneButtonPressed)
-  markDone(ctx: StateContext<ITaskScreenStateModel>): void {
-    this.updateAndClose(ctx, { status: ETaskStatus.Done });
+  async markDone(ctx: StateContext<ITaskScreenStateModel>): Promise<void> {
+    await this.updateAndClose(ctx, { status: ETaskStatus.Done });
   }
 
   @Action(TaskScreenAction.AddPictureBtnPressed)
@@ -300,6 +603,7 @@ export class TaskScreenState {
       return;
     }
 
+    const removedImageId = drafts[removedIndex]?.imageId;
     const nextDrafts = drafts.filter((_, index) => index !== removedIndex);
     const coverKey = activeCoverKey(drafts, taskData.imageId, coverDraftKey);
     ctx.patchState({
@@ -307,6 +611,9 @@ export class TaskScreenState {
       coverDraftKey: coverKey === removedKey ? draftImageKey(nextDrafts[0]) : coverDraftKey,
     });
     await this.persistViewGallery(ctx);
+    if (removedImageId && ctx.getState().mode === ETaskViewMode.View && taskData.id) {
+      await this.dropImagesMissingFromTask(taskData.id, [removedImageId]);
+    }
   }
 
   @Action(TaskScreenAction.UpdateFormData)
@@ -339,11 +646,13 @@ export class TaskScreenState {
       draftImages: draftsFromTask(changes),
       coverDraftKey: undefined,
     });
-    ctx.dispatch(
-      new TasksAction.UpdateTask({
-        taskId: state.taskData.id,
-        changes,
-      }),
+    await firstValueFrom(
+      ctx.dispatch(
+        new TasksAction.UpdateTask({
+          taskId: state.taskData.id,
+          changes,
+        }),
+      ),
     );
   }
 
@@ -379,19 +688,90 @@ export class TaskScreenState {
     return { imageId, images };
   }
 
-  private updateAndClose(
+  private async dropImagesMissingFromTask(taskId: string, previousIds: string[]): Promise<void> {
+    const stored = this.taskInStore(taskId);
+    if (!stored) {
+      return;
+    }
+    const kept = new Set(imageIdsOn(stored));
+    for (const imageId of previousIds) {
+      if (!kept.has(imageId)) {
+        await this.imageService.discardRemoved(imageId);
+      }
+    }
+  }
+
+  private async persistAttachments(
+    ctx: StateContext<ITaskScreenStateModel>,
+    taskId: string,
+    next: AudioAttachment[],
+  ): Promise<AudioAttachment[] | null> {
+    await firstValueFrom(
+      ctx.dispatch(
+        new TasksAction.UpdateTask({
+          taskId,
+          changes: { audioAttachments: next },
+        }),
+      ),
+    );
+    const stored = this.taskInStore(taskId)?.audioAttachments;
+    return stored ?? null;
+  }
+
+  private draftAudioSaved(draft: AudioAttachment[] | undefined, created: Task): boolean {
+    const saved = created.audioAttachments ?? [];
+    return (draft ?? []).every(item => saved.some(stored => stored.id === item.id));
+  }
+
+  private taskInStore(taskId: string): Task | undefined {
+    const entities = this.store.selectSnapshot<Task[]>(state => {
+      const tasks = (state as { tasks?: { entities?: Task[] } }).tasks;
+      return tasks?.entities ?? [];
+    });
+    return entities.find(task => task.id === taskId);
+  }
+
+  private async audioBlob(id: string): Promise<Blob | undefined> {
+    const record = await this.audioService.getRecord(id);
+    if (record?.blob) {
+      return record.blob;
+    }
+    const url = await this.audioService.objectUrl(id);
+    if (url) {
+      URL.revokeObjectURL(url);
+    }
+    return (await this.audioService.getRecord(id))?.blob;
+  }
+
+  private async updateAndClose(
     ctx: StateContext<ITaskScreenStateModel>,
     updatedTaskData: Partial<Task>,
-  ): void {
+  ): Promise<void> {
     const taskId = ctx.getState().taskData.id;
     if (taskId == null) {
       return;
     }
-    ctx.dispatch([
-      new TasksAction.UpdateTask({ taskId, changes: updatedTaskData }),
-      TaskScreenAction.Close,
-    ]);
+    this.homeContentMode.showStatus(updatedTaskData.status ?? ctx.getState().taskData.status);
+    await firstValueFrom(
+      ctx.dispatch([
+        new TasksAction.UpdateTask({ taskId, changes: updatedTaskData }),
+        TaskScreenAction.Close,
+      ]),
+    );
   }
+}
+
+function imageIdsOn(task: { imageId?: string; images?: string[] }): string[] {
+  const ids: string[] = [];
+  for (const imageId of task.images ?? []) {
+    if (imageId.length > 0 && !ids.includes(imageId)) {
+      ids.push(imageId);
+    }
+  }
+  if (task.imageId && !ids.includes(task.imageId)) {
+    ids.push(task.imageId);
+  }
+  return ids;
 }
 
 function draftImageKey(draft: DraftTaskImage | undefined): string | undefined {

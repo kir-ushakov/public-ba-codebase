@@ -3,11 +3,13 @@ import { provideRouter } from '@angular/router';
 import { provideStore, Store } from '@ngxs/store';
 import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { HomeScreenComponent } from 'src/app/mobile-app/components/screens/home-screen/home-screen.component';
+import { HomeContentModeService } from 'src/app/mobile-app/components/screens/home-screen/home-content-mode.service';
 import type { Task } from 'src/app/shared/models/task.model';
 import { ImageService } from 'src/app/shared/services/application/image.service';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { TAG_COLOR } from 'src/app/shared/models/tag.model';
+import { AppAction } from 'src/app/shared/state/app.actions';
 import { AppState } from 'src/app/shared/state/app.state';
 import { TagsState } from 'src/app/shared/state/tags.state';
 import { TasksState } from 'src/app/shared/state/tasks.state';
@@ -20,7 +22,7 @@ const catTask: Task = {
   userId,
   type: ETaskType.Basic,
   title: 'Buy cat food',
-  status: ETaskStatus.Todo,
+  status: ETaskStatus.Active,
   createdAt: '2026-09-12T10:00:00.000Z',
   modifiedAt: '2026-09-12T10:00:00.000Z',
 };
@@ -31,7 +33,7 @@ const lampTask: Task = {
   type: ETaskType.Basic,
   title: 'Lamp photo',
   tagIds: ['tag-errands', 'tag-other-user'],
-  status: ETaskStatus.Todo,
+  status: ETaskStatus.Active,
   createdAt: '2026-09-11T10:00:00.000Z',
   modifiedAt: '2026-09-11T10:00:00.000Z',
 };
@@ -51,7 +53,6 @@ describe('HomeScreenComponent search', () => {
           provide: ImageService,
           useValue: {
             getImageRecord: jest.fn().mockResolvedValue(undefined),
-            probeRemoteImage: jest.fn(),
           },
         },
       ],
@@ -95,6 +96,10 @@ describe('HomeScreenComponent search', () => {
       },
     });
 
+    const modes = TestBed.inject(HomeContentModeService);
+    modes.bindUser(null);
+    modes.select('todo');
+    modes.select('active');
     fixture = TestBed.createComponent(HomeScreenComponent);
     fixture.detectChanges();
   });
@@ -113,14 +118,85 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-more"]')).toBeNull();
   });
 
-  it('hides tiles that do not match and keeps the full item count', () => {
+  it('shows a persistence error on the home banner', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    TestBed.inject(Store).dispatch(
+      new AppAction.ShowErrorInUI('Could not save the task on this device.', 'Not saved'),
+    );
+    fixture.detectChanges();
+
+    const banner = host.querySelector('[data-test="home-persistence-error"]');
+    expect(banner?.textContent).toContain('Not saved');
+    expect(banner?.textContent).toContain('Could not save the task on this device.');
+    expect(banner?.querySelector('[data-test="home-sync-now"]')).toBeNull();
+  });
+
+  it('updates every tab count to matches while the open list stays on the selected mode', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const litter: Task = {
+      ...catTask,
+      id: 'task-litter',
+      title: 'Cat litter later',
+      status: ETaskStatus.Todo,
+    };
+    TestBed.inject(Store).reset({
+      app: { online: false },
+      tasks: { entities: [catTask, lampTask, litter] },
+      tags: { entities: [] },
+      user: {
+        userData: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          userId,
+          googleId: 'g-1',
+        },
+        authState: EUserAuthState.Authenticated,
+        authType: undefined,
+        integrations: { isAddedToSlack: undefined },
+      },
+    });
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('2');
+    expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
+
+    openSearch(fixture);
+    typeQuery(fixture, 'cat');
+
+    expect(tileText(host)).toContain('Buy cat food');
+    expect(tileText(host)).not.toContain('Lamp photo');
+    expect(tileText(host)).not.toContain('Cat litter later');
+    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '1 active item',
+    );
+
+    typeQuery(fixture, 'litter');
+
+    expect(host.querySelector('[data-test="task-tile"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-search-empty"]')?.textContent).toContain(
+      'No results',
+    );
+    expect(host.querySelector('[data-test="home-empty"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('0');
+    expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '0 active items',
+    );
+  });
+
+  it('hides tiles that do not match and shows the found item count', () => {
     const host = openSearch(fixture);
 
     typeQuery(fixture, 'cat');
 
     expect(tileText(host)).toContain('Buy cat food');
     expect(tileText(host)).not.toContain('Lamp photo');
-    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain('2 items');
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '1 active item',
+    );
     expect(host.querySelector('[data-test="home-search-clear"]')).not.toBeNull();
   });
 
@@ -153,7 +229,10 @@ describe('HomeScreenComponent search', () => {
     expect(host.querySelector('[data-test="home-search-empty"]')?.textContent).toContain(
       'No results',
     );
-    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain('2 items');
+    expect(host.querySelector('[data-test="home-empty"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '0 active items',
+    );
   });
 
   it('clears the query without leaving search', () => {
@@ -183,7 +262,372 @@ describe('HomeScreenComponent search', () => {
     expect(tileText(host)).toContain('Buy cat food');
     expect(tileText(host)).toContain('Lamp photo');
   });
+
+  it('defaults to Active and filters the grid when another mode is selected', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const store = TestBed.inject(Store);
+    const todo: Task = {
+      ...catTask,
+      id: 'task-todo',
+      title: 'Write the brief',
+      status: ETaskStatus.Todo,
+    };
+    const notes: Task = {
+      ...catTask,
+      id: 'task-notes',
+      title: 'Saved article',
+      status: ETaskStatus.Notes,
+    };
+    const done: Task = {
+      ...catTask,
+      id: 'task-done',
+      title: 'Finished task',
+      status: ETaskStatus.Done,
+    };
+
+    store.reset({
+      app: { online: false },
+      tasks: { entities: [catTask, todo, notes, done] },
+      tags: { entities: [] },
+      user: {
+        userData: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          userId,
+          googleId: 'g-1',
+        },
+        authState: EUserAuthState.Authenticated,
+        authType: undefined,
+        integrations: { isAddedToSlack: undefined },
+      },
+    });
+    fixture.detectChanges();
+
+    const tabs = host.querySelectorAll('[role="tab"]');
+    expect(tabs).toHaveLength(2);
+    expect(tabs[0]?.getAttribute('data-test')).toBe('home-mode-active');
+    expect(tabs[1]?.getAttribute('data-test')).toBe('home-mode-todo');
+    expect(
+      host.querySelector('[data-test="home-mode-active"]')?.getAttribute('aria-selected'),
+    ).toBe('true');
+    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-mode-count-todo"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-mode-waiting"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-mode-notes"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-mode-active"]')?.textContent).toContain(
+      'play_arrow',
+    );
+    expect(host.querySelector('[data-test="home-mode-todo"]')?.textContent).toContain(
+      'radio_button_unchecked',
+    );
+    expect(
+      host.querySelector('[data-test="home-category-selector"]')?.getAttribute('aria-label'),
+    ).toBe('Choose task category');
+    expect(
+      host.querySelector('[data-test="home-category-selector"]')?.getAttribute('aria-expanded'),
+    ).toBe('false');
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '1 active item',
+    );
+    expect(tileText(host)).toContain('Buy cat food');
+    expect(tileText(host)).not.toContain('Write the brief');
+    expect(tileText(host)).not.toContain('Saved article');
+    expect(tileText(host)).not.toContain('Finished task');
+
+    (host.querySelector('[data-test="home-mode-todo"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-mode-todo"]')?.getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '1 to do item',
+    );
+    expect(tileText(host)).toContain('Write the brief');
+    expect(tileText(host)).not.toContain('Buy cat food');
+    expect(tileText(host)).not.toContain('Finished task');
+
+    chooseHomeCategory(fixture, 'notes');
+
+    expect(host.querySelector('[data-test="home-mode-notes"]')?.textContent).toContain('article');
+    expect(host.querySelector('[data-test="home-mode-notes"]')?.getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    expect(host.querySelector('[data-test="home-mode-count-notes"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-mode-todo"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-category-menu"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain('1 note');
+    expect(tileText(host)).toContain('Saved article');
+    expect(tileText(host)).not.toContain('Finished task');
+  });
+
+  it('replaces an empty mode with its mascot and keeps the create button', () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-test="home-empty"]')).toBeNull();
+    expect(tileText(host)).toContain('Buy cat food');
+    expect(host.querySelector('[data-test="new-task-btn"]')).not.toBeNull();
+
+    (host.querySelector('[data-test="home-mode-todo"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-empty-title"]')?.textContent).toContain(
+      'Your to-do list is empty.',
+    );
+    expect(host.querySelector('[data-test="home-empty-body"]')?.textContent).toContain(
+      'Add a new task, capture an idea or move something from notes.',
+    );
+    expect(host.querySelector('[data-test="home-empty-art"] use')?.getAttribute('href')).toContain(
+      'empty-states.svg#empty-todo',
+    );
+    expect(host.querySelector('[data-test="task-tile"]')).toBeNull();
+    expect(host.querySelector('[data-test="new-task-btn"]')).not.toBeNull();
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '0 to do items',
+    );
+
+    chooseHomeCategory(fixture, 'notes');
+
+    expect(host.querySelector('[data-test="home-empty-title"]')?.textContent).toContain(
+      'No notes yet.',
+    );
+    expect(host.querySelector('[data-test="home-empty-art"] use')?.getAttribute('href')).toContain(
+      'empty-states.svg#empty-notes',
+    );
+
+    (host.querySelector('[data-test="home-mode-active"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-empty"]')).toBeNull();
+    expect(tileText(host)).toContain('Buy cat food');
+    expect(host.querySelector('[data-test="home-mode-notes"]')).not.toBeNull();
+  });
+
+  it('replaces only the second tab and restores that choice when Home opens again', () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    (host.querySelector('[data-test="home-category-selector"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(
+      host.querySelector('[data-test="home-category-selector"]')?.getAttribute('aria-expanded'),
+    ).toBe('true');
+    expect(host.querySelector('[data-test="home-category-menu"]')).not.toBeNull();
+    expect(host.querySelector('[data-test="home-mode-option-todo"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-mode-option-waiting"]')?.textContent).toContain(
+      'Waiting',
+    );
+    expect(host.querySelector('[data-test="home-mode-option-waiting"]')?.textContent).toContain(
+      'hourglass_empty',
+    );
+    expect(host.querySelector('[data-test="home-mode-option-notes"]')?.textContent).toContain(
+      'Notes',
+    );
+    expect(host.querySelector('[data-test="home-mode-option-active"]')).toBeNull();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-test="home-category-menu"]')).toBeNull();
+    expect(document.activeElement).toBe(host.querySelector('[data-test="home-category-selector"]'));
+
+    chooseHomeCategory(fixture, 'waiting');
+
+    expect(
+      host.querySelector('[data-test="home-mode-waiting"]')?.getAttribute('aria-selected'),
+    ).toBe('true');
+    expect(host.querySelector('[data-test="home-mode-todo"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-category-menu"]')).toBeNull();
+
+    (host.querySelector('[data-test="home-mode-active"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(
+      host.querySelector('[data-test="home-mode-active"]')?.getAttribute('aria-selected'),
+    ).toBe('true');
+    expect(
+      host.querySelector('[data-test="home-mode-waiting"]')?.getAttribute('aria-selected'),
+    ).toBe('false');
+
+    (host.querySelector('[data-test="home-category-selector"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(host.querySelector('[data-test="home-mode-option-waiting"]')).toBeNull();
+    expect(host.querySelector('[data-test="home-mode-option-todo"]')?.textContent).toContain(
+      'To do',
+    );
+    expect(host.querySelector('[data-test="home-mode-option-notes"]')?.textContent).toContain(
+      'Notes',
+    );
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+
+    fixture.destroy();
+    fixture = TestBed.createComponent(HomeScreenComponent);
+    fixture.detectChanges();
+    const restored = fixture.nativeElement as HTMLElement;
+
+    expect(restored.querySelector('[data-test="home-mode-waiting"]')).not.toBeNull();
+    expect(restored.querySelector('[data-test="home-mode-todo"]')).toBeNull();
+    expect(
+      restored.querySelector('[data-test="home-mode-active"]')?.getAttribute('aria-selected'),
+    ).toBe('true');
+  });
+
+  it('filters the current category by selected tags and updates every category count', () => {
+    const store = TestBed.inject(Store);
+    const todoErrand: Task = {
+      id: 'task-brief',
+      userId,
+      type: ETaskType.Basic,
+      title: 'Write the brief',
+      tagIds: ['tag-errands'],
+      status: ETaskStatus.Todo,
+      createdAt: '2026-09-10T10:00:00.000Z',
+      modifiedAt: '2026-09-10T10:00:00.000Z',
+    };
+    const todoOther: Task = {
+      id: 'task-other',
+      userId,
+      type: ETaskType.Basic,
+      title: 'Other todo',
+      status: ETaskStatus.Todo,
+      createdAt: '2026-09-09T10:00:00.000Z',
+      modifiedAt: '2026-09-09T10:00:00.000Z',
+    };
+    store.reset({
+      app: { online: false },
+      tasks: { entities: [catTask, lampTask, todoErrand, todoOther] },
+      tags: {
+        entities: [
+          {
+            id: 'tag-errands',
+            userId,
+            name: 'Errands',
+            color: TAG_COLOR,
+            isPinned: true,
+            createdAt: '2026-09-10T10:00:00.000Z',
+            modifiedAt: '2026-09-10T10:00:00.000Z',
+          },
+          {
+            id: 'tag-ideas',
+            userId,
+            name: 'Ideas',
+            color: TAG_COLOR,
+            isPinned: false,
+            createdAt: '2026-09-10T10:00:00.000Z',
+            modifiedAt: '2026-09-10T10:00:00.000Z',
+          },
+        ],
+      },
+      user: {
+        userData: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          userId,
+          googleId: 'g-1',
+        },
+        authState: EUserAuthState.Authenticated,
+        authType: undefined,
+        integrations: { isAddedToSlack: undefined },
+      },
+    });
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const chip = (): HTMLButtonElement =>
+      host.querySelector('[data-test="home-pinned-tag"]') as HTMLButtonElement;
+
+    expect(host.querySelector('[data-test="home-pinned-tags"]')?.textContent).toContain('Errands');
+    expect(chip().querySelector('[data-test="home-tag-pin"]')?.textContent?.trim()).toBe(
+      'push_pin',
+    );
+    expect(host.querySelector('[data-test="home-pinned-tags"]')?.textContent).not.toContain(
+      'Ideas',
+    );
+    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('2');
+    expect(tileText(host)).toContain('Buy cat food');
+    expect(tileText(host)).toContain('Lamp photo');
+
+    chip().click();
+    fixture.detectChanges();
+
+    expect(chip().getAttribute('aria-pressed')).toBe('true');
+    expect(tileText(host)).toContain('Lamp photo');
+    expect(tileText(host)).not.toContain('Buy cat food');
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '1 active item',
+    );
+    expect(host.querySelector('[data-test="home-mode-count-active"]')?.textContent).toContain('1');
+    expect(host.querySelector('[data-test="home-category-count"]')?.textContent).toContain('0');
+
+    (host.querySelector('[data-test="home-mode-todo"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(chip().getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '1 to do item',
+    );
+    expect(tileText(host)).toContain('Write the brief');
+    expect(tileText(host)).not.toContain('Other todo');
+
+    chip().click();
+    fixture.detectChanges();
+
+    expect(chip().getAttribute('aria-pressed')).toBe('false');
+    expect(tileText(host)).toContain('Write the brief');
+    expect(tileText(host)).toContain('Other todo');
+
+    TestBed.inject(HomeContentModeService).showTag('tag-ideas');
+    (host.querySelector('[data-test="home-mode-active"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const chips = [...host.querySelectorAll('[data-test="home-pinned-tag"]')];
+    expect(chips.map(item => item.textContent?.trim())).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('Ideas'),
+        expect.stringContaining('Errands'),
+      ]),
+    );
+    expect(
+      chips.find(item => item.textContent?.includes('Ideas'))?.getAttribute('aria-pressed'),
+    ).toBe('true');
+    expect(
+      chips
+        .find(item => item.textContent?.includes('Errands'))
+        ?.querySelector('[data-test="home-tag-pin"]')?.textContent,
+    ).toContain('push_pin');
+    expect(
+      chips
+        .find(item => item.textContent?.includes('Ideas'))
+        ?.querySelector('[data-test="home-tag-pin"]'),
+    ).toBeNull();
+    expect(host.querySelector('[data-test="home-empty-title"]')?.textContent).toContain(
+      'Nothing active right now.',
+    );
+    expect(host.querySelector('[data-test="home-item-count"]')?.textContent).toContain(
+      '0 active items',
+    );
+    expect(host.querySelector('[data-test="task-tile"]')).toBeNull();
+  });
 });
+
+function chooseHomeCategory(fixture: ComponentFixture<HomeScreenComponent>, mode: string): void {
+  const host = fixture.nativeElement as HTMLElement;
+  const tab = host.querySelector(`[data-test="home-mode-${mode}"]`) as HTMLButtonElement | null;
+  if (tab) {
+    tab.click();
+    fixture.detectChanges();
+    return;
+  }
+
+  (host.querySelector('[data-test="home-category-selector"]') as HTMLButtonElement).click();
+  fixture.detectChanges();
+  (host.querySelector(`[data-test="home-mode-option-${mode}"]`) as HTMLButtonElement).click();
+  fixture.detectChanges();
+}
 
 function openSearch(fixture: ComponentFixture<HomeScreenComponent>): HTMLElement {
   const host = fixture.nativeElement as HTMLElement;

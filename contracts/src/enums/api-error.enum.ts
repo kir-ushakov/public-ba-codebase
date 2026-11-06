@@ -21,15 +21,41 @@ export enum EUploadImageUseCaseError {
   UploadToGoogleDriveFailed = 'UPLOAD_IMAGE_ERROR_CODE__UPLOAD_TO_GOOGLE_DRIVE_FAILED',
   GoogleRefreshTokenInvalid = 'UPLOAD_IMAGE_ERROR__GOOGLE_REFRESH_TOKEN_INVALID',
   FileTooLarge = 'FILE_TOO_LARGE',
+  InvalidImageId = 'UPLOAD_IMAGE_ERROR_CODE__INVALID_IMAGE_ID',
+  StoreImageFailed = 'UPLOAD_IMAGE_ERROR_CODE__STORE_IMAGE_FAILED',
+}
+
+export enum EUploadAudioUseCaseError {
+  NotSupportedType = 'UPLOAD_AUDIO_ERROR__NOT_SUPPORTED_TYPE',
+  InvalidAudioId = 'UPLOAD_AUDIO_ERROR__INVALID_AUDIO_ID',
+  StoreAudioFailed = 'UPLOAD_AUDIO_ERROR__STORE_FAILED',
+  FileTooLarge = 'UPLOAD_AUDIO_ERROR__FILE_TOO_LARGE',
+}
+
+export enum EGetAudioUseCaseError {
+  InvalidAudioId = 'GET_AUDIO_ERROR__INVALID_AUDIO_ID',
+  AudioFileMissing = 'GET_AUDIO_ERROR__FILE_MISSING',
+}
+
+export enum EDeleteAudioUseCaseError {
+  InvalidAudioId = 'DELETE_AUDIO_ERROR__INVALID_AUDIO_ID',
+  DeleteFailed = 'DELETE_AUDIO_ERROR__DELETE_FAILED',
+}
+
+export enum EDeleteImageUseCaseError {
+  InvalidImageId = 'DELETE_IMAGE_ERROR__INVALID_IMAGE_ID',
+  DeleteFailed = 'DELETE_IMAGE_ERROR__DELETE_FAILED',
+}
+
+export enum EDeleteTaskUseCaseError {
+  AttachmentCleanupFailed = 'DELETE_TASK_ERROR__ATTACHMENT_CLEANUP_FAILED',
 }
 
 export enum EGetImageUseCaseError {
   GoogleRefreshTokenInvalid = 'GET_IMAGE_ERROR__GOOGLE_REFRESH_TOKEN_INVALID',
   GoogleDriveRequestFailed = 'GET_IMAGE_ERROR__GOOGLE_DRIVE_REQUEST_FAILED',
-}
-
-export enum EGetChangesUseCaseError {
-  ClientNotFound = 'GET_CHANGES_ERROR_CODE__CLIENT_NOT_FOUND',
+  ImageFileMissing = 'GET_IMAGE_ERROR__IMAGE_FILE_MISSING',
+  ImageReadFailed = 'GET_IMAGE_ERROR__IMAGE_READ_FAILED',
 }
 
 export enum ELoginUseCaseError {
@@ -58,8 +84,8 @@ export enum EVerifyEmailUseCaseError {
   VerificationFailed = 'VERIFY_EMAIL_ERROR__VERIFICATION_FAILED',
 }
 
-export enum EReleaseClientIdUseCaseError {
-  UserDoesNotExist = 'RELEASE_CLIENT_ID_USECASE_ERROR__USER_DOES_NOT_EXIST',
+export enum ERefreshSessionUseCaseError {
+  Invalid = 'REFRESH_SESSION_USECASE_ERROR__INVALID',
 }
 
 export enum ERemoveFromSlackUseCaseError {
@@ -78,6 +104,9 @@ export enum ETaskError {
   TitleTooLong = 'TASK_ERROR__TITLE_TOO_LONG',
   DescriptionInvalid = 'TASK_ERROR__DESCRIPTION_INVALID',
   DescriptionTooLong = 'TASK_ERROR__DESCRIPTION_TOO_LONG',
+  ChecklistInvalid = 'TASK_ERROR__CHECKLIST_INVALID',
+  AudioAttachmentsInvalid = 'TASK_ERROR__AUDIO_ATTACHMENTS_INVALID',
+  ConditionsInvalid = 'TASK_ERROR__CONDITIONS_INVALID',
   UnknownTag = 'TASK_ERROR__UNKNOWN_TAG',
 }
 
@@ -90,6 +119,10 @@ export enum ETagError {
 
 export enum ETaskRepoServiceError {
   UserTaskNotFound = 'TASK_REPO_SERVICE_ERROR__USER_TASK_NOT_FOUND',
+}
+
+export enum ETagRepoServiceError {
+  UserTagNotFound = 'TAG_REPO_SERVICE_ERROR__USER_TAG_NOT_FOUND',
 }
 
 export enum EImageRepoServiceError {

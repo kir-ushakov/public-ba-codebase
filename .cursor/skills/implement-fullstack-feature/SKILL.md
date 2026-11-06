@@ -84,7 +84,7 @@ A new synced entity also touches `EChangedEntity` in contracts.
 
 ## 8. Frontend UI
 
-Component, route, `data-test` hooks.
+Component, route, `data-test` hooks. A new Material Symbol name goes into the project icon subset in `frontend/src/index.html` and `frontend/ngsw-config.json`. Follow `implement-frontend-feature`.
 
 ## 9. Frontend tests
 

@@ -1,7 +1,12 @@
 import { Task, TaskPresitant } from '../../../src/shared/domain/models/task.js';
 import { UniqueEntityID } from '../../../src/shared/domain/UniqueEntityID.js';
 import { TaskMapper } from '../../../src/shared/mappers/task.mapper.js';
-import { ETaskStatus, ETaskType, type TaskDescriptionDoc } from '@brainassistant/contracts';
+import {
+  ETaskCondition,
+  ETaskStatus,
+  ETaskType,
+  type TaskDescriptionDoc,
+} from '@brainassistant/contracts';
 import { sampleDescription } from '../domain/task-description.fixture.js';
 
 describe('TaskMapper', () => {
@@ -199,6 +204,26 @@ describe('TaskMapper', () => {
 
       expect(domain.title).toBe('Persisted task title');
       expect(domain.description).toBeUndefined();
+    });
+
+    it('derives conditions for a calendar task stored before the field existed', () => {
+      const raw: TaskPresitant = {
+        _id: 'legacy-calendar',
+        userId: 'user-1',
+        type: ETaskType.Calendar,
+        title: 'Legacy calendar task',
+        status: ETaskStatus.Todo,
+        createdAt: new Date('2024-06-01T10:00:00.000Z'),
+        modifiedAt: new Date('2024-06-02T15:30:00.000Z'),
+      };
+
+      const domain = TaskMapper.toDomain(raw);
+      const dto = TaskMapper.toDTO(domain);
+
+      expect(domain.conditions).toEqual([ETaskCondition.Todo, ETaskCondition.Calendar]);
+      expect(dto.conditions).toEqual([ETaskCondition.Todo, ETaskCondition.Calendar]);
+      expect(dto.type).toBe(ETaskType.Calendar);
+      expect(domain.checkWriteInvariants().isSuccess).toBe(true);
     });
   });
 });

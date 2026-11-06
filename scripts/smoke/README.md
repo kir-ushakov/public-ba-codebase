@@ -8,7 +8,7 @@ API-level smoke against a real Docker stack (`db` + HTTPS `backend`). No fronten
 2. Mark user `verified` in Mongo (email sending is unused in production)
 3. `POST /api/auth/login` → JWT cookie
 4. `POST /api/sync/task` → document in `tasks`
-5. Two `clientId`s both receive the task via `GET /api/sync/changes`
+5. `GET /api/sync/changes?afterRevision=0` returns that task
 
 ## Run locally
 

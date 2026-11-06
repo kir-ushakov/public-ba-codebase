@@ -1,15 +1,28 @@
+import { ETagRepoServiceError } from '@brainassistant/contracts';
 import { Tag, TagPersistent } from '../domain/models/tag.js';
 import { IDbModels } from '../infra/database/mongodb/index.js';
 import { isMongoDuplicateKeyError } from '../infra/database/mongodb/mongo-error.js';
 import { TagMapper } from '../mappers/tag.mapper.js';
+import { Result } from '../core/result.js';
+import { ServiceError } from '../core/service-error.js';
 import { serviceFail } from '../core/service-fail.factory.js';
 import { ServiceErrorLevel } from '../core/service-error-level.enum.js';
 import { ETagRepoLoadError } from './tag-repo.service.error.js';
+import { SyncRevisionService } from './sync-revision.service.js';
 
-export { ETagRepoLoadError };
+export { ETagRepoLoadError, ETagRepoServiceError };
+
+export type RevisionedTag = {
+  syncRevision: number;
+  tag: Tag | null;
+};
 
 export class TagRepoService {
-  constructor(private readonly models: IDbModels) {}
+  private readonly revisions: SyncRevisionService;
+
+  constructor(private readonly models: IDbModels) {
+    this.revisions = new SyncRevisionService(models);
+  }
 
   public async create(tag: Tag): Promise<void> {
     const tagData: TagPersistent = TagMapper.toPersistence(tag);
@@ -23,19 +36,59 @@ export class TagRepoService {
       }
       throw error;
     }
+    await this.revisions.stampTag(tag.userId, tag.id.toString());
   }
 
-  public async getChanges(userId: string, syncTime: Date): Promise<Tag[]> {
-    const changedTags: TagPersistent[] = await this.models.TagModel.find({
-      userId: userId,
-      modifiedAt: { $gte: new Date(syncTime) },
+  public async getSinceRevision(userId: string, revision: number): Promise<RevisionedTag[]> {
+    const rows: TagPersistent[] = await this.models.TagModel.find({
+      userId,
+      syncRevision: { $gt: revision },
     })
-      .sort({ modifiedAt: 1 })
+      .sort({ syncRevision: 1 })
       .lean();
 
-    return changedTags
-      .map(raw => this.toDomainIfValid(raw))
-      .filter((tag): tag is Tag => tag !== null);
+    return rows.flatMap(raw => {
+      if (typeof raw.syncRevision !== 'number') {
+        return [];
+      }
+      return [{ syncRevision: raw.syncRevision, tag: this.toDomainIfValid(raw) }];
+    });
+  }
+
+  public async save(tag: Tag): Promise<void> {
+    const persisted = TagMapper.toPersistence(tag);
+    const tagId = tag.id.toString();
+    const updated = await this.models.TagModel.findOneAndUpdate(
+      { _id: tagId, userId: tag.userId },
+      {
+        $set: {
+          userId: persisted.userId,
+          name: persisted.name,
+          color: persisted.color,
+          isPinned: persisted.isPinned === true,
+          createdAt: persisted.createdAt,
+          modifiedAt: persisted.modifiedAt,
+        },
+      },
+    );
+    if (!updated) {
+      throw new Error(`Tag with id ${tagId} not found`);
+    }
+    await this.revisions.stampTag(tag.userId, tagId);
+  }
+
+  public async getUserTagById(
+    userId: string,
+    tagId: string,
+  ): Promise<Result<Tag, ServiceError<ETagRepoServiceError>>> {
+    const raw = await this.models.TagModel.findOne({ _id: tagId, userId }).lean();
+    if (!raw) {
+      return serviceFail<ETagRepoServiceError>(
+        `The tag with id = "${tagId}" for user with id = ${userId} doesn't exist`,
+        ETagRepoServiceError.UserTagNotFound,
+      );
+    }
+    return Result.ok(TagMapper.toDomain(raw));
   }
 
   public async deleteById(tagId: string): Promise<void> {

@@ -75,7 +75,7 @@
                               │ - EChangedEntity, EChangeAction
                               │
                               ▼
-            GET /api/sync/changes?clientId=abc123
+            GET /api/sync/changes?afterRevision=0
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐

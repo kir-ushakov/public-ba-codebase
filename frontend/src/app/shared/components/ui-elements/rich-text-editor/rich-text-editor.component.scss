@@ -56,7 +56,6 @@
 .editor-host {
   min-height: calc(var(--typography-body-size) * var(--typography-body-line-height) * 3);
   max-height: calc(var(--typography-body-size) * var(--typography-body-line-height) * 8);
-  overflow-y: auto;
 }
 
 .rich-text-editor.is-readonly .editor-host {

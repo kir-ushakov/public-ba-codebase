@@ -27,12 +27,13 @@ export class DeleteTaskController extends BaseController {
       });
       if (result.isSuccess) {
         this.ok(res);
-      } else {
-        switch (result.error) {
-          default:
-            this.fail(res, result.error);
-        }
+        return;
       }
+      const error = result.error;
+      BaseController.jsonResponse(res, error.httpCode, {
+        name: error.code,
+        message: error.message,
+      });
     } catch (err) {
       // TODO: handle unexpected error proper way
       // TICKET: https://brainas.atlassian.net/browse/BA-222

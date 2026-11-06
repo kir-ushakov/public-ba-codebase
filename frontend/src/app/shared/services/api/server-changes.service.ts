@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
-import { ChangeDTO } from '@brainassistant/contracts';
+import { ChangeDTO, GetChangesContract } from '@brainassistant/contracts';
 import { HttpClient } from '@angular/common/http';
-import { GetChangesContract } from '@brainassistant/contracts';
-import { convertObjectToUrlParams } from '../../helpers/convert-object-to-url-params.function';
 import { Observable, map } from 'rxjs';
 import { ChangeMapper } from '../../mappers';
 import { Change } from '../../models';
+
+export type ServerChangesPage = {
+  changes: Change[];
+  syncRevision: number;
+};
 
 @Injectable({
   providedIn: 'root',
@@ -14,9 +17,9 @@ import { Change } from '../../models';
 export class ServerChangesService {
   constructor(private http: HttpClient) {}
 
-  public fetch(clientId: string): Observable<Change[]> {
+  public fetch(afterRevision: number): Observable<ServerChangesPage> {
     const request: GetChangesContract.Request = {
-      clientId,
+      afterRevision: String(afterRevision),
     };
     return this.http
       .get<GetChangesContract.Response>(`${API_ENDPOINTS.SYNC.CHANGES}`, { params: request })
@@ -24,7 +27,7 @@ export class ServerChangesService {
         map((response: GetChangesContract.Response) => {
           const changeDTOs: ChangeDTO[] = response.changes;
           const changes: Array<Change> = changeDTOs.map(dto => ChangeMapper.toModel(dto));
-          return changes;
+          return { changes, syncRevision: response.syncRevision };
         }),
       );
   }

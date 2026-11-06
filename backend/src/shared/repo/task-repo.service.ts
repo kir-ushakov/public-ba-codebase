@@ -9,11 +9,21 @@ import { Result } from '../core/result.js';
 import { serviceFail } from '../core/service-fail.factory.js';
 import { ServiceErrorLevel } from '../core/service-error-level.enum.js';
 import { ETaskRepoLoadError } from './task-repo.service.error.js';
+import { SyncRevisionService } from './sync-revision.service.js';
 
 export { ETaskRepoServiceError, ETaskRepoLoadError };
 
+export type RevisionedTask = {
+  syncRevision: number;
+  task: Task | null;
+};
+
 export class TaskRepoService {
-  constructor(private readonly models: IDbModels) {}
+  private readonly revisions: SyncRevisionService;
+
+  constructor(private readonly models: IDbModels) {
+    this.revisions = new SyncRevisionService(models);
+  }
 
   public async create(task: Task): Promise<void> {
     const taskData: TaskPresitant = TaskMapper.toPersistence(task);
@@ -27,6 +37,7 @@ export class TaskRepoService {
       }
       throw error;
     }
+    await this.revisions.stampTask(task.userId, task.id.toString());
   }
 
   public async save(task: Task): Promise<TaskDocument> {
@@ -36,52 +47,82 @@ export class TaskRepoService {
     const taskId = task.id.toString();
 
     const filter = { _id: taskId };
-    const { description, ...rest } = taskPresitant;
-    const update =
-      description === undefined
-        ? { $set: rest, $unset: { description: 1 as const } }
-        : { $set: { ...rest, description } };
+    const { description, checklist, conditions, audioAttachments, ...rest } = taskPresitant;
+    const $unset: {
+      description?: 1;
+      checklist?: 1;
+      conditions?: 1;
+      audioAttachments?: 1;
+    } = {};
+    if (description === undefined) {
+      $unset.description = 1;
+    }
+    if (checklist === undefined) {
+      $unset.checklist = 1;
+    }
+    if (conditions === undefined) {
+      $unset.conditions = 1;
+    }
+    if (audioAttachments === undefined) {
+      $unset.audioAttachments = 1;
+    }
+    const $set = {
+      ...rest,
+      ...(description !== undefined ? { description } : {}),
+      ...(checklist !== undefined ? { checklist } : {}),
+      ...(conditions !== undefined ? { conditions } : {}),
+      ...(audioAttachments !== undefined ? { audioAttachments } : {}),
+    };
+    const update = Object.keys($unset).length > 0 ? { $set, $unset } : { $set };
 
     const updatedTask = await taskModel.findOneAndUpdate(filter, update);
     if (!updatedTask) {
       throw new Error(`Task with id ${taskId} not found`);
     }
 
+    await this.revisions.stampTask(task.userId, taskId);
     return updatedTask;
+  }
+
+  public async findUserTaskById(userId: string, taskId: string): Promise<Task | null> {
+    const taskDocument = await this.models.TaskModel.findOne({
+      _id: taskId,
+      userId,
+    }).lean();
+    if (!taskDocument) {
+      return null;
+    }
+    return TaskMapper.toDomain(taskDocument);
   }
 
   public async getUserTaskById(
     userId: string,
     taskId: string,
   ): Promise<Result<Task, ServiceError<ETaskRepoServiceError>>> {
-    const TaskModel = this.models.TaskModel;
-    const params = {
-      _id: taskId,
-      userId: userId,
-    };
-    const taskDocument = await TaskModel.findOne(params).lean();
-
-    if (!taskDocument)
+    const task = await this.findUserTaskById(userId, taskId);
+    if (!task) {
       return serviceFail<ETaskRepoServiceError>(
         `The task with id = "${taskId}" for user with id = ${userId} dosn't exists`,
         ETaskRepoServiceError.UserTaskNotFound,
       );
-
-    const task = TaskMapper.toDomain(taskDocument);
+    }
     return Result.ok<Task, ServiceError<ETaskRepoServiceError>>(task);
   }
 
-  public async getChanges(userId: string, syncTime: Date): Promise<Task[]> {
-    const changedTasks: TaskPresitant[] = await this.models.TaskModel.find({
-      userId: userId,
-      modifiedAt: { $gte: new Date(syncTime) },
+  public async getSinceRevision(userId: string, revision: number): Promise<RevisionedTask[]> {
+    const rows: TaskPresitant[] = await this.models.TaskModel.find({
+      userId,
+      syncRevision: { $gt: revision },
     })
-      .sort({ modifiedAt: 1 })
+      .sort({ syncRevision: 1 })
       .lean();
 
-    return changedTasks
-      .map(raw => this.toDomainIfValid(raw))
-      .filter((task): task is Task => task !== null);
+    return rows.flatMap(raw => {
+      if (typeof raw.syncRevision !== 'number') {
+        return [];
+      }
+      return [{ syncRevision: raw.syncRevision, task: this.toDomainIfValid(raw) }];
+    });
   }
 
   private toDomainIfValid(raw: TaskPresitant): Task | null {
@@ -107,15 +148,20 @@ export class TaskRepoService {
   }
 
   public async removeTagIdFromUserTasks(userId: string, tagId: string): Promise<void> {
+    const affected = await this.models.TaskModel.find({ userId, tagIds: tagId })
+      .select('_id')
+      .lean();
     await this.models.TaskModel.updateMany(
       { userId, tagIds: tagId },
       { $pull: { tagIds: tagId }, $set: { modifiedAt: new Date() } },
     );
+    for (const task of affected) {
+      await this.revisions.stampTask(userId, String(task._id));
+    }
   }
 
   public async deleteTaskById(taskId: string): Promise<void> {
-    const taskModel = this.models.TaskModel;
-    await taskModel.deleteOne({
+    await this.models.TaskModel.deleteOne({
       _id: taskId,
     });
   }

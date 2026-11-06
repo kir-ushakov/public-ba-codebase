@@ -42,11 +42,7 @@ export class LoginUsecase implements UseCase<LoginRequest, Promise<LoginResult>>
         }
 
         const user = UserMapper.toDomain(userPersistent);
-        const loginResponseDto = await this.loginService.login(
-          user,
-          request.context.req,
-          request.context.res,
-        );
+        const loginResponseDto = await this.loginService.login(user, request.context.res);
 
         return resolve(Result.ok(loginResponseDto));
       };
@@ -54,6 +50,7 @@ export class LoginUsecase implements UseCase<LoginRequest, Promise<LoginResult>>
       try {
         this.passport.authenticate(
           'local',
+          { session: false },
           (err: unknown, userPersistent: UserPersistent | false) => {
             handleLocalCallback(err, userPersistent).catch((callbackErr: unknown) => {
               reject(

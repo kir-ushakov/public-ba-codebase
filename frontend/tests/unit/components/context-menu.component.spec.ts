@@ -62,6 +62,19 @@ describe('ContextMenuComponent', () => {
     expect(selected).toHaveBeenCalledWith('edit');
   });
 
+  it('moves focus between enabled items with the arrow keys', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const edit = host.querySelector<HTMLButtonElement>('[data-test="task-menu-edit"]');
+    const deleteItem = host.querySelector<HTMLButtonElement>('[data-test="task-menu-delete"]');
+
+    edit?.focus();
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    expect(document.activeElement).toBe(deleteItem);
+
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+    expect(document.activeElement).toBe(edit);
+  });
+
   it('does not emit when a disabled item is activated', () => {
     const selected = jest.fn();
     fixture.componentInstance.selected.subscribe(selected);

@@ -96,7 +96,7 @@ They live in `test/unit/`, named `<subject>.spec.ts`, and call the real class.
 
 ## Environment
 
-`setup-env.ts` (Jest `setupFiles`) sets `AUTHENTICATION_STRATEGY=JWT`, `JWT_SECRET`, `FILES_UPLOAD_PATH`, `SLACK_SIGNING_SECRET`, and dummy Google / SendGrid / Mailgun / OpenAI keys so `createApp()` can boot without `.env`.
+`setup-env.ts` (Jest `setupFiles`) sets `JWT_SECRET`, `FILES_UPLOAD_PATH`, `SLACK_SIGNING_SECRET`, and dummy Google / SendGrid / Mailgun / OpenAI keys so `createApp()` can boot without `.env`.
 
 ## CI
 

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Checklist completed</title>
+  <rect x="34" y="24" width="92" height="112" rx="23" fill="#073C3B" stroke="#00A991" stroke-opacity=".35" stroke-width="2"/>
+  <g stroke="#19D9C7" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m52 54 7 7 12-14"/><path d="M82 55h26"/>
+    <path d="m52 80 7 7 12-14"/><path d="M82 81h26"/>
+    <path d="m52 106 7 7 12-14"/><path d="M82 107h26"/>
+  </g>
+  <g stroke="#19D9C7" stroke-width="4" stroke-linecap="round">
+    <path d="M18 43 10 36"/><path d="M16 75H6"/><path d="m142 43 8-7"/><path d="M144 75h10"/>
+  </g>
+</svg>

@@ -31,12 +31,16 @@ export namespace AppAction {
     static readonly type = '[App API] User Not Authenticated';
   }
 
-  export class GoogleRefreshTokenInvalid {
-    static readonly type = '[App API] Google Refresh Token Invalid';
-  }
   export class ShowErrorInUI {
     static readonly type = '[App] Show Error In UI';
 
-    constructor(public message: string) {}
+    constructor(
+      public message: string,
+      public title?: string,
+    ) {}
+  }
+
+  export class ClearErrorInUI {
+    static readonly type = '[App] Clear Error In UI';
   }
 }

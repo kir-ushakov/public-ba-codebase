@@ -1,25 +1,27 @@
 import { Injectable } from '@angular/core';
 import { Action, State, StateContext } from '@ngxs/store';
 import { EChangeAction } from '@brainassistant/contracts';
-import { ClientIdService } from 'src/app/shared/services/api/client-id.service';
 import { AppAction } from './app.actions';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Change } from '../models/change.model';
+import { OutboxEntry } from '../models/outbox-entry.type';
 import { append, patch, removeItem } from '@ngxs/store/operators';
 import { ServerChangesService } from '../services/api/server-changes.service';
-import { Observable, lastValueFrom, tap } from 'rxjs';
+import { ServerSyncSignalService } from '../services/api/server-sync-signal.service';
+import { lastValueFrom } from 'rxjs';
 import { SyncAction } from './sync.action';
 import { UserAction } from './user.actions';
 import {
   MissingBlobDiscard,
   OutboundSyncService,
 } from '../services/application/outbound-sync.service';
+import { LocalStore } from '../services/infrastructure/local-store.service';
 import { TasksAction } from './tasks.action';
 
 export interface SyncStateModel {
-  clientId: string | null;
   lastTime: Date | null;
-  changes: Change[];
+  /** In-memory projection of the IndexedDB outbox. IndexedDB is the source of truth. */
+  outbox: OutboxEntry[];
+  syncedRevision: number;
 }
 
 @State<SyncStateModel>({
@@ -29,25 +31,29 @@ export interface SyncStateModel {
 @Injectable()
 export class SyncState {
   static readonly defaults: SyncStateModel = {
-    clientId: null,
     lastTime: null,
-    changes: [],
+    outbox: [],
+    syncedRevision: 0,
   };
 
-  readonly SYNC_PERIOD = 1000 * 20; // sync interval 20 sec;
+  readonly SYNC_PERIOD = 1000 * 60;
   private intervalId: null | ReturnType<typeof setTimeout> = null;
 
   constructor(
-    private readonly clientIdSerivce: ClientIdService,
     private readonly serverChangesService: ServerChangesService,
     private readonly outboundSyncService: OutboundSyncService,
+    private readonly localStore: LocalStore,
+    private readonly serverSyncSignal: ServerSyncSignalService,
   ) {}
 
   @Action(SyncAction.ChangeForSyncOccurred)
-  changeOccurred(ctx: StateContext<SyncStateModel>, { change }: { change: Change }): void {
+  changeOccurred(
+    ctx: StateContext<SyncStateModel>,
+    { entry }: SyncAction.ChangeForSyncOccurred,
+  ): void {
     ctx.setState(
       patch({
-        changes: append([change]),
+        outbox: append([entry]),
       }),
     );
 
@@ -57,69 +63,91 @@ export class SyncState {
   @Action(SyncAction.LocalChangeWasSynchronized)
   clientChangesSynchronized(
     ctx: StateContext<SyncStateModel>,
-    { change }: { change: Change },
+    { entryId }: SyncAction.LocalChangeWasSynchronized,
   ): void {
     ctx.setState(
       patch({
-        changes: removeItem<Change>(ch => ch === change),
+        outbox: removeItem<OutboxEntry>(entry => entry.id === entryId),
       }),
     );
+  }
+
+  @Action(SyncAction.LocalDataHydrated)
+  hydrate(ctx: StateContext<SyncStateModel>, { snapshot }: SyncAction.LocalDataHydrated): void {
+    ctx.patchState({
+      outbox: snapshot.outbox,
+      syncedRevision: snapshot.syncedRevision,
+    });
   }
 
   @Action(AppAction.Opened)
   updateSyncTimer(ctx: StateContext<SyncStateModel>) {
     clearInterval(this.intervalId ?? undefined);
+    this.serverSyncSignal.start();
     this.intervalId = setInterval(() => {
       ctx.dispatch(new SyncAction.Synchronize());
     }, this.SYNC_PERIOD);
     return ctx.dispatch(new SyncAction.Synchronize());
   }
 
-  @Action(UserAction.LoggedOut)
   @Action(AppAction.UserNotAuthenticated)
   clearTimer(): void {
     clearInterval(this.intervalId ?? undefined);
+    this.intervalId = null;
+    this.serverSyncSignal.stop();
+  }
+
+  @Action(UserAction.LoggedOut)
+  loggedOut(ctx: StateContext<SyncStateModel>): void {
+    this.clearTimer();
+    ctx.setState(SyncState.defaults);
   }
 
   @Action(SyncAction.Synchronize)
   async synchronize(ctx: StateContext<SyncStateModel>): Promise<void> {
-    if (!ctx.getState().clientId) {
-      const clientId: string = await lastValueFrom(this.getClientIdAPICall(ctx));
-      ctx.patchState({ clientId });
-    }
     try {
       await this.fetchServerChanges(ctx);
       await this.syncPendingChanges(ctx);
 
       ctx.patchState({ lastTime: new Date() });
-    } catch (err) {
-      // TODO: Don't rely only on HTTP status code - check error name from backend response
-      // TICKET: https://brainas.atlassian.net/browse/BA-258
-      if (err instanceof HttpErrorResponse && err.status === 404) {
-        this.handleClientIdNotFoundError(ctx);
-      } else {
-        ctx.dispatch(new SyncAction.SyncinhriniziationWasFailed());
-      }
+    } catch {
+      ctx.dispatch(new SyncAction.SyncinhriniziationWasFailed());
     }
   }
 
   private async fetchServerChanges(ctx: StateContext<SyncStateModel>): Promise<void> {
-    const clientId = ctx.getState().clientId;
-    if (!clientId) {
-      return;
+    const afterRevision = ctx.getState().syncedRevision ?? 0;
+    const page = await lastValueFrom(this.serverChangesService.fetch(afterRevision));
+    const applied = await this.localStore.applyServerChangesAndRevision(
+      page.changes,
+      page.syncRevision,
+    );
+    await ctx.dispatch(new SyncAction.ServerChangesLoaded(applied));
+    const current = ctx.getState().syncedRevision ?? 0;
+    if (page.syncRevision > current) {
+      ctx.patchState({ syncedRevision: page.syncRevision });
     }
-    const changes = await lastValueFrom(this.serverChangesService.fetch(clientId));
-    await ctx.dispatch(new SyncAction.ServerChangesLoaded(changes));
   }
 
   private async syncPendingChanges(ctx: StateContext<SyncStateModel>): Promise<void> {
-    const result = await this.outboundSyncService.process(ctx.getState().changes);
+    const queued = await this.localStore.listOutbox();
+    ctx.patchState({ outbox: queued });
+    const result = await this.outboundSyncService.process(queued.map(entry => entry.change));
 
     for (const change of result.sent) {
-      await ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
+      const entry = queued.find(item => item.change === change);
+      if (!entry) {
+        continue;
+      }
+      await this.localStore.removeOutboxEntry(entry.id);
+      await ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(entry.id));
     }
     for (const change of result.notFound) {
-      await this.handleEntityNotFoundError(ctx, change);
+      const entry = queued.find(item => item.change === change);
+      if (!entry) {
+        continue;
+      }
+      await this.handleEntityNotFoundError(ctx, entry);
     }
     await this.discardTasksWithMissingBlobs(ctx, result.missingBlobDiscards);
     if (result.sendFailed) {
@@ -132,57 +160,45 @@ export class SyncState {
     discards: MissingBlobDiscard[],
   ): Promise<void> {
     for (const discard of discards) {
-      this.dropQueuedChangesForEntity(ctx, discard.taskId);
-      ctx.dispatch(new AppAction.ShowErrorInUI('The task photo is missing. The task was removed.'));
+      await this.dropQueuedChangesForEntity(ctx, discard.taskId);
       await ctx.dispatch(new TasksAction.DeleteTask(discard.taskId));
+      ctx.dispatch(new AppAction.ShowErrorInUI('The task photo is missing. The task was removed.'));
     }
   }
 
-  private dropQueuedChangesForEntity(ctx: StateContext<SyncStateModel>, entityId: string): void {
+  private async dropQueuedChangesForEntity(
+    ctx: StateContext<SyncStateModel>,
+    entityId: string,
+  ): Promise<void> {
+    const ids = ctx
+      .getState()
+      .outbox.filter(entry => entry.entityId === entityId)
+      .map(entry => entry.id);
     ctx.patchState({
-      changes: ctx.getState().changes.filter(change => change.object?.id !== entityId),
+      outbox: ctx.getState().outbox.filter(entry => entry.entityId !== entityId),
     });
-  }
-
-  private getClientIdAPICall(ctx: StateContext<SyncStateModel>): Observable<string> {
-    return this.clientIdSerivce.releaseClientId().pipe(
-      tap({
-        next: clientId => {
-          ctx.patchState({ clientId: clientId });
-        },
-        error: err => {
-          console.log(err);
-          return err;
-        },
-      }),
-    );
-  }
-
-  private handleClientIdNotFoundError(ctx: StateContext<SyncStateModel>): void {
-    ctx.patchState({
-      clientId: null,
-      lastTime: null,
-    });
-    ctx.dispatch(new SyncAction.Synchronize());
+    await this.localStore.removeOutboxEntries(ids);
   }
 
   private async handleEntityNotFoundError(
     ctx: StateContext<SyncStateModel>,
-    change: Change,
+    entry: OutboxEntry,
   ): Promise<void> {
-    if (!change.object) {
+    if (!entry.change.object) {
       throw new Error('Cannot handle entity-not-found without change.object');
     }
     const deleteChange: Change = {
-      entity: change.entity,
+      entity: entry.change.entity,
       action: EChangeAction.Deleted,
       object: {
-        id: change.object.id,
+        id: entry.change.object.id,
         modifiedAt: new Date().toISOString(),
       },
     };
+    await this.localStore.removeLocalEntity(entry.change.entity, entry.entityId);
+    await this.localStore.removeOutboxEntry(entry.id);
     await ctx.dispatch(new SyncAction.ServerChangesLoaded([deleteChange]));
-    await ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(change));
+    await ctx.dispatch(new SyncAction.LocalChangeWasSynchronized(entry.id));
 
     // TODO: Notify user that entity was deleted on server
     // TICKET: https://brainas.atlassian.net/browse/BA-136

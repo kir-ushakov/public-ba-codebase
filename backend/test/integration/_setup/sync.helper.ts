@@ -1,5 +1,13 @@
 import { Application } from 'express';
-import { TaskDTO, TagDTO, ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import {
+  TaskDTO,
+  TagDTO,
+  TagConst,
+  ETaskCondition,
+  ETaskStatus,
+  ETaskType,
+  type ChecklistItemDTO,
+} from '@brainassistant/contracts';
 import { authenticatedRequest } from './auth.helper.js';
 
 export type TaskSeed = {
@@ -10,19 +18,9 @@ export type TaskSeed = {
   imageId?: string;
   description?: TaskDTO['description'];
   tagIds?: string[];
+  checklist?: ChecklistItemDTO[];
+  conditions?: ETaskCondition[];
 };
-
-/**
- * Allocates a new sync client via GET /api/sync/release-client-id.
- * The production path is named "release", but it creates a client and returns its id.
- */
-export async function allocateClientId(app: Application, jwtCookie: string): Promise<string> {
-  const res = await authenticatedRequest(app, jwtCookie).get('/api/sync/release-client-id');
-  if (res.status !== 200 || typeof res.body?.clientId !== 'string') {
-    throw new Error(`Failed to allocate clientId: ${res.status} ${JSON.stringify(res.body)}`);
-  }
-  return res.body.clientId;
-}
 
 export async function createTaskViaApi(
   app: Application,
@@ -37,6 +35,8 @@ export async function createTaskViaApi(
     ...(seed.imageId !== undefined ? { imageId: seed.imageId } : {}),
     ...(seed.description !== undefined ? { description: seed.description } : {}),
     ...(seed.tagIds !== undefined ? { tagIds: seed.tagIds } : {}),
+    ...(seed.checklist !== undefined ? { checklist: seed.checklist } : {}),
+    ...(seed.conditions !== undefined ? { conditions: seed.conditions } : {}),
   };
 
   const res = await authenticatedRequest(app, jwtCookie)
@@ -65,7 +65,7 @@ export async function createTagViaApi(
   const dto = {
     id: seed.id,
     name: seed.name ?? 'Work',
-    color: seed.color ?? 'teal',
+    color: seed.color ?? TagConst.DEFAULT_COLOR,
   };
 
   const res = await authenticatedRequest(app, jwtCookie)

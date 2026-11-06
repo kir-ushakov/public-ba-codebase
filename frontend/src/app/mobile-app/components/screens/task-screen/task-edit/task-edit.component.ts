@@ -22,7 +22,12 @@ import { VoiceInputState } from 'src/app/shared/features/voice-input/state/voice
 import { VoiceInputAction } from 'src/app/shared/features/voice-input/state/voice-input.actions';
 import type { FormControlsOf } from 'src/app/shared/forms/types/form-controls-of';
 import type { ITaskEditFormData } from './task-edit.component.interface';
-import { ETaskStatus, TaskConst, type TaskDescriptionDoc } from '@brainassistant/contracts';
+import {
+  ETaskCondition,
+  ETaskStatus,
+  TaskConst,
+  type TaskDescriptionDoc,
+} from '@brainassistant/contracts';
 import { VoiceInputTriggerComponent } from 'src/app/shared/features/voice-input/components/voice-input-trigger/voice-input-trigger.component';
 import { clipVoiceTaskTitle } from './helpers/clip-voice-task-title.function';
 import { stripTitleNewlines } from './helpers/strip-title-newlines.function';
@@ -30,8 +35,23 @@ import { RichTextEditorComponent } from 'src/app/shared/components/ui-elements/r
 import { ImageGalleryEditorComponent } from './image-gallery-editor/image-gallery-editor.component';
 import { TagSelectorComponent } from './tag-selector/tag-selector.component';
 import { StatusSelectorComponent } from './status-selector/status-selector.component';
+import { ConditionSelectorComponent } from './condition-selector/condition-selector.component';
 import { TaskTypeChipComponent } from '../task-type-chip/task-type-chip.component';
 import { toGalleryImages, type GalleryImage } from './helpers/to-gallery-images.function';
+import { taskDraftForHomeMode } from '../../home-screen/helpers/home-content-mode.function';
+import {
+  deriveTaskConditions,
+  projectTaskType,
+} from 'src/app/shared/helpers/task-conditions.function';
+import { HomeContentModeService } from '../../home-screen/home-content-mode.service';
+import { AppAction } from 'src/app/shared/state/app.actions';
+import { appendTranscriptionToDescription } from 'src/app/shared/helpers/append-transcription-to-description.function';
+import { TaskContentSwitchComponent } from '../task-content-switch/task-content-switch.component';
+import type { TaskContentMode } from '../task-content-switch/task-content-switch.component';
+import { ChecklistEditorComponent } from './checklist-editor/checklist-editor.component';
+import { AudioAttachmentsComponent } from '../audio-attachments/audio-attachments.component';
+import { isEmptyTaskDescription } from 'src/app/shared/helpers/is-empty-task-description.function';
+import type { ChecklistItem } from 'src/app/shared/models/task.model';
 
 @Component({
   selector: 'ba-task-edit',
@@ -43,7 +63,11 @@ import { toGalleryImages, type GalleryImage } from './helpers/to-gallery-images.
     ImageGalleryEditorComponent,
     TagSelectorComponent,
     StatusSelectorComponent,
+    ConditionSelectorComponent,
     TaskTypeChipComponent,
+    TaskContentSwitchComponent,
+    ChecklistEditorComponent,
+    AudioAttachmentsComponent,
     ReactiveFormsModule,
   ],
   templateUrl: './task-edit.component.html',
@@ -65,7 +89,24 @@ export class TaskEditComponent {
   );
   readonly showSelectedTags = computed(() => this.screenMode() === ETaskViewMode.Create);
   readonly tagIds = signal<string[]>([]);
-  readonly taskType = computed(() => this.editedTask().type);
+  readonly selectedConditions = signal<ETaskCondition[]>([ETaskCondition.Todo]);
+  readonly taskType = computed(() =>
+    this.selectedConditions().length
+      ? projectTaskType(this.selectedConditions())
+      : this.editedTask().type,
+  );
+  readonly isNote = computed(() => this.editedTask().status === ETaskStatus.Notes);
+  readonly titlePlaceholder = computed(() =>
+    this.isNote() ? 'Note title here...' : 'Task title here...',
+  );
+  readonly descriptionPlaceholder = computed(() =>
+    this.isNote()
+      ? 'Write something you want to remember...'
+      : 'Write additional details about this task...',
+  );
+  readonly contentMode = signal<TaskContentMode>('description');
+  readonly checklist = computed(() => this.editedTask().checklist ?? []);
+  readonly canCheckChecklist = computed(() => this.screenMode() !== ETaskViewMode.Create);
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(Store);
@@ -76,6 +117,7 @@ export class TaskEditComponent {
   private readonly fb = inject(FormBuilder);
   private readonly actions$ = inject(Actions);
   private readonly ngZone = inject(NgZone);
+  private readonly homeContentMode = inject(HomeContentModeService);
 
   private readonly baseTitleValidators = [Validators.maxLength(TaskConst.TITLE_MAX_LENGTH)];
   private readonly requiredTitleValidators = [Validators.required, ...this.baseTitleValidators];
@@ -103,6 +145,30 @@ export class TaskEditComponent {
         previewUrl: image.previewUrl,
       }),
     );
+  }
+
+  descriptionHasContent(): boolean {
+    return !isEmptyTaskDescription(this.form?.controls.description?.value ?? null);
+  }
+
+  onChecklistChange(checklist: ChecklistItem[]): void {
+    this.store.dispatch(new TaskScreenAction.ChecklistChanged(checklist));
+  }
+
+  appendTranscription(text: string): void {
+    const control = this.form.controls.description;
+    if (!control) {
+      return;
+    }
+    const next = appendTranscriptionToDescription(control.value, text);
+    if (!next) {
+      this.store.dispatch(
+        new AppAction.ShowErrorInUI('The description is too long for this transcription.'),
+      );
+      return;
+    }
+    control.setValue(next);
+    this.contentMode.set('description');
   }
 
   onTagIdsChange(tagIds: string[]): void {
@@ -138,6 +204,10 @@ export class TaskEditComponent {
     }
 
     this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      const conditions = this.form.getRawValue().conditions;
+      if (conditions?.length) {
+        this.selectedConditions.set(conditions);
+      }
       this.store.dispatch(
         new TaskScreenAction.UpdateFormData(this.form.valid, this.form.getRawValue()),
       );
@@ -197,9 +267,27 @@ export class TaskEditComponent {
     const existingTitle = mode === ETaskViewMode.Edit ? (existingTask.title ?? '') : '';
     const existingDescription =
       mode === ETaskViewMode.Edit ? (existingTask.description ?? null) : null;
-    const existingStatus = mode === ETaskViewMode.Edit ? existingTask.status : ETaskStatus.Todo;
+    const draft = taskDraftForHomeMode(this.homeContentMode.mode());
+    const existingStatus =
+      mode === ETaskViewMode.Edit
+        ? existingTask.status
+        : mode === ETaskViewMode.Create
+          ? draft.status
+          : ETaskStatus.Todo;
+    const existingConditions =
+      mode === ETaskViewMode.Edit
+        ? existingTask.status === ETaskStatus.Notes
+          ? []
+          : existingTask.conditions?.length
+            ? existingTask.conditions
+            : deriveTaskConditions(existingTask.type)
+        : (draft.conditions ?? []);
+    this.selectedConditions.set(
+      existingConditions.length ? existingConditions : [ETaskCondition.Todo],
+    );
     const existingTagIds = existingTask.tagIds ?? [];
     this.tagIds.set(existingTagIds);
+    this.contentMode.set((existingTask.checklist?.length ?? 0) > 0 ? 'checklist' : 'description');
 
     this.form = this.fb.group<FormControlsOf<ITaskEditFormData>>({
       title: this.fb.control(existingTitle, {
@@ -208,6 +296,7 @@ export class TaskEditComponent {
       }),
       description: this.fb.control<TaskDescriptionDoc | null>(existingDescription),
       status: this.fb.control(existingStatus, { nonNullable: true }),
+      conditions: this.fb.control(existingConditions, { nonNullable: true }),
       tagIds: this.fb.control(existingTagIds, { nonNullable: true }),
     });
     this.titleLength = existingTitle.length;

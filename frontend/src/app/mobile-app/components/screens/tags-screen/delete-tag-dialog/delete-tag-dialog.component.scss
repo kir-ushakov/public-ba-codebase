@@ -1,0 +1,77 @@
+:host {
+  display: block;
+}
+
+.delete-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.delete-icon {
+  font-size: var(--icon-size-large);
+  color: var(--color-semantic-danger);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--typography-section-title-size);
+  font-weight: var(--typography-section-title-weight);
+  line-height: var(--typography-section-title-line-height);
+}
+
+.message {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--typography-secondary-size);
+  font-weight: var(--typography-secondary-weight);
+  line-height: var(--typography-secondary-line-height);
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  width: 100%;
+  margin-top: var(--spacing-sm);
+}
+
+.cancel,
+.confirm {
+  flex: 1;
+  min-height: var(--button-min-height);
+  margin: 0;
+  padding: 0 var(--spacing-md);
+  appearance: none;
+  border-radius: var(--radius-default);
+  font-family: inherit;
+  font-size: var(--typography-body-size);
+  font-weight: var(--typography-body-weight);
+  line-height: var(--typography-body-line-height);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--color-accent-primary);
+    outline-offset: var(--spacing-xs);
+  }
+}
+
+.cancel {
+  background: transparent;
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
+}
+
+.confirm {
+  background: var(--color-semantic-danger);
+  border: 0;
+  color: var(--color-accent-on-accent);
+}

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideStore, Store } from '@ngxs/store';
-import { ETaskStatus, ETaskType } from '@brainassistant/contracts';
+import { ETaskCondition, ETaskStatus, ETaskType } from '@brainassistant/contracts';
 import { firstValueFrom } from 'rxjs';
 import { TaskBottomPanelComponent } from 'src/app/mobile-app/components/screens/task-screen/task-bottom-panel/task-bottom-panel.component';
 import { TaskScreenAction } from 'src/app/mobile-app/components/screens/task-screen/task-screen.actions';
@@ -9,6 +9,8 @@ import {
   TaskScreenState,
 } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
 import { ImageService } from 'src/app/shared/services/application/image.service';
+import { AudioService } from 'src/app/shared/services/application/audio.service';
+import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/speech-to-text.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 
 describe('TaskBottomPanelComponent', () => {
@@ -20,6 +22,8 @@ describe('TaskBottomPanelComponent', () => {
       providers: [
         provideStore([TaskScreenState]),
         { provide: ImageService, useValue: {} },
+        { provide: AudioService, useValue: {} },
+        { provide: SpeechToTextService, useValue: {} },
         { provide: DeviceCameraService, useValue: {} },
       ],
     }).compileComponents();
@@ -67,14 +71,26 @@ describe('TaskBottomPanelComponent', () => {
     expect(host.querySelector('img')).toBeNull();
   });
 
-  it('hides Mark as Active for calendar and location tasks', () => {
-    for (const type of [ETaskType.Calendar, ETaskType.Location]) {
-      showViewTask(ETaskStatus.Todo, type);
+  it('hides Mark as Active when the task cannot be started at any time', () => {
+    for (const conditions of [[ETaskCondition.Calendar], [ETaskCondition.Location]]) {
+      showViewTask(ETaskStatus.Todo, ETaskType.Basic, conditions);
       const host = fixture.nativeElement as HTMLElement;
 
       expect(host.querySelector('[data-test="mark-task-active-btn"]')).toBeNull();
       expect(host.querySelector('[data-test="mark-task-done-btn"]')?.textContent).toContain('Done');
     }
+  });
+
+  it('shows Mark as Active when a location task can also be done anytime', () => {
+    showViewTask(ETaskStatus.Todo, ETaskType.Location, [
+      ETaskCondition.Todo,
+      ETaskCondition.Location,
+    ]);
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-test="mark-task-active-btn"]')?.textContent).toContain(
+      'Mark as Active',
+    );
   });
 
   it('hides Mark as Active once the task is already active', () => {
@@ -94,6 +110,44 @@ describe('TaskBottomPanelComponent', () => {
     expect(host.querySelector('[data-test="task-view-actions"]')).toBeNull();
   });
 
+  it('hides both status actions on a note', () => {
+    showViewTask(ETaskStatus.Notes);
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-test="mark-task-active-btn"]')).toBeNull();
+    expect(host.querySelector('[data-test="mark-task-done-btn"]')).toBeNull();
+    expect(host.querySelector('[data-test="task-view-actions"]')).toBeNull();
+  });
+
+  it('labels the primary action Create Note', () => {
+    const store = TestBed.inject(Store);
+    store.reset({
+      taskViewState: {
+        mode: ETaskViewMode.Create,
+        taskViewForm: {
+          formData: { title: '', description: null },
+          status: false,
+        },
+        taskData: {
+          id: null,
+          userId: null,
+          type: ETaskType.Basic,
+          status: ETaskStatus.Notes,
+          title: '',
+          createdAt: null,
+          modifiedAt: null,
+        },
+        draftImages: [],
+      },
+    });
+    fixture.detectChanges();
+
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('[data-test="apply-changes-btn"]')
+        ?.textContent,
+    ).toContain('Create Note');
+  });
+
   it('marks the task active or done from the view actions', () => {
     showViewTask(ETaskStatus.Todo);
     const store = TestBed.inject(Store);
@@ -107,7 +161,11 @@ describe('TaskBottomPanelComponent', () => {
     expect(dispatch).toHaveBeenCalledWith(TaskScreenAction.MarkDoneButtonPressed);
   });
 
-  function showViewTask(status: ETaskStatus, type: ETaskType = ETaskType.Basic): void {
+  function showViewTask(
+    status: ETaskStatus,
+    type: ETaskType = ETaskType.Basic,
+    conditions?: ETaskCondition[],
+  ): void {
     const store = TestBed.inject(Store);
     store.reset({
       taskViewState: {
@@ -122,6 +180,7 @@ describe('TaskBottomPanelComponent', () => {
           type,
           title: 'Buy cat food',
           status,
+          ...(conditions ? { conditions } : {}),
           createdAt: '2020-01-15T12:00:00.000Z',
           modifiedAt: '2020-01-15T12:00:00.000Z',
         },

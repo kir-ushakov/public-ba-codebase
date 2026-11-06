@@ -1,4 +1,4 @@
-import { ETagError, TagConst } from '@brainassistant/contracts';
+import { canonicalTagColor, ETagError, TagConst } from '@brainassistant/contracts';
 import { AggregateRoot } from '../AggregateRoot.js';
 import { UniqueEntityID } from '../UniqueEntityID.js';
 import { Result } from '../../core/result.js';
@@ -11,6 +11,7 @@ export type TagProps = {
   userId: string;
   name: string;
   color: string;
+  isPinned: boolean;
   createdAt: Date;
   modifiedAt: Date;
 };
@@ -21,8 +22,10 @@ export type TagPersistent = {
   userId: string;
   name: string;
   color: string;
+  isPinned?: boolean;
   createdAt: Date;
   modifiedAt: Date;
+  syncRevision?: number;
 };
 
 export class Tag extends AggregateRoot<TagProps> {
@@ -43,6 +46,10 @@ export class Tag extends AggregateRoot<TagProps> {
 
   get color(): string {
     return this.props.color;
+  }
+
+  get isPinned(): boolean {
+    return this.props.isPinned;
   }
 
   get createdAt(): Date {
@@ -114,7 +121,7 @@ export class Tag extends AggregateRoot<TagProps> {
       );
     }
 
-    if (!Guard.notEmptyString(props.color)) {
+    if (!canonicalTagColor(props.color)) {
       return Result.fail<never, DomainError<Tag, ETagError>>(
         new DomainError<Tag, ETagError>(ETagError.ColorMissed, 'Tag color is required'),
       );

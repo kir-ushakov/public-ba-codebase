@@ -8,6 +8,7 @@ export interface IActionPersistent {
   type: EActionType;
   occurredAt: Date;
   entityId: string;
+  syncRevision?: number;
 }
 
 export interface ActionDocument extends IActionPersistent, Document<string> {}
@@ -17,7 +18,10 @@ const ActionSchema = new Schema({
   type: { type: String, require: true },
   occurredAt: { type: Date, require: true },
   entityId: { type: String, require: true },
+  syncRevision: { type: Number, required: false },
 });
+
+ActionSchema.index({ userId: 1, syncRevision: 1 });
 
 const ActionModel = mongoose.model<ActionDocument>('Action', ActionSchema);
 

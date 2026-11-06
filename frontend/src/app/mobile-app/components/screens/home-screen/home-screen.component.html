@@ -3,7 +3,7 @@
     <div class="top-panel-holder-left">
       <div class="page-header-text">
         <h1 class="page-title" data-test="home-title">Home</h1>
-        <p class="page-subtitle" data-test="home-item-count">{{ itemCountLabel }}</p>
+        <p class="page-subtitle" data-test="home-item-count">{{ itemCountLabel() }}</p>
       </div>
     </div>
     <div class="top-panel-holder-right">
@@ -77,14 +77,68 @@
     </div>
   }
 </div>
-<div class="main-panel-holder">
+<div class="content-mode-holder">
+  <ba-home-content-mode
+    [selected]="contentMode()"
+    [secondary]="secondaryCategory()"
+    [counts]="tabCounts()"
+    (modeChange)="selectContentMode($event)"
+  ></ba-home-content-mode>
+</div>
+@if (filterTags().length) {
+  <div class="pinned-tags" data-test="home-pinned-tags">
+    @for (tag of filterTags(); track tag.id) {
+      <button
+        class="pinned-tag"
+        type="button"
+        data-test="home-pinned-tag"
+        [class.is-selected]="selectedTagIds().includes(tag.id)"
+        [attr.aria-pressed]="selectedTagIds().includes(tag.id)"
+        (click)="togglePinnedTag(tag.id)"
+      >
+        <span
+          class="material-symbols-rounded"
+          [style.color]="tagIconColor(tag.color)"
+          aria-hidden="true"
+          >sell</span
+        >
+        <span class="pinned-tag-name">{{ tag.name }}</span>
+        @if (tag.isPinned === true) {
+          <span
+            class="material-symbols-rounded pinned-tag-pin"
+            data-test="home-tag-pin"
+            aria-hidden="true"
+            >push_pin</span
+          >
+        }
+      </button>
+    }
+  </div>
+}
+<div
+  class="main-panel-holder"
+  (touchstart)="onContentTouchStart($event)"
+  (touchend)="onContentTouchEnd($event)"
+>
+  @if (selectors.uiError(); as error) {
+    <ba-home-sync-status
+      [title]="error.title"
+      [body]="error.body"
+      [showAction]="false"
+      testId="home-persistence-error"
+    ></ba-home-sync-status>
+  }
   @if (selectors.isLocalAuthenticated()) {
     <ba-home-sync-status></ba-home-sync-status>
   }
-  @if (showNoResults()) {
-    <p class="search-empty" data-test="home-search-empty">No results</p>
+  @if (showEmptyState()) {
+    <ba-home-empty-state [mode]="contentMode()"></ba-home-empty-state>
+  } @else {
+    @if (showNoResults()) {
+      <p class="search-empty" data-test="home-search-empty">No results</p>
+    }
+    <ba-task-tiles-panel [tasks]="filteredTasks()"></ba-task-tiles-panel>
   }
-  <ba-task-tiles-panel [tasks]="filteredTasks()"></ba-task-tiles-panel>
 </div>
 <div class="bottom-panel-holder">
   <ba-home-bottom-panel></ba-home-bottom-panel>

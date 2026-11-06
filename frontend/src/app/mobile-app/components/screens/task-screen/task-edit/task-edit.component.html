@@ -1,6 +1,8 @@
 <div class="title-input-holder">
   <form class="task-form" [formGroup]="form">
-    <ba-task-type-chip [type]="taskType()" />
+    @if (!isNote()) {
+      <ba-task-type-chip [type]="taskType()" />
+    }
     <div class="title-field">
       <label class="field-label" for="titleInput">Title</label>
       <div class="title-control">
@@ -12,7 +14,7 @@
           [cdkAutosizeMinRows]="1"
           formControlName="title"
           rows="1"
-          [placeholder]="(voiceToTextConverting$ | async) ? '' : 'Task title here...'"
+          [placeholder]="(voiceToTextConverting$ | async) ? '' : titlePlaceholder()"
           autocomplete="off"
           [attr.maxlength]="titleMaxLength"
           data-test="task-title-input"
@@ -25,9 +27,36 @@
       </p>
     </div>
     <div class="description-field">
-      <p class="field-label">Description</p>
-      <ba-rich-text-editor formControlName="description" />
+      <p class="field-label">Content</p>
+      <ba-task-content-switch
+        [mode]="contentMode()"
+        [descriptionHasContent]="descriptionHasContent()"
+        [checklistHasContent]="checklist().length > 0"
+        (modeChange)="contentMode.set($event)"
+      />
+      <div [hidden]="contentMode() !== 'description'">
+        <ba-rich-text-editor
+          formControlName="description"
+          [placeholder]="descriptionPlaceholder()"
+        />
+      </div>
+      <div [hidden]="contentMode() !== 'checklist'">
+        <ba-checklist-editor
+          [items]="checklist()"
+          [canEdit]="true"
+          [canCheck]="canCheckChecklist()"
+          (itemsChange)="onChecklistChange($event)"
+        />
+      </div>
     </div>
+    @if (!isNote()) {
+      <ba-audio-attachments
+        [canAdd]="true"
+        [canRemove]="true"
+        [mutatesDescription]="true"
+        (descriptionAppend)="appendTranscription($event)"
+      />
+    }
     <ba-image-gallery-editor
       [images]="galleryImages()"
       (addImage)="addPictureBtnPressed()"
@@ -39,6 +68,9 @@
       [selectedIds]="tagIds()"
       (selectedIdsChange)="onTagIdsChange($event)"
     />
-    <ba-status-selector formControlName="status" />
+    @if (!isNote()) {
+      <ba-condition-selector formControlName="conditions" />
+      <ba-status-selector formControlName="status" />
+    }
   </form>
 </div>
