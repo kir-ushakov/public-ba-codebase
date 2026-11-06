@@ -40,7 +40,7 @@
     "@angular/router": "^20.3.30",
     "@angular/service-worker": "^20.3.30",
     "@brainassistant/contracts": "file:../contracts",
-    "@capacitor/android": "^6.0.0",
+    "@capacitor/android": "^6.2.2",
     "@capacitor/angular": "^2.0.3",
     "@capacitor/app": "^6.0.0",
     "@capacitor/camera": "^6.0.0",
