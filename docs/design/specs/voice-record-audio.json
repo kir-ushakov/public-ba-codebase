@@ -1,0 +1,206 @@
+{
+  "screen": {
+    "id": "voice-record-audio",
+    "name": "Audio Attachment Recording",
+    "version": "1.1.0",
+
+    "purpose": "Record an audio attachment for a task. Saving the file does not transcribe it.",
+
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+    "designSystemPattern": "voiceRecorder",
+
+    "status": "approved",
+    "implementationStatus": "spec-only",
+
+    "parents": [
+      "./task-create.json",
+      "./task-edit.json"
+    ],
+
+    "layout": {
+      "type": "mobile",
+      "presentation": "fullscreen",
+      "structure": [
+        "header",
+        "recorder",
+        "bottom-actions"
+      ]
+    },
+
+    "header": {
+      "title": "Record Audio",
+      "subtitle": "Voice attachment"
+    },
+
+    "recorder": {
+      "microphone": true,
+      "ring": {
+        "role": "activity",
+        "fillsWithTime": false,
+        "recording": "accent.primary",
+        "paused": "icon.default",
+        "saving": "processing"
+      },
+      "timer": {
+        "underOneHour": "MM:SS",
+        "fromOneHour": "HH:MM:SS",
+        "example": "03:42"
+      },
+      "statusLabel": {
+        "preparing": "Preparing microphone...",
+        "recording": "Recording",
+        "paused": "Paused",
+        "saving": "Saving..."
+      },
+      "waveform": {
+        "component": "audioWaveform",
+        "source": "live-microphone-level",
+        "barCount": 16,
+        "freezesWhen": "paused",
+        "unavailableWhen": "the capture path has no microphone meter"
+      },
+      "pause": true,
+      "countdown": false
+    },
+
+    "timing": {
+      "visibleLimit": false,
+      "clock": "elapsed capture time",
+      "pausesWhen": "recording is paused",
+      "startsWhen": "audio capture has started, after microphone preparation",
+      "excludes": [
+        "time spent opening the screen",
+        "microphone permission",
+        "time until the recorder confirms capture has started",
+        "time spent paused"
+      ]
+    },
+
+    "bottomActions": {
+      "component": "voiceRecorder.actions",
+      "actions": [
+        {
+          "id": "cancel",
+          "icon": "close",
+          "label": "Cancel",
+          "ariaLabel": "Cancel",
+          "style": "secondary",
+          "action": "cancel-recording"
+        },
+        {
+          "id": "pause",
+          "icon": "pause",
+          "label": "Pause",
+          "ariaLabel": "Pause",
+          "style": "secondary",
+          "action": "pause-recording",
+          "visibleWhen": "recording"
+        },
+        {
+          "id": "resume",
+          "icon": "play_arrow",
+          "label": "Resume",
+          "ariaLabel": "Resume",
+          "style": "secondary",
+          "action": "resume-recording",
+          "visibleWhen": "paused"
+        },
+        {
+          "id": "stop",
+          "icon": "check",
+          "label": "Save",
+          "ariaLabel": "Save",
+          "style": "primary",
+          "action": "stop-and-save"
+        }
+      ]
+    },
+
+    "behavior": {
+      "onStop": "Finish capture and save an audio attachment on the task. Do not call speech-to-text. While saving, ignore a second Save. On success, close this screen. If saving fails, keep the recording and let the user retry.",
+      "onCancel": "Cancel is the only discard control. If meaningful audio has already been captured, ask before discarding. The confirmation offers Keep recording and Discard recording. Discard drops only this take. Previously saved attachments stay.",
+      "onPause": "Stop appending audio and freeze the timer and the level meter. The button becomes Resume. Already captured audio stays.",
+      "onResume": "Continue the same recording from the elapsed time already shown. Do not reset the timer.",
+      "sizeLimit": "Stop and save when the captured file reaches the product audio size limit. There is no countdown and no fixed minute cap. If the device cannot continue because it is out of space or memory, say so and keep whatever audio can still be saved.",
+      "onOpen": "Open immediately in preparing. Request the microphone, then start capture automatically. Do not show a Start button and do not run the timer until capture starts.",
+      "onPrepareFailed": "Leave preparing. Show the failure, Retry and Cancel. Release the microphone.",
+      "unavailableCapture": "When the device can only produce uncompressed audio, this screen does not start. Title recording stays available.",
+      "transcription": "Not available on this screen. Transcribe with AI is an action on the saved attachment."
+    },
+
+    "states": {
+      "idle": {
+        "description": "Recorder is ready."
+      },
+      "preparing": {
+        "description": "The screen is open and capture has not started. The microphone indicator stays neutral, an indeterminate indicator is shown, and the timer is hidden. Pause and Save are disabled. Cancel stays available.",
+        "statusLabel": "Preparing microphone...",
+        "microphone": "icon.default",
+        "indicator": "indeterminate",
+        "timer": false,
+        "actions": ["cancel"]
+      },
+      "starting": {
+        "description": "Same as preparing. Kept so older references to the startup state still point here.",
+        "sameAs": "preparing"
+      },
+      "recording": {
+        "description": "Audio capture is active. The timer advances and the level meter follows the microphone.",
+        "statusLabel": "Recording",
+        "ring": "accent.primary",
+        "actions": ["cancel", "pause", "stop"]
+      },
+      "paused": {
+        "description": "Recording is temporarily suspended. The timer does not advance and the level meter freezes. Captured audio stays.",
+        "statusLabel": "Paused",
+        "ring": "icon.default",
+        "actions": ["cancel", "resume", "stop"]
+      },
+      "stopping": {
+        "description": "Finalizing recorded audio."
+      },
+      "saving": {
+        "description": "Saving the audio attachment. Speech-to-text is not called. A second Save is ignored.",
+        "statusLabel": "Saving...",
+        "actions": []
+      },
+      "saved": {
+        "description": "The attachment exists on the task. This screen closes and the Audio attachments section shows the new recording.",
+        "actions": []
+      },
+      "error": {
+        "description": "Permission denied, no microphone, device or recorder initialization failed, or the microphone disconnected. The screen leaves preparing and shows the message with Retry and Cancel. The microphone is released. A failed save keeps the current take so the user can retry or discard it.",
+        "actions": ["cancel", "retry"]
+      }
+    },
+
+    "visualRules": [
+      "Use the voiceRecorder and audioWaveform components from design-system.json.",
+      "Do not define screen-specific colors, radii or spacing.",
+      "The reference PNG is a visual target for composition and density, not a source of token values.",
+      "Do not reproduce the glowing halo from the reference. The microphone uses the thin accent ring from voiceRecorder.",
+      "The ring shows microphone activity. It is teal while recording and neutral while paused or preparing. It is not a duration countdown.",
+      "Preparing shows Preparing microphone... and an indeterminate indicator. The timer stays hidden until capture starts.",
+      "The waveform is a live level meter of about 16 bars. Do not use a decorative row of dots or a looping animation.",
+      "There is no close control in the header. Cancel under the buttons is the only discard action.",
+      "Cancel, Pause or Resume, and Save have visible labels. Save does not mean transcribe.",
+      "Leave generous space between the recorder and the buttons. Move the central group slightly down and the buttons slightly up, using spacing tokens rather than a fixed position.",
+      "Pause, the open-ended timer and save-without-transcription belong to this screen. Do not copy them into the title recorder."
+    ],
+
+    "reference": {
+      "status": "approved",
+      "image": "../references/voice-record-audio.png",
+      "description": "Approved composition reference for the audio attachment recorder. The halo and the decorative waveform in the image are superseded by voiceRecorder and audioWaveform."
+    },
+
+    "angular": {
+      "note": "Opened from Add audio recording on Create Task and Edit Task. Same recorder services as title recording, with pause and without automatic transcription.",
+      "existingPiecesToReuse": [
+        "frontend/src/app/shared/features/voice-input/components/voice-recorder/",
+        "frontend/src/app/shared/services/pwa/voice-recorder/"
+      ]
+    }
+  }
+}

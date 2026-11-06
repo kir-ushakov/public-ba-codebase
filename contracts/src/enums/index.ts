@@ -7,9 +7,15 @@ export { EChangedEntity } from './changed-entity.enum';
 export { EChangeAction } from './change-action.enum';
 export { ETaskStatus } from './task-status.enum';
 export { ETaskType } from './task-type.enum';
+export { ETaskCondition } from './task-condition.enum';
 export {
   EApiError,
   EUploadImageUseCaseError,
+  EUploadAudioUseCaseError,
+  EGetAudioUseCaseError,
+  EDeleteAudioUseCaseError,
+  EDeleteImageUseCaseError,
+  EDeleteTaskUseCaseError,
   EGetImageUseCaseError,
   ELoginUseCaseError,
   ESignUpUseCaseError,
@@ -21,6 +27,7 @@ export {
   ESlackEventReceivedUseCaseError,
   ETaskError,
   ETagError,
+  ETagRepoServiceError,
   ETaskRepoServiceError,
   EImageRepoServiceError,
 } from './api-error.enum';

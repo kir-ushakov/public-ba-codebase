@@ -1,15 +1,21 @@
 <button
   class="create-fab"
   type="button"
-  data-test="new-task-btn"
-  aria-label="Create"
-  (click)="createTask()"
+  [attr.data-test]="page() === 'tags' ? 'tags-create' : 'new-task-btn'"
+  [attr.aria-label]="page() === 'tags' ? 'Create tag' : 'Create'"
+  (click)="onCreate()"
 >
   <span class="material-symbols-rounded" aria-hidden="true">add</span>
 </button>
 
 <nav class="bottom-nav" aria-label="Primary">
-  <a class="nav-item is-active" routerLink="/home" data-test="bottom-nav-home" aria-current="page">
+  <a
+    class="nav-item"
+    routerLink="/home"
+    data-test="bottom-nav-home"
+    [class.is-active]="page() === 'home'"
+    [attr.aria-current]="page() === 'home' ? 'page' : null"
+  >
     <span class="material-symbols-rounded" aria-hidden="true">home</span>
     <span class="nav-label">Home</span>
   </a>
@@ -17,8 +23,14 @@
     <span class="material-symbols-rounded" aria-hidden="true">calendar_month</span>
     <span class="nav-label">Tasks</span>
   </span>
-  <span class="nav-item" data-test="bottom-nav-tags">
+  <a
+    class="nav-item"
+    routerLink="/tags"
+    data-test="bottom-nav-tags"
+    [class.is-active]="page() === 'tags'"
+    [attr.aria-current]="page() === 'tags' ? 'page' : null"
+  >
     <span class="material-symbols-rounded" aria-hidden="true">sell</span>
     <span class="nav-label">Tags</span>
-  </span>
+  </a>
 </nav>

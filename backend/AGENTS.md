@@ -48,7 +48,9 @@ contract type at the HTTP boundary (`SendChangeContract.Request<TaskDTO>`), requ
 into `create-task.mapper.ts`, validation delegated to `Task.create` returning a `Result`, error
 factories in `create-task.errors.ts` that return `Result.fail` with `httpCode`, repos injected
 through the constructor, and `index.ts` as the single composition root that instantiates everything
-and exports the controller.
+and exports the controller. That file wires objects. It does not declare the controller class, the
+use-case class, or error factories — those live in `<name>.controller.ts`, `<name>.usecase.ts` and
+`<name>.errors.ts`. A few folders call the wiring file `_index.ts`.
 
 Do not copy the commented-out Slack block and its `TODO` / `TICKET` comments at the end of
 `create-task.usecase.ts`.

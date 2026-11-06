@@ -2,22 +2,25 @@ import { Page } from '@playwright/test';
 import {
   EApiError,
   ERefreshSessionUseCaseError,
-  EUploadImageUseCaseError,
   type ApiErrorDto,
   type GetChangesContract,
   type RefreshSessionContract,
   type SendChangeContract,
+  type TagDTO,
   type TaskDTO,
   type UploadImageContract,
 } from '@brainassistant/contracts';
+
+export type ApiMocks = {
+  /** Abort `/api/**` so the app shell can still reload from the dev server. */
+  setOffline(offline: boolean): void;
+};
 
 export type SetupApiMocksOptions = {
   /** GET /api/sync/changes returns 401; Home shows the signed-in-not-synced banner. */
   unauthorizedChanges?: boolean;
   /** POST /api/sync/task returns 500; the task stays in the client sync queue. */
   failTaskSync?: boolean;
-  /** POST /api/files/image returns 403 Google refresh token invalid. */
-  failGoogleRefreshToken?: boolean;
   /** POST /api/files/image returns 500; the task stays queued until a later retry. */
   failImageUpload?: boolean;
 };
@@ -28,6 +31,18 @@ function json(status: number, body: unknown) {
     contentType: 'application/json',
     body: JSON.stringify(body),
   };
+}
+
+function parseSendChangeTag(postData: string | null): TagDTO | null {
+  if (!postData) {
+    return null;
+  }
+  try {
+    const body = JSON.parse(postData) as SendChangeContract.Request<TagDTO>;
+    return body.changeableObjectDto ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function parseSendChangeTask(postData: string | null): TaskDTO | null {
@@ -49,8 +64,17 @@ function parseSendChangeTask(postData: string | null): TaskDTO | null {
  * integration specs in `backend/test/integration/`. POST and PATCH `/api/sync/task`
  * return the saved TaskDTO; DELETE answers 200 with no payload.
  */
-export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = {}): Promise<void> {
+export async function setupApiMocks(
+  page: Page,
+  options: SetupApiMocksOptions = {},
+): Promise<ApiMocks> {
+  let offline = false;
   await page.route('**/api/**', async route => {
+    if (offline) {
+      await route.abort('internetdisconnected');
+      return;
+    }
+
     const request = route.request();
     const url = request.url();
     const method = request.method();
@@ -107,15 +131,26 @@ export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = 
       return;
     }
 
+    if (url.includes('/api/sync/tag') && method === 'POST') {
+      const tag = parseSendChangeTag(request.postData());
+      const body: SendChangeContract.Response<TagDTO> = tag ?? undefined;
+      await route.fulfill(json(201, body ?? {}));
+      return;
+    }
+
+    if (url.includes('/api/sync/tag') && method === 'PATCH') {
+      const tag = parseSendChangeTag(request.postData());
+      const body: SendChangeContract.Response<TagDTO> = tag ?? undefined;
+      await route.fulfill(json(200, body ?? {}));
+      return;
+    }
+
+    if (url.includes('/api/sync/tag') && method === 'DELETE') {
+      await route.fulfill(json(200, {}));
+      return;
+    }
+
     if (url.includes('/api/files/image') && method === 'POST') {
-      if (options.failGoogleRefreshToken) {
-        const body: ApiErrorDto = {
-          name: EUploadImageUseCaseError.GoogleRefreshTokenInvalid,
-          message: 'Google refresh token is invalid or revoked',
-        };
-        await route.fulfill(json(403, body));
-        return;
-      }
       if (options.failImageUpload) {
         const body: ApiErrorDto = { name: EApiError.Unexpected, message: 'image upload failed' };
         await route.fulfill(json(500, body));
@@ -135,6 +170,30 @@ export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = 
       return;
     }
 
+    if (url.includes('/api/ai/speech-to-text') && method === 'POST') {
+      await route.fulfill(json(200, { transcript: 'Saved voice note' }));
+      return;
+    }
+
+    if (url.includes('/api/files/audio') && method === 'POST') {
+      await route.fulfill(json(200, { audioId: 'mock-uploaded-audio-id' }));
+      return;
+    }
+
+    if (url.includes('/api/files/audio') && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'audio/webm',
+        body: Buffer.from([0x1a, 0x45, 0xdf, 0xa3]),
+      });
+      return;
+    }
+
+    if (url.includes('/api/files/audio') && method === 'DELETE') {
+      await route.fulfill(json(200, { audioId: 'mock-uploaded-audio-id' }));
+      return;
+    }
+
     if (url.includes('/api/auth/logout') && method === 'DELETE') {
       await route.fulfill(json(200, {}));
       return;
@@ -151,4 +210,10 @@ export async function setupApiMocks(page: Page, options: SetupApiMocksOptions = 
 
     await route.continue();
   });
+
+  return {
+    setOffline(next: boolean): void {
+      offline = next;
+    },
+  };
 }

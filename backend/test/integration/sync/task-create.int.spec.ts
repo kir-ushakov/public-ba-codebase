@@ -1,12 +1,19 @@
 import { Application } from 'express';
 import request from 'supertest';
-import { TaskDTO, ETaskStatus, ETaskType, EApiError, TaskConst } from '@brainassistant/contracts';
+import {
+  TaskDTO,
+  ETaskStatus,
+  ETaskType,
+  ETaskCondition,
+  EApiError,
+  TaskConst,
+} from '@brainassistant/contracts';
 import { ETaskError } from '../../../src/shared/domain/models/task.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
-import { createTagViaApi } from '../_setup/sync.helper.js';
+import { createTagViaApi, createTaskViaApi } from '../_setup/sync.helper.js';
 
 describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', () => {
   let app: Application;
@@ -65,6 +72,7 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(responseBody.title).toBe(dto.title);
     expect(responseBody.type).toBe(dto.type);
     expect(responseBody.status).toBe(dto.status);
+    expect(responseBody.conditions).toEqual([ETaskCondition.Todo]);
     expect(responseBody.imageId).toBe(dto.imageId);
     expect(responseBody.userId).toBe(userId);
     expect(responseBody.createdAt).toBe(dto.createdAt);
@@ -351,5 +359,110 @@ describe('Integration: CreateTask (Controller -> UseCase -> Repo -> MongoDB)', (
     expect(res.body.name).toBe(ETaskError.UnknownTag);
     expect(res.body).toHaveProperty('message');
     expect(await models.TaskModel.findById('task-foreign-tag').lean()).toBeNull();
+  });
+
+  it('persists a checklist on a task and on a note', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const checklist = [
+      { id: 'item-1', text: 'Buy cat food', completed: false },
+      { id: 'item-2', text: 'Check salmon variant', completed: true },
+    ];
+
+    const task = await createTaskViaApi(app, jwtCookie, {
+      id: 'task-with-checklist',
+      title: 'Shopping',
+      checklist,
+    });
+    const note = await createTaskViaApi(app, jwtCookie, {
+      id: 'note-with-checklist',
+      title: 'Remember this',
+      status: ETaskStatus.Notes,
+      checklist,
+    });
+
+    expect(task.checklist).toEqual(checklist);
+    expect(note.status).toBe(ETaskStatus.Notes);
+    expect(note.checklist).toEqual(checklist);
+    expect((await models.TaskModel.findById(task.id).lean())?.checklist).toEqual(checklist);
+    expect((await models.TaskModel.findById(note.id).lean())?.checklist).toEqual(checklist);
+  });
+
+  it('stores todo and location together and projects a single type', async () => {
+    const { jwtCookie } = await seedTestUser();
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          id: 'task-lemons',
+          type: ETaskType.Basic,
+          title: 'Buy lemons',
+          status: ETaskStatus.Todo,
+          conditions: [ETaskCondition.Todo, ETaskCondition.Location],
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(201);
+    expect(res.body.conditions).toEqual([ETaskCondition.Todo, ETaskCondition.Location]);
+    expect(res.body.type).toBe(ETaskType.Location);
+
+    const persisted = await models.TaskModel.findById('task-lemons').lean();
+    expect(persisted?.conditions).toEqual([ETaskCondition.Todo, ETaskCondition.Location]);
+    expect(persisted?.type).toBe(ETaskType.Location);
+  });
+
+  it('derives calendar plus todo when an older client sends only the calendar type', async () => {
+    const { jwtCookie } = await seedTestUser();
+
+    const res = await authenticatedRequest(app, jwtCookie)
+      .post('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          id: 'task-calendar',
+          type: ETaskType.Calendar,
+          title: 'Pay the bill',
+          status: ETaskStatus.Todo,
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(res.status).toBe(201);
+    expect(res.body.conditions).toEqual([ETaskCondition.Todo, ETaskCondition.Calendar]);
+    expect(res.body.type).toBe(ETaskType.Calendar);
+  });
+
+  it('rejects an empty condition list and conditions on a note', async () => {
+    const { jwtCookie } = await seedTestUser();
+
+    const empty = await authenticatedRequest(app, jwtCookie)
+      .post('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          id: 'task-empty-conditions',
+          type: ETaskType.Basic,
+          title: 'Buy lemons',
+          status: ETaskStatus.Todo,
+          conditions: [],
+        },
+      })
+      .set('Accept', 'application/json');
+    const note = await authenticatedRequest(app, jwtCookie)
+      .post('/api/sync/task')
+      .send({
+        changeableObjectDto: {
+          id: 'task-note-conditions',
+          type: ETaskType.Basic,
+          title: 'A note',
+          status: ETaskStatus.Notes,
+          conditions: [ETaskCondition.Todo],
+        },
+      })
+      .set('Accept', 'application/json');
+
+    expect(empty.status).toBe(400);
+    expect(empty.body.name).toBe(ETaskError.ConditionsInvalid);
+    expect(note.status).toBe(400);
+    expect(note.body.name).toBe(ETaskError.ConditionsInvalid);
   });
 });

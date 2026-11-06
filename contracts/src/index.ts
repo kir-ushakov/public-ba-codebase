@@ -13,6 +13,9 @@ export type {
   TaskDescriptionNode,
   TaskDescriptionMarkType,
   TaskDescriptionNodeType,
+  ChecklistItemDTO,
+  AudioAttachment,
+  AudioTranscription,
   UserDto,
   LoginRequestDTO,
   LoginResponseDTO,
@@ -27,7 +30,7 @@ export type {
   ApiErrorDto,
   ApiSuccessDto,
 } from './dto';
-export { ImageConst, TaskConst, TagConst } from './dto';
+export { canonicalTagColor, ImageConst, TaskConst, TagConst } from './dto';
 
 // Enums
 export {
@@ -35,8 +38,14 @@ export {
   EChangeAction,
   ETaskStatus,
   ETaskType,
+  ETaskCondition,
   EApiError,
   EUploadImageUseCaseError,
+  EUploadAudioUseCaseError,
+  EGetAudioUseCaseError,
+  EDeleteAudioUseCaseError,
+  EDeleteImageUseCaseError,
+  EDeleteTaskUseCaseError,
   EGetImageUseCaseError,
   ELoginUseCaseError,
   ESignUpUseCaseError,
@@ -48,6 +57,7 @@ export {
   ESlackEventReceivedUseCaseError,
   ETaskError,
   ETagError,
+  ETagRepoServiceError,
   ETaskRepoServiceError,
   EImageRepoServiceError,
 } from './enums';
@@ -55,8 +65,10 @@ export {
 // Contracts
 export {
   UploadImageContract,
+  UploadAudioContract,
   SendChangeContract,
   GetChangesContract,
   RefreshSessionContract,
+  SyncAvailableContract,
 } from './contracts';
 

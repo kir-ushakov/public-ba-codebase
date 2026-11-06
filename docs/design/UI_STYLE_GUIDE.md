@@ -52,7 +52,7 @@ No excessive rounded corners.
 **Icons**
 
 - Google Material Symbols Rounded.
-- Simple geometric/outline icons (`FILL` 0).
+- Simple geometric/outline icons (`FILL` 0). The Home Active `play_arrow` is the exception and uses `FILL` 1.
 - 24px standard size.
 - Teal only for active/primary actions.
 
@@ -198,6 +198,8 @@ Use it for:
 - success states when appropriate
 
 Do not use teal simply as decoration.
+
+For compact selection controls, prefer a subtle selected surface and a thin accent border over a solid primary accent background. Reserve solid teal fills for primary action buttons and the floating action button.
 
 ### Dark surfaces
 
@@ -413,12 +415,16 @@ Rules:
   does not exist in Material Symbols.
 - Standard icon size: use the icon size tokens from `design-system.json`.
 - Icon color must use design-system color tokens.
+- Default fill is 0. The Home segmented Active `play_arrow` uses fill 1 from `segmentedControl.segment.filledIcons`. Do not set fill 1 on the other segments.
+- The Home category selector uses `keyboard_arrow_down`. Closed, the icon stays neutral gray. Open, the button uses the accent border and the active icon color.
 
 Do not use `mat-icon` (Material Icons) for new UI. Render a symbol with:
 
 ```html
 <span class="material-symbols-rounded">add</span>
 ```
+
+The font request is a named subset, not the full Material Symbols set. Add every new symbol name, in alphabetical order, to `icon_names` in both `frontend/src/index.html` and `frontend/ngsw-config.json`, and keep the two lists the same. A name that is not in the subset is drawn as its text.
 
 Icons should normally use neutral gray (`--color-icon-default`).
 
@@ -451,6 +457,10 @@ Examples:
 - Back: `arrow_back`
 - Close: `close`
 - Done: `check`
+
+Empty states may use the Brain Assistant mascot with subtle emotional expressions. Mascot illustrations are product-specific SVG assets, not interface icons. Keep them minimal, restrained and consistent with the application's visual language.
+
+Material Symbols Rounded remain the interface icons. Do not replace the mascot with a Material Symbol, and do not use the mascot as an icon in buttons, navigation or cards. Size, spacing and typography for an empty state come from `design-system.json` → `emptyState`.
 
 ---
 
@@ -638,6 +648,18 @@ Cards may have different heights when their content requires it.
 
 Do not artificially force all cards to the same height.
 
+### Scrollbars
+
+Scrollbars are global chrome, specified in `design-system.json` → `scrollbar`. They stay native. The thumb helps a person see where they are on a long screen. It is not a separate control.
+
+Desktop, where a fine pointer can hover: a 4px rounded thumb `#647B83`, `#8299A1` on hover, transparent track, 999px radius, no arrow buttons, border, gradient or shadow. Hover may widen the thumb to 6px where the browser supports it. Keep a 4px inset from the edge (`spacing.xs`). Map the values through `frontend/src/scss/` as `--scrollbar-*` and apply them with the `app-scrollable` class on the scroll container.
+
+Touch: keep native momentum scrolling and let the operating system show or hide the overlay thumb. Do not force the bar to stay visible.
+
+When standard CSS cannot provide the exact width, the hover width and auto-hide at the same time, keep native scrolling and the dark thumb. Do not replace the scrollbar with JavaScript.
+
+A screen that scrolls keeps its header and footer in normal layout, outside the scroll container. Only the central region scrolls vertically. Use a column flex or grid layout and `min-height: 0` on the scroll child. Do not pin the header or footer with `position: fixed` when they can sit outside that container.
+
 ---
 
 ## 20. Interaction States
@@ -804,7 +826,7 @@ If a genuinely new visual primitive is required, propose the addition before int
 
 ## 27. Reference Visual Language
 
-The **approved** Home screen (`docs/design/specs/home.json` and `docs/design/references/home.png`) is the primary visual reference.
+The **approved** Home screen (`docs/design/specs/home.json` and `docs/design/references/home.jpg`) is the primary visual reference.
 
 The live Angular Home screen may still lag behind that spec. Treat the approved spec and this guide as the target language, not whichever older screen happens to be nearby.
 

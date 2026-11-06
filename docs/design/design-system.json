@@ -1,7 +1,7 @@
 {
   "designSystem": {
     "name": "Brain Assistant Dark Technical",
-    "version": "1.3.0",
+    "version": "1.9.0",
     "scope": "product",
 
     "tokenNaming": {
@@ -78,6 +78,7 @@
         "hover": "#00BFA5",
         "pressed": "#008C79",
         "subtle": "rgba(0,169,145,0.15)",
+        "muted": "rgba(0,169,145,0.35)",
         "onAccent": "#FFFFFF"
       },
 
@@ -176,7 +177,7 @@
       "rules": [
         "Use 8px radius for normal cards and controls",
         "Use 12px radius only for large containers or dialogs",
-        "Circular shapes are reserved for avatars and floating action buttons",
+        "Circular shapes are reserved for avatars, the floating action button, and the voice recorder controls defined by voiceRecorder",
         "Avoid excessive pill-shaped controls except tags and statuses"
       ]
     },
@@ -222,6 +223,7 @@
         "Do not create custom SVG icons when an equivalent Material Symbol exists",
         "Do not mix Material Symbols with legacy PNG icons on redesigned screens",
         "Custom SVG icons are allowed only when the required product-specific icon does not exist in Material Symbols",
+        "The Brain Assistant mascot is an illustration defined by emptyState, not an interface icon",
         "Inactive icons use neutral gray",
         "Active navigation icons use the primary teal accent"
       ],
@@ -236,8 +238,15 @@
           "The leading icon on a task card is the task type, not media presence.",
           "Do not show the type name as text on the card.",
           "Do not use check or check_circle for TODO; they read as completed.",
-          "To do maps from ETaskType.Basic (TASK_TYPE_BASIC). Location is TASK_TYPE_LOCATION and Calendar is TASK_TYPE_CALENDAR. Timer and schedule are not wire values yet."
+          "The card icon is projected from task conditions: location, then calendar, otherwise To do.",
+          "ETaskType remains on the wire for older clients. Basic is the projection when the only condition is todo."
         ]
+      },
+      "homeContentMode": {
+        "active": "play_arrow",
+        "todo": "radio_button_unchecked",
+        "waiting": "hourglass_empty",
+        "notes": "article"
       }
     },
 
@@ -257,9 +266,36 @@
 
       "rules": [
         "Use whitespace to separate logical groups",
-        "Do not fill empty areas with decorative content",
+        "Do not fill empty areas with decorative content. An empty collection may use the emptyState mascot in place of its list or grid",
         "Cards may have different heights when content requires it",
         "Maintain consistent horizontal alignment"
+      ]
+    },
+
+    "scrollbar": {
+      "type": "native",
+      "style": "minimal-dark",
+      "width": "4px",
+      "hoverWidth": "6px",
+      "thumbColor": "#647B83",
+      "thumbHoverColor": "#8299A1",
+      "trackColor": "transparent",
+      "borderRadius": "999px",
+      "buttons": "none",
+      "insetInlineEnd": "spacing.scale.xs",
+      "behavior": {
+        "desktop": "native-scrollbar-with-custom-styling",
+        "touch": "native-overlay-scrollbar",
+        "autoHide": "platform-controlled",
+        "scrollbarGutter": "stable-only-if-needed"
+      },
+      "rules": [
+        "This is a design specification, not a CSS implementation. Exact width, hover width and auto-hide cannot be guaranteed together with standard CSS.",
+        "Priority is native scrolling, then a dark minimal thumb, then compatibility. Hover width applies only where scrollbar pseudo-elements support it.",
+        "Do not build a JavaScript scrollbar and do not disable native scrolling.",
+        "No arrow buttons, border, gradient or shadow.",
+        "On touch platforms, leave overlay visibility to the operating system. Do not force a permanently visible scrollbar or add padding that imitates a desktop gutter.",
+        "Apply the style to scroll containers. Do not style every element, and do not set overflow hidden on the application."
       ]
     },
 
@@ -515,6 +551,140 @@
       ]
     },
 
+    "segmentedControl": {
+      "container": {
+        "layout": "single horizontal row",
+        "gap": "spacing.scale.sm",
+        "background": "transparent",
+        "border": "none"
+      },
+      "segment": {
+        "layout": "flexible, sharing the width left by the selector",
+        "alignment": "center",
+        "gap": "spacing.scale.xs",
+        "iconSize": "small",
+        "iconFill": 0,
+        "iconWeight": 400,
+        "iconGrade": 0,
+        "opticalSize": 24,
+        "minHeight": "44px",
+        "borderRadius": "large",
+        "filledIcons": {
+          "play_arrow": {
+            "fill": 1
+          }
+        }
+      },
+      "selected": {
+        "background": "surface.selected",
+        "border": "accent.primary",
+        "borderWidth": "1px",
+        "textColor": "text.primary",
+        "iconColor": "icon.active"
+      },
+      "unselected": {
+        "background": "surface.default",
+        "border": "border.default",
+        "borderWidth": "1px",
+        "textColor": "text.secondary",
+        "iconColor": "icon.default"
+      },
+      "selector": {
+        "icon": "keyboard_arrow_down",
+        "width": "44px",
+        "minHeight": "44px",
+        "borderRadius": "large",
+        "closed": {
+          "background": "surface.default",
+          "border": "border.default",
+          "iconColor": "icon.default"
+        },
+        "open": {
+          "background": "surface.hover",
+          "border": "accent.primary",
+          "iconColor": "icon.active"
+        },
+        "hover": {
+          "background": "surface.hover"
+        },
+        "focus": {
+          "outline": "accent.primary"
+        }
+      },
+      "countBadge": {
+        "shape": "pill",
+        "radius": "circle",
+        "textColor": "text.primary",
+        "default": {
+          "background": "surface.elevated"
+        },
+        "selected": {
+          "background": "accent.muted"
+        }
+      },
+      "rules": [
+        "Home category navigation is two flexible tabs and one compact selector in a single row.",
+        "For compact selection controls, prefer a subtle selected surface and a thin accent border over a solid primary accent background.",
+        "Reserve solid teal fills for primary action buttons and the floating action button.",
+        "Selected and unselected tabs share one height, icon size and weight. The selector matches that height.",
+        "Unselected tabs and the closed selector use a subtle default border. Only the selected tab, the open selector and keyboard focus use the accent outline.",
+        "Do not scroll the row horizontally, and do not truncate the category labels at supported mobile widths.",
+        "Icons use Material Symbols Rounded at fill 0, weight 400, grade 0 and optical size 24. play_arrow is the exception and uses fill 1.",
+        "Do not apply fill 1 to every icon in the control.",
+        "Count badges stay visually separate from the label and have no border. Unselected badges use a blue-gray surface. The selected badge uses a teal-tinted fill.",
+        "Group the icon, label and count in the center of the tab with a spacing-scale gap. Do not stretch them apart.",
+        "The selector stays neutral when closed. Its open menu reuses the context menu and aligns to the selector's right edge.",
+        "Do not use drop shadows, thick borders, or different tab heights."
+      ]
+    },
+
+    "emptyState": {
+      "layout": {
+        "alignment": "center",
+        "placement": "centered in the free content area",
+        "paddingToken": "spacing.screen.horizontalPadding",
+        "illustrationToTitle": "spacing.scale.xl",
+        "titleToBody": "spacing.scale.sm"
+      },
+
+      "illustration": {
+        "maxWidth": "192px",
+        "maxHeight": "160px",
+        "fit": "contain"
+      },
+
+      "title": {
+        "style": "sectionTitle",
+        "alignment": "center",
+        "color": "text.primary"
+      },
+
+      "body": {
+        "style": "secondary",
+        "alignment": "center",
+        "color": "text.secondary"
+      },
+
+      "action": {
+        "optional": true,
+        "maxCount": 1,
+        "omitWhen": "the screen already has a floating create action"
+      },
+
+      "rules": [
+        "Show the empty state for the collection that is actually empty. Switching collections changes both the illustration and the copy.",
+        "Emptiness follows that collection's count, not a global item total.",
+        "The Brain Assistant mascot may look lightly bored, puzzled or waiting. Do not make it distressed.",
+        "Mascot illustrations are product SVG assets. They are not Material Symbols and are not recolored to accent.primary.",
+        "The mascot fill matches the existing Brain Assistant logo. Props use existing surface, text and icon colors.",
+        "Keep the illustration small and leave the surrounding area empty.",
+        "Do not add confetti, patterns, gradients or an extra accent color.",
+        "Do not add an inline primary button when the screen already has a floating create action.",
+        "The title is the accessible name. The illustration is decorative.",
+        "Keep the screen header, filters, status banner, floating action and navigation in place."
+      ]
+    },
+
     "interaction": {
       "primaryAction": "accent.primary",
       "selectedState": "accent.primary",
@@ -522,9 +692,136 @@
 
       "rules": [
         "Teal represents action, selection and success",
+        "For compact selection controls, prefer a subtle selected surface and a thin accent border over a solid primary accent background. Reserve solid teal fills for primary action buttons and the floating action button.",
         "Do not use teal simply as decoration",
         "Interactive elements must have clear pressed and disabled states",
         "Dangerous actions must use semantic danger color rather than teal"
+      ]
+    },
+
+    "voiceRecorder": {
+      "layout": {
+        "presentation": "fullscreen",
+        "background": "background.app",
+        "horizontalPadding": "spacing.screen.horizontalPadding",
+        "composition": "compact group in the upper-middle of the screen",
+        "groupGap": "spacing.scale.lg"
+      },
+
+      "header": {
+        "titleStyle": "sectionTitle",
+        "subtitleStyle": "secondary",
+        "subtitleColor": "text.secondary"
+      },
+
+      "microphone": {
+        "icon": "mic",
+        "iconSize": "icons.sizes.large",
+        "iconColor": "icon.active",
+        "discSize": "96px",
+        "discBackground": "surface.default"
+      },
+
+      "ring": {
+        "color": "accent.primary",
+        "trackColor": "border.default",
+        "strokeWidth": "4px",
+        "diameter": "160px"
+      },
+
+      "timer": {
+        "style": "pageTitle",
+        "color": "text.primary",
+        "alignment": "center"
+      },
+
+      "status": {
+        "style": "caption",
+        "recordingColor": "accent.primary",
+        "pausedColor": "text.secondary"
+      },
+
+      "actions": {
+        "placement": "bottom",
+        "gap": "spacing.scale.xl",
+        "diameter": "56px",
+        "iconSize": "icons.sizes.default",
+        "secondary": {
+          "background": "surface.elevated",
+          "iconColor": "icon.default"
+        },
+        "primary": {
+          "background": "accent.primary",
+          "iconColor": "accent.onAccent"
+        }
+      },
+
+      "rules": [
+        "Both recording modes use this component. Mode-specific copy, duration and buttons live in the screen spec.",
+        "Use accent.primary for the ring, the active microphone and the primary action. Do not add a second palette.",
+        "The ring is a thin stroke. Do not add a glow, a pulsing halo or a color cycle.",
+        "Keep the microphone, ring, timer and waveform as one compact group. Do not stretch them apart to fill the screen.",
+        "Round recorder actions are allowed in addition to avatars and the floating action button.",
+        "Primary action is the only solid teal control. Cancel and Pause use the secondary round treatment.",
+        "Icons are Material Symbols Rounded."
+      ]
+    },
+
+    "audioAttachment": {
+      "card": {
+        "background": "surface.default",
+        "border": "border.default",
+        "borderRadius": "shape.radius.default",
+        "padding": "spacing.card.padding",
+        "gap": "spacing.card.gap"
+      },
+
+      "title": {
+        "style": "cardTitle",
+        "color": "text.primary"
+      },
+
+      "meta": {
+        "style": "secondary",
+        "color": "text.secondary"
+      },
+
+      "playback": {
+        "iconSize": "icons.sizes.default",
+        "iconColor": "icon.active",
+        "trackColor": "border.default",
+        "progressColor": "accent.primary"
+      },
+
+      "actions": {
+        "style": "buttons.ghost",
+        "textColor": "accent.primary",
+        "dangerColor": "semantic.danger"
+      },
+
+      "rules": [
+        "An audio attachment is a card in the task form or task view, not part of the recorder screen.",
+        "Reuse the card, typography and button tokens. Do not invent an attachment palette.",
+        "Play and Transcribe with AI use the accent. Delete uses semantic danger.",
+        "Do not use a glow, a waveform decoration or a sparkle to mark AI transcription.",
+        "The card shows duration and whether a transcription exists. The transcript text is a separate read-only block opened from the card."
+      ]
+    },
+
+    "audioWaveform": {
+      "height": "32px",
+      "color": "accent.primary",
+      "barWidth": "4px",
+      "barGap": "spacing.scale.xs",
+      "barRadius": "shape.radius.circle",
+      "alignment": "center",
+
+      "rules": [
+        "Bars show the live microphone level while recording.",
+        "Do not play a looping decorative animation.",
+        "While paused or before capture starts, bars rest at the minimum height.",
+        "Use accent.primary only. Do not add a gradient or a glow.",
+        "The meter sits in the recorder group. It is not part of the saved attachment card."
       ]
     },
 
@@ -560,7 +857,7 @@
       "random accent colors",
       "purple AI aesthetics",
       "oversized cards without functional reason",
-      "decorative empty-state graphics unless useful",
+      "decorative empty-state graphics other than the Brain Assistant mascot defined by emptyState",
       "mixing multiple icon styles",
       "unnecessary animations"
     ]

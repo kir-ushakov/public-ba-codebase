@@ -1,0 +1,153 @@
+{
+  "screen": {
+    "id": "tags",
+    "name": "Tags",
+    "version": "1.2.0",
+
+    "purpose": "Manage every tag, pin the ones that should filter Home, and open the tasks for a tag.",
+
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+
+    "status": "approved",
+    "implementationStatus": "implemented",
+
+    "layout": {
+      "type": "mobile",
+      "structure": [
+        "header",
+        "search",
+        "pinned-section",
+        "other-tags-section",
+        "floating-create-action",
+        "bottom-navigation"
+      ],
+      "content": "vertical scroll"
+    },
+
+    "header": {
+      "type": "page-header",
+      "title": {
+        "text": "Tags",
+        "typographyToken": "typography.styles.pageTitle"
+      },
+      "subtitle": {
+        "pattern": "{count} tags · {pinned} pinned",
+        "pinnedOmittedWhen": "no tags are pinned",
+        "typographyToken": "typography.styles.secondary"
+      },
+      "avatar": {
+        "component": "user-avatar",
+        "action": "open-account-menu"
+      },
+      "search": {
+        "id": "tags-search",
+        "interaction": "same as Home",
+        "default": "icon button",
+        "placeholder": "Search tags...",
+        "filter": "tag name, case-insensitive",
+        "whileSearching": "one list, no Pinned or Other tags headings",
+        "empty": "No results"
+      }
+    },
+
+    "sections": {
+      "pinned": {
+        "title": "Pinned",
+        "note": "Shown on Home",
+        "contains": "pinned tags only",
+        "hiddenWhen": "no tags are pinned"
+      },
+      "other": {
+        "title": "Other tags",
+        "contains": "unpinned tags only",
+        "hiddenWhen": "every tag is pinned or there are no tags"
+      },
+      "order": "alphabetical by name within each section",
+      "empty": "No tags yet"
+    },
+
+    "tagRow": {
+      "component": "compact full-width row",
+      "contents": [
+        "sell icon in the tag color",
+        "name",
+        "task count",
+        "pin action",
+        "more actions"
+      ],
+      "taskCount": "tasks already on the device that include the tag",
+      "rowAction": "toggle this tag in the Home filter without leaving the page. Several tags can be selected.",
+      "pinAction": {
+        "toggles": "isPinned",
+        "doesNot": "open the tag",
+        "pinned": {
+          "icon": "push_pin",
+          "fill": 1,
+          "direction": "pointing down",
+          "color": "teal accent",
+          "row": "selected surface"
+        },
+        "unpinned": {
+          "icon": "keep_off",
+          "fill": 0,
+          "direction": "the same downward pin with a slash",
+          "color": "neutral icon",
+          "row": "default surface"
+        },
+        "labels": ["Pin tag", "Unpin tag"],
+        "glyph": "In Material Symbols Rounded, push_pin is a pin pointing down. keep is the same drawing. keep_off is that pin with a slash. Pin state is these two glyphs, not the same pin in two colors."
+      },
+      "chosen": "teal accent border. The tag color does not replace this border."
+    },
+
+    "actionsMenu": {
+      "icon": "more_vert",
+      "items": ["Edit tag", "Delete tag"],
+      "delete": "opens confirmation and does not delete from the menu",
+      "editSpec": "./tag-edit-open.json"
+    },
+
+    "create": {
+      "component": "floating-action-button",
+      "icon": "add",
+      "ariaLabel": "Create tag",
+      "opens": "existing Create new tag bottom sheet",
+      "spec": "./new-tag-open.json",
+      "afterCreate": [
+        "close the sheet",
+        "show the tag in the list",
+        "leave it unpinned",
+        "keep the current search query"
+      ]
+    },
+
+    "bottomNavigation": {
+      "component": "bottom-navigation",
+      "active": "tags"
+    },
+
+    "visualRules": [
+      "Use global design tokens from design-system.json.",
+      "Do not define screen-specific colors, radii, or spacing.",
+      "Reuse the Home search interaction, the account menu, the bottom navigation, and the Create new tag bottom sheet.",
+      "Do not add a second tag-creation form.",
+      "Do not duplicate a pinned tag in Other tags.",
+      "Rows stay full width. Long names truncate. Pin buttons keep a 44px target.",
+      "Tag color is applied only to the sell icon. Do not paint the row background or border with the tag color. A chosen tag keeps the teal accent border here and on Home.",
+      "The reference image shows composition. Do not measure colors, spacing, or radii from it."
+    ],
+
+    "reference": {
+      "status": "approved",
+      "image": "../references/tags.jpg",
+      "managementImage": "../references/tag-management.jpg",
+      "description": "Tags management screen with pinned rows above the other tags, a pin control and actions menu on each row, search, create, and Home / Tasks / Tags navigation. The management image shows the menu, edit sheet, and delete confirmation."
+    },
+
+    "angular": {
+      "screenFolder": "frontend/src/app/mobile-app/components/screens/tags-screen/",
+      "route": "/tags"
+    }
+  }
+}

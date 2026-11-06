@@ -4,17 +4,24 @@
       @if (isLoading()) {
         <ba-spinner></ba-spinner>
       }
-      @if (calculatedImageWidth()) {
+      @if (task.imageId | taskTileImage; as image) {
         <img
-          [src]="task.imageId | imageSrc: calculatedImageWidth()"
+          [src]="image.src"
+          [attr.srcset]="image.srcset"
+          [attr.sizes]="image.sizes"
           (load)="isLoading.set(false)"
-          (error)="onImageError($event)"
+          (error)="onImageError()"
         />
       }
     </div>
   }
   <div class="task-tile-body">
-    <span class="material-symbols-rounded type-icon" aria-hidden="true">{{ typeIcon }}</span>
+    <span
+      class="material-symbols-rounded type-icon"
+      data-test="task-tile-type-icon"
+      aria-hidden="true"
+      >{{ typeIcon }}</span
+    >
     <div class="task-tile-text">
       <div class="task-tile-title-row">
         <span class="task-tile-title">{{ task.title }}</span>
@@ -39,7 +46,9 @@
           ></ba-context-menu>
         }
       </div>
-      <div class="task-tile-meta">{{ createdAtLabel }}</div>
+      <div class="task-tile-meta" data-test="task-tile-date">
+        {{ task.createdAt | taskTileDate: dayKey() : dateLocale }}
+      </div>
     </div>
   </div>
 </div>

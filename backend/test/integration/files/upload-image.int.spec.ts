@@ -5,30 +5,38 @@ import { promises as fsp } from 'fs';
 import sharp from 'sharp';
 import { Application } from 'express';
 import request from 'supertest';
-import { googleDriveService } from '../../../src/modules/integrations/google/services/index.js';
-import { EGoogleDriveServiceError } from '../../../src/modules/integrations/google/services/google-drive-service.error.js';
 import { MAX_IMAGE_UPLOAD_FILE_BYTES } from '../../../src/modules/files/config.js';
 import { UploadImageErrors } from '../../../src/modules/files/usecases/upload-image/upload-image.errors.js';
-import { Result } from '../../../src/shared/core/result.js';
-import { ServiceError } from '../../../src/shared/core/service-error.js';
-import { ServiceErrorLevel } from '../../../src/shared/core/service-error-level.enum.js';
 import { models } from '../../../src/shared/infra/database/mongodb/index.js';
 import { authenticatedRequest, seedTestUser } from '../_setup/auth.helper.js';
 import { buildTestApp } from '../_setup/build-test-app.js';
 import { clearDatabase, startInMemoryMongo, stopInMemoryMongo } from '../_setup/mongo-memory.js';
 
-async function readStoredUpload(uploadFile: jest.Mock): Promise<{
+function uploadRoot(): string {
+  const root = process.env.FILES_UPLOAD_PATH;
+  if (!root) {
+    throw new Error('FILES_UPLOAD_PATH is not set');
+  }
+  return root;
+}
+
+function imagesRoot(): string {
+  return path.join(uploadRoot(), 'images');
+}
+
+async function readStoredImage(imageId: string): Promise<{
   filePath: string;
   format: string | undefined;
   width: number;
   height: number;
   bytes: number;
 }> {
-  const filePath = uploadFile.mock.calls.at(-1)?.[1];
-  if (typeof filePath !== 'string') {
-    throw new Error('uploadFile was not called with a path');
+  const document = await models.ImageModel.findOne({ imageId }).lean();
+  if (!document) {
+    throw new Error(`image ${imageId} was not persisted`);
   }
-  // eslint-disable-next-line security/detect-non-literal-fs-filename -- test upload path returned by the Drive stub
+  const filePath = path.join(imagesRoot(), document.fileId);
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- path from the persisted test document
   const file = await fsp.readFile(filePath);
   const meta = await sharp(file).metadata();
   return {
@@ -40,20 +48,17 @@ async function readStoredUpload(uploadFile: jest.Mock): Promise<{
   };
 }
 
-function uploadRoot(): string {
-  const root = process.env.FILES_UPLOAD_PATH;
-  if (!root) {
-    throw new Error('FILES_UPLOAD_PATH is not set');
-  }
-  return root;
+async function listFilesUnder(dir: string): Promise<string[]> {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- per-worker test upload dir
+  const entries = await fsp.readdir(dir, { recursive: true, withFileTypes: true }).catch(() => []);
+  return entries
+    .filter(entry => entry.isFile())
+    .map(entry => path.join(entry.parentPath, entry.name));
 }
 
 describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', () => {
   let app: Application;
   const TEST_IMAGE_PATH = path.join(process.cwd(), 'test/integration/_fixtures/test-img.jpg');
-  const drive = googleDriveService as unknown as {
-    uploadFile: jest.Mock;
-  };
 
   beforeAll(async () => {
     await startInMemoryMongo();
@@ -74,7 +79,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
 
   beforeEach(async () => {
     await clearDatabase();
-    jest.clearAllMocks();
+    await fsp.rm(imagesRoot(), { recursive: true, force: true });
   });
 
   it('returns 401 without auth cookie', async () => {
@@ -83,12 +88,9 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
     expect(res.status).toBe(401);
   });
 
-  it('happy path: should upload image and persist metadata to DB', async () => {
+  it('happy path: stores the file under the user folder and persists metadata', async () => {
     const { userId, jwtCookie } = await seedTestUser();
     const imageId = 'image-123';
-    const mockGoogleDriveFileId = 'google-drive-file-id-abc';
-
-    drive.uploadFile.mockResolvedValue(Result.ok(mockGoogleDriveFileId));
 
     const res = await authenticatedRequest(app, jwtCookie)
       .post('/api/files/image')
@@ -97,26 +99,42 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       .set('Accept', 'application/json');
 
     expect(res.status).toBe(200);
-    expect(drive.uploadFile).toHaveBeenCalledTimes(1);
+    expect(res.body).toEqual({ imageId });
 
     const persistedImage = await models.ImageModel.findOne({ imageId }).lean();
     expect(persistedImage).toMatchObject({
       imageId,
-      fileId: mockGoogleDriveFileId,
       userId,
-      storageType: 'googleDrive',
+      storageType: 'local',
+      fileId: `${userId}/im/${imageId}.webp`,
+      mimeType: 'image/webp',
     });
 
-    const stored = await readStoredUpload(drive.uploadFile);
-    expect(stored.filePath.endsWith('.webp')).toBe(true);
+    const stored = await readStoredImage(imageId);
     expect(stored.format).toBe('webp');
     expect(Math.max(stored.width, stored.height)).toBeLessThanOrEqual(ImageConst.MAX_LONG_EDGE_PX);
     expect(stored.bytes).toBeLessThanOrEqual(ImageConst.MAX_BYTES);
+    expect(await listFilesUnder(path.join(uploadRoot(), 'uploads'))).toEqual([]);
+  });
+
+  it('treats a repeated upload of the same imageId as one image', async () => {
+    const { jwtCookie } = await seedTestUser();
+    const imageId = 'image-retry';
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const res = await authenticatedRequest(app, jwtCookie)
+        .post('/api/files/image')
+        .field('imageId', imageId)
+        .attach('file', TEST_IMAGE_PATH);
+      expect(res.status).toBe(200);
+    }
+
+    expect(await models.ImageModel.countDocuments({ imageId })).toBe(1);
+    expect(await listFilesUnder(imagesRoot())).toHaveLength(1);
   });
 
   it('stores a wide jpeg as webp at the long-edge limit', async () => {
     const { jwtCookie } = await seedTestUser();
-    drive.uploadFile.mockResolvedValue(Result.ok('drive-wide'));
     const wide = await sharp({
       create: {
         width: 2400,
@@ -134,7 +152,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       .attach('file', wide, { filename: 'wide.jpg', contentType: 'image/jpeg' });
 
     expect(res.status).toBe(200);
-    const stored = await readStoredUpload(drive.uploadFile);
+    const stored = await readStoredImage('image-wide');
     expect(stored.format).toBe('webp');
     expect(stored.width).toBe(ImageConst.MAX_LONG_EDGE_PX);
     expect(stored.height).toBe(800);
@@ -143,7 +161,6 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
 
   it('keeps a webp that is already inside the store limits', async () => {
     const { jwtCookie } = await seedTestUser();
-    drive.uploadFile.mockResolvedValue(Result.ok('drive-webp'));
     const webp = await sharp({
       create: {
         width: 40,
@@ -161,14 +178,13 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       .attach('file', webp, { filename: 'small.webp', contentType: 'image/webp' });
 
     expect(res.status).toBe(200);
-    const stored = await readStoredUpload(drive.uploadFile);
-    // eslint-disable-next-line security/detect-non-literal-fs-filename -- test upload path returned by the Drive stub
+    const stored = await readStoredImage('image-webp');
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- path from the persisted test document
     expect(await fsp.readFile(stored.filePath)).toEqual(webp);
   });
 
   it('stores noisy camera-sized input under the byte cap', async () => {
     const { jwtCookie } = await seedTestUser();
-    drive.uploadFile.mockResolvedValue(Result.ok('drive-noise'));
     const width = 1400;
     const height = 1400;
     const raw = Buffer.alloc(width * height * 3);
@@ -183,7 +199,7 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
       .attach('file', jpeg, { filename: 'noise.jpg', contentType: 'image/jpeg' });
 
     expect(res.status).toBe(200);
-    const stored = await readStoredUpload(drive.uploadFile);
+    const stored = await readStoredImage('image-noise');
     expect(stored.format).toBe('webp');
     expect(Math.max(stored.width, stored.height)).toBeLessThanOrEqual(ImageConst.MAX_LONG_EDGE_PX);
     expect(stored.bytes).toBeLessThanOrEqual(ImageConst.MAX_BYTES);
@@ -210,60 +226,36 @@ describe('Integration: UploadImage (Controller -> UseCase -> Repo -> MongoDB)', 
     expect(persistedImage).toBeNull();
   });
 
-  it('should handle Google Drive upload failures', async () => {
+  it('rejects an imageId that could escape the user folder', async () => {
     const { jwtCookie } = await seedTestUser();
-    const imageId = 'image-error';
-
-    drive.uploadFile.mockResolvedValue(
-      Result.fail(
-        new ServiceError(
-          'Google Drive API error',
-          EGoogleDriveServiceError.RequestFailed,
-          undefined,
-          ServiceErrorLevel.Medium,
-        ),
-      ),
-    );
 
     const res = await authenticatedRequest(app, jwtCookie)
       .post('/api/files/image')
-      .field('imageId', imageId)
-      .attach('file', TEST_IMAGE_PATH)
-      .set('Accept', 'application/json');
+      .field('imageId', '../escape')
+      .attach('file', TEST_IMAGE_PATH);
 
-    expect(res.status).toBe(502);
-    expect(res.body.name).toBe(EUploadImageUseCaseError.UploadToGoogleDriveFailed);
+    expect(res.status).toBe(400);
+    expect(res.body.name).toBe(EUploadImageUseCaseError.InvalidImageId);
     expect(res.body).toHaveProperty('message');
-
-    const persistedImage = await models.ImageModel.findOne({ imageId }).lean();
-    expect(persistedImage).toBeNull();
+    expect(await models.ImageModel.countDocuments()).toBe(0);
+    expect(await listFilesUnder(imagesRoot())).toEqual([]);
+    expect(await listFilesUnder(path.join(uploadRoot(), 'uploads'))).toEqual([]);
   });
 
-  it('returns 403 when Google rejects the refresh token', async () => {
-    const { jwtCookie } = await seedTestUser();
-    const imageId = 'image-invalid-grant';
-
-    drive.uploadFile.mockResolvedValue(
-      Result.fail(
-        new ServiceError(
-          'Google refresh token is invalid or revoked',
-          EGoogleDriveServiceError.InvalidGrant,
-          undefined,
-          ServiceErrorLevel.Medium,
-        ),
-      ),
-    );
+  it('ignores directory parts of the uploaded file name', async () => {
+    const { userId, jwtCookie } = await seedTestUser();
+    const imageId = 'image-traversal-name';
 
     const res = await authenticatedRequest(app, jwtCookie)
       .post('/api/files/image')
       .field('imageId', imageId)
-      .attach('file', TEST_IMAGE_PATH)
-      .set('Accept', 'application/json');
+      .attach('file', TEST_IMAGE_PATH, { filename: '../../escape.jpg', contentType: 'image/jpeg' });
 
-    expect(res.status).toBe(403);
-    expect(res.body.name).toBe(EUploadImageUseCaseError.GoogleRefreshTokenInvalid);
-    expect(res.body).toHaveProperty('message');
-    expect(await models.ImageModel.findOne({ imageId }).lean()).toBeNull();
+    expect(res.status).toBe(200);
+    expect(await listFilesUnder(imagesRoot())).toEqual([
+      path.join(imagesRoot(), userId, 'im', `${imageId}.webp`),
+    ]);
+    await expect(fsp.access(path.join(uploadRoot(), 'escape.jpg'))).rejects.toThrow();
   });
 
   it('rejects a file larger than MAX_IMAGE_UPLOAD_FILE_BYTES', async () => {

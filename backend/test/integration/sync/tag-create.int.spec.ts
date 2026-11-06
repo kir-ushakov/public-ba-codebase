@@ -30,7 +30,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
         changeableObjectDto: {
           id: 'tag-unauth',
           name: 'Should not be created',
-          color: 'teal',
+          color: '#00a991',
         },
       });
 
@@ -43,7 +43,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
     const dto = {
       id: 'tag-123',
       name: 'Work',
-      color: 'teal',
+      color: '#00a991',
       createdAt: '2020-05-01T10:00:00.000Z',
       modifiedAt: '2020-05-01T10:05:00.000Z',
     };
@@ -59,6 +59,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
     expect(responseBody.id).toBe(dto.id);
     expect(responseBody.name).toBe(dto.name);
     expect(responseBody.color).toBe(dto.color);
+    expect(responseBody.isPinned).toBe(false);
     expect(responseBody).not.toHaveProperty('isCategory');
     expect(responseBody.userId).toBe(userId);
     expect(responseBody.createdAt).toBe(dto.createdAt);
@@ -71,6 +72,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
     }
     expect(persisted.name).toBe(dto.name);
     expect(persisted.color).toBe(dto.color);
+    expect(persisted.isPinned).toBe(false);
     expect(persisted).not.toHaveProperty('isCategory');
     expect(String(persisted.userId)).toBe(userId);
     expect(new Date(persisted.createdAt).toISOString()).toBe(dto.createdAt);
@@ -86,7 +88,7 @@ describe('Integration: CreateTag (Controller -> UseCase -> Repo -> MongoDB)', ()
         changeableObjectDto: {
           id: 'tag-empty-name',
           name: '',
-          color: 'teal',
+          color: '#00a991',
         },
       })
       .set('Accept', 'application/json');

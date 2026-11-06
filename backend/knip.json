@@ -12,7 +12,6 @@
     "test/**/*.ts!"
   ],
   "project": ["src/**/*.ts", "test/**/*.ts"],
-  "ignore": ["src/shared/types/guards/is-error-with-code.ts"],
   "ignoreDependencies": [
     "ts-node",
     "@types/chai-as-promised",

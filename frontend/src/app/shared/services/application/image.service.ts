@@ -1,18 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
 import { ImageDbService, ImageRecord } from '../infrastructure/image-db.service';
 import { ImageOptimizerService } from '../utility/image-optimizer.service';
 import { ImageUploaderService } from '../api/image-uploader.service';
 import { FetchService } from '../infrastructure/fetch.service';
 import { UuidGeneratorService } from '../adapters/uuid-generator.service';
-import { API_ENDPOINTS } from '../../constants/api-endpoints.const';
 
 export type EnsureUploadedResult = 'uploaded' | 'alreadyRemote' | 'missingBlob' | 'failed';
 
 @Injectable({ providedIn: 'root' })
 export class ImageService {
-  private hasProbedRemoteImage = false;
   private readonly uploadsInFlight = new Map<string, Promise<EnsureUploadedResult>>();
 
   constructor(
@@ -21,7 +17,6 @@ export class ImageService {
     private readonly imageUploaderService: ImageUploaderService,
     private readonly fetchService: FetchService,
     private readonly uuidGeneratorService: UuidGeneratorService,
-    private readonly http: HttpClient,
   ) {}
 
   public async saveImage(imageUri: string): Promise<string> {
@@ -42,19 +37,14 @@ export class ImageService {
     await this.imageDbService.deleteImage(imageId);
   }
 
-  /**
-   * `<img src>` does not go through HttpClient. At most one GET per app session
-   * so a Drive 403 still reaches the interceptor; a list of broken thumbnails
-   * must not each fire their own request.
-   */
-  public probeRemoteImage(imageId: string): void {
-    if (this.hasProbedRemoteImage) {
-      return;
+  /** Drops a picture the task no longer references. A missing server file is success. */
+  public async discardRemoved(imageId: string): Promise<void> {
+    await this.deleteImage(imageId);
+    try {
+      await this.imageUploaderService.deleteImage(imageId);
+    } catch {
+      // The task no longer references the file. A later cleanup can drop the remote copy.
     }
-    this.hasProbedRemoteImage = true;
-    void firstValueFrom(
-      this.http.get(`${API_ENDPOINTS.FILES.IMAGE}/${imageId}`, { responseType: 'blob' }),
-    ).catch(() => undefined);
   }
 
   public async convertBlobUriToBlob(imageUri: string): Promise<Blob> {

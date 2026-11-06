@@ -7,9 +7,10 @@ import {
   TaskScreenState,
 } from 'src/app/mobile-app/components/screens/task-screen/task-screen.state';
 import { ImageService } from 'src/app/shared/services/application/image.service';
+import { AudioService } from 'src/app/shared/services/application/audio.service';
+import { SpeechToTextService } from 'src/app/shared/features/voice-input/api/speech-to-text.service';
 import { DeviceCameraService } from 'src/app/shared/services/pwa/device-camera.service';
 import { AuthService } from 'src/app/shared/services/api/auth.service';
-import { GoogleOAuthConsentService } from 'src/app/shared/services/integrations/google-oauth-consent.service';
 import { SlackService } from 'src/app/shared/services/integrations/slack.service';
 import { TAG_COLOR } from 'src/app/shared/models/tag.model';
 import { TagsState } from 'src/app/shared/state/tags.state';
@@ -24,10 +25,11 @@ describe('TaskViewComponent title', () => {
       providers: [
         provideStore([TaskScreenState, TagsState, UserState]),
         { provide: ImageService, useValue: {} },
+        { provide: AudioService, useValue: {} },
+        { provide: SpeechToTextService, useValue: {} },
         { provide: DeviceCameraService, useValue: {} },
         { provide: AuthService, useValue: {} },
         { provide: SlackService, useValue: {} },
-        { provide: GoogleOAuthConsentService, useValue: {} },
       ],
     }).compileComponents();
 
@@ -68,10 +70,11 @@ describe('TaskViewComponent title', () => {
     expect(title?.querySelector('input, textarea')).toBeNull();
   });
 
-  it('hides the description card when the task has no description', () => {
-    expect(
-      (fixture.nativeElement as HTMLElement).querySelector('[data-test="task-view-description"]'),
-    ).toBeNull();
+  it('shows the content switch without description text when the task has no description', () => {
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-test="task-content-switch"]')).not.toBeNull();
+    expect(host.querySelector('[data-test="task-view-description-body"]')).toBeNull();
   });
 
   it('shows the description as read-only text inside a card', () => {

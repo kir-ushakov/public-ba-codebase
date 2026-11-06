@@ -1,6 +1,7 @@
 import { TaskDTO } from '@brainassistant/contracts';
 import { Task } from '../models/task.model';
 import { isEmptyTaskDescription } from '../helpers/is-empty-task-description.function';
+import { normalizeTaskRecord } from '../helpers/task-conditions.function';
 
 export class TasksMapper {
   public static toModel(taskDto: TaskDTO): Task {
@@ -23,11 +24,19 @@ export class TasksMapper {
       task.description = taskDto.description;
     }
 
+    if (taskDto.checklist) {
+      task.checklist = taskDto.checklist;
+    }
+
+    if (taskDto.audioAttachments) {
+      task.audioAttachments = taskDto.audioAttachments;
+    }
+
     if (taskDto.tagIds) {
       task.tagIds = taskDto.tagIds;
     }
 
-    return task;
+    return normalizeTaskRecord(task);
   }
 
   public static toDto(task: Task): TaskDTO {
@@ -56,8 +65,20 @@ export class TasksMapper {
       dto.description = task.description;
     }
 
+    if (task.checklist) {
+      dto.checklist = task.checklist;
+    }
+
+    if (task.audioAttachments) {
+      dto.audioAttachments = task.audioAttachments;
+    }
+
     if (task.tagIds) {
       dto.tagIds = task.tagIds;
+    }
+
+    if (task.conditions?.length) {
+      dto.conditions = task.conditions;
     }
 
     return dto;

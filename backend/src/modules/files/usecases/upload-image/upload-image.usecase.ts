@@ -4,13 +4,13 @@ import { UseCase } from '../../../../shared/core/UseCase.js';
 import { Result } from '../../../../shared/core/result.js';
 import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { EUploadImageUseCaseError, UploadImageErrors } from './upload-image.errors.js';
-import { EGoogleDriveServiceError } from '../../../integrations/google/services/google-drive-service.error.js';
-import { GoogleDriveService } from '../../../integrations/google/services/google-drive.service.js';
-import { User } from '../../../../shared/domain/models/user.js';
 import { config } from '../../../../config/index.js';
 import { Image } from '../../../../shared/domain/models/image.js';
 import { ImageRepoService } from '../../../../shared/repo/image-repo.service.js';
 import { ImageResizeService } from '../../services/image-resize.service.js';
+import { IImageStorage } from '../../services/image-storage/image-storage.interface.js';
+import { isSafeImageId } from '../../services/image-storage/image-storage-path.function.js';
+import { ALLOWED_IMAGE_UPLOAD_EXTENSIONS, STORED_IMAGE_FORMAT } from '../../config.js';
 
 export type UploadImageParams = {
   imageId: string;
@@ -21,89 +21,69 @@ export type UploadImageParams = {
 export type UploadImageResult = Result<{ imageId: string }, UseCaseError<EUploadImageUseCaseError>>;
 
 export class UploadImageUsecase implements UseCase<UploadImageParams, Promise<UploadImageResult>> {
-  private googleDriveService: GoogleDriveService;
-  private readonly imageRepoService: ImageRepoService;
-  private readonly imageResizeService: ImageResizeService;
-  private allowedTypes = ['png', 'jpeg', 'jpg', 'webp']; // TODO: move to responsible service
-
   constructor(
-    googleDriveService: GoogleDriveService,
-    imageRepoService: ImageRepoService,
-    imageResizeService: ImageResizeService,
-  ) {
-    this.googleDriveService = googleDriveService;
-    this.imageRepoService = imageRepoService;
-    this.imageResizeService = imageResizeService;
-  }
+    private readonly imageStorage: IImageStorage,
+    private readonly imageRepoService: ImageRepoService,
+    private readonly imageResizeService: ImageResizeService,
+  ) {}
 
-  public async execute(params: UploadImageParams, user: User): Promise<UploadImageResult> {
-    const userId: string = params.userId;
+  public async execute(params: UploadImageParams): Promise<UploadImageResult> {
+    const { imageId, userId } = params;
+    const multerTempPath = params.file.path;
+    const extension = path.extname(params.file.originalname).toLowerCase().replace('.', '');
+    let stagedPath: string | undefined;
+    let preparedPath: string | undefined;
 
-    const pathToFileOrError = await this.prepareLocalFile(params, userId);
-    if (pathToFileOrError.isFailure) {
-      return Result.fail<never, UseCaseError<EUploadImageUseCaseError>>(pathToFileOrError.error);
-    }
-    const { pathToFile } = pathToFileOrError.getValue();
-
-    const fileIdOrError = await this.googleDriveService.uploadFile(user, pathToFile);
-    if (fileIdOrError.isFailure) {
-      switch (fileIdOrError.error.code) {
-        case EGoogleDriveServiceError.InvalidGrant:
-          return UploadImageErrors.GoogleRefreshTokenInvalid(fileIdOrError.error);
-        default:
-          return UploadImageErrors.UploadToGoogleDriveFailed(fileIdOrError.error);
+    try {
+      if (!isSafeImageId(imageId)) {
+        return UploadImageErrors.InvalidImageId();
       }
+      if (!ALLOWED_IMAGE_UPLOAD_EXTENSIONS.includes(extension)) {
+        return UploadImageErrors.NotSupportedTypeError(extension);
+      }
+
+      stagedPath = path.join(config.paths.uploadTempDir, userId, `${imageId}.${extension}`);
+      preparedPath = await this.prepareForStore(multerTempPath, stagedPath);
+
+      const fileIdOrError = await this.imageStorage.put({
+        userId,
+        imageId,
+        sourcePath: preparedPath,
+        extension: STORED_IMAGE_FORMAT.extension,
+      });
+      if (fileIdOrError.isFailure) {
+        return UploadImageErrors.StoreImageFailed(fileIdOrError.error);
+      }
+
+      const image = Image.create({
+        imageId,
+        userId,
+        storageType: 'local',
+        fileId: fileIdOrError.getValue(),
+        mimeType: STORED_IMAGE_FORMAT.mimeType,
+      }).getValue();
+      await this.imageRepoService.save(image);
+
+      return Result.ok<{ imageId: string }>({ imageId });
+    } finally {
+      await removeLeftovers([multerTempPath, stagedPath, preparedPath]);
     }
-
-    const fileId = fileIdOrError.getValue();
-
-    const imageOrError = Image.create({
-      imageId: params.imageId,
-      storageType: 'googleDrive',
-      fileId,
-      userId,
-    });
-
-    // TODO: handle potential error properly (as domain error)
-    await this.imageRepoService.create(imageOrError.getValue());
-
-    const response = {
-      imageId: params.imageId,
-    };
-
-    return Result.ok<{ imageId: string }>(response);
   }
 
-  private async prepareLocalFile(
-    req: UploadImageParams,
-    userId: string,
-  ): Promise<
-    Result<{ pathToFile: string; extension: string }, UseCaseError<EUploadImageUseCaseError>>
-  > {
-    const tempPath = req.file.path;
-    const originalname = req.file.originalname;
-    const userUploadDir = `${config.paths.uploadTempDir}/${userId}`;
-    const pathToFile = `${userUploadDir}/${originalname}`;
-
-    // eslint-disable-next-line security/detect-non-literal-fs-filename -- user upload dir under configured temp root
-    await fsp.mkdir(userUploadDir, { recursive: true });
-
-    const fileType = path.extname(req.file.originalname).toLowerCase().replace('.', '');
-    if (!this.allowedTypes.includes(fileType)) {
-      // eslint-disable-next-line security/detect-non-literal-fs-filename -- multer temp path
-      await fsp.unlink(tempPath);
-      return UploadImageErrors.NotSupportedTypeError(fileType);
-    }
-
-    // eslint-disable-next-line security/detect-non-literal-fs-filename -- move from multer temp into user upload dir
-    await fsp.rename(tempPath, pathToFile);
-
-    const storedPath = await this.imageResizeService.prepareForStore(pathToFile);
-    const extension = path.extname(storedPath).toLowerCase().replace('.', '');
-
-    return Result.ok<{ pathToFile: string; extension: string }>({
-      pathToFile: storedPath,
-      extension,
-    });
+  private async prepareForStore(multerTempPath: string, stagedPath: string): Promise<string> {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- staged path built from userId and validated imageId
+    await fsp.mkdir(path.dirname(stagedPath), { recursive: true });
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- multer temp path into the staged path
+    await fsp.rename(multerTempPath, stagedPath);
+    return this.imageResizeService.prepareForStore(stagedPath);
   }
+}
+
+/** A successful put() has already moved the prepared file, so only failures leave anything. */
+async function removeLeftovers(paths: (string | undefined)[]): Promise<void> {
+  await Promise.all(
+    paths
+      .filter((filePath): filePath is string => filePath !== undefined)
+      .map(filePath => fsp.rm(filePath, { force: true })),
+  );
 }

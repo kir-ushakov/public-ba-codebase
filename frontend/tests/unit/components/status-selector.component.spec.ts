@@ -13,14 +13,15 @@ describe('StatusSelectorComponent', () => {
     fixture.detectChanges();
   });
 
-  it('shows To do selected and Active unselected', () => {
+  it('shows Waiting selected and Active unselected', () => {
     const host = fixture.nativeElement as HTMLElement;
 
     expect(host.querySelector('[data-test="task-status-section"]')?.textContent).toContain(
       'Status',
     );
-    expect(host.querySelector('[data-test="task-status-todo"]')?.textContent).toContain('To do');
+    expect(host.querySelector('[data-test="task-status-todo"]')?.textContent).toContain('Waiting');
     expect(host.querySelector('[data-test="task-status-active"]')?.textContent).toContain('Active');
+    expect(host.querySelector('[data-test="task-status-notes"]')).toBeNull();
     expect(host.querySelector('[data-test="task-status-todo"]')?.getAttribute('aria-pressed')).toBe(
       'true',
     );

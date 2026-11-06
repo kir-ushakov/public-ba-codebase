@@ -4,7 +4,7 @@ import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { ServiceError } from '../../../../shared/core/service-error.js';
 import { EHttpStatus } from '../../../../shared/infra/http/models/base-controller.js';
 import { MAX_IMAGE_UPLOAD_FILE_BYTES } from '../../config.js';
-import { EGoogleDriveServiceError } from '../../../integrations/google/services/google-drive-service.error.js';
+import { EImageStorageError } from '../../services/image-storage/image-storage.error.js';
 
 export { EUploadImageUseCaseError };
 
@@ -17,25 +17,22 @@ export const UploadImageErrors = {
         EHttpStatus.BadRequest,
       ),
     ),
-  UploadToGoogleDriveFailed: (
-    error?: ServiceError<EGoogleDriveServiceError>,
-  ): Result<never, UseCaseError<EUploadImageUseCaseError>> =>
+  InvalidImageId: (): Result<never, UseCaseError<EUploadImageUseCaseError>> =>
     Result.fail(
       new UseCaseError<EUploadImageUseCaseError>(
-        EUploadImageUseCaseError.UploadToGoogleDriveFailed,
-        `Uploading file to Google Drive failed`,
-        EHttpStatus.BadGateway,
-        error,
+        EUploadImageUseCaseError.InvalidImageId,
+        'imageId may contain only latin letters, digits and dashes (up to 64 characters)',
+        EHttpStatus.BadRequest,
       ),
     ),
-  GoogleRefreshTokenInvalid: (
-    error: ServiceError<EGoogleDriveServiceError>,
+  StoreImageFailed: (
+    error: ServiceError<EImageStorageError>,
   ): Result<never, UseCaseError<EUploadImageUseCaseError>> =>
     Result.fail(
       new UseCaseError<EUploadImageUseCaseError>(
-        EUploadImageUseCaseError.GoogleRefreshTokenInvalid,
-        error.message,
-        EHttpStatus.Forbidden,
+        EUploadImageUseCaseError.StoreImageFailed,
+        'Storing the image failed',
+        EHttpStatus.InternalServerError,
         error,
       ),
     ),

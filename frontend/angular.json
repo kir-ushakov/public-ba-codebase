@@ -87,6 +87,39 @@
                 }
               ]
             },
+            "benchmark": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.benchmark.ts"
+                },
+                {
+                  "replace": "src/app/benchmark/bench-marks.ts",
+                  "with": "benchmarks/bench-marks.ts"
+                },
+                {
+                  "replace": "src/app/benchmark/install-benchmark-probe.ts",
+                  "with": "benchmarks/install-benchmark-probe.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            },
             "integration": {
               "assets": [
                 "src/favicon.ico",
@@ -130,6 +163,9 @@
             },
             "integration": {
               "buildTarget": "app:build:integration"
+            },
+            "benchmark": {
+              "buildTarget": "app:build:benchmark"
             }
           }
         },

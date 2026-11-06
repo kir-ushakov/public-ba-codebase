@@ -23,7 +23,7 @@ describe('Integration: SpeechToText (Controller -> UseCase -> OpenAI mock)', () 
   beforeEach(async () => {
     await clearDatabase();
     jest.restoreAllMocks();
-    createTranscription = jest.fn().mockResolvedValue({ text: 'hello from whisper' });
+    createTranscription = jest.fn().mockResolvedValue({ text: 'hello from gpt-transcribe' });
     jest.spyOn(OpenAIClientService.prototype, 'getClientOrFail').mockReturnValue(
       Result.ok({
         audio: {
@@ -57,8 +57,11 @@ describe('Integration: SpeechToText (Controller -> UseCase -> OpenAI mock)', () 
       });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ transcript: 'hello from whisper' });
+    expect(res.body).toEqual({ transcript: 'hello from gpt-transcribe' });
     expect(createTranscription).toHaveBeenCalledTimes(1);
+    expect(createTranscription).toHaveBeenCalledWith(
+      expect.objectContaining({ model: 'gpt-transcribe', temperature: 0 }),
+    );
   });
 
   it('returns 400 for an unsupported audio mime type', async () => {

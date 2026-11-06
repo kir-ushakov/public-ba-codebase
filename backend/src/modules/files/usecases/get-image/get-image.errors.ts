@@ -4,7 +4,7 @@ import { UseCaseError } from '../../../../shared/core/use-case-error.js';
 import { ServiceError } from '../../../../shared/core/service-error.js';
 import { EImageRepoServiceError } from '../../../../shared/repo/image-repo.service.js';
 import { EHttpStatus } from '../../../../shared/infra/http/models/base-controller.js';
-import { EGoogleDriveServiceError } from '../../../integrations/google/services/google-drive-service.error.js';
+import { EImageStorageError } from '../../services/image-storage/image-storage.error.js';
 
 export { EGetImageUseCaseError };
 
@@ -17,25 +17,25 @@ export const GetImageErrors = {
     Result.fail(
       new UseCaseError<GetImageErrorCode>(error.code, error.message, EHttpStatus.NotFound),
     ),
-  GoogleRefreshTokenInvalid: (
-    error: ServiceError<EGoogleDriveServiceError>,
+  ImageFileMissing: (
+    error: ServiceError<EImageStorageError>,
   ): Result<never, UseCaseError<GetImageErrorCode>> =>
     Result.fail(
       new UseCaseError<GetImageErrorCode>(
-        EGetImageUseCaseError.GoogleRefreshTokenInvalid,
-        error.message,
-        EHttpStatus.Forbidden,
+        EGetImageUseCaseError.ImageFileMissing,
+        'The image file is not available',
+        EHttpStatus.NotFound,
         error,
       ),
     ),
-  GoogleDriveRequestFailed: (
-    error: ServiceError<EGoogleDriveServiceError>,
+  ImageReadFailed: (
+    error?: ServiceError<EImageStorageError>,
   ): Result<never, UseCaseError<GetImageErrorCode>> =>
     Result.fail(
       new UseCaseError<GetImageErrorCode>(
-        EGetImageUseCaseError.GoogleDriveRequestFailed,
-        error.message,
-        EHttpStatus.BadGateway,
+        EGetImageUseCaseError.ImageReadFailed,
+        'Reading the image failed',
+        EHttpStatus.InternalServerError,
         error,
       ),
     ),

@@ -12,7 +12,7 @@ export class LogoutUsecase implements UseCase<LogoutParams, Promise<Result<void>
 
   public async execute(params: LogoutParams): Promise<Result<void>> {
     if (params.refreshToken) {
-      await this.refreshSessions.consume(hashRefreshToken(params.refreshToken));
+      await this.refreshSessions.revokePresented(hashRefreshToken(params.refreshToken));
     }
     return Result.ok();
   }

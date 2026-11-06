@@ -11,6 +11,9 @@ export type {
   TaskDescriptionNode,
   TaskDescriptionMarkType,
   TaskDescriptionNodeType,
+  ChecklistItemDTO,
+  AudioAttachment,
+  AudioTranscription,
 } from './task.dto';
 export { TaskConst } from './task.const';
 export { ImageConst } from './image.const';
@@ -29,7 +32,7 @@ export type {
 
 // Tag DTOs
 export type { TagDTO } from './tag.dto';
-export { TagConst } from './tag.const';
+export { canonicalTagColor, TagConst } from './tag.const';
 
 // Change/Sync DTOs
 export type {

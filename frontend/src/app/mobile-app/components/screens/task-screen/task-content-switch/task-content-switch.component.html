@@ -1,0 +1,32 @@
+<div class="content-switch" role="tablist" aria-label="Content" data-test="task-content-switch">
+  <button
+    class="content-option"
+    type="button"
+    role="tab"
+    data-test="task-content-description"
+    [class.is-selected]="mode() === 'description'"
+    [attr.aria-selected]="mode() === 'description'"
+    (click)="select('description')"
+  >
+    <span class="material-symbols-rounded" aria-hidden="true">format_list_bulleted</span>
+    Description
+    @if (mode() !== 'description' && descriptionHasContent()) {
+      <span class="content-dot" data-test="task-content-description-dot"></span>
+    }
+  </button>
+  <button
+    class="content-option"
+    type="button"
+    role="tab"
+    data-test="task-content-checklist"
+    [class.is-selected]="mode() === 'checklist'"
+    [attr.aria-selected]="mode() === 'checklist'"
+    (click)="select('checklist')"
+  >
+    <span class="material-symbols-rounded" aria-hidden="true">checklist</span>
+    Checklist
+    @if (mode() !== 'checklist' && checklistHasContent()) {
+      <span class="content-dot" data-test="task-content-checklist-dot"></span>
+    }
+  </button>
+</div>

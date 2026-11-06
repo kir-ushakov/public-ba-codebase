@@ -1,3 +1,4 @@
+import type { ChecklistItem } from 'src/app/shared/models/task.model';
 import type { ITaskEditFormData } from './task-edit/task-edit.component.interface';
 import type { DraftTaskImage, ETaskViewMode } from './task-screen.state';
 
@@ -46,6 +47,10 @@ export namespace TaskScreenAction {
     static readonly type = '[TaskScreen] Delete Task Option Selected';
   }
 
+  export class ConvertOptionSelected {
+    static readonly type = '[TaskScreen] Convert Option Selected';
+  }
+
   export class AddPictureBtnPressed {
     static readonly type = '[TaskScreen] Add Picture Btn Pressed';
   }
@@ -62,10 +67,43 @@ export namespace TaskScreenAction {
     constructor(public image: DraftTaskImage) {}
   }
 
+  export class AudioAttachmentCaptured {
+    static readonly type = '[TaskScreen] Audio Attachment Captured';
+
+    constructor(
+      public blob: Blob,
+      public durationMs: number,
+    ) {}
+  }
+
+  export class AudioAttachmentRemoved {
+    static readonly type = '[TaskScreen] Audio Attachment Removed';
+
+    constructor(public id: string) {}
+  }
+
+  export class TranscribeAudioAttachment {
+    static readonly type = '[TaskScreen] Transcribe Audio Attachment';
+
+    constructor(public id: string) {}
+  }
+
+  export class AddTranscriptionToDescription {
+    static readonly type = '[TaskScreen] Add Transcription To Description';
+
+    constructor(public text: string) {}
+  }
+
   export class TagIdsChanged {
     static readonly type = '[TaskScreen] Tag Ids Changed';
 
     constructor(public tagIds: string[]) {}
+  }
+
+  export class ChecklistChanged {
+    static readonly type = '[TaskScreen] Checklist Changed';
+
+    constructor(public checklist: ChecklistItem[]) {}
   }
 
   export class UpdateFormData {
