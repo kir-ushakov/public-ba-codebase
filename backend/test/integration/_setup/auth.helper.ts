@@ -1,8 +1,14 @@
+import { randomUUID } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import { Application } from 'express';
 import request, { Test } from 'supertest';
 import { LoginService } from '../../../src/modules/auth/services/login.service.js';
+import {
+  createRefreshToken,
+  hashRefreshToken,
+} from '../../../src/modules/auth/services/refresh-token.function.js';
 import UserModel from '../../../src/shared/infra/database/mongodb/user.model.js';
+import RefreshSessionModel from '../../../src/shared/infra/database/mongodb/refresh-session.model.js';
 import { requiredEnv } from '../../../src/config/index.js';
 
 export type SeedTestUserOptions = {
@@ -26,8 +32,8 @@ const DEFAULTS = {
 };
 
 /**
- * Creates a user in the current Mongo connection and returns a jwt cookie
- * matching LoginService.setJwtCookie (cookie name `jwt`, payload `{ user }`).
+ * Creates a user and a live refresh session, then returns a jwt cookie
+ * matching LoginService.setJwtCookie (cookie name `jwt`, payload `{ user, sid }`).
  */
 export async function seedTestUser(options: SeedTestUserOptions = {}): Promise<SeededTestUser> {
   const email = options.email ?? DEFAULTS.email;
@@ -40,6 +46,12 @@ export async function seedTestUser(options: SeedTestUserOptions = {}): Promise<S
     password,
   );
   const userId = user._id.toString();
+  const session = await RefreshSessionModel.create({
+    userId,
+    tokenHash: hashRefreshToken(createRefreshToken()),
+    expiresAt: new Date(Date.now() + LoginService.REFRESH_TTL_SECONDS * 1000),
+    familyId: randomUUID(),
+  });
 
   const token = jwt.sign(
     {
@@ -49,6 +61,7 @@ export async function seedTestUser(options: SeedTestUserOptions = {}): Promise<S
         email,
         userId,
       },
+      sid: session._id.toString(),
     },
     requiredEnv('JWT_SECRET'),
     { expiresIn: LoginService.JWT_TTL_SECONDS },
@@ -79,12 +92,23 @@ export function authenticatedRequest(
   };
 }
 
-export function jwtCookieFromResponse(res: { headers: Record<string, unknown> }): string {
+export function namedCookieFromResponse(
+  res: { headers: Record<string, unknown> },
+  name: string,
+): string {
   const raw = res.headers['set-cookie'];
   const list = Array.isArray(raw) ? raw : typeof raw === 'string' ? [raw] : [];
-  const jwtSetCookie = list.find((cookie: string) => cookie.startsWith('jwt='));
-  if (!jwtSetCookie) {
-    throw new Error(`No jwt Set-Cookie in: ${JSON.stringify(list)}`);
+  const setCookie = list.find((cookie: string) => cookie.startsWith(`${name}=`));
+  if (!setCookie) {
+    throw new Error(`No ${name} Set-Cookie in: ${JSON.stringify(list)}`);
   }
-  return jwtSetCookie.split(';')[0];
+  return setCookie.split(';')[0];
+}
+
+export function jwtCookieFromResponse(res: { headers: Record<string, unknown> }): string {
+  return namedCookieFromResponse(res, 'jwt');
+}
+
+export function refreshCookieFromResponse(res: { headers: Record<string, unknown> }): string {
+  return namedCookieFromResponse(res, 'refresh');
 }

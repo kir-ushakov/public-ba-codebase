@@ -1,0 +1,176 @@
+{
+  "state": {
+    "id": "audio-transcription-open",
+    "name": "Audio Transcription — Open",
+    "version": "1.0.0",
+
+    "purpose": "Read a transcription already saved on an audio attachment. Copy it, or append it to the task description. This sheet does not start, wait for, or retry speech-to-text.",
+
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+
+    "status": "draft",
+    "implementationStatus": "spec-only",
+
+    "parents": [
+      "./task-create.json",
+      "./task-edit.json",
+      "./task-view.json"
+    ],
+
+    "presentation": {
+      "component": "bottom-sheet",
+      "designSystemPattern": "bottomSheet",
+      "handle": true,
+      "dismiss": [
+        "close-button",
+        "backdrop-tap",
+        "swipe-down"
+      ]
+    },
+
+    "header": {
+      "icon": "auto_awesome",
+      "title": "Transcription",
+      "closeAction": {
+        "icon": "close",
+        "action": "close-audio-transcription",
+        "ariaLabel": "Close",
+        "discardsTranscription": false,
+        "removesAudio": false,
+        "revertsDescription": false
+      }
+    },
+
+    "audio": {
+      "title": "{audioAttachment.title}",
+      "duration": {
+        "visible": true,
+        "underOneHour": "MM:SS",
+        "fromOneHour": "HH:MM:SS"
+      }
+    },
+
+    "transcript": {
+      "component": "read-only-text",
+      "source": "audioAttachment.transcription.text",
+      "editable": false,
+      "scroll": "vertical",
+      "preservesLineBreaks": true
+    },
+
+    "savedTranscription": {
+      "storedWith": "audio-attachment",
+      "required": false,
+      "fields": ["text", "createdAt"],
+      "optionalFields": ["model"],
+      "local": true,
+      "syncedWith": "task",
+      "separateSyncSystem": false,
+      "survivesRestart": true,
+      "availableOnOtherDevicesAfterSync": true,
+      "componentStateOnly": false,
+      "openDoesNotCallSpeechToText": true,
+      "saveFailurePresentedAs": "audio-attachment-card.transcriptionError"
+    },
+
+    "actions": [
+      {
+        "id": "copy",
+        "label": "Copy",
+        "icon": "content_copy",
+        "style": "secondary",
+        "action": "copy-transcription",
+        "copies": "full-text",
+        "mutatesDescription": false,
+        "remainsAvailableAfterAdd": true
+      },
+      {
+        "id": "add-to-description",
+        "label": "Add to Description",
+        "icon": "add",
+        "style": "primary",
+        "action": "add-transcription-to-description"
+      }
+    ],
+
+    "addToDescription": {
+      "append": {
+        "position": "end",
+        "replacesExisting": false,
+        "preservesRichText": true,
+        "separator": "paragraph-break",
+        "emptyDescription": "use the transcript as the description, with no leading break"
+      },
+      "keepsAudio": true,
+      "keepsTranscription": true,
+      "duplicateGuard": {
+        "blocksDoubleActivation": true,
+        "scope": "this visit",
+        "persistedField": false,
+        "afterSuccess": {
+          "label": "Added to description",
+          "replaces": "add-to-description",
+          "enabled": false,
+          "copyRemainsAvailable": true
+        }
+      },
+      "createAndEdit": {
+        "action": "append-transcription-to-description-draft",
+        "target": "description draft",
+        "onSuccess": [
+          "append-once",
+          "close-sheet"
+        ],
+        "onLaterOpenThisVisit": "Added to description replaces Add to Description and stays disabled. Copy stays available."
+      },
+      "view": {
+        "action": "open-edit-to-add-transcription",
+        "mutatesReadOnlyDescription": false,
+        "preparesAppendOnEditDraft": true,
+        "onSuccess": "close-sheet-and-open-edit"
+      }
+    },
+
+    "notPresentedHere": {
+      "transcribing": "Shown on the audio attachment card. Transcribe with AI does not open this sheet.",
+      "transcriptionError": "Shown on the audio attachment card, with Retry. This sheet has no error state."
+    },
+
+    "empty": {
+      "when": "speech-to-text returned 200 and the transcript is empty",
+      "openSheet": true,
+      "message": "No text in this recording.",
+      "hideCopy": true,
+      "hideAddToDescription": true,
+      "persistedOnAttachment": false
+    },
+
+    "visualRules": [
+      "Use the global bottomSheet pattern from design-system.json, including its drag handle.",
+      "Do not define sheet-specific colors, radii or spacing.",
+      "There is no approved reference PNG yet. Do not measure tokens from a conceptual mockup.",
+      "The transcript is read-only text, not a textarea and not the description editor.",
+      "auto_awesome marks the sheet title only. Do not add a glow, gradient, decorative waveform or extra sparkle.",
+      "Copy is a secondary action. Add to Description is the primary action until it has succeeded.",
+      "Added to description uses the disabled secondary treatment. Copy stays available.",
+      "Teal is reserved for the primary action. Danger is not used on this sheet.",
+      "Processing and failure stay on the audio attachment card. Do not add those states to this sheet.",
+      "A 200 response with no transcript opens this sheet with No text in this recording. Copy and Add to Description stay hidden. The empty text is not stored on the attachment.",
+      "Closing the sheet does not delete the transcription, remove the audio, or undo an append that already happened."
+    ],
+
+    "reference": {
+      "status": "pending",
+      "description": "Draft until an approved PNG is added. Do not point this spec at a missing reference image."
+    },
+
+    "angular": {
+      "note": "Shared by Create Task, Edit Task and Task View. Opens only after a transcription is already stored on the attachment. Reuse SpeechToTextService for the earlier card action; opening this sheet must not call POST /api/ai/speech-to-text. The response is a transcript string with no progress percent.",
+      "existingPiecesToReuse": [
+        "frontend/src/app/shared/features/voice-input/api/speech-to-text.service.ts",
+        "frontend/src/app/shared/components/ui-elements/rich-text-editor/"
+      ]
+    }
+  }
+}

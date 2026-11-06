@@ -1,16 +1,17 @@
-import { TagDTO } from '@brainassistant/contracts';
+import { canonicalTagColor, TagConst, TagDTO } from '@brainassistant/contracts';
 import { Tag, TagPersistent } from '../domain/models/tag.js';
 import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 
 export class TagMapper {
   public static toDomain(raw: TagPersistent): Tag {
-    const { userId, name, color, _id, createdAt, modifiedAt } = raw;
+    const { userId, name, color, isPinned, _id, createdAt, modifiedAt } = raw;
 
     return Tag.reconstitute(
       {
         userId,
         name: name ?? '',
-        color: color ?? '',
+        color: canonicalTagColor(color) ?? TagConst.DEFAULT_COLOR,
+        isPinned: isPinned === true,
         createdAt,
         modifiedAt,
       },
@@ -24,6 +25,7 @@ export class TagMapper {
       userId: tag.userId,
       name: tag.name,
       color: tag.color,
+      isPinned: tag.isPinned,
       createdAt: tag.createdAt,
       modifiedAt: tag.modifiedAt,
     };
@@ -35,6 +37,7 @@ export class TagMapper {
       userId: tag.userId,
       name: tag.name,
       color: tag.color,
+      isPinned: tag.isPinned,
       createdAt: tag.createdAt.toISOString(),
       modifiedAt: tag.modifiedAt.toISOString(),
     };

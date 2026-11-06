@@ -1,0 +1,140 @@
+<div class="top-panel-holder">
+  <div class="top-panel-row">
+    <div class="page-header-text">
+      <h1 class="page-title" data-test="tags-title">Tags</h1>
+      <p class="page-subtitle" data-test="tags-subtitle">{{ subtitle() }}</p>
+    </div>
+    <div class="top-panel-holder-right">
+      @if (selectors.isLoggedIn()) {
+        <div class="avatar-holder">
+          <ba-home-account-menu
+            [avatarInputData]="avatarInputData"
+            [userFullName]="selectors.userFullName()"
+            [userEmail]="selectors.userEmail()"
+          ></ba-home-account-menu>
+        </div>
+      }
+      @if (!searchOpen()) {
+        <div class="header-actions">
+          <button
+            class="header-icon-btn"
+            type="button"
+            data-test="tags-search"
+            aria-label="Search"
+            (click)="openSearch()"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">search</span>
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+  @if (searchOpen()) {
+    <div class="search-row">
+      <div class="search-field">
+        <span class="material-symbols-rounded search-field-icon" aria-hidden="true">search</span>
+        <input
+          class="search-field-input"
+          type="text"
+          data-test="tags-search-input"
+          #searchInput
+          placeholder="Search tags..."
+          aria-label="Search tags"
+          enterkeyhint="search"
+          autocomplete="off"
+          [formControl]="queryControl"
+        />
+        @if (hasQuery()) {
+          <button
+            class="search-clear"
+            type="button"
+            data-test="tags-search-clear"
+            aria-label="Clear search"
+            (click)="clearSearch()"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          </button>
+        }
+      </div>
+      <button
+        class="search-cancel"
+        type="button"
+        data-test="tags-search-cancel"
+        (click)="cancelSearch()"
+      >
+        Cancel
+      </button>
+    </div>
+  }
+</div>
+
+<div class="tag-list-holder">
+  @if (hasQuery()) {
+    @if (visibleRows().length === 0) {
+      <p class="list-empty" data-test="tags-search-empty">No results</p>
+    } @else {
+      <div class="tag-list" data-test="tags-search-results">
+        @for (tag of visibleRows(); track tag.id) {
+          <ng-container
+            [ngTemplateOutlet]="tagRow"
+            [ngTemplateOutletContext]="{ $implicit: tag }"
+          />
+        }
+      </div>
+    }
+  } @else if (rows().length === 0) {
+    <p class="list-empty" data-test="tags-empty">No tags yet</p>
+  } @else {
+    @if (pinnedRows().length) {
+      <section class="tag-section" data-test="tags-pinned-section">
+        <div class="section-heading">
+          <h2 class="section-title">Pinned</h2>
+          <p class="section-note">Shown on Home</p>
+        </div>
+        <div class="tag-list">
+          @for (tag of pinnedRows(); track tag.id) {
+            <ng-container
+              [ngTemplateOutlet]="tagRow"
+              [ngTemplateOutletContext]="{ $implicit: tag }"
+            />
+          }
+        </div>
+      </section>
+    }
+    @if (otherRows().length) {
+      <section class="tag-section" data-test="tags-other-section">
+        <div class="section-heading">
+          <h2 class="section-title">Other tags</h2>
+        </div>
+        <div class="tag-list">
+          @for (tag of otherRows(); track tag.id) {
+            <ng-container
+              [ngTemplateOutlet]="tagRow"
+              [ngTemplateOutletContext]="{ $implicit: tag }"
+            />
+          }
+        </div>
+      </section>
+    }
+  }
+</div>
+
+<div class="bottom-panel-holder">
+  <ba-home-bottom-panel page="tags" (createTag)="openCreate()"></ba-home-bottom-panel>
+</div>
+
+<ba-tag-selector flow="create"></ba-tag-selector>
+
+<ng-template #tagRow let-tag>
+  <ba-tag-row
+    [tag]="tag"
+    [chosen]="isChosen(tag.id)"
+    [menuOpen]="openMenuId() === tag.id"
+    (opened)="chooseTag($event)"
+    (pinned)="togglePin($event)"
+    (menuRequested)="openMenu($event)"
+    (menuClosed)="closeMenu()"
+    (edit)="editTag($event)"
+    (remove)="confirmDelete($event)"
+  ></ba-tag-row>
+</ng-template>

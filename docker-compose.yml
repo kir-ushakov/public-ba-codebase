@@ -36,10 +36,16 @@ services:
       - ./backend/test:/app/backend/test
       - ./contracts:/app/contracts
       - files:/app/backend/files
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       - NODE_ENV=${NODE_ENV}
       - PORT=3443
       - DB_PORT=27017
+      - REDIS_URL=redis://redis:6379
       - CRT_PATH=./ssl/server.crt
       - KEY_PATH=./ssl/server.key
       - DB_CONTAINER=db
@@ -85,9 +91,19 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=${DB_USER}
       - MONGO_INITDB_ROOT_PASSWORD=${DB_PASSWORD}
       - MONGO_INITDB_DATABASE=ba
-
+    healthcheck:
+      test: ['CMD', 'ba-mongo-ready.sh']
+      interval: 5s
+      timeout: 20s
+      retries: 30
+      start_period: 40s
     volumes:
       - mongodb:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
 
 volumes:
   mongodb:

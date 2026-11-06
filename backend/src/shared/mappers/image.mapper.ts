@@ -4,13 +4,14 @@ import { UniqueEntityID } from '../domain/UniqueEntityID.js';
 import { IImagePersistent } from '../infra/database/mongodb/image.model.js';
 
 export class ImageMapper {
-  public static toDomain(raw: IImagePersistent): Result<Image, never> {
+  public static toDomain(raw: IImagePersistent): Result<Image> {
     const image = Image.create(
       {
         imageId: raw.imageId,
         userId: raw.userId,
         storageType: raw.storageType,
         fileId: raw.fileId,
+        mimeType: raw.mimeType,
       },
       new UniqueEntityID(raw._id),
     );
@@ -25,6 +26,7 @@ export class ImageMapper {
       userId: image.userId,
       storageType: image.storageType,
       fileId: image.fileId,
+      mimeType: image.mimeType,
     };
   }
 }

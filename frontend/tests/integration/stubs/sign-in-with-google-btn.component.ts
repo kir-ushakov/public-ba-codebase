@@ -26,12 +26,11 @@ export class SignInWithGoogleBtnComponent {
       googleAccessToken: 'fake-access-token',
     };
 
-    // Dispatch action to update NgXS state
-    this.store.dispatch(new UserAction.UserAuthenticatedWithGoogle(fakeUser));
-
-    console.log('[E2E] Fake login applied with user state updated');
-
-    // Redirect to home page
-    window.location.href = '/';
+    // The storage plugin writes `user` when this action finishes. Reloading
+    // before that drops the account and the next page opens signed out.
+    this.store.dispatch(new UserAction.UserAuthenticatedWithGoogle(fakeUser)).subscribe(() => {
+      console.log('[E2E] Fake login applied with user state updated');
+      window.location.href = '/';
+    });
   }
 }

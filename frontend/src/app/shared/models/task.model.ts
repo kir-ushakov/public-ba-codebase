@@ -1,6 +1,15 @@
-import { ETaskStatus, ETaskType, type TaskDescriptionDoc } from '@brainassistant/contracts';
-export { ETaskStatus, ETaskType };
+import {
+  ETaskCondition,
+  ETaskStatus,
+  ETaskType,
+  type AudioAttachment,
+  type ChecklistItemDTO,
+  type TaskDescriptionDoc,
+} from '@brainassistant/contracts';
+export type { AudioAttachment };
+export { ETaskCondition, ETaskStatus, ETaskType };
 export type { TaskDescriptionDoc };
+export type ChecklistItem = ChecklistItemDTO;
 
 export type Task = {
   id: string;
@@ -10,8 +19,11 @@ export type Task = {
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;
+  checklist?: ChecklistItem[];
+  audioAttachments?: AudioAttachment[];
   tagIds?: string[];
   status: ETaskStatus;
+  conditions?: ETaskCondition[];
   createdAt: string;
   modifiedAt: string;
 };
@@ -29,7 +41,10 @@ export const defaultTask = {
 export type DefaultTask = typeof defaultTask & {
   imageId?: string;
   description?: TaskDescriptionDoc;
+  checklist?: ChecklistItem[];
+  audioAttachments?: AudioAttachment[];
   tagIds?: string[];
+  conditions?: ETaskCondition[];
 };
 
 export type TaskChanges = {

@@ -31,7 +31,7 @@ export class OpenAISpeechTranscriberService {
   private static readonly MIME_TYPE_OVERRIDES: Record<string, string> = {
     'audio/webm': 'webm',
   };
-  static readonly MODEL_WHISPER_V1 = 'whisper-1';
+  static readonly MODEL = 'gpt-transcribe';
 
   constructor(private readonly openAIClientService: OpenAIClientService) {}
 
@@ -142,7 +142,7 @@ export class OpenAISpeechTranscriberService {
       const transcription = await retry(() =>
         client.audio.transcriptions.create({
           file: filelike,
-          model: OpenAISpeechTranscriberService.MODEL_WHISPER_V1,
+          model: OpenAISpeechTranscriberService.MODEL,
           temperature: 0,
         }),
       );
@@ -157,7 +157,7 @@ export class OpenAISpeechTranscriberService {
           level: this.mapOpenAIErrorToLevel(error),
           error: error,
           metadata: {
-            model: OpenAISpeechTranscriberService.MODEL_WHISPER_V1,
+            model: OpenAISpeechTranscriberService.MODEL,
             fileName: filelike.name,
             fileSize: filelike.size ?? 'unknown',
             mimeType: filelike.type ?? 'unknown',

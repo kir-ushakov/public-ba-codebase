@@ -49,13 +49,19 @@ src/app/
     └── dto/ forms/ pipes/ helpers/
 ```
 
-`main.ts` registers exactly four global slices — `AppState`, `UserState`, `SyncState`, `TasksState` —
-and `withNgxsStoragePlugin({ keys: '*' })`, so every slice, including screen and feature slices, is
-persisted on the device.
+`main.ts` registers the global slices — `AppState`, `UserState`, `SyncState`, `TasksState`,
+`TagsState` — and `withNgxsStoragePlugin({ keys: ['user'] })`. Tasks, tags and the sync queue
+live in IndexedDB (`ba-<userId>`), one database per account. Screen and feature slices are not
+persisted.
 
 Tests: Jest in `tests/unit/` (state, helpers, component tripwires), mocked Playwright in
 `tests/integration/` (guide in `tests/integration/README.md`), live two-client specs in
 `tests/e2e/`. `npm test` is Jest only.
+
+`benchmarks/` is a separate measurement harness. The normal dev and production builds keep
+`src/app/benchmark/` as no-ops. Only `ng build --configuration benchmark` replaces those files
+with the probe. Do not import `benchmarks/` from application code, and do not treat its timings
+as a change to IndexedDB, NGXS, or the screens.
 
 ## Canonical references
 

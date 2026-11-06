@@ -14,14 +14,6 @@ export const GoogleAuthErrors = {
         EHttpStatus.Conflict,
       ),
     ),
-  RefreshTokenNotReceived: (): Result<never, UseCaseError<EGoogleAuthUseCaseError>> =>
-    Result.fail(
-      new UseCaseError<EGoogleAuthUseCaseError>(
-        EGoogleAuthUseCaseError.RefreshTokenNotReceived,
-        'Google refresh token was not received. Please repeat consent to re-authorize offline access.',
-        EHttpStatus.BadRequest,
-      ),
-    ),
   AuthorizationFailed: (): Result<never, UseCaseError<EGoogleAuthUseCaseError>> =>
     Result.fail(
       new UseCaseError<EGoogleAuthUseCaseError>(

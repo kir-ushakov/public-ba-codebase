@@ -16,7 +16,7 @@ Run every command from `frontend/`. The shell is PowerShell: separate commands w
 - [ ] 2. Decide which state layer owns this
 - [ ] 3. Model, mapper and API service
 - [ ] 4. Actions and state handlers
-- [ ] 5. Component and route
+- [ ] 5. Component and route, including any new icon name in the project subset
 - [ ] 6. Sync impact
 - [ ] 7. Tests
 - [ ] 8. lint / test / build
@@ -79,6 +79,15 @@ Standalone component with its own `imports`. Add the route in `mobile-app/mobile
 Add `data-test` attributes to anything E2E will need to click or read, while you are in the template — retrofitting them later is what makes E2E specs reach for CSS classes.
 
 Map visual values through `frontend/src/scss/` partials from `docs/design/design-system.json`. Before finishing, run the Final Check in `docs/design/UI_STYLE_GUIDE.md`.
+
+Material Symbols Rounded are not the full font. The app loads a named subset. A symbol name that is missing from that subset is painted as the word itself — `pause` showed up as PAUSE.
+
+When a template uses a new symbol, add its name in alphabetical order to both lists and keep them identical:
+
+- `frontend/src/index.html` — `icon_names` on the Material Symbols Rounded stylesheet
+- `frontend/ngsw-config.json` — the same URL in the `material-symbols` asset group
+
+Do not add a custom SVG when that Material Symbol exists.
 
 ## 6. Sync impact
 

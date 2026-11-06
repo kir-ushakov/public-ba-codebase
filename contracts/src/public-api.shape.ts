@@ -8,6 +8,7 @@
  */
 
 import {
+  ImageConst,
   TagConst,
   TaskConst,
   type ApiErrorDto,
@@ -20,6 +21,9 @@ import {
   type SignUpRequestDTO,
   type SignUpResponseDTO,
   type TagDTO,
+  type AudioAttachment,
+  type AudioTranscription,
+  type ChecklistItemDTO,
   type TaskDescriptionDoc,
   type TaskDescriptionMark,
   type TaskDescriptionNode,
@@ -29,26 +33,37 @@ import {
 } from './dto';
 import {
   GetChangesContract,
+  RefreshSessionContract,
   SendChangeContract,
+  SyncAvailableContract,
+  UploadAudioContract,
   UploadImageContract,
 } from './contracts';
 import {
   EApiError,
   EChangeAction,
   EChangedEntity,
+  EDeleteAudioUseCaseError,
+  EDeleteImageUseCaseError,
+  EDeleteTaskUseCaseError,
+  EGetAudioUseCaseError,
   EGetImageUseCaseError,
   EGoogleAuthUseCaseError,
   EImageRepoServiceError,
   ELoginUseCaseError,
+  ERefreshSessionUseCaseError,
   ERemoveFromSlackUseCaseError,
   ESignUpUseCaseError,
   ESlackEventReceivedUseCaseError,
   ESpeechToTextUseCaseError,
   ETagError,
+  ETagRepoServiceError,
+  ETaskCondition,
   ETaskError,
   ETaskRepoServiceError,
   ETaskStatus,
   ETaskType,
+  EUploadAudioUseCaseError,
   EUploadImageUseCaseError,
   EVerifyEmailUseCaseError,
 } from './enums';
@@ -65,14 +80,51 @@ const TASK_DTO_KEYS = [
   'type',
   'title',
   'status',
+  'conditions',
   'imageId',
   'images',
   'description',
+  'checklist',
+  'audioAttachments',
   'createdAt',
   'modifiedAt',
   'tagIds',
 ] as const satisfies readonly (keyof TaskDTO)[];
 const _taskDto: ExactKeys<TaskDTO, typeof TASK_DTO_KEYS> = true;
+
+const CHECKLIST_ITEM_DTO_KEYS = [
+  'id',
+  'text',
+  'completed',
+] as const satisfies readonly (keyof ChecklistItemDTO)[];
+const _checklistItemDto: ExactKeys<ChecklistItemDTO, typeof CHECKLIST_ITEM_DTO_KEYS> = true;
+
+const AUDIO_ATTACHMENT_KEYS = [
+  'id',
+  'durationMs',
+  'mimeType',
+  'createdAt',
+  'transcription',
+] as const satisfies readonly (keyof AudioAttachment)[];
+const _audioAttachment: ExactKeys<AudioAttachment, typeof AUDIO_ATTACHMENT_KEYS> = true;
+
+const AUDIO_TRANSCRIPTION_KEYS = [
+  'text',
+  'createdAt',
+  'model',
+] as const satisfies readonly (keyof AudioTranscription)[];
+const _audioTranscription: ExactKeys<AudioTranscription, typeof AUDIO_TRANSCRIPTION_KEYS> = true;
+
+const UPLOAD_AUDIO_REQUEST_KEYS = [
+  'audioId',
+  'file',
+] as const satisfies readonly (keyof UploadAudioContract.Request)[];
+const _uploadAudioReq: ExactKeys<UploadAudioContract.Request, typeof UPLOAD_AUDIO_REQUEST_KEYS> = true;
+
+const UPLOAD_AUDIO_RESPONSE_KEYS = [
+  'audioId',
+] as const satisfies readonly (keyof UploadAudioContract.Response)[];
+const _uploadAudioRes: ExactKeys<UploadAudioContract.Response, typeof UPLOAD_AUDIO_RESPONSE_KEYS> = true;
 
 const TASK_DESCRIPTION_DOC_KEYS = ['type', 'content'] as const satisfies readonly (keyof TaskDescriptionDoc)[];
 const _taskDescriptionDoc: ExactKeys<TaskDescriptionDoc, typeof TASK_DESCRIPTION_DOC_KEYS> = true;
@@ -99,6 +151,7 @@ const TAG_DTO_KEYS = [
   'color',
   'createdAt',
   'modifiedAt',
+  'isPinned',
 ] as const satisfies readonly (keyof TagDTO)[];
 const _tagDto: ExactKeys<TagDTO, typeof TAG_DTO_KEYS> = true;
 
@@ -152,12 +205,31 @@ const GET_CHANGES_RESPONSE_KEYS = [
 ] as const satisfies readonly (keyof GetChangesContract.Response)[];
 const _getChangesRes: ExactKeys<GetChangesContract.Response, typeof GET_CHANGES_RESPONSE_KEYS> = true;
 
+const REFRESH_SESSION_RESPONSE_KEYS = [
+  'refreshed',
+] as const satisfies readonly (keyof RefreshSessionContract.Response)[];
+const _refreshSessionRes: ExactKeys<
+  RefreshSessionContract.Response,
+  typeof REFRESH_SESSION_RESPONSE_KEYS
+> = true;
+
 const SEND_CHANGE_REQUEST_KEYS = [
   'changeableObjectDto',
 ] as const satisfies readonly (keyof SendChangeContract.Request)[];
 const _sendChangeReq: ExactKeys<SendChangeContract.Request, typeof SEND_CHANGE_REQUEST_KEYS> = true;
 
+const SYNC_AVAILABLE_EVENT_KEYS = [
+  'version',
+] as const satisfies readonly (keyof SyncAvailableContract.Event)[];
+const _syncAvailableEvent: ExactKeys<SyncAvailableContract.Event, typeof SYNC_AVAILABLE_EVENT_KEYS> =
+  true;
+
 void _taskDto;
+type _ChecklistItemDtoShapeOk = typeof _checklistItemDto;
+void _audioAttachment;
+void _audioTranscription;
+void _uploadAudioReq;
+void _uploadAudioRes;
 void _taskDescriptionDoc;
 void _taskDescriptionNode;
 void _taskDescriptionMark;
@@ -177,33 +249,55 @@ void _uploadReq;
 void _uploadRes;
 void _getChangesReq;
 void _getChangesRes;
+void _refreshSessionRes;
 void _sendChangeReq;
+void _syncAvailableEvent;
 
 export const PUBLIC_API_SHAPE = {
   enums: {
     ETaskType: Object.values(ETaskType),
     ETaskStatus: Object.values(ETaskStatus),
+    ETaskCondition: Object.values(ETaskCondition),
     EChangedEntity: Object.values(EChangedEntity),
     EChangeAction: Object.values(EChangeAction),
     EApiError: Object.values(EApiError),
     EUploadImageUseCaseError: Object.values(EUploadImageUseCaseError),
+    EUploadAudioUseCaseError: Object.values(EUploadAudioUseCaseError),
+    EGetAudioUseCaseError: Object.values(EGetAudioUseCaseError),
+    EDeleteAudioUseCaseError: Object.values(EDeleteAudioUseCaseError),
+    EDeleteImageUseCaseError: Object.values(EDeleteImageUseCaseError),
+    EDeleteTaskUseCaseError: Object.values(EDeleteTaskUseCaseError),
     EGetImageUseCaseError: Object.values(EGetImageUseCaseError),
     ELoginUseCaseError: Object.values(ELoginUseCaseError),
     ESignUpUseCaseError: Object.values(ESignUpUseCaseError),
     EGoogleAuthUseCaseError: Object.values(EGoogleAuthUseCaseError),
     ESpeechToTextUseCaseError: Object.values(ESpeechToTextUseCaseError),
     EVerifyEmailUseCaseError: Object.values(EVerifyEmailUseCaseError),
+    ERefreshSessionUseCaseError: Object.values(ERefreshSessionUseCaseError),
     ERemoveFromSlackUseCaseError: Object.values(ERemoveFromSlackUseCaseError),
     ESlackEventReceivedUseCaseError: Object.values(ESlackEventReceivedUseCaseError),
     ETaskError: Object.values(ETaskError),
     ETagError: Object.values(ETagError),
+    ETagRepoServiceError: Object.values(ETagRepoServiceError),
     ETaskRepoServiceError: Object.values(ETaskRepoServiceError),
     EImageRepoServiceError: Object.values(EImageRepoServiceError),
   },
   dto: {
     TaskDTO: {
       keys: [...TASK_DTO_KEYS],
-      optional: ['imageId', 'images', 'description', 'tagIds'],
+      optional: ['imageId', 'images', 'description', 'checklist', 'audioAttachments', 'tagIds', 'conditions'],
+    },
+    AudioAttachment: {
+      keys: [...AUDIO_ATTACHMENT_KEYS],
+      optional: ['transcription'],
+    },
+    AudioTranscription: {
+      keys: [...AUDIO_TRANSCRIPTION_KEYS],
+      optional: ['model'],
+    },
+    ChecklistItemDTO: {
+      keys: [...CHECKLIST_ITEM_DTO_KEYS],
+      optional: [] as string[],
     },
     TaskDescriptionDoc: {
       keys: [...TASK_DESCRIPTION_DOC_KEYS],
@@ -218,7 +312,7 @@ export const PUBLIC_API_SHAPE = {
       optional: ['attrs'],
     },
     UserDto: { keys: [...USER_DTO_KEYS], optional: [] as string[] },
-    TagDTO: { keys: [...TAG_DTO_KEYS], optional: [] as string[] },
+    TagDTO: { keys: [...TAG_DTO_KEYS], optional: ['isPinned'] },
     IChangeableObjectDTO: { keys: [...CHANGEABLE_OBJECT_KEYS], optional: [] as string[] },
     ChangeDTO: { keys: [...CHANGE_DTO_KEYS], optional: [] as string[] },
     LoginRequestDTO: { keys: [...LOGIN_REQUEST_KEYS], optional: [] as string[] },
@@ -234,16 +328,28 @@ export const PUBLIC_API_SHAPE = {
       request: [...UPLOAD_REQUEST_KEYS],
       response: [...UPLOAD_RESPONSE_KEYS],
     },
+    UploadAudioContract: {
+      request: [...UPLOAD_AUDIO_REQUEST_KEYS],
+      response: [...UPLOAD_AUDIO_RESPONSE_KEYS],
+    },
     GetChangesContract: {
       request: [...GET_CHANGES_REQUEST_KEYS],
       response: [...GET_CHANGES_RESPONSE_KEYS],
+    },
+    RefreshSessionContract: {
+      request: 'cookie',
+      response: [...REFRESH_SESSION_RESPONSE_KEYS],
     },
     SendChangeContract: {
       request: [...SEND_CHANGE_REQUEST_KEYS],
       response: 'entity-or-void',
     },
+    SyncAvailableContract: {
+      event: [...SYNC_AVAILABLE_EVENT_KEYS],
+    },
   },
   consts: {
+    ImageConst,
     TaskConst,
     TagConst,
   },

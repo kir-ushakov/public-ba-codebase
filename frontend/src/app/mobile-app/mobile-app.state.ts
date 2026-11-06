@@ -27,6 +27,19 @@ export class MobileAppState {
     return ctx.dispatch(new TasksAction.DeleteTask(taskId));
   }
 
+  @Action(TaskTileAction.ConvertSelected)
+  convertTask(
+    ctx: StateContext<MobileAppStateModel>,
+    { taskId, status }: TaskTileAction.ConvertSelected,
+  ): ReturnType<StateContext<MobileAppStateModel>['dispatch']> {
+    return ctx.dispatch(
+      new TasksAction.UpdateTask({
+        taskId,
+        changes: { status },
+      }),
+    );
+  }
+
   @Action(TaskScreenAction.Close)
   @Action(AppAction.NavigateToHomeScreen)
   openHomeView() {

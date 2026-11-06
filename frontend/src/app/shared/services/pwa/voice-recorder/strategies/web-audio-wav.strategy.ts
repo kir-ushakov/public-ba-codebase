@@ -27,8 +27,6 @@ function createAudioContext(AudioCtx: typeof AudioContext): AudioContext {
  */
 export class WebAudioWavStrategy implements IWebRecordingStrategy {
   readonly engine: VoiceRecorderEngine = 'web-audio-wav';
-  /** Audio to discard at the beginning; UI countdown starts after this period. */
-  readonly warmupMs: number;
 
   private audioContext: AudioContext | null = null;
   private source: MediaStreamAudioSourceNode | null = null;
@@ -37,20 +35,18 @@ export class WebAudioWavStrategy implements IWebRecordingStrategy {
   private pcmBuffer: Float32Array | null = null;
   private pcmSampleCount = 0;
   private pcmOverflow = false;
+  private paused = false;
   /**
    * Ignore late worklet/script callbacks after stop/dispose.
    * WebAudio can deliver a final `onmessage`/`onaudioprocess` after we disconnect/close.
    */
   private active = false;
+  private disposed = false;
 
-  constructor(
-    private readonly stream: MediaStream,
-    warmupMs: number,
-  ) {
-    this.warmupMs = Math.max(0, warmupMs);
-  }
+  constructor(private readonly stream: MediaStream) {}
 
   async start(): Promise<void> {
+    this.throwIfDisposed();
     this.active = false;
     const AudioCtx =
       (window as unknown as { AudioContext?: typeof AudioContext }).AudioContext ??
@@ -68,6 +64,7 @@ export class WebAudioWavStrategy implements IWebRecordingStrategy {
     } catch {
       /* ignore */
     }
+    this.throwIfDisposed();
     this.source = this.audioContext.createMediaStreamSource(this.stream);
     this.pcmBuffer = null;
     this.pcmSampleCount = 0;
@@ -91,9 +88,7 @@ class PcmCaptureProcessor extends AudioWorkletProcessor {
 registerProcessor('pcm-capture', PcmCaptureProcessor);
 `;
 
-      const moduleUrl = URL.createObjectURL(
-        new Blob([workletCode], { type: 'text/javascript' }),
-      );
+      const moduleUrl = URL.createObjectURL(new Blob([workletCode], { type: 'text/javascript' }));
 
       try {
         await ctx.audioWorklet.addModule(moduleUrl);
@@ -101,6 +96,7 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
         const url = moduleUrl;
         setTimeout(() => URL.revokeObjectURL(url), 0);
       }
+      this.throwIfDisposed();
 
       const node = new AudioWorkletNode(ctx, 'pcm-capture');
       node.port.onmessage = (event: MessageEvent<Float32Array>) => {
@@ -115,40 +111,63 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
       this.silenceGain.gain.value = 0;
 
       this.captureNode = node;
+      this.active = true;
       this.source.connect(node);
       node.connect(this.silenceGain);
       this.silenceGain.connect(ctx.destination);
-      this.active = true;
       return;
     }
 
-    const processor = (ctx as unknown as { createScriptProcessor?: Function }).createScriptProcessor?.call(
-      ctx,
-      4096,
-      1,
-      1,
-    ) as AudioNode | undefined;
+    const processor = (
+      ctx as unknown as { createScriptProcessor?: Function }
+    ).createScriptProcessor?.call(ctx, 4096, 1, 1) as AudioNode | undefined;
 
     if (!processor) {
       throw new Error('No supported WebAudio capture node available');
     }
 
-    (processor as unknown as { onaudioprocess?: (e: AudioProcessingEvent) => void }).onaudioprocess =
-      e => {
-        if (!this.active) {
-          return;
-        }
-        const input = e.inputBuffer.getChannelData(0);
-        this.appendPcmCopy(input);
-      };
+    (
+      processor as unknown as { onaudioprocess?: (e: AudioProcessingEvent) => void }
+    ).onaudioprocess = e => {
+      if (!this.active) {
+        return;
+      }
+      this.ingest(e.inputBuffer.getChannelData(0));
+    };
 
     this.captureNode = processor;
     this.silenceGain = ctx.createGain();
     this.silenceGain.gain.value = 0;
+    this.active = true;
     this.source.connect(processor);
     processor.connect(this.silenceGain);
     this.silenceGain.connect(ctx.destination);
-    this.active = true;
+  }
+
+  async pause(): Promise<void> {
+    if (!this.active) {
+      throw new Error('Not recording');
+    }
+    this.paused = true;
+  }
+
+  async resume(): Promise<void> {
+    if (!this.active || !this.paused) {
+      throw new Error('Not paused');
+    }
+    this.paused = false;
+  }
+
+  capturedBytes(): number {
+    return 44 + this.pcmSampleCount * 2;
+  }
+
+  /** Copies one microphone chunk. While paused, the chunk is ignored. */
+  ingest(chunk: Float32Array): void {
+    if (!this.active) {
+      return;
+    }
+    this.appendPcmCopy(chunk);
   }
 
   async stop(): Promise<Blob> {
@@ -172,7 +191,16 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
   }
 
   dispose(): void {
+    this.disposed = true;
     this.disposeGraph();
+  }
+
+  private throwIfDisposed(): void {
+    if (!this.disposed) {
+      return;
+    }
+    this.disposeGraph();
+    throw new DOMException('Aborted', 'AbortError');
   }
 
   private disposeGraph(): void {
@@ -190,10 +218,11 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
     this.pcmBuffer = null;
     this.pcmSampleCount = 0;
     this.pcmOverflow = false;
+    this.paused = false;
   }
 
   private appendPcmCopy(chunk: Float32Array): void {
-    if (this.pcmOverflow) {
+    if (this.paused || this.pcmOverflow) {
       return;
     }
 
@@ -222,9 +251,12 @@ registerProcessor('pcm-capture', PcmCaptureProcessor);
     this.pcmBuffer = next;
   }
 
-  private encodeWavFromBuffer(samples: Float32Array | null, length: number, sampleRate: number): Blob {
-    const merged =
-      samples && length > 0 ? samples.subarray(0, length) : new Float32Array(0);
+  private encodeWavFromBuffer(
+    samples: Float32Array | null,
+    length: number,
+    sampleRate: number,
+  ): Blob {
+    const merged = samples && length > 0 ? samples.subarray(0, length) : new Float32Array(0);
 
     const buffer = new ArrayBuffer(44 + merged.length * 2);
     const view = new DataView(buffer);

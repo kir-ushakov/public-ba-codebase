@@ -1,0 +1,179 @@
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { createSelectMap, Store } from '@ngxs/store';
+import { HomeAccountMenuComponent } from '../home-screen/home-account-menu/home-account-menu.component';
+import { HomeBottomPanelComponent } from '../home-screen/home-bottom-panel/home-bottom-panel.component';
+import { HomeContentModeService } from '../home-screen/home-content-mode.service';
+import { TagSelectorComponent } from '../task-screen/task-edit/tag-selector/tag-selector.component';
+import { IUserAvatarInputData } from 'src/app/shared/components/ui-elements/user-avatar/user-avatar.interface';
+import { firstValueFrom } from 'rxjs';
+import { DialogService } from 'src/app/shared/services/utility/dialog.service';
+import { TagsAction } from 'src/app/shared/state/tags.action';
+import { TagsState } from 'src/app/shared/state/tags.state';
+import { TasksAction } from 'src/app/shared/state/tasks.action';
+import { TasksState } from 'src/app/shared/state/tasks.state';
+import { UserState } from 'src/app/shared/state/user.state';
+import { DeleteTagDialogComponent } from './delete-tag-dialog/delete-tag-dialog.component';
+import { buildTagRows, filterTagRows, tagsPageSubtitle } from './helpers/tag-list.function';
+import { TagRowComponent } from './tag-row/tag-row.component';
+
+@Component({
+  selector: 'ba-tags-screen',
+  templateUrl: './tags-screen.component.html',
+  styleUrl: './tags-screen.component.scss',
+  imports: [
+    NgTemplateOutlet,
+    ReactiveFormsModule,
+    HomeAccountMenuComponent,
+    HomeBottomPanelComponent,
+    TagRowComponent,
+    TagSelectorComponent,
+  ],
+})
+export class TagsScreenComponent implements OnInit {
+  selectors = createSelectMap({
+    tags: TagsState.forCurrentUser,
+    tasks: TasksState.actualTasks,
+    isLoggedIn: UserState.isLoggedIn,
+    userFullName: UserState.userFullName,
+    userEmail: UserState.userEmail,
+  });
+
+  avatarInputData!: IUserAvatarInputData;
+
+  readonly searchOpen = signal(false);
+  readonly openMenuId = signal<string | null>(null);
+  readonly queryControl = new FormControl('', { nonNullable: true });
+  readonly rows = computed(() => buildTagRows(this.selectors.tags(), this.selectors.tasks()));
+  readonly subtitle = computed(() =>
+    tagsPageSubtitle(this.rows().length, this.rows().filter(row => row.isPinned).length),
+  );
+  readonly hasQuery = computed(() => this.query().trim().length > 0);
+  readonly visibleRows = computed(() => filterTagRows(this.rows(), this.query()));
+  readonly pinnedRows = computed(() => this.rows().filter(row => row.isPinned));
+  readonly otherRows = computed(() => this.rows().filter(row => !row.isPinned));
+
+  private readonly store = inject(Store);
+  private readonly contentMode = inject(HomeContentModeService);
+  private readonly query = toSignal(this.queryControl.valueChanges, { initialValue: '' });
+  private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  private readonly tagCreator = viewChild.required(TagSelectorComponent);
+  private readonly dialog = inject(DialogService);
+
+  constructor() {
+    effect(() => {
+      if (!this.searchOpen()) {
+        return;
+      }
+      this.searchInput()?.nativeElement.focus();
+    });
+
+    effect(() => {
+      this.contentMode.noteTags(this.rows().map(row => row.id));
+    });
+  }
+
+  ngOnInit(): void {
+    this.contentMode.bindUser(this.store.selectSnapshot(UserState.userId));
+    const userNameFirstLetter = this.store.selectSnapshot(UserState.userNameFirstLetter);
+    this.avatarInputData = { firstLetter: userNameFirstLetter };
+  }
+
+  openSearch(): void {
+    this.searchOpen.set(true);
+  }
+
+  clearSearch(): void {
+    this.queryControl.setValue('');
+    this.searchInput()?.nativeElement.focus();
+  }
+
+  cancelSearch(): void {
+    this.queryControl.setValue('');
+    this.searchOpen.set(false);
+  }
+
+  chooseTag(tagId: string): void {
+    this.contentMode.toggleTag(tagId);
+  }
+
+  isChosen(tagId: string): boolean {
+    return this.contentMode.selectedTagIds().includes(tagId);
+  }
+
+  togglePin(change: { id: string; isPinned: boolean }): void {
+    this.store.dispatch(new TagsAction.SetPinned(change.id, !change.isPinned));
+  }
+
+  openCreate(): void {
+    this.openMenuId.set(null);
+    this.tagCreator().openCreateSheet();
+  }
+
+  openMenu(tagId: string): void {
+    this.openMenuId.set(tagId);
+  }
+
+  closeMenu(): void {
+    this.openMenuId.set(null);
+  }
+
+  editTag(tagId: string): void {
+    const tag = this.rows().find(row => row.id === tagId);
+    if (!tag) {
+      return;
+    }
+    this.tagCreator().openEditSheet(tag);
+  }
+
+  confirmDelete(tagId: string): void {
+    const tag = this.rows().find(row => row.id === tagId);
+    if (!tag) {
+      return;
+    }
+    this.dialog
+      .showModalDialog(
+        DeleteTagDialogComponent,
+        { name: tag.name, taskCount: tag.taskCount },
+        'delete-tag-title',
+      )
+      .afterClosed()
+      .subscribe(confirmed => {
+        if (confirmed === true) {
+          void this.deleteTag(tag.id);
+        }
+      });
+  }
+
+  private async deleteTag(tagId: string): Promise<void> {
+    const tasks = this.selectors.tasks().filter(task => task.tagIds?.includes(tagId));
+    let pending = Promise.resolve();
+    for (const task of tasks) {
+      const tagIds = (task.tagIds ?? []).filter(id => id !== tagId);
+      pending = pending.then(() =>
+        firstValueFrom(
+          this.store.dispatch(
+            new TasksAction.UpdateTask({
+              taskId: task.id,
+              changes: { tagIds },
+            }),
+          ),
+        ).then(() => undefined),
+      );
+    }
+    await pending;
+    await firstValueFrom(this.store.dispatch(new TagsAction.DeleteTag(tagId)));
+    this.contentMode.clearTag(tagId);
+  }
+}

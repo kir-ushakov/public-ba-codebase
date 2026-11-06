@@ -1,0 +1,40 @@
+{
+  "state": {
+    "id": "tag-edit-open",
+    "name": "Edit Tag — Open",
+    "version": "1.1.0",
+    "purpose": "Rename a tag and choose its color in the same sheet used to create a tag.",
+    "designSystem": "../design-system.json",
+    "styleGuide": "../UI_STYLE_GUIDE.md",
+    "status": "approved",
+    "implementationStatus": "implemented",
+    "parentScreen": "tags",
+    "presentation": {
+      "component": "bottom-sheet",
+      "designSystemPattern": "bottomSheet"
+    },
+    "header": {
+      "title": "Edit tag"
+    },
+    "form": {
+      "fields": ["name", "color"],
+      "name": {
+        "label": "Tag name",
+        "characterCount": true
+      },
+      "color": {
+        "label": "Tag color",
+        "helper": "Choose a color to identify this tag.",
+        "palette": "TagConst.COLORS"
+      },
+      "preview": "sell icon in the selected color and the current name",
+      "primaryAction": "Save changes",
+      "colorUse": "The color is applied to the sell icon and the preview. It does not paint the tag row, and it does not replace the teal selection border on Home."
+    },
+    "behavior": {
+      "prefill": "existing name and color",
+      "save": "update name and color together, keep id, pin state, and task links",
+      "cancel": "discard unsaved changes"
+    }
+  }
+}

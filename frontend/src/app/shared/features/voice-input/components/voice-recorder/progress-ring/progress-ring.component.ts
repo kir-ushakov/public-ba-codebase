@@ -12,7 +12,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-const MAX_RGB_COLOR_VALUE = 255;
 const DEFAULT_STROKE_WIDTH = 3;
 const DEFAULT_DURATION_MS = 10_000;
 const DEFAULT_BLUR_STD_DEV = 1.5;
@@ -90,25 +89,12 @@ export class ProgressRingComponent implements AfterViewInit, OnDestroy {
 
     const startAt = performance.now();
 
-    /** Throttle Angular-bound color updates: full rAF for SVG, rare emits so mic capture (main thread) stays free. */
-    const colorEmitEveryMs = 120;
-    let lastColorEmitAt = 0;
-
     const animate = (now: number): void => {
       const elapsed = now - startAt;
       const progress = Math.min(elapsed / this.duration, 1);
 
       circle.style.strokeDashoffset = progress >= 1 ? '0' : `${totalLength * (1 - progress)}`;
-
-      const red = Math.round(MAX_RGB_COLOR_VALUE * progress);
-      const green = Math.round(MAX_RGB_COLOR_VALUE * (1 - progress));
-      const color = `rgb(${red}, ${green}, 0)`;
-      circle.style.stroke = color;
-
-      if (now - lastColorEmitAt >= colorEmitEveryMs || progress >= 1) {
-        lastColorEmitAt = now;
-        this.zone.run(() => this.colorChange.emit(color));
-      }
+      circle.style.stroke = 'var(--color-accent-primary)';
 
       if (progress < 1) {
         this.animationFrame = requestAnimationFrame(animate);

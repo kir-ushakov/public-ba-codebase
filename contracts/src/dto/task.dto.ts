@@ -1,3 +1,4 @@
+import { ETaskCondition } from '../enums/task-condition.enum';
 import { ETaskStatus } from '../enums/task-status.enum';
 import { ETaskType } from '../enums/task-type.enum';
 
@@ -33,6 +34,26 @@ export type TaskDescriptionDoc = {
   content?: TaskDescriptionNode[];
 };
 
+export type ChecklistItemDTO = {
+  id: string;
+  text: string;
+  completed: boolean;
+};
+
+export type AudioTranscription = {
+  text: string;
+  createdAt: string;
+  model?: string;
+};
+
+export type AudioAttachment = {
+  id: string;
+  durationMs: number;
+  mimeType: string;
+  createdAt: string;
+  transcription?: AudioTranscription;
+};
+
 /**
  * Task Data Transfer Object
  * Shared contract between frontend and backend for task data
@@ -43,9 +64,16 @@ export type TaskDTO = {
   type: ETaskType;
   title: string;
   status: ETaskStatus;
+  /**
+   * How the task can become active. Older clients omit this.
+   * Absent on a note. A task stores at least one condition.
+   */
+  conditions?: ETaskCondition[];
   imageId?: string;
   images?: string[];
   description?: TaskDescriptionDoc;
+  checklist?: ChecklistItemDTO[];
+  audioAttachments?: AudioAttachment[];
   tagIds?: string[];
   createdAt: string;
   modifiedAt: string;
